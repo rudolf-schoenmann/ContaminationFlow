@@ -1,5 +1,7 @@
 #include <iostream>
 #include <mpi.h>
+#include <string>
+#include <fstream>
 /*#include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -51,12 +53,11 @@
 */
 
 
-int main(int argc, char **argv) {                           // Parameters for Main: File to load + How long should the simulation run (# of Hits)
+int main(int argc, char *argv[]) {                           // Parameters for Main: File to load + How long should the simulation run (# of Hits)
 
 
-    //char filename = argv[1];
-    //int processNumber = static_cast<int>(argv[2]);
-    //int SimulationTime = static_cast<int>(argv[3];
+    //char filename = argv[1]; // ich brauche hier wahrscheinlich einen string, oder?
+    //int SimulationTime = static_cast<int>(argv[2]);
     //argv[4] should be used to load the buffer file.
   
       /* Create child processes, each of which has its own variables.
@@ -74,13 +75,18 @@ int main(int argc, char **argv) {                           // Parameters for Ma
       MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
       // Get the rank of the process
-      int world_rank;
-      MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+      int rank;
+      MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-      if( world_rank == 0 ) {
+      if(rank == 0) {
     	  std::cout << "Hello, world! Ich bin das molflowlinux_project!" << std::endl;
-    	  std::cout << "Hello! I'm head process "<< world_rank << std::endl;
+    	  std::cout << "Hello! I'm head process "<< rank << std::endl;
     	  std::cout << "Hello! Number of processes: "<< world_size << std::endl;
+    	  int i;
+    	  	printf("argc: %d\n", argc);
+    	  	for(i=0; i < argc; i++) {
+    	  		printf("argv[%d]: %s\n", i, argv[i]);
+    	  	}
           /* do some work as process 0 */
           /*load the buffer (Buffer has to be exported in the WindowsMolflow first)*/
           /*Sharing Geometry and Parameters with the other processes*/
@@ -98,7 +104,7 @@ int main(int argc, char **argv) {                           // Parameters for Ma
     	  }
     
       else {
-    	  std::cout << "Hello! I'm worker process "<< world_rank << std::endl;
+    	  std::cout << "Hello! I'm worker process "<< rank << std::endl;
          /* do work in any remaining processes */
          /* execute int main(...) from molflowSub.cpp
          (Receive the Buffer)*/
