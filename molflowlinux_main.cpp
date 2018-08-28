@@ -87,6 +87,29 @@ int main(int argc, char *argv[]) {                           // Parameters for M
     	  	for(i=0; i < argc; i++) {
     	  		printf("argv[%d]: %s\n", i, argv[i]);
     	  	}
+
+    	  	std::ifstream bufferstream;
+
+    	  	bufferstream.open (argv[1], std::ifstream::binary);
+
+
+
+
+    	  	  char c = bufferstream.get();
+    	  	  int j = 0;
+    	  	  while (bufferstream.good()) {
+    	  	    std::cout << std::hex << static_cast<unsigned int>(c);
+    	  	    std::cout << " ";
+    	  	    //std::cout << sizeof(static_cast<unsigned int>(c));
+    	  	    //std::cout << " ";
+    	  	    //std::cout << static_cast<unsigned int>(c);
+    	  	    //std::cout << " ";
+    	  	    j ++;
+    	  	    if (j % 32 == 0) std::cout << std::endl;
+    	  	    c = bufferstream.get();
+    	  	  }
+
+    	  	bufferstream.close();
           /* do some work as process 0 */
           /*load the buffer (Buffer has to be exported in the WindowsMolflow first)*/
           /*Sharing Geometry and Parameters with the other processes*/
