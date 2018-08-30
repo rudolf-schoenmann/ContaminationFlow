@@ -32,7 +32,7 @@ CPP_DEPS += \
 molflowlinux_sub/Header/GLApp/GLChart/%.o: ../molflowlinux_sub/Header/GLApp/GLChart/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
-	mpic++ -std=c++0x -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	mpic++ -I"/scratch/schoenmann/MolflowLinux" -I"/scratch/schoenmann/MolflowLinux/molflowlinux_sub" -I"/scratch/schoenmann/MolflowLinux/molflowlinux_sub/include1" -I"/scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/GLApp" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

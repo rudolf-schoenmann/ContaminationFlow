@@ -24,6 +24,7 @@
 #include "encodedstream.h"
 #include <new>      // placement new
 #include <limits>
+//#include <cstdint>
 
 CEREAL_RAPIDJSON_DIAG_PUSH
 #ifdef _MSC_VER

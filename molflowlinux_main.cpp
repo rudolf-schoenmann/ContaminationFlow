@@ -88,13 +88,9 @@ int main(int argc, char *argv[]) {                           // Parameters for M
     	  		printf("argv[%d]: %s\n", i, argv[i]);
     	  	}
 
-    	  	std::ifstream bufferstream;
 
+    	  	/*std::ifstream bufferstream;
     	  	bufferstream.open (argv[1], std::ifstream::binary);
-
-
-
-
     	  	  char c = bufferstream.get();
     	  	  int j = 0;
     	  	  while (bufferstream.good()) {
@@ -108,8 +104,9 @@ int main(int argc, char *argv[]) {                           // Parameters for M
     	  	    if (j % 32 == 0) std::cout << std::endl;
     	  	    c = bufferstream.get();
     	  	  }
+    	  	bufferstream.close();*/
 
-    	  	bufferstream.close();
+
           /* do some work as process 0 */
           /*load the buffer (Buffer has to be exported in the WindowsMolflow first)*/
           /*Sharing Geometry and Parameters with the other processes*/

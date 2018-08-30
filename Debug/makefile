@@ -8,6 +8,7 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include molflowlinux_sub/Header/TruncatedGaussian/subdir.mk
 -include molflowlinux_sub/subdir.mk
 -include subdir.mk
 -include objects.mk
@@ -44,7 +45,7 @@ all: MolflowLinux
 MolflowLinux: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	mpic++  -o "MolflowLinux" $(OBJS) $(USER_OBJS) $(LIBS)
+	mpic++ -L/usr/include/gsl -o "MolflowLinux" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

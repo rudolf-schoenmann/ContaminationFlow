@@ -25,6 +25,9 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <sstream>
 #include <iterator>
 #include "Random.h"
+#include "document.h"
+#include <string.h> // added since _strdup was not defined before
+#define _strdup strdup // added since _strdup was not defined before
 
 bool IsEqual(const double &a, const double &b, double toleranceRatio) {
 	return fabs(a - b) < Max(1E-99, fabs(a)*toleranceRatio);
@@ -64,7 +67,8 @@ size_t GetPower2(size_t n) {
     // Get the power of 2 above
     int p = 0;
     while(n!=0) { n = n >> 1; p++; }
-    return 1i64 << p;
+    //return 1i64 << p; //original code
+    return 1ll << p;
   }
 
 }
@@ -135,15 +139,15 @@ double Weigh(const double & a, const double & b, const double & weigh)
 	return a + (b - a)*weigh;
 }
 
-double InterpolateY(const double& x, const std::vector<std::pair<double, double>>& table, const bool& logarithmic, const bool& allowExtrapolate) {
+double InterpolateY(const double& x, const std::vector<std::pair<double, double> >& table, const bool& logarithmic, const bool& allowExtrapolate) {
 	return InterpolateXY(x, table, true, logarithmic, allowExtrapolate);
 }
 
-double InterpolateX(const double& y, const std::vector<std::pair<double, double>>& table, const bool& logarithmic, const bool& allowExtrapolate) {
+double InterpolateX(const double& y, const std::vector<std::pair<double, double> >& table, const bool& logarithmic, const bool& allowExtrapolate) {
 	return InterpolateXY(y, table, false, logarithmic, allowExtrapolate);
 }
 
-double InterpolateVectorX(const double& y, const std::vector < std::pair<double, std::vector<double>>> & table, const size_t& elementIndex, const bool& logarithmic, const bool& allowExtrapolate) {
+double InterpolateVectorX(const double& y, const std::vector < std::pair<double, std::vector<double> > > & table, const size_t& elementIndex, const bool& logarithmic, const bool& allowExtrapolate) {
 	//InterpolateX and InterpolateY
 	//Avoids repeated code with minor changes only
 	//returns double
@@ -161,7 +165,8 @@ double InterpolateVectorX(const double& y, const std::vector < std::pair<double,
 		lowerIndex = 0;
 		if (!allowExtrapolate) return GetElement(table[lowerIndex], !first, elementIndex); //return first element
 	}
-	else if (lowerIndex == (table.size() - 1)) {
+	//else if (lowerIndex == (table.size() - 1)) { //Windows original code
+	else if (lowerIndex == ((int)table.size()-1)) {
 		if (allowExtrapolate) {
 			lowerIndex = (int)table.size() - 2;
 		}
@@ -175,7 +180,7 @@ double InterpolateVectorX(const double& y, const std::vector < std::pair<double,
 	else return Weigh(GetElement(table[lowerIndex], !first, elementIndex),GetElement(table[lowerIndex + 1], !first, elementIndex),overshoot / delta);
 }
 
-std::vector<double> InterpolateVectorY(const double& x, const std::vector<std::pair<double, std::vector<double>>>& table, const bool& logarithmic, const bool& allowExtrapolate) {
+std::vector<double> InterpolateVectorY(const double& x, const std::vector<std::pair<double, std::vector<double> > >& table, const bool& logarithmic, const bool& allowExtrapolate) {
 	//Same as InterpolateY but returns a vector.
 	//Must repeat most of code because C++ doesn't allow runtime evaluated return-type (and only 'bool first' decides what to return)
 	if (table.size() == 1) return table[0].second;
@@ -186,7 +191,8 @@ std::vector<double> InterpolateVectorY(const double& x, const std::vector<std::p
 		lowerIndex = 0;
 		if (!allowExtrapolate) return table[lowerIndex].second; //return first element
 	}
-	else if (lowerIndex == (table.size() - 1)) {
+	//else if (lowerIndex == (table.size() - 1)) { //Windows original code
+	else if (lowerIndex == ((int)table.size()-1)) {
 		if (allowExtrapolate) {
 			lowerIndex = (int)table.size() - 2;
 		}
@@ -264,7 +270,8 @@ std::vector<std::string> SplitString(std::string const &input) {
 std::vector<std::string> SplitString(std::string const & input, const char & delimiter)
 {
 		std::vector<std::string> result;
-		const char* str = _strdup(input.c_str());
+		const char* str = _strdup(input.c_str()); // original Windows code
+		//const char* str = strdup(input.c_str());
 		do
 		{
 			const char *begin = str;
@@ -337,7 +344,7 @@ int my_lower_bound(const double & key, const std::vector<double>& A)
 	return l - 1;
 }
 
-int my_lower_bound(const double & key, const std::vector<std::pair<double, double>>& A, const bool & first)
+int my_lower_bound(const double & key, const std::vector<std::pair<double, double> >& A, const bool & first)
 //"iterative" version of algorithm, modified from https://en.wikipedia.org/wiki/Binary_search_algorithm
 //key: searched value
 //A: the lookup table
@@ -361,7 +368,7 @@ int my_lower_bound(const double & key, const std::vector<std::pair<double, doubl
 	return l - 1;
 }
 
-int my_lower_bound(const double & key, const std::vector<std::pair<double, std::vector<double>>>& A, const bool & first, const size_t & elementIndex)
+int my_lower_bound(const double & key, const std::vector<std::pair<double, std::vector<double> > >& A, const bool & first, const size_t & elementIndex)
 //"iterative" version of algorithm, modified from https://en.wikipedia.org/wiki/Binary_search_algorithm
 //key: searched value
 //A: the lookup table
@@ -385,7 +392,7 @@ int my_lower_bound(const double & key, const std::vector<std::pair<double, std::
 	return l-1;
 }
 
-double InterpolateXY(const double & lookupValue, const std::vector<std::pair<double, double>>& table, const bool & first, const bool & logarithmic, const bool & allowExtrapolate) {
+double InterpolateXY(const double & lookupValue, const std::vector<std::pair<double, double> >& table, const bool & first, const bool & logarithmic, const bool & allowExtrapolate) {
 	//InterpolateX and InterpolateY
 	//Avoids repeated code with minor changes only
 	//returns double
@@ -401,7 +408,8 @@ double InterpolateXY(const double & lookupValue, const std::vector<std::pair<dou
 		lowerIndex = 0;
 		if (!allowExtrapolate) return GetElement(table[lowerIndex], !first); //return first element
 	}
-	else if (lowerIndex == (table.size() - 1)) {
+	//else if (lowerIndex == (table.size() - 1)) { // Windows original code
+	else if (lowerIndex == ((int)table.size()-1)) {
 		if (allowExtrapolate) {
 			lowerIndex = (int)table.size() - 2;
 		}
@@ -494,7 +502,7 @@ double GetElement(const std::pair<double, double>& pair, const bool & first) {
 	return first ? pair.first : pair.second;
 }
 
-double GetElement(const std::pair<double, std::vector<double>>& pair, const bool & first, const size_t & elementIndex) {
+double GetElement(const std::pair<double, std::vector<double> >& pair, const bool & first, const size_t & elementIndex) {
 	return first ? pair.first : pair.second[elementIndex];
 }
 

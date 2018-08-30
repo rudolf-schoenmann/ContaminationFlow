@@ -17,7 +17,7 @@ CPP_DEPS += \
 %.o: ../%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
-	mpic++ -I"/scratch/schoenmann/MolflowLinux" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	mpic++ -I/usr/include/gsl -I"/scratch/schoenmann/MolflowLinux" -I"/scratch/schoenmann/MolflowLinux/molflowlinux_sub" -I"/scratch/schoenmann/MolflowLinux/molflowlinux_sub/include1" -I"/scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/GLApp" -I"/scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources" -I"/scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/TruncatedGaussian" -I"/scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header" -I"/scratch/schoenmann/MolflowLinux/molflowlinux_sub/cereal/external/rapidjson" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
