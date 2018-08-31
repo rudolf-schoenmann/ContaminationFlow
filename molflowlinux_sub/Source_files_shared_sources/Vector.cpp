@@ -163,7 +163,7 @@ Vector2d ProjectVertex(const Vector3d& v, const Vector3d& U, const Vector3d& V, 
 	Vector3d diff = v - origin;
 	return Vector2d(Dot(U, diff) / Dot(U,U),Dot(V, diff) / Dot(V,V));
 }
-
+/* This function is only used by the molflow_project (Windows Version of Molflow) so we can comment it out here.
 std::optional<Vector2d> Intersect2D(const Vector2d &p1, const Vector2d& p2, const Vector2d& p3, const Vector2d& p4) {
 
   // Computes the intersection between 2 segments
@@ -197,7 +197,7 @@ std::optional<Vector2d> Intersect2D(const Vector2d &p1, const Vector2d& p2, cons
 
   return I1;
 
-}
+}*/
 
 double GetOrientedAngle(const Vector2d& v1,const Vector2d& v2) {
 

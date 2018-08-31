@@ -399,7 +399,7 @@ bool CheckLoop(const PolyGraph& g)
     return nbVisited==g.nodes.size();
 
 }
-
+/*This function is only used by the molflow_project (Windows Version of Molflow) so we can comment it out here.
 std::optional<std::vector<GLAppPolygon>> IntersectPoly(const GLAppPolygon& inP1,const GLAppPolygon& inP2,const std::vector<bool>& visible2)
 {
 
@@ -547,7 +547,7 @@ std::optional<std::vector<GLAppPolygon>> IntersectPoly(const GLAppPolygon& inP1,
   return polys;
 
 }
-
+*/
 std::tuple<double,Vector2d,std::vector<Vector2d>> GetInterArea(const GLAppPolygon &inP1,const GLAppPolygon &inP2,const std::vector<bool>& edgeVisible)
 {
 	Vector2d center(0.0, 0.0);

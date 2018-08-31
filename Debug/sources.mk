@@ -24,7 +24,9 @@ C_DEPS :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 . \
+molflowlinux_sub/Header/GLApp \
 molflowlinux_sub/Header/TruncatedGaussian \
 molflowlinux_sub/Source_files_linux \
+molflowlinux_sub/Source_files_shared_sources \
 molflowlinux_sub \
 

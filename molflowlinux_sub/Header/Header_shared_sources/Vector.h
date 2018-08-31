@@ -19,7 +19,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 */
 #pragma once
 #include <cereal/cereal.hpp>
-#include <optional> //C++17
+//#include <optional> //C++17 //Removed by Rudi, since it caused some troubles without C++17.
 
 class Vector3d {
 public:
@@ -94,7 +94,8 @@ Vector2d operator*(const double& mult, const Vector2d &v1);
 double Dot(const Vector2d &v1, const Vector2d &v2);
 
 Vector2d ProjectVertex(const Vector3d& v, const Vector3d& U, const Vector3d& V, const Vector3d& origin);
-std::optional<Vector2d> Intersect2D(const Vector2d &p1, const Vector2d& p2, const Vector2d& p3, const Vector2d& p4);
+//std::optional<Vector2d> Intersect2D(const Vector2d &p1, const Vector2d& p2, const Vector2d& p3, const Vector2d& p4); // This function is only used by
+//the molflow_project (Windows Version of Molflow) so we can comment it out here.
 
 Vector3d Mirror(const Vector3d& P, const Vector3d& P0, const Vector3d& N);
 Vector3d Project(const Vector3d& P, const Vector3d& P0, const Vector3d& N);

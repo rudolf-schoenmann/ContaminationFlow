@@ -20,7 +20,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #pragma once
 #include "Vector.h"
 #include <tuple>
-#include <optional>
+//#include <optional> //C++17 //Removed by Rudi, since it caused some troubles without C++17.
 #include <vector>
 
 class GLAppPolygon { //To distinguish from possible other Polygon classes in the namespace
@@ -63,7 +63,8 @@ std::tuple<bool,Vector2d>  EmptyTriangle(const GLAppPolygon& p,int i1,int i2,int
 bool   IsInPoly(const Vector2d& p,const std::vector<Vector2d>& polyPoints);
 bool   IsOnPolyEdge(const double & u, const double & v, const std::vector<Vector2d>& polyPoints, const double & tolerance);
 bool   IsOnSection(const double & u, const double & v, const double & baseU, const double & baseV, const double & targetU, const double & targetV, const double & tolerance);
-std::optional<std::vector<GLAppPolygon>> IntersectPoly(const GLAppPolygon& p1, const GLAppPolygon& p2,const std::vector<bool>& visible2);
+//std::optional<std::vector<GLAppPolygon>> IntersectPoly(const GLAppPolygon& p1, const GLAppPolygon& p2,const std::vector<bool>& visible2);
+//This function is only used by the molflow_project (Windows Version of Molflow) so we can comment it out here.
 std::tuple<double, Vector2d, std::vector<Vector2d>>  GetInterArea(const GLAppPolygon& inP1,const GLAppPolygon& inP2,const std::vector<bool>& edgeVisible);
 std::tuple<double,Vector2d> GetInterAreaBF(const GLAppPolygon& inP1,const Vector2d& p0, const Vector2d& p1);
 

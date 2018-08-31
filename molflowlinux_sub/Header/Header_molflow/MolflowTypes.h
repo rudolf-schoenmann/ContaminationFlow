@@ -19,7 +19,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 */
 #pragma once
 #include "GLApp/GLTypes.h"
-#include "Types.h"
+//#include "Types.h" // Rudi: Check, if it is needed on linux. If so => comment in again.
 //#include "Buffer_shared.h"
 
 // Desorption type

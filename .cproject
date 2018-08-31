@@ -34,8 +34,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MolflowLinux/molflowlinux_sub/Header}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MolflowLinux/molflowlinux_sub/cereal/external/rapidjson}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MolflowLinux/molflowlinux_sub/Header/Header_linux}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MolflowLinux/molflowlinux_sub/Header/Header_molflow}&quot;"/>
 								</option>
-								<option id="gnu.cpp.compiler.option.dialect.std.1371275186" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.dialect.std.1371275186" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.c++11" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.other.other.1707871654" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.8053999" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -67,7 +68,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="molflowlinux_sub/Header/GLApp/MathTools.cpp|molflowlinux_sub/Source_files_shared_sources|molflowlinux_sub/Source_files_shared_sources/Distributions.cpp|molflowlinux_sub/Source_files_shared_sources/Vector.cpp|molflowlinux_sub/Source_files_molflow|molflowlinux_sub/10.0.17134.0|molflowlinux_sub/Source_files_molflow/SimulationAC.cpp|molflowlinux_project/Header|molflowlinux_project/PugiXML|molflowlinux_project/Source_Files_Linux|molflowlinux_project/Some_Win_Source_Files" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
+						<entry excluding="molflowlinux_sub/Source_files_shared_sources/Distributions.cpp|molflowlinux_sub/Source_files_shared_sources/Vector.cpp|molflowlinux_sub/Source_files_molflow|molflowlinux_sub/10.0.17134.0|molflowlinux_sub/Source_files_molflow/SimulationAC.cpp|molflowlinux_project/Header|molflowlinux_project/PugiXML|molflowlinux_project/Source_Files_Linux|molflowlinux_project/Some_Win_Source_Files" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -115,7 +116,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="molflowlinux_sub/Header/GLApp/MathTools.cpp|molflowlinux_sub/Source_files_shared_sources|molflowlinux_sub/Source_files_shared_sources/Distributions.cpp|molflowlinux_sub/Source_files_shared_sources/Vector.cpp|molflowlinux_sub/Source_files_molflow|molflowlinux_sub/10.0.17134.0|molflowlinux_sub/Source_files_molflow/SimulationAC.cpp|molflowlinux_project/Header|molflowlinux_project/PugiXML|molflowlinux_project/Source_Files_Linux|molflowlinux_project/Some_Win_Source_Files" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="molflowlinux_sub/Source_files_shared_sources/Distributions.cpp|molflowlinux_sub/Source_files_shared_sources/Vector.cpp|molflowlinux_sub/Source_files_molflow|molflowlinux_sub/10.0.17134.0|molflowlinux_sub/Source_files_molflow/SimulationAC.cpp|molflowlinux_project/Header|molflowlinux_project/PugiXML|molflowlinux_project/Source_Files_Linux|molflowlinux_project/Some_Win_Source_Files" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

@@ -21,7 +21,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 #include "MolflowTypes.h"
 #include "Buffer_shared.h" //Facetproperties
-#include "SMP.h"
+//#include "SMP.h"
 #include <vector>
 #include "Vector.h"
 #include "Parameter.h"

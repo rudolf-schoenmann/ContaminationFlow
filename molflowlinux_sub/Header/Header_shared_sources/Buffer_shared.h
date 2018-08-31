@@ -301,7 +301,7 @@ public:
 			CEREAL_NVP(totalOutgassing), //total outgassing for the given facet
 
 			CEREAL_NVP(anglemapParams)//Incident angle map
-#endif*/
+#endif
 
 #ifdef SYNRAD
 			,
