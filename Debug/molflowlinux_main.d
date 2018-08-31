@@ -31,7 +31,8 @@ molflowlinux_main.o: ../molflowlinux_main.cpp \
  /usr/include/openmpi-x86_64/openmpi/ompi/mpi/cxx/status_inln.h \
  /usr/include/openmpi-x86_64/openmpi/ompi/mpi/cxx/info_inln.h \
  /usr/include/openmpi-x86_64/openmpi/ompi/mpi/cxx/win_inln.h \
- /usr/include/openmpi-x86_64/openmpi/ompi/mpi/cxx/file_inln.h
+ /usr/include/openmpi-x86_64/openmpi/ompi/mpi/cxx/file_inln.h \
+ /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_linux/Buffer.h
 
 /usr/include/openmpi-x86_64/mpi.h:
 
@@ -98,3 +99,5 @@ molflowlinux_main.o: ../molflowlinux_main.cpp \
 /usr/include/openmpi-x86_64/openmpi/ompi/mpi/cxx/win_inln.h:
 
 /usr/include/openmpi-x86_64/openmpi/ompi/mpi/cxx/file_inln.h:
+
+/scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_linux/Buffer.h:

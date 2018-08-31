@@ -2,6 +2,7 @@
 #include <mpi.h>
 #include <string>
 #include <fstream>
+#include "Buffer.h"
 /*#include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -53,13 +54,18 @@
 */
 
 
-int main(int argc, char *argv[]) {                           // Parameters for Main: File to load + How long should the simulation run (# of Hits)
+int main(int argc, char *argv[]) {
 
+	  /*Parameters passed to main:
+	   *
+	   * 1. Name of buffer file to read in.
+	   * 2. Choose a name for the buffer file to export the simulation results.
+	   * 3. Simulation time.
+	   * 4.
+	   * 5.
+	   *
+       */
 
-    //char filename = argv[1]; // ich brauche hier wahrscheinlich einen string, oder?
-    //int SimulationTime = static_cast<int>(argv[2]);
-    //argv[4] should be used to load the buffer file.
-  
       /* Create child processes, each of which has its own variables.
        * From this point on, every process executes a separate copy
        * of this program.  Each process has a different process ID,
@@ -79,37 +85,40 @@ int main(int argc, char *argv[]) {                           // Parameters for M
       MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
       if(rank == 0) {
-    	  std::cout << "Hello, world! Ich bin das molflowlinux_project!" << std::endl;
-    	  std::cout << "Hello! I'm head process "<< rank << std::endl;
-    	  std::cout << "Hello! Number of processes: "<< world_size << std::endl;
-    	  int i;
+      /* do some work as process 0 */
+      //std::cout << "Hello! I'm head process "<< rank << std::endl;
+      //std::cout << "Number of started processes: "<< world_size << std::endl;
+
+      //_____________________________________________________________________________________________________________________________________________________________
+      // Parameter check for MolflowLinux
+
+    	int i;
     	  	printf("argc: %d\n", argc);
     	  	for(i=0; i < argc; i++) {
     	  		printf("argv[%d]: %s\n", i, argv[i]);
     	  	}
+    	if(argc < 3){
+    		 std::cout << "Please pass 2 arguments to MolflowLinux:"<< std::endl;
+    		 std::cout << "1. Name of buffer file to read in." << std::endl;
+    		 std::cout << "2. Choose a name for the buffer file to export the simulation results." << std::endl;
+    		 std::cout << "MolflowLinux is terminated now." << std::endl;
+
+    		 MPI_Finalize();
+
+    		 return 0;
+    	 }
+    	//___________________________________________________________________________________________________________________________________________________________
 
 
-    	  	/*std::ifstream bufferstream;
-    	  	bufferstream.open (argv[1], std::ifstream::binary);
-    	  	  char c = bufferstream.get();
-    	  	  int j = 0;
-    	  	  while (bufferstream.good()) {
-    	  	    std::cout << std::hex << static_cast<unsigned int>(c);
-    	  	    std::cout << " ";
-    	  	    //std::cout << sizeof(static_cast<unsigned int>(c));
-    	  	    //std::cout << " ";
-    	  	    //std::cout << static_cast<unsigned int>(c);
-    	  	    //std::cout << " ";
-    	  	    j ++;
-    	  	    if (j % 32 == 0) std::cout << std::endl;
-    	  	    c = bufferstream.get();
-    	  	  }
-    	  	bufferstream.close();*/
+    	//___________________________________________________________________________________________________________________________________________________________
+    	//Read in buffer file (exported by Windows-Molflow). File given as first argument to main().
 
+    	 Databuff buff;
+    	 buff.buffer = NULL;
+    	 importBuff(argv[1], &buff);
+    	 //___________________________________________________________________________________________________________________________________________________________
 
-          /* do some work as process 0 */
-          /*load the buffer (Buffer has to be exported in the WindowsMolflow first)*/
-          /*Sharing Geometry and Parameters with the other processes*/
+          /*Sharing buffer (Geometry and Parameters) with the other processes*/
              /* Send Buffer
               * Send SimulationTime
               * Tell the other processes via MPI, that they should execute COMMAND_LOAD
@@ -121,15 +130,26 @@ int main(int argc, char *argv[]) {                           // Parameters for M
              /*Second Step: Time dependend Mode (Maybe copy Algorithm from Marton,  when ready)*/
                  /*Iterative Algorithm: Update Parameters (Is parallisation necessary/desirable for updating?) + Sharing new Parameters with the other processes*/
           /*write Result a bufferfile (or maybe??? in a file or .zip archive)*/
-    	  }
+
+
+    	 //___________________________________________________________________________________________________________________________________________________________
+    	 //Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
+
+    	 //char fileexport[] = "/smbhome/schoenmann/buffertest";
+    	 exportBuff(argv[2], &buff);
+    	 // Build in safety check to not loosing simulation results, if the buffer export does not work?
+    	 delete[] buff.buffer;
+
+
+      }
     
       else {
-    	  std::cout << "Hello! I'm worker process "<< rank << std::endl;
-         /* do work in any remaining processes */
-         /* execute int main(...) from molflowSub.cpp
-         (Receive the Buffer)*/
+    	 /* do work in any remaining processes */
+    	 //std::cout << "Hello! I'm worker process "<< rank << std::endl;
 
-    	  // Sketch of the worker algorithm:
+         //(Receive the Buffer)
+
+    	 // Sketch of the worker algorithm:
 
     	  /* If COMMAND_LOAD is executed successfully, tell process 0 (via MPI)
           * 

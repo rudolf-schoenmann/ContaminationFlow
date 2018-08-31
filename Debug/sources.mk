@@ -25,5 +25,6 @@ C_DEPS :=
 SUBDIRS := \
 . \
 molflowlinux_sub/Header/TruncatedGaussian \
+molflowlinux_sub/Source_files_linux \
 molflowlinux_sub \
 
