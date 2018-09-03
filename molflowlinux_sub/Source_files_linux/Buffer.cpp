@@ -39,6 +39,7 @@ void importBuff(char *fileName, Databuff *buff)
 		fb.close();
 	}
 	else{std::cout << "Could not open file to read data from." << std::endl;}
+	std::cout << "Buffersize (read in): " << buff->size << std::endl;
 }
 
 void exportBuff(char *fileName, Databuff *buff)
@@ -55,6 +56,7 @@ void exportBuff(char *fileName, Databuff *buff)
 		f.close();
 	}
 	else {std::cout << "Could not open file to write data in." << std::endl;}
+	std::cout << "Buffersize (write in file): " << buff->size << std::endl;
 }
 
 
