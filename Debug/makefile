@@ -9,7 +9,9 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include molflowlinux_sub/TruncatedGaussian/subdir.mk
+-include molflowlinux_sub/Source_files_shared_sources/subdir.mk
 -include molflowlinux_sub/Source_files_linux/subdir.mk
+-include molflowlinux_sub/GLApp/subdir.mk
 -include molflowlinux_sub/subdir.mk
 -include subdir.mk
 -include objects.mk

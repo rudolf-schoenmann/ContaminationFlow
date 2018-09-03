@@ -49,8 +49,10 @@ bool ContainsConcave(const GLAppPolygon &p,int i1,int i2,int i3)
   const Vector2d& p2 = p.pts[_i2];
   const Vector2d& p3 = p.pts[_i3];
 
-  int found = 0;
-  int i = 0;
+  //int found = 0; //original Windows-Molflow code
+  unsigned int found = 0; // changed by Rudi, since .size() returned unsigned integral type.
+  //int i = 0; //original Windows-Molflow code
+  unsigned int i = 0; // changed by Rudi, since .size() returned unsigned integral type.
   while(!found && i<p.pts.size()) {
     if( i!=_i1 && i!=_i2 && i!=_i3 ) {
 	  if (IsInPoly(p.pts[i], { p1,p2,p3 }))
@@ -83,14 +85,14 @@ std::tuple<bool,Vector2d> EmptyTriangle(const GLAppPolygon& p,int i1,int i2,int 
     }
     i++;
   }
-
-  return { !found,(1.0 / 3.0)*(p1 + p2 + p3) };
-
+ //return { !found,(1.0 / 3.0)*(p1 + p2 + p3) }; //original Windows-Molflow code
+ return {std::make_tuple(!found,(1.0 / 3.0)*(p1 + p2 + p3)) }; //changed by Rudi
 }
 bool IsOnPolyEdge(const double & u, const double & v, const std::vector<Vector2d>& polyPoints, const double & tolerance)
 {
 	bool onEdge = false;
-	for (int i = 0;!onEdge && i < polyPoints.size();i++) {
+	//for (int i = 0;!onEdge && i < polyPoints.size();i++) { //original Windows-Molflow code
+	for (unsigned int i = 0;!onEdge && i < polyPoints.size();i++) { //changed by Rudi
 		const double& x1 = polyPoints[i].u;
 		const double& y1 = polyPoints[i].v;
 		const double& x2 = polyPoints[(i + 1) % polyPoints.size()].u;
@@ -136,6 +138,7 @@ bool IsOnEdge(const Vector2d& p1,const Vector2d& p2,const Vector2d& p)
 
 }
 
+/* commented out by Rudi, since std::optional is not supported in C++11
 std::optional<size_t> GetNode(const PolyGraph& g, const Vector2d& p)
 {
 
@@ -156,6 +159,7 @@ std::optional<size_t> GetNode(const PolyGraph& g, const Vector2d& p)
     return std::nullopt;
 
 }
+*/
 
 int SearchFirst(const PolyGraph& g)
 {
@@ -163,14 +167,15 @@ int SearchFirst(const PolyGraph& g)
   // Search a not yet processed starting point
   //(Used by IntersectPoly)
 
-  for (int i = 0; i < g.nodes.size(); i++) {
+  //for (int i = 0; i < g.nodes.size(); i++) { //original Windows-Molflow code
+	for (unsigned int i = 0; i < g.nodes.size(); i++) {
 	const PolyVertex& node = g.nodes[i];
 	if (node.mark == 0 && node.isStart) return i;
   }
   //Not found
   return -1;
 }
-
+/* commented out by Rudi, since GetNode was commented out
 size_t AddNode(PolyGraph& g,const Vector2d& p)
 {
   
@@ -191,6 +196,7 @@ size_t AddNode(PolyGraph& g,const Vector2d& p)
 	 }
 
 }
+*/
 
 size_t AddArc(PolyGraph& g,const size_t &i1,const size_t &i2,const size_t &source)
 {
@@ -222,7 +228,7 @@ void CutArc(PolyGraph& g, size_t idx, size_t ni)
   }
 
 }
-
+/*commented out by Rudi, since AddNote was commented out
 void InsertEdge(PolyGraph& g,const Vector2d& p1,const Vector2d& p2,const int &a0)
 {
 
@@ -263,7 +269,8 @@ void InsertEdge(PolyGraph& g,const Vector2d& p1,const Vector2d& p2,const int &a0
   if( !itFound ) AddArc(g,n1,n2,2);
 
 }
-
+*/
+/*commented out by Rudi, since InsertEdge was commented out
 PolyGraph CreateGraph(const GLAppPolygon& inP1, const GLAppPolygon& inP2,const std::vector<bool>& visible2)
 {
 
@@ -369,6 +376,7 @@ PolyGraph CreateGraph(const GLAppPolygon& inP1, const GLAppPolygon& inP2,const s
   }
   return g;
 }
+*/
 
 bool CheckLoop(const PolyGraph& g)
 {
@@ -548,6 +556,7 @@ std::optional<std::vector<GLAppPolygon>> IntersectPoly(const GLAppPolygon& inP1,
 
 }
 */
+/*commented out by Rudi, since IntersectPoly was commented out
 std::tuple<double,Vector2d,std::vector<Vector2d>> GetInterArea(const GLAppPolygon &inP1,const GLAppPolygon &inP2,const std::vector<bool>& edgeVisible)
 {
 	Vector2d center(0.0, 0.0);
@@ -585,7 +594,9 @@ std::tuple<double,Vector2d,std::vector<Vector2d>> GetInterArea(const GLAppPolygo
 
   return { sum,(1.0 / (6.0*A0))*center,lList };
 }
+*/
 
+/*commented out by Rudi
 std::tuple<double, Vector2d> GetInterAreaBF(const GLAppPolygon& inP1, const Vector2d& p0, const Vector2d& p1)
 {
 
@@ -614,6 +625,7 @@ std::tuple<double, Vector2d> GetInterAreaBF(const GLAppPolygon& inP1, const Vect
   return { (p1.u - p0.u)*(p1.v - p0.v)*((double)nbTestHit / (double)(step*step)) , center};
 
 }
+*/
 
 bool IsInPoly(const Vector2d &p, const std::vector<Vector2d>& polyPoints) {
 
@@ -639,7 +651,8 @@ bool IsInPoly(const Vector2d &p, const std::vector<Vector2d>& polyPoints) {
 		if (p.u > minx && p.u <= maxx) {
 		*/
 		
-		if (p.u<p1.u != p.u<p2.u) {
+		//if (p.u<p1.u != p.u<p2.u) { // orginal Windows-Molflow code
+		if ((p.u<p1.u) != (p.u<p2.u)) { //changed by Rudi
 			double slope = (p2.v - p1.v) / (p2.u - p1.u);
 			if ((slope * p.u - p.v) < (slope * p1.u - p1.v)) {
 				n_updown++;
@@ -666,7 +679,8 @@ bool IsInPoly(const Vector2d &p, const std::vector<Vector2d>& polyPoints) {
 	if (p.u > minx && p.u <= maxx) {
 	*/
 
-	if (p.u<p1.u != p.u<p2.u) {
+	//if (p.u<p1.u != p.u<p2.u) { // original Windows-Molflow code
+	if ((p.u<p1.u) != (p.u<p2.u)) { // changed by Rudi
 		double slope = (p2.v - p1.v) / (p2.u - p1.u);
 		if ((slope * p.u - p.v) < (slope * p1.u - p1.v)) {
 			n_updown++;

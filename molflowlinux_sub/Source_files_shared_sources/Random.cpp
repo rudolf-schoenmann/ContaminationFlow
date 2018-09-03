@@ -63,6 +63,7 @@ void rk_seed(unsigned long seed, rk_state *state)
 #endif
 
 /* Slightly optimised reference implementation of the Mersenne Twister */
+#define __forceinline inline  // __forceinline is not defined with gcc
 __forceinline unsigned long rk_random(rk_state *state)
 {
   unsigned long y;
