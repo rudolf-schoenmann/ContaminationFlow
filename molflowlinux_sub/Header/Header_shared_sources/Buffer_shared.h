@@ -17,6 +17,8 @@ GNU General Public License for more details.
 
 Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 */
+#define MOLFLOW	1 // added by Rudi.
+
 #pragma once
 #include <vector>
 #include "Vector.h"
@@ -432,7 +434,7 @@ public:
 	{
 		archive(
 			CEREAL_NVP(pos),
-			CEREAL_NVP(type),
+			CEREAL_NVP(type) //, //commented out by Rudi due to compile error
 #ifdef SYNRAD
 			CEREAL_NVP(dF),
 			CEREAL_NVP(dP),
@@ -507,6 +509,7 @@ typedef union {
 		double absorbed;
 	} density;
 
+	/* original Windows-Molflow code
 	template<class Archive>
 	void serialize(Archive & archive)
 	{
@@ -519,7 +522,23 @@ typedef union {
 			CEREAL_NVP(sum_1_per_velocity),
 			CEREAL_NVP(sum_v_ort)
 			);
-	}
+	}*/
+
+	//new code added by Rudi:
+	template<class Archive>
+		void serialize(Archive & archive)
+		{
+			archive(
+				CEREAL_NVP(hit.nbDesorbed),
+				CEREAL_NVP(hit.nbMCHit),
+				CEREAL_NVP(hit.nbHitEquiv),
+				CEREAL_NVP(hit.nbAbsEquiv),
+				CEREAL_NVP(hit.sum_1_per_ort_velocity),
+				CEREAL_NVP(hit.sum_1_per_velocity),
+				CEREAL_NVP(hit.sum_v_ort)
+				);
+		}
+
 } FacetHitBuffer;
 #endif
 
@@ -590,7 +609,7 @@ public:
 #ifdef MOLFLOW
 			CEREAL_NVP(texture_limits), //Min-max on texture
 			CEREAL_NVP(distTraveled_total),
-			CEREAL_NVP(distTraveledTotal_fullHitsOnly),
+			CEREAL_NVP(distTraveledTotal_fullHitsOnly) //, // commented out by Rudi
 #endif
 
 #ifdef SYNRAD
@@ -621,7 +640,7 @@ public:
 			CEREAL_NVP(hitTheta), CEREAL_NVP(hitPhi),
 			CEREAL_NVP(oriRatio),
 #ifdef MOLFLOW
-			CEREAL_NVP(time), CEREAL_NVP(particleDecayMoment), CEREAL_NVP(velocity),
+			CEREAL_NVP(time), CEREAL_NVP(particleDecayMoment), CEREAL_NVP(velocity) //, // commented out by Rudi
 #endif
 #ifdef SYNRAD
 			CEREAL_NVP(energy), CEREAL_NVP(dF), CEREAL_NVP(dP),

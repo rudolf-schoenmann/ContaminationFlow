@@ -4,8 +4,12 @@
 #define MOLFLOWLINUX_SUB_HEADER_HEADER_LINUX_TYPES_H_
 
 #include <stdint.h>
+//#include <cstdint>
+#define __int64 int64_t
+#define  llong uint64_t
+#define size_t uint64_t
+
 typedef unsigned char BYTE; 
-//typedef uint64_t llong;
 typedef int GLint;
 typedef unsigned int GLuint;
 typedef unsigned long DWORD;
@@ -16,7 +20,7 @@ typedef float GLfloat;
 //typedef unsigned int size_t;
 
 
-
+/*
 class Error {
 
 public:
@@ -27,7 +31,7 @@ private:
 	char msg[1024];
 
 };
-
+*/
 
 
 #endif /* MOLFLOWLINUX_SUB_HEADER_HEADER_LINUX_TYPES_H_ */

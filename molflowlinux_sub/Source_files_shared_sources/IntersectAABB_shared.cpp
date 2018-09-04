@@ -28,6 +28,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <algorithm> //std::min
 #include "Simulation.h"
 #include <tuple>
+#include "MolflowLinuxTypes.h" //added by Rudi
 
 // AABB tree stuff
 
@@ -77,10 +78,9 @@ std::tuple<size_t,size_t,size_t> AABBNODE::FindBestCuttingPlane() {
 		planeType = 3;
 	}
 
-	return { planeType,nbLeft,nbRight };
-
+	//return { planeType,nbLeft,nbRight }; //original Windows-Molflow code
+	return{ std::make_tuple(planeType,nbLeft,nbRight)}; //added by Rudi
 }
-
 void AABBNODE::ComputeBB() {
 
 	bb.max=Vector3d(-1e100,-1e100,-1e100);
@@ -109,7 +109,12 @@ AABBNODE *BuildAABBTree(const std::vector<SubprocessFacet*>& facets, const size_
 	newNode->facets = facets;
 	newNode->ComputeBB();
 
-	auto [planeType, nbLeft, nbRight] = newNode->FindBestCuttingPlane();
+	//auto [planeType, nbLeft, nbRight] = newNode->FindBestCuttingPlane(); // original Windows-Molflow code
+
+	size_t planeType; //1: YZ, 2: XZ, 3: XY // added by Rudi;
+	size_t nbLeft, nbRight; // added by Rudi;
+	std::tie(planeType, nbLeft, nbRight) = newNode->FindBestCuttingPlane(); // added by Rudi; Is this right?!???
+
 
 	if (nbLeft >= MINBB && nbRight >= MINBB) {
 
@@ -454,7 +459,7 @@ std::tuple<bool, SubprocessFacet*, double> Intersect(Simulation* sHandle, const 
 	if (!nullRz) inverseRayDir.z = 1.0 / rayDir.z;
 
 	//Global variables, easier for recursion:
-	size_t intNbTHits = 0;
+	//size_t intNbTHits = 0; //original Windows-Molflow code, commented out by Rudi, since compiler complained: variable intNbTHits is not used.
 
 	//Output values
 	bool found = false;
@@ -519,7 +524,8 @@ std::tuple<bool, SubprocessFacet*, double> Intersect(Simulation* sHandle, const 
 		}*/
 
 	}
-	return { found, collidedFacet, minLength };
+	//return { found, collidedFacet, minLength }; // original Windows-Molflow code
+	return {std::make_tuple(found, collidedFacet, minLength)}; // added by Rudi
 
 }
 
@@ -589,7 +595,8 @@ std::tuple<double, double> CartesianToPolar(const Vector3d& incidentDir, const V
 	//double inPhi = asin(v / rho);     //At this point, -PI/2 < inPhi < PI/2
 	//if (u < 0.0) inPhi = PI - inPhi;  // Angle to U
 	double inPhi = atan2(v, u); //-PI .. PI, and the angle is 0 when pointing towards u
-	return { inTheta, inPhi };
+	//return { inTheta, inPhi }; //original Windows-Molflow code
+	return {std::make_tuple(inTheta, inPhi)};
 }
 
 bool Visible(Simulation* sHandle, Vector3d *c1, Vector3d *c2, SubprocessFacet *f1, SubprocessFacet *f2) {
@@ -607,7 +614,7 @@ bool Visible(Simulation* sHandle, Vector3d *c1, Vector3d *c2, SubprocessFacet *f
 	if (!nullRz) inverseRayDir.z = 1.0 / rayDir.z;
 
 	//Global variables, easier for recursion:
-	size_t intNbTHits = 0;
+	//size_t intNbTHits = 0; //original Windows-Molflow code, commented out by Rudi, since compiler complained: variable intNbTHits is not used.
 
 	//Output values
 	bool found;
