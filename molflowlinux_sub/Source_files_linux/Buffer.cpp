@@ -7,13 +7,9 @@
 
 #include <iostream>     // std::ios, std::istream, std::cout
 #include <fstream>      // std::filebuf
+#include "Buffer.h"
 
-typedef unsigned char BYTE;
 
-typedef struct {
-	signed int size;
-	BYTE *buffer;
-}Databuff;
 
 void importBuff(char *fileName, Databuff *buff)
 {
@@ -39,8 +35,11 @@ void importBuff(char *fileName, Databuff *buff)
 		fb.close();
 	}
 	else{std::cout << "Could not open file to read data from." << std::endl;}
-	std::cout << "Buffersize (read in): " << buff->size << std::endl;
+	std::cout << "Buffer '" << fileName <<"' imported. Buffersize (read in): " << buff->size << std::endl;
 }
+
+
+
 
 void exportBuff(char *fileName, Databuff *buff)
 {

@@ -53,6 +53,24 @@
 #include "ProfilePlotter.h"
 */
 
+bool parametercheck(int argc, char *argv[])
+      {
+    	    int i;
+    	  	printf("argc: %d\n", argc);
+    	  	for(i=0; i < argc; i++) {
+    	  		printf("argv[%d]: %s\n", i, argv[i]);
+    	  		}
+    	  	if(argc < 3){
+    	  		std::cout << "Please pass 2 arguments to MolflowLinux:"<< std::endl;
+    	  		std::cout << "1. Name of buffer file to read in." << std::endl;
+    	  		std::cout << "2. Choose a name for the buffer file to export the simulation results." << std::endl;
+    	  		std::cout << "MolflowLinux is terminated now." << std::endl;
+    	  		return false;
+    		 	}
+    	  	return true;
+      }
+
+
 
 int main(int argc, char *argv[]) {
 
@@ -73,6 +91,12 @@ int main(int argc, char *argv[]) {
        * variables defined in the program. No variables are shared.
        **/
 
+	  // Initialise buffer
+	  Databuff buff;
+	  buff.buffer = NULL;
+
+
+
       MPI_Init(NULL, NULL);
       /* find out MY process ID, and how many processes were started. */
 
@@ -85,68 +109,63 @@ int main(int argc, char *argv[]) {
       MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
       if(rank == 0) {
-      /* do some work as process 0 */
-      //std::cout << "Hello! I'm head process "<< rank << std::endl;
-      //std::cout << "Number of started processes: "<< world_size << std::endl;
+    	  /* do some work as process 0 */
+    	  std::cout << "Hello! I'm head process "<< rank << std::endl;
+    	  //std::cout << "Number of started processes: "<< world_size << std::endl;
 
-      //_____________________________________________________________________________________________________________________________________________________________
-      // Parameter check for MolflowLinux
+    	  // Parameter check for MolflowLinux
+    	  if (!parametercheck(argc, argv))
+    	  {		MPI_Finalize();
+      	  	return 0;
+    	  }
 
-    	int i;
-    	  	printf("argc: %d\n", argc);
-    	  	for(i=0; i < argc; i++) {
-    	  		printf("argv[%d]: %s\n", i, argv[i]);
-    	  	}
-    	if(argc < 3){
-    		 std::cout << "Please pass 2 arguments to MolflowLinux:"<< std::endl;
-    		 std::cout << "1. Name of buffer file to read in." << std::endl;
-    		 std::cout << "2. Choose a name for the buffer file to export the simulation results." << std::endl;
-    		 std::cout << "MolflowLinux is terminated now." << std::endl;
+    	  //Read in buffer file (exported by Windows-Molflow). File given as first argument to main().
+    	  importBuff(argv[1], &buff);
 
-    		 MPI_Finalize();
+    	  /*
+    	   * show informations about the loading
+    	   * just interesting for debugging => build some conditional (if debug, then show)?
+    	   * leave out or put in function?
+    	  std::cout << "size of " << argv[1] << " = " << buff.size <<std::endl;
+    	  //std::cout << "size of buff = " << sizeof(buff) <<std::endl;
+    	  std::cout << argv[1] << ": ";
+    	  int i;
+    	  for(i=0; i < buff.size; i++) {
+    		  	  	  	if (i != (buff.size -1)){
+    	      	  		std::cout<<buff.buffer[i];}
+    		  	  	  	else {std::cout<<buff.buffer[i]<<std::endl;}
+    	      	  		}
+    	  //std::cout << argv[1] << ": " << buff.buffer << std::endl;
+    	  */
+      	  }
 
-    		 return 0;
-    	 }
-    	//___________________________________________________________________________________________________________________________________________________________
+
+      //Send buffer to all other processes.
+      //MPI_Bcast(&buff, sizeof(buff), MPI::BYTE, 0, MPI_COMM_WORLD);
 
 
-    	//___________________________________________________________________________________________________________________________________________________________
-    	//Read in buffer file (exported by Windows-Molflow). File given as first argument to main().
 
-    	 Databuff buff;
-    	 buff.buffer = NULL;
-    	 importBuff(argv[1], &buff);
-    	 //___________________________________________________________________________________________________________________________________________________________
-
-          /*Sharing buffer (Geometry and Parameters) with the other processes*/
-             /* Send Buffer
+          /*Sharing buffer (Geometry and Parameters) with the other processes
+             Send Buffer
               * Send SimulationTime
-              * Tell the other processes via MPI, that they should execute COMMAND_LOAD
-              * If all Processes successfully executed COMMAND_LOAD, then tell them to execute COMMAND_START */
-          /*The other processes are simulating. I do nothing.*/
-          /*After PROCESS_DONE Messages from the other processes, Receive Data from the other processes*/
-          /*Sum up Data from the other processes*/
-             /*First Step: Stationary Simulation => do nothing here*/
-             /*Second Step: Time dependend Mode (Maybe copy Algorithm from Marton,  when ready)*/
-                 /*Iterative Algorithm: Update Parameters (Is parallisation necessary/desirable for updating?) + Sharing new Parameters with the other processes*/
-          /*write Result a bufferfile (or maybe??? in a file or .zip archive)*/
+              * Tell the other processes via MPI, that they should execute COMMAND_LOAD (???)
+              * If all Processes successfully executed COMMAND_LOAD, then tell them to execute COMMAND_START
+          The other processes are simulating. I do nothing.
+          After PROCESS_DONE Messages from the other processes, Receive Data from the other processes
+          Sum up Data from the other processes
+             First Step: Stationary Simulation => do nothing here
+             Second Step: Time dependend Mode (Maybe copy Algorithm from Marton,  when ready)
+                 Iterative Algorithm: Update Parameters (Is parallisation necessary/desirable for updating?) + Sharing new Parameters with the other processes
+          write Result a bufferfile (or maybe??? in a file or .zip archive)*/
 
 
-    	 //___________________________________________________________________________________________________________________________________________________________
-    	 //Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
-
-    	 //char fileexport[] = "/smbhome/schoenmann/buffertest";
-    	 exportBuff(argv[2], &buff);
-    	 // Build in safety check to not loosing simulation results, if the buffer export does not work?
-    	 delete[] buff.buffer;
-
-
-      }
-    
-      else {
+      if (rank != 0){
     	 /* do work in any remaining processes */
-    	 //std::cout << "Hello! I'm worker process "<< rank << std::endl;
+    	 std::cout << "Hello! I'm worker process "<< rank << std::endl;
+    	 //std::cout << "size of " << argv[1] << " = " << buff.size <<std::endl;
+    	 //std::cout << "Received buffer: " << buff.buffer << std::endl;
 
+    	 //delete[] buff.buffer;
          //(Receive the Buffer)
 
     	 // Sketch of the worker algorithm:
@@ -233,15 +252,23 @@ int main(int argc, char *argv[]) {
 
     	   * */
 
-
-
-
-
       }
       /* Stop this process */
 
+      if(rank == 0) {
+          	 //___________________________________________________________________________________________________________________________________________________________
+          	 //Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
+
+          	 //char fileexport[] = "/smbhome/schoenmann/buffertest";
+          	 exportBuff(argv[2], &buff);
+          	 // Build in safety check to not loosing simulation results, if the buffer export does not work?
+          	 delete[] buff.buffer;
+          	std::cout <<"____________________________________________________________________________________________________" << std::endl;
+            }
+
+
     MPI_Finalize();
     
-    
+
     return 0;
 }
