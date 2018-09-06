@@ -13,11 +13,11 @@ typedef unsigned char BYTE;
 
 typedef struct {
 	signed int size;
-	BYTE *buffer;
+	BYTE *buff;
 }Databuff;
 
-void importBuff(char *fileName, Databuff *buff);
-void exportBuff(char *fileName, Databuff *buff);
+void importBuff(char *fileName, Databuff *databuffer);
+void exportBuff(char *fileName, Databuff *databuffer);
 
 
 #endif /* MOLFLOWLINUX_SUB_SOURCE_FILES_LINUX_BUFFER_H_ */

@@ -92,8 +92,8 @@ int main(int argc, char *argv[]) {
        **/
 
 	  // Initialise buffer
-	  Databuff buff;
-	  buff.buffer = NULL;
+	  Databuff databuffer;
+	  databuffer.buff = NULL;
 
 
 
@@ -120,28 +120,28 @@ int main(int argc, char *argv[]) {
     	  }
 
     	  //Read in buffer file (exported by Windows-Molflow). File given as first argument to main().
-    	  importBuff(argv[1], &buff);
+    	  importBuff(argv[1], &databuffer);
 
     	  /*
     	   * show informations about the loading
     	   * just interesting for debugging => build some conditional (if debug, then show)?
-    	   * leave out or put in function?
-    	  std::cout << "size of " << argv[1] << " = " << buff.size <<std::endl;
-    	  //std::cout << "size of buff = " << sizeof(buff) <<std::endl;
+    	   * leave out or put in function?*/
+    	  std::cout << "size of " << argv[1] << " = " << databuffer.size <<std::endl;
+    	  //std::cout << "size of databuffer = " << sizeof(databuffer) <<std::endl;
     	  std::cout << argv[1] << ": ";
     	  int i;
-    	  for(i=0; i < buff.size; i++) {
-    		  	  	  	if (i != (buff.size -1)){
-    	      	  		std::cout<<buff.buffer[i];}
-    		  	  	  	else {std::cout<<buff.buffer[i]<<std::endl;}
+    	  for(i=0; i < databuffer.size; i++) {
+    		  	  	  	if (i != (databuffer.size -1)){
+    	      	  		std::cout<<databuffer.buff[i];}
+    		  	  	  	else {std::cout<<databuffer.buff[i]<<std::endl;}
     	      	  		}
-    	  //std::cout << argv[1] << ": " << buff.buffer << std::endl;
-    	  */
+    	  //std::cout << argv[1] << ": " << databuffer.buff << std::endl;
+
       	  }
 
 
       //Send buffer to all other processes.
-      //MPI_Bcast(&buff, sizeof(buff), MPI::BYTE, 0, MPI_COMM_WORLD);
+      //MPI_Bcast(&databuffer, sizeof(databuffer), MPI::BYTE, 0, MPI_COMM_WORLD);
 
 
 
@@ -162,10 +162,10 @@ int main(int argc, char *argv[]) {
       if (rank != 0){
     	 /* do work in any remaining processes */
     	 std::cout << "Hello! I'm worker process "<< rank << std::endl;
-    	 //std::cout << "size of " << argv[1] << " = " << buff.size <<std::endl;
-    	 //std::cout << "Received buffer: " << buff.buffer << std::endl;
+    	 //std::cout << "size of " << argv[1] << " = " << databuffer.size <<std::endl;
+    	 //std::cout << "Received buffer: " << databuffer.buff << std::endl;
 
-    	 //delete[] buff.buffer;
+    	 //delete[] databuffer.buff;
          //(Receive the Buffer)
 
     	 // Sketch of the worker algorithm:
@@ -260,9 +260,9 @@ int main(int argc, char *argv[]) {
           	 //Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
 
           	 //char fileexport[] = "/smbhome/schoenmann/buffertest";
-          	 exportBuff(argv[2], &buff);
+          	 exportBuff(argv[2], &databuffer);
           	 // Build in safety check to not loosing simulation results, if the buffer export does not work?
-          	 delete[] buff.buffer;
+          	 delete[] databuffer.buff;
           	std::cout <<"____________________________________________________________________________________________________" << std::endl;
             }
 

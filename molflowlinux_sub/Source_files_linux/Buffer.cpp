@@ -11,7 +11,7 @@
 
 
 
-void importBuff(char *fileName, Databuff *buff)
+void importBuff(char *fileName, Databuff *databuffer)
 {
 
 	std::filebuf fb;
@@ -25,23 +25,23 @@ void importBuff(char *fileName, Databuff *buff)
 			is.seekg(0, is.beg);
 
 			char *temp = new char[length];
-			buff->buffer = new BYTE[length];
+			databuffer->buff = new BYTE[length];
 
 			is.read(temp, length);
-			buff->size = length;
-			buff->buffer = (BYTE*)temp;
+			databuffer->size = length;
+			databuffer->buff = (BYTE*)temp;
 		}
 
 		fb.close();
 	}
 	else{std::cout << "Could not open file to read data from." << std::endl;}
-	std::cout << "Buffer '" << fileName <<"' imported. Buffersize (read in): " << buff->size << std::endl;
+	std::cout << "Buffer '" << fileName <<"' imported. Buffersize (read in): " << databuffer->size << std::endl;
 }
 
 
 
 
-void exportBuff(char *fileName, Databuff *buff)
+void exportBuff(char *fileName, Databuff *databuffer)
 {
 	std::filebuf f;
 	if (f.open(fileName, std::ios::out))
@@ -49,13 +49,13 @@ void exportBuff(char *fileName, Databuff *buff)
 		std::ostream os(&f);
 		if (os)
 		{
-			signed int length = buff->size;
-			os.write(reinterpret_cast<const char *>(buff->buffer), length);
+			signed int length = databuffer->size;
+			os.write(reinterpret_cast<const char *>(databuffer->buff), length);
 		}
 		f.close();
 	}
 	else {std::cout << "Could not open file to write data in." << std::endl;}
-	std::cout << "Buffersize (write in file): " << buff->size << std::endl;
+	std::cout << "Buffersize (write in file): " << databuffer->size << std::endl;
 }
 
 
