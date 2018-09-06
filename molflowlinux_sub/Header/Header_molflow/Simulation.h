@@ -213,7 +213,7 @@ void ClearSimulation();
 void SetState(size_t state, const char *status, bool changeState = true, bool changeStatus = true);
 void SetErrorSub(const char *msg);
 void ClearACMatrix();
-bool LoadSimulation(Dataport *loader);
+bool LoadSimulation(Databuff *databuffer);
 bool UpdateOntheflySimuParams(Dataport *loader);
 bool StartSimulation(size_t sMode);
 void ResetSimulation();

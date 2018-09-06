@@ -124,7 +124,7 @@ DWORD GetSeed() {
 }*/
 
 
-bool LoadSimulation(Dataport *loader) {
+bool LoadSimulation(Databuff *databuffer) {
 	double t1, t0;
 	DWORD seed;
 	//char err[128];
@@ -133,7 +133,7 @@ bool LoadSimulation(Dataport *loader) {
 
 	sHandle->loadOK = false;
 
-	SetState(PROCESS_STARTING, "Clearing previous simulation");
+	//SetState(PROCESS_STARTING, "Clearing previous simulation"); //(Rudi) find alternative for SetState() later
 	ClearSimulation();
 
 	/* //Mutex not necessary: by the time the COMMAND_LOAD is issued the interface releases the handle, concurrent reading is safe and it's only destroyed by the interface when all processes are ready loading
@@ -146,7 +146,7 @@ bool LoadSimulation(Dataport *loader) {
 	}
 	*/
 
-	SetState(PROCESS_STARTING, "Loading simulation");
+	//SetState(PROCESS_STARTING, "Loading simulation"); //(Rudi) find alternative for SetState() later
 
 	sHandle->textTotalSize =
 		sHandle->profTotalSize =
@@ -156,9 +156,10 @@ bool LoadSimulation(Dataport *loader) {
 
 	{
 		
-		std::string inputString(loader->size,NULL);
-		BYTE* buffer = (BYTE*)loader->buff;
-		std::copy(buffer, buffer + loader->size, inputString.begin());
+		std::string inputString(databuffer->size,NULL);
+		//BYTE* buffer = (BYTE*)databuffer->buff; //(Rudi) *buff is already BYTE, so:
+		BYTE* buffer = databuffer->buff;
+		std::copy(buffer, buffer + databuffer->size, inputString.begin());
 		std::stringstream inputStream;
 		inputStream << inputString;
 		cereal::BinaryInputArchive inputarchive(inputStream);
@@ -482,6 +483,7 @@ bool LoadSimulation(Dataport *loader) {
 	rseed(seed);
 	sHandle->loadOK = true;
 	t1 = GetTick();
+	//(Rudi) Should I keep the (following) messages?
 	printf("  Load %s successful\n", sHandle->sh.name.c_str());
 	printf("  Geometry: %zd vertex %zd facets\n", sHandle->vertices3.size(), sHandle->sh.nbFacet);
 
