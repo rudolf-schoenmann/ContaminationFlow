@@ -226,11 +226,12 @@ void LoadAC() {
 
 void Load() {
 
-  Dataport *loader;
+  Databuff *databuffer;
   size_t hSize;
 
   // Load geometry
-  loader = OpenDataport(loadDpName,prParam);
+  //databuffer = OpenDataport(loadDpName,prParam); //Eigentlich brauch ich diese Funktion nicht. Vielleicht ne Sicherungskopie vom Buffer anlegen?
+  /*// (Rudi) Don't need that.
   if( !loader ) {
     char err[512];
     sprintf(err,"Failed to connect to 'loader' dataport %s (%zd Bytes)",loadDpName, prParam);
@@ -239,13 +240,14 @@ void Load() {
   }
   
   printf("Connected to %s\n",loadDpName);
-
-  if( !LoadSimulation(loader) ) {
-    CLOSEDP(loader);
+*/
+  if( !LoadSimulation(databuffer) ) {
+    //CLOSEDP(loader); Rudi) Don't need that.
     return;
   }
-  CLOSEDP(loader);
+  //CLOSEDP(loader); Rudi) Don't need that.
 
+  /* (Rudi) Don't need that now. Maybe some other kind of log later.
   //Connect to log dataport
   if (sHandle->ontheflyParams.enableLogging) {
 	  dpLog = OpenDataport(logDpName, sizeof(size_t) + sHandle->ontheflyParams.logLimit * sizeof(ParticleLoggerItem));
@@ -258,7 +260,9 @@ void Load() {
 	  }
 	  //*((size_t*)dpLog->buff) = 0; //Autofill with 0. Besides, we don't write without access!
   }
+  */
 
+  /* (Rudi) Ich muss eigentlich keine Hits laden, wenn keine da.
   // Connect to hit dataport
   hSize = GetHitsSize();
   dpHit = OpenDataport(hitsDpName,hSize);
@@ -271,7 +275,7 @@ void Load() {
   }
 
   printf("Connected to %s (%zd bytes)\n",hitsDpName,hSize);
-
+  */
 }
 
 bool UpdateParams() {
