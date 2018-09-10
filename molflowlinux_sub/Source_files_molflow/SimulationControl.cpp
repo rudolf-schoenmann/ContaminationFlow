@@ -24,7 +24,9 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #else
 //#include <time.h>
 //#include <sys/time.h>
+#include <unistd.h> // (Rudi) For getpid
 #endif
+
 
 #include <math.h>
 #include <stdio.h>
@@ -110,11 +112,13 @@ DWORD GetSeed() {
 #ifdef  WIN
 	processId = _getpid();
 #else
-	processId = ::getpid();
+	//processId = ::getpid(); // Windows-Molflow code
+	processId = getpid();
 #endif //  WIN
 
 
-	return (DWORD)((int)(GetTick()*1000.0)*_getpid());
+	//return (DWORD)((int)(GetTick()*1000.0)*_getpid()); // Windows-Molflow code
+	return (DWORD)((int)(GetTick()*1000.0)*processId);
 	//#endif
 
 }
@@ -156,7 +160,7 @@ bool LoadSimulation(Databuff *databuffer) {
 
 	{
 		
-		std::string inputString(databuffer->size,NULL);
+		std::string inputString(databuffer->size, 0);
 		//BYTE* buffer = (BYTE*)databuffer->buff; //(Rudi) *buff is already BYTE, so:
 		BYTE* buffer = databuffer->buff;
 		std::copy(buffer, buffer + databuffer->size, inputString.begin());
