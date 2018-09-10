@@ -10,6 +10,7 @@ RM := rm -rf
 -include sources.mk
 -include molflowlinux_sub/TruncatedGaussian/subdir.mk
 -include molflowlinux_sub/Source_files_shared_sources/subdir.mk
+-include molflowlinux_sub/Source_files_molflow/subdir.mk
 -include molflowlinux_sub/Source_files_linux/subdir.mk
 -include molflowlinux_sub/subdir.mk
 -include subdir.mk

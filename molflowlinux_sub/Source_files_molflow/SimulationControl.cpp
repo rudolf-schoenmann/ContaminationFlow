@@ -518,17 +518,17 @@ bool UpdateOntheflySimuParams(Dataport *loader) {
 	return true;
 }
 
-void UpdateHits(Dataport *dpHit, Dataport* dpLog,int prIdx, DWORD timeout) {
+void UpdateHits(Databuff *databuffer, int rank) {
 	switch (sHandle->wp.sMode) {
 	case MC_MODE:
 	{
-		UpdateMCHits(dpHit, prIdx, sHandle->moments.size(), timeout);
+		UpdateMCHits(databuffer, rank sHandle->moments.size());
 		if (dpLog) UpdateLog(dpLog, timeout);
 	}
 		break;
 	case AC_MODE:
 
-		UpdateACHits(dpHit, prIdx, timeout);
+		//UpdateACHits(dpHit, prIdx, timeout);
 		break;
 	}
 

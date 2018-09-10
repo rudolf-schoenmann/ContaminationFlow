@@ -26,6 +26,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "Vector.h"
 #include "Parameter.h"
 #include <tuple>
+#include "Buffer.h"
 
 class Anglemap {
 public:
@@ -214,7 +215,7 @@ void SetState(size_t state, const char *status, bool changeState = true, bool ch
 void SetErrorSub(const char *msg);
 void ClearACMatrix();
 bool LoadSimulation(Databuff *databuffer);
-bool UpdateOntheflySimuParams(Dataport *loader);
+//bool UpdateOntheflySimuParams(Dataport *loader); // (Rudi) I don't think, I need that.
 bool StartSimulation(size_t sMode);
 void ResetSimulation();
 bool SimulationRun();
@@ -229,10 +230,10 @@ void RecordAbsorb(SubprocessFacet *iFacet);
 void RecordHistograms(SubprocessFacet * iFacet);
 void PerformTeleport(SubprocessFacet *iFacet);
 void PerformTransparentPass(SubprocessFacet *iFacet);
-void UpdateHits(Dataport *dpHit, Dataport *dpLog, int prIdx, DWORD timeout);
-void UpdateLog(Dataport *dpLog, DWORD timeout);
-void UpdateMCHits(Dataport *dpHit, int prIdx, size_t nbMoments, DWORD timeout);
-void UpdateACHits(Dataport *dpHit, int prIdx, DWORD timeout);
+void UpdateHits(Databuff *databuffer, int rank); // (Rudi) Je nachdem, wie die Kommunikation via MPI dann läuft, ist 'int rank' ggf. überflüssig.
+//void UpdateLog(Dataport *dpLog, DWORD timeout); // (Rudi) Don't need that.
+void UpdateMCHits(Databuff *databuffer, int rank, size_t nbMoments);
+//void UpdateACHits(Dataport *dpHit, int prIdx, DWORD timeout); // (Rudi) Don't need that.
 void ResetTmpCounters();
 
 double GetTick();

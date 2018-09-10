@@ -395,6 +395,7 @@ int main(int argc,char* argv[])
 			if (dpHit && (GetLocalState() != PROCESS_ERROR)) UpdateHits(dpHit,dpLog,prIdx,60000);
         }
         */
+        // UpdateHits(dpHit,dpLog,prIdx,60000); // (Rudi) Write hits to buffer (once).
         SetReady(); // (Rudi) Maybe that's not necessary either.
         break;
 

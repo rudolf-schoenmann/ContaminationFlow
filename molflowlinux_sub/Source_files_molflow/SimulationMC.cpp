@@ -121,8 +121,7 @@ void CalcTotalOutgassing() {
 //	*phi = atan2(v, u); // -PI..PI
 //}
 
-void UpdateMCHits(Dataport *dpHit, int prIdx, size_t nbMoments, DWORD timeout) {
-
+void UpdateMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	BYTE *buffer;
 	GlobalHitBuffer *gHits;
 	TEXTURE_MIN_MAX texture_limits_old[3];
@@ -131,12 +130,14 @@ void UpdateMCHits(Dataport *dpHit, int prIdx, size_t nbMoments, DWORD timeout) {
 	double t0, t1;
 	t0 = GetTick();
 #endif
+	/* (Rudi) Don't need that.
 	SetState(NULL, "Waiting for 'hits' dataport access...", false, true);
 	sHandle->lastHitUpdateOK = AccessDataportTimed(dpHit, timeout);
 	SetState(NULL, "Updating MC hits...", false, true);
 	if (!sHandle->lastHitUpdateOK) return; //Timeout, will try again later
+	*/
 
-	buffer = (BYTE*)dpHit->buff;
+	buffer = databuffer->buff;
 	gHits = (GlobalHitBuffer *)buffer;
 
 	// Global hits and leaks: adding local hits to shared memory
@@ -164,8 +165,8 @@ void UpdateMCHits(Dataport *dpHit, int prIdx, size_t nbMoments, DWORD timeout) {
 	gHits->lastLeakIndex = (gHits->lastLeakIndex + sHandle->tmpGlobalResult.leakCacheSize) % LEAKCACHESIZE;
 	gHits->leakCacheSize = Min(LEAKCACHESIZE, gHits->leakCacheSize + sHandle->tmpGlobalResult.leakCacheSize);
 
-	// HHit (Only prIdx 0)
-	if (prIdx == 0) {
+	// HHit (Only prIdx 0) //Rudi: I think that's some Hit-History stuff. Not necessary to comment out (presumably).
+	if (rank == 1) {
 		for (size_t hitIndex = 0; hitIndex < sHandle->tmpGlobalResult.hitCacheSize; hitIndex++)
 			gHits->hitCache[(hitIndex + gHits->lastHitIndex) % HITCACHESIZE] = sHandle->tmpGlobalResult.hitCache[hitIndex];
 
@@ -331,11 +332,11 @@ void UpdateMCHits(Dataport *dpHit, int prIdx, size_t nbMoments, DWORD timeout) {
 		if (gHits->texture_limits[v].max.moments_only == 0.0) gHits->texture_limits[v].max.moments_only = texture_limits_old[v].max.moments_only;
 	}
 
-	ReleaseDataport(dpHit);
+	//ReleaseDataport(dpHit); // (Rudi) Don't need that.
 
 	ResetTmpCounters();
 	extern char* GetSimuStatus();
-	SetState(NULL, GetSimuStatus(), false, true);
+	//SetState(NULL, GetSimuStatus(), false, true); // (Rudi) Don't need that.
 
 #ifdef _DEBUG
 	t1 = GetTick();
