@@ -168,6 +168,16 @@ int main(int argc, char *argv[]) {
     	 //delete[] databuffer.buff;
          //(Receive the Buffer)
 
+    	  InitSimulation(); //Creates sHandle instance
+
+    	  //SetReady(); // Rudi: Soll ich das übernehmen?
+
+
+
+
+
+
+
     	 // Sketch of the worker algorithm:
 
     	  /* If COMMAND_LOAD is executed successfully, tell process 0 (via MPI)

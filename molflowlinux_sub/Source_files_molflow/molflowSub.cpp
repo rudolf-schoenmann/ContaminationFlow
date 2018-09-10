@@ -120,8 +120,9 @@ char *GetSimuStatus() {
   llong count = sHandle->totalDesorbed;
   llong max   = sHandle->ontheflyParams.desorptionLimit/sHandle->ontheflyParams.nbProcess;
 
-  
+  /* (Rudi) No AC mode in MolflowLinux
   if( GetLocalState()==PROCESS_RUNAC ) sHandle->wp.sMode = AC_MODE;
+  */
 
   switch(sHandle->wp.sMode) {
 
@@ -388,11 +389,13 @@ int main(int argc,char* argv[])
 
       case COMMAND_PAUSE:
         printf("COMMAND: PAUSE (%zd,%llu)\n",prParam,prParam2);
+        /* (Rudi) Don't need that. Replace by new code.
         if( !sHandle->lastHitUpdateOK ) {
           // Last update not successful, retry with a longer timeout
 			if (dpHit && (GetLocalState() != PROCESS_ERROR)) UpdateHits(dpHit,dpLog,prIdx,60000);
         }
-        SetReady();
+        */
+        SetReady(); // (Rudi) Maybe that's not necessary either.
         break;
 
       case COMMAND_RESET:
@@ -409,8 +412,10 @@ int main(int argc,char* argv[])
       case COMMAND_CLOSE:
         printf("COMMAND: CLOSE (%zd,%llu)\n",prParam,prParam2);
         ClearSimulation();
+        /* (Rudi) Don't need that.
         CLOSEDP(dpHit);
 		CLOSEDP(dpLog);
+		*/
         SetReady();
         break;
 
@@ -434,10 +439,13 @@ int main(int argc,char* argv[])
       case PROCESS_RUN:
         SetStatus(GetSimuStatus()); //update hits only
         eos = SimulationRun();      // Run during 1 sec
+        /*Don't need that.
 		if (dpHit && (GetLocalState() != PROCESS_ERROR)) UpdateHits(dpHit,dpLog,prIdx,20); // Update hit with 20ms timeout. If fails, probably an other subprocess is updating, so we'll keep calculating and try it later (latest when the simulation is stopped).
+		*/
         if(eos) {
           if( GetLocalState()!=PROCESS_ERROR ) {
             // Max desorption reached
+        	// (Rudi) Think of, what to do in that case (in respect of make time dependend iterative algorithm).
             SetState(PROCESS_DONE,GetSimuStatus());
             printf("COMMAND: PROCESS_DONE (Max reached)\n");
           }
