@@ -168,7 +168,7 @@ int main(int argc, char *argv[]) {
     	 //delete[] databuffer.buff;
          //(Receive the Buffer)
 
-    	  InitSimulation(); //Creates sHandle instance
+    	  //InitSimulation(); //Creates sHandle instance, commented as error otherwise
 
     	  //SetReady(); // Rudi: Soll ich das übernehmen?
 

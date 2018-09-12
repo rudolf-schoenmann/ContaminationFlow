@@ -721,7 +721,7 @@ double GetTick() {
 int GetIDId(int paramId) {
 
 	int i;
-	for (i = 0; i < (int)sHandle->desorptionParameterIDs.size() && (paramId != sHandle->desorptionParameterIDs[i]); i++); //check if we already had this parameter Id
+	for (i = 0; i < (int)sHandle->desorptionParameterIDs.size() && (paramId != (int)sHandle->desorptionParameterIDs[i]); i++); //check if we already had this parameter Id
 	if (i >= (int)sHandle->desorptionParameterIDs.size()) i = -1; //not found
 	return i;
 }
