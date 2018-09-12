@@ -259,7 +259,7 @@ void Load() {
 		  sHandle->loadOK = false;
 		  return;
 	  }
-	  //*((size_t*)dpLog->buff) = 0; //Autofill with 0. Besides, we don't write without access!
+	  // *((size_t*)dpLog->buff) = 0; //Autofill with 0. Besides, we don't write without access!
   }
   */
 
@@ -302,7 +302,7 @@ bool UpdateParams() {
 			SetErrorSub(err);
 			return false;
 		}
-		//*((size_t*)dpLog->buff) = 0; //Autofill with 0, besides we would need access first
+		// *((size_t*)dpLog->buff) = 0; //Autofill with 0, besides we would need access first
 	}
 	sHandle->tmpParticleLog.clear();
 	sHandle->tmpParticleLog.shrink_to_fit();
