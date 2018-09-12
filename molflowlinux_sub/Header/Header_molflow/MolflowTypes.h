@@ -57,7 +57,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #define MC_MODE 0         // Monte Carlo simulation mode
 #define AC_MODE 1         // Angular coefficient simulation mode
 
-typedef float ACFLOAT;
+//typedef float ACFLOAT; //all acfloat variables commented
 
 // Density/Hit field stuff
 #define HITMAX 1E38
