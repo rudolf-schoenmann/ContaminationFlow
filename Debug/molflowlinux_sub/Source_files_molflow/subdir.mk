@@ -6,18 +6,21 @@
 CPP_SRCS += \
 ../molflowlinux_sub/Source_files_molflow/MolflowTypes.cpp \
 ../molflowlinux_sub/Source_files_molflow/Parameter.cpp \
+../molflowlinux_sub/Source_files_molflow/Simulation.cpp \
 ../molflowlinux_sub/Source_files_molflow/SimulationControl.cpp \
 ../molflowlinux_sub/Source_files_molflow/SimulationMC.cpp 
 
 OBJS += \
 ./molflowlinux_sub/Source_files_molflow/MolflowTypes.o \
 ./molflowlinux_sub/Source_files_molflow/Parameter.o \
+./molflowlinux_sub/Source_files_molflow/Simulation.o \
 ./molflowlinux_sub/Source_files_molflow/SimulationControl.o \
 ./molflowlinux_sub/Source_files_molflow/SimulationMC.o 
 
 CPP_DEPS += \
 ./molflowlinux_sub/Source_files_molflow/MolflowTypes.d \
 ./molflowlinux_sub/Source_files_molflow/Parameter.d \
+./molflowlinux_sub/Source_files_molflow/Simulation.d \
 ./molflowlinux_sub/Source_files_molflow/SimulationControl.d \
 ./molflowlinux_sub/Source_files_molflow/SimulationMC.d 
 

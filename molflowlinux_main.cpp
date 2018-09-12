@@ -1,3 +1,6 @@
+/* Linux-Molflow is based on Molflow+ 2.6.70*/
+
+//test
 #include <iostream>
 #include <mpi.h>
 #include <string>
