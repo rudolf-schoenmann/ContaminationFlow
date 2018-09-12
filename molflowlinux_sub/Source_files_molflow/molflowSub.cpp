@@ -99,9 +99,9 @@ void SetState(size_t state,const char *status,bool changeState, bool changeStatu
 			strncpy(master->statusStr[prIdx], status, 127);
 			master->statusStr[prIdx][127] = 0;
 		}
-		if( state==PROCESS_RUNAC ) {
+		/*if( state==PROCESS_RUNAC ) {
 			master->cmdParam[prIdx] = sHandle->prgAC;
-		}
+		}*/
 		ReleaseDataport(dpControl);
 	}
 
@@ -135,7 +135,7 @@ char *GetSimuStatus() {
       }
       break;
 
-    case AC_MODE:
+    /*case AC_MODE: //(my)no AC_MODE
       if( sHandle->prgAC<100 ) {
           sprintf(ret,"(%s) AC (%zdx%zd) (%zd%%)",sHandle->sh.name.c_str(),
                       sHandle->nbAC,sHandle->nbAC,sHandle->prgAC);
@@ -149,7 +149,7 @@ char *GetSimuStatus() {
                       sHandle->nbAC,count);
         }
       }
-      break;
+      break;*/
 
   }
 
@@ -176,7 +176,7 @@ void SetStatus(char *status) {
   }
 
 }
-
+/*(My) not needed -> case command_loadac
 void LoadAC() {
 
   Dataport *loader;
@@ -224,7 +224,7 @@ void LoadAC() {
   free(map);
 
 }
-
+*/
 void Load() {
 
   Databuff *databuffer;
@@ -278,7 +278,7 @@ void Load() {
   printf("Connected to %s (%zd bytes)\n",hitsDpName,hSize);
   */
 }
-
+/*(my) not needed -> case command_updateparams
 bool UpdateParams() {
 
 	// Load geometry
@@ -309,7 +309,7 @@ bool UpdateParams() {
 	if (sHandle->ontheflyParams.enableLogging) sHandle->tmpParticleLog.reserve(sHandle->ontheflyParams.logLimit / sHandle->ontheflyParams.nbProcess);
 
 	return result;
-}
+}*/
 
 
 int main(int argc,char* argv[])
@@ -355,24 +355,24 @@ int main(int argc,char* argv[])
           SetReady();
         }
         break;
-
+/*(my) case not needed
       case COMMAND_LOADAC:
         printf("COMMAND: LOADAC (%zd)\n",prParam);
         LoadAC();
-        break;
-
+        break;*/
+/*(my) case not needed
 	  case COMMAND_UPDATEPARAMS:
 		  printf("COMMAND: UPDATEPARAMS (%zd,%I64d)\n", prParam, prParam2);
 		  if (UpdateParams()) {
 			  SetState(prParam, GetSimuStatus());
 		  }
-		  break;
-
+		  break;*/
+/*(my) case not needed
 	  case COMMAND_RELEASEDPLOG:
 		  printf("COMMAND: UPDATEPARAMS (%zd,%I64d)\n", prParam, prParam2);
 		  CLOSEDP(dpLog);
 		  SetState(prParam, GetSimuStatus());
-		  break;
+		  break;*/
 
       case COMMAND_START:
         printf("COMMAND: START (%zd,%llu)\n",prParam,prParam2);
@@ -419,7 +419,7 @@ int main(int argc,char* argv[])
 		*/
         SetReady();
         break;
-
+/*(my) case not needed
       case COMMAND_STEPAC:
         // Debug command
         printf("COMMAND: STEPAC (%zd,%llu)\n",prParam,prParam2);
@@ -435,7 +435,7 @@ int main(int argc,char* argv[])
           }
         } else
           SetErrorSub("No geometry loaded");
-        break;
+        break;*/
 
       case PROCESS_RUN:
         SetStatus(GetSimuStatus()); //update hits only

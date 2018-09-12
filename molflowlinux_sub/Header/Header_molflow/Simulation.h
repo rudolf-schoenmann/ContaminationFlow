@@ -173,33 +173,33 @@ public:
 	bool lastHitUpdateOK;  // Last hit update timeout
 	bool lastLogUpdateOK; // Last log update timeout
 	bool hasVolatile;   // Contains volatile facet
-	double calcACTime;  // AC matrix calculation time
+	//double calcACTime;  // AC matrix calculation time (my) in unused fcts LoadAc, ComputeACMatrix
 
 	// Particle coordinates (MC)
 	CurrentParticleStatus currentParticle;
 
 
 	// Angular coefficient (opaque facets)
-	size_t     nbAC;
-	ACFLOAT *acMatrix;
-	ACFLOAT *acDensity;
-	ACFLOAT *acDesorb;
-	ACFLOAT *acAbsorb;
-	ACFLOAT *acRho;
-	ACFLOAT *acArea;
-	double  *acLines;
-	size_t     prgAC;
+	//size_t     nbAC; //in unused functions of SimulationAC.cpp, commented out in ResetSimulation (SimulationControl), commented out in GetSimuStatus
+	//ACFLOAT *acMatrix; //in unused functions of SimulationAC.cpp
+	//ACFLOAT *acDensity; //in unused functions of SimulationAC.cpp, commented out in ResetSimulation (SimulationControl)
+	//ACFLOAT *acDesorb; //in unused functions of SimulationAC.cpp
+	//ACFLOAT *acAbsorb; //in unused functions of SimulationAC.cpp
+	//ACFLOAT *acRho; //in unused functions of SimulationAC.cpp
+	//ACFLOAT *acArea; //in unused functions of SimulationAC.cpp
+	//double  *acLines; //in unused functions of SimulationAC.cpp
+	//size_t     prgAC; //in unused functions of SimulationAC.cpp, commented in SetState GetSimuStatus StartSimulation
 
 	// Angular coefficient (transparent facets)
-	size_t     nbACT;
-	ACFLOAT *acTMatrix;
-	ACFLOAT *acTDensity;
-	ACFLOAT *acTArea;
-	double  *acTLines;
+	//size_t     nbACT; //in unused functions of SimulationAC.cpp
+	//ACFLOAT *acTMatrix; //in unused functions of SimulationAC.cpp
+	//ACFLOAT *acTDensity; //in unused functions of SimulationAC.cpp
+	//ACFLOAT *acTArea; //in unused functions of SimulationAC.cpp
+	//double  *acTLines; //in unused functions of SimulationAC.cpp
 
-#ifdef JACOBI_ITERATION
-	ACFLOAT *acDensityTmp;
-#endif
+/*#ifdef JACOBI_ITERATION
+	ACFLOAT *acDensityTmp; //in unused functions of SimulationAC.cpp
+#endif*/
 
 };
 // -- Methods ---------------------------------------------------
@@ -213,7 +213,7 @@ void InitSimulation();
 void ClearSimulation();
 void SetState(size_t state, const char *status, bool changeState = true, bool changeStatus = true);
 void SetErrorSub(const char *msg);
-void ClearACMatrix();
+//void ClearACMatrix();
 bool LoadSimulation(Databuff *databuffer);
 //bool UpdateOntheflySimuParams(Dataport *loader); // (Rudi) I don't think, I need that.
 bool StartSimulation(size_t sMode);
@@ -221,7 +221,7 @@ void ResetSimulation();
 bool SimulationRun();
 bool SimulationMCStep(size_t nbStep);
 void IncreaseDistanceCounters(double d);
-bool SimulationACStep(int nbStep);
+//bool SimulationACStep(int nbStep);
 void RecordHit(const int& type);
 void RecordLeakPos();
 bool StartFromSource();
@@ -238,7 +238,7 @@ void ResetTmpCounters();
 
 double GetTick();
 size_t   GetHitsSize();
-bool ComputeACMatrix(SHELEM_OLD *mesh);
+//bool ComputeACMatrix(SHELEM_OLD *mesh);
 
 int GetIDId(int paramId);
 

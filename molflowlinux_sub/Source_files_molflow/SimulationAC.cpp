@@ -53,15 +53,15 @@ for(_k=0;_k<sHandle->structures[0].facets.size();_k++) {                        
 #define END_LOOP(_f,_idx)                                                  \
   _idx++;}}                                                                \
 if((_f)->sh.opacity!=1.0) _idx+=((_f)->sh.texWidth*(_f)->sh.texHeight); }
-
+/* only used in ComputeACMatrix -> not used
 void GetCenter(SubprocessFacet *f,SHELEM_OLD *mesh, size_t idx,Vector3d *c) {
 
   c->x = f->sh.O.x + f->sh.U.x*mesh[idx].uCenter + f->sh.V.x*mesh[idx].vCenter;
   c->y = f->sh.O.y + f->sh.U.y*mesh[idx].uCenter + f->sh.V.y*mesh[idx].vCenter;
   c->z = f->sh.O.z + f->sh.U.z*mesh[idx].uCenter + f->sh.V.z*mesh[idx].vCenter;
 
-}
-
+}*/
+/* (my) commented out in ClearSimulation (SimulationControl), LoadAC not used
 void ClearACMatrix() {
 
   SAFE_FREE(sHandle->acMatrix);
@@ -83,8 +83,8 @@ void ClearACMatrix() {
   SAFE_FREE(sHandle->acDensityTmp);
 #endif
 
-}
-
+}*/
+/* (my) only in LoadAC(), LoadAC not used
 bool ComputeACMatrix(SHELEM_OLD *mesh) {
 
 	int      idx, i1, i2, j1, j2, k1, k2;
@@ -285,8 +285,8 @@ bool ComputeACMatrix(SHELEM_OLD *mesh) {
 
   return true;
 
-}
-
+}*/
+/* (my) case stepac not used in main, commented out in SimulationRun (SimulationControl)
 bool SimulationACStep(int nbStep) {
 
   int      i,inc,j,idx,step;
@@ -357,7 +357,8 @@ bool SimulationACStep(int nbStep) {
   return sHandle->ontheflyParams.desorptionLimit==0 || sHandle->totalDesorbed<sHandle->ontheflyParams.desorptionLimit/sHandle->ontheflyParams.nbProcess;
 
 }
-
+*/
+/*(my) commented out in updatehits (SimulationControl)
 void UpdateACHits(Dataport *dpHit,int prIdx,DWORD timeout) {
 
   GlobalHitBuffer *gHits;
@@ -402,7 +403,7 @@ void UpdateACHits(Dataport *dpHit,int prIdx,DWORD timeout) {
     fHits->density.desorbed = sumDes;
     fHits->density.absorbed = sumAbs;
 
-  }
+  }*/
 
   ReleaseDataport(dpHit);
 

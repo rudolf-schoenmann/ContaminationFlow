@@ -78,7 +78,7 @@ void InitSimulation() {
 void ClearSimulation() {
 
 
-	ClearACMatrix();
+	//ClearACMatrix(); (my) ACmatrix only used for ACmode
 
 	delete sHandle;
 	sHandle = new Simulation;
@@ -598,7 +598,7 @@ void ResetSimulation() {
 	sHandle->totalDesorbed = 0;
 	ResetTmpCounters();
 	sHandle->tmpParticleLog.clear();
-	if (sHandle->acDensity) memset(sHandle->acDensity, 0, sHandle->nbAC * sizeof(ACFLOAT));
+	//if (sHandle->acDensity) memset(sHandle->acDensity, 0, sHandle->nbAC * sizeof(ACFLOAT)); //AC_MODE not used
 
 }
 
@@ -608,7 +608,7 @@ bool StartSimulation(size_t sMode) {
 	case MC_MODE:
 		if (!sHandle->currentParticle.lastHitFacet) StartFromSource();
 		return (sHandle->currentParticle.lastHitFacet != NULL);
-	case AC_MODE:
+	/*case AC_MODE: (my) no AC_MODE
 		if (sHandle->prgAC != 100) {
 			SetErrorSub("AC matrix not calculated");
 			return false;
@@ -617,7 +617,7 @@ bool StartSimulation(size_t sMode) {
 			sHandle->stepPerSec = 0.0;
 			return true;
 		}
-	}
+	}*/
 
 	SetErrorSub("Unknown simulation mode");
 	return false;
@@ -656,7 +656,7 @@ bool SimulationRun() {
 			nbStep = 250;
 			break;
 		case AC_MODE:
-			nbStep = 1;
+			//nbStep = 1; (my) no AC_MODE
 			break;
 		}
 
@@ -672,7 +672,7 @@ bool SimulationRun() {
 		goOn = SimulationMCStep(nbStep);
 		break;
 	case AC_MODE:
-		goOn = SimulationACStep(nbStep);
+		//goOn = SimulationACStep(nbStep); (my) no AC_MODE
 		break;
 	}
 
