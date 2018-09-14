@@ -615,13 +615,8 @@ bool StartSimulation(size_t sMode) {
 		else {
 			sHandle->stepPerSec = 0.0;
 			return true;
-<<<<<<< HEAD
 		}*/
 	}
-=======
-		}
-	}*/
->>>>>>> bdd2568ae7f91fbded0b8db3f2cbc3ab6be4eb1e
 
 	SetErrorSub("Unknown simulation mode");
 	return false;

@@ -1,12 +1,8 @@
-/* Linux-Molflow is based on Molflow+ 2.6.70*/
-
-//test
 #include <iostream>
 #include <mpi.h>
 #include <string>
 #include <fstream>
 #include "Buffer.h"
-#include <unistd.h>
 /*#include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -22,6 +18,7 @@
 #include "Facet_shared.h"
 #include "MolflowGeometry.h"
 */
+
 /*
 #include "GLApp/GLFileBox.h"
 #include "GLApp/GLToolkit.h"
@@ -35,6 +32,7 @@
 
 #include "RecoveryDialog.h"
 #include "direct.h"*/
+
 /*
 #include <vector>
 #include <string>
@@ -73,6 +71,7 @@ bool parametercheck(int argc, char *argv[])
       }
 
 
+
 int main(int argc, char *argv[]) {
 
 	  /*Parameters passed to main:
@@ -96,7 +95,9 @@ int main(int argc, char *argv[]) {
 	  Databuff databuffer;
 	  databuffer.buff = NULL;
 
-	  MPI_Init(NULL, NULL);
+
+
+      MPI_Init(NULL, NULL);
       /* find out MY process ID, and how many processes were started. */
 
       // Get the number of processes
@@ -135,22 +136,14 @@ int main(int argc, char *argv[]) {
     		  	  	  	else {std::cout<<databuffer.buff[i]<<std::endl;}
     	      	  		}
     	  //std::cout << argv[1] << ": " << databuffer.buff << std::endl;
-    	  std::cout << "Buffer sent. Wait for 1 second. " <<std::endl;
-    	  }
+
+      	  }
+
 
       //Send buffer to all other processes.
-      //MPI_Bcast(databuffer.buff, databuffer.size, MPI::CHAR, 0, MPI_COMM_WORLD);
-      MPI_Bcast(&databuffer.size, sizeof(databuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
-      //std::cout << "size of " << argv[1] << " = " << databuffer.size <<std::endl;
-
-      sleep(1);
+      //MPI_Bcast(&databuffer, sizeof(databuffer), MPI::BYTE, 0, MPI_COMM_WORLD);
 
 
-      if (rank !=0){ /* do work in any remaining processes */
-    	  databuffer.buff = new BYTE[databuffer.size];
-      }
-      //MPI_Barrier(MPI_COMM_WORLD);
-      MPI_Bcast(databuffer.buff, databuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 
           /*Sharing buffer (Geometry and Parameters) with the other processes
              Send Buffer
@@ -167,23 +160,23 @@ int main(int argc, char *argv[]) {
 
 
       if (rank != 0){
+    	 /* do work in any remaining processes */
     	 std::cout << "Hello! I'm worker process "<< rank << std::endl;
-    	 std::cout << "size of " << argv[1] << " = " << databuffer.size <<std::endl;
-    	 std::cout << argv[1] << ": ";
-    	 int i;
-    	 for(i=0; i < 10; i++) {
-    	  	  	if (i != (10 -1)){
-    	     	std::cout<<databuffer.buff[i];}
-    	     	else {std::cout<<databuffer.buff[i]<<std::endl;}
-      }
+    	 //std::cout << "size of " << argv[1] << " = " << databuffer.size <<std::endl;
+    	 //std::cout << "Received buffer: " << databuffer.buff << std::endl;
 
-<<<<<<< HEAD
+    	 //delete[] databuffer.buff;
+         //(Receive the Buffer)
+
     	  //InitSimulation(); //Creates sHandle instance, commented as error otherwise
-=======
-    	  //InitSimulation(); //Creates sHandle instance; Uncomment later!
->>>>>>> bdd2568ae7f91fbded0b8db3f2cbc3ab6be4eb1e
 
     	  //SetReady(); // Rudi: Soll ich das übernehmen?
+
+
+
+
+
+
 
     	 // Sketch of the worker algorithm:
 
@@ -271,20 +264,18 @@ int main(int argc, char *argv[]) {
 
       }
       /* Stop this process */
-      MPI_Barrier(MPI_COMM_WORLD);
+
       if(rank == 0) {
+          	 //___________________________________________________________________________________________________________________________________________________________
           	 //Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
 
-    	   	 std::cout << "Hello! I'm head process "<< rank << std::endl;
+          	 //char fileexport[] = "/smbhome/schoenmann/buffertest";
           	 exportBuff(argv[2], &databuffer);
           	 // Build in safety check to not loosing simulation results, if the buffer export does not work?
-
-
+          	 delete[] databuffer.buff;
           	std::cout <<"____________________________________________________________________________________________________" << std::endl;
             }
 
-    MPI_Barrier(MPI_COMM_WORLD);
-    delete[] databuffer.buff;
 
     MPI_Finalize();
     
