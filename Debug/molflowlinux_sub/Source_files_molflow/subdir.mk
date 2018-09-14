@@ -7,7 +7,10 @@ CPP_SRCS += \
 ../molflowlinux_sub/Source_files_molflow/MolflowTypes.cpp \
 ../molflowlinux_sub/Source_files_molflow/Parameter.cpp \
 ../molflowlinux_sub/Source_files_molflow/Simulation.cpp \
+<<<<<<< HEAD
 ../molflowlinux_sub/Source_files_molflow/SimulationAC.cpp \
+=======
+>>>>>>> bdd2568ae7f91fbded0b8db3f2cbc3ab6be4eb1e
 ../molflowlinux_sub/Source_files_molflow/SimulationControl.cpp \
 ../molflowlinux_sub/Source_files_molflow/molflowSub.cpp 
 
@@ -15,7 +18,10 @@ OBJS += \
 ./molflowlinux_sub/Source_files_molflow/MolflowTypes.o \
 ./molflowlinux_sub/Source_files_molflow/Parameter.o \
 ./molflowlinux_sub/Source_files_molflow/Simulation.o \
+<<<<<<< HEAD
 ./molflowlinux_sub/Source_files_molflow/SimulationAC.o \
+=======
+>>>>>>> bdd2568ae7f91fbded0b8db3f2cbc3ab6be4eb1e
 ./molflowlinux_sub/Source_files_molflow/SimulationControl.o \
 ./molflowlinux_sub/Source_files_molflow/molflowSub.o 
 
@@ -23,7 +29,10 @@ CPP_DEPS += \
 ./molflowlinux_sub/Source_files_molflow/MolflowTypes.d \
 ./molflowlinux_sub/Source_files_molflow/Parameter.d \
 ./molflowlinux_sub/Source_files_molflow/Simulation.d \
+<<<<<<< HEAD
 ./molflowlinux_sub/Source_files_molflow/SimulationAC.d \
+=======
+>>>>>>> bdd2568ae7f91fbded0b8db3f2cbc3ab6be4eb1e
 ./molflowlinux_sub/Source_files_molflow/SimulationControl.d \
 ./molflowlinux_sub/Source_files_molflow/molflowSub.d 
 
