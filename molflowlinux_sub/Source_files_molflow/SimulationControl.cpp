@@ -505,7 +505,8 @@ bool LoadSimulation(Databuff *databuffer) {
 
 }
 
-bool UpdateOntheflySimuParams(Dataport *loader) {
+/* (My) Not needed, called by commented function UpdateParams() in molflowsub.cpp
+   bool UpdateOntheflySimuParams(Dataport *loader) {
 	// Connect the dataport
 	
 
@@ -519,7 +520,7 @@ bool UpdateOntheflySimuParams(Dataport *loader) {
 	ReleaseDataport(loader);
 
 	return true;
-}
+}*/
 
 void UpdateHits(Databuff *databuffer, int rank) {
 	switch (sHandle->wp.sMode) {

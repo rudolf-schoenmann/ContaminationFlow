@@ -346,7 +346,7 @@ void UpdateMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 }
 
 
-
+/* log not needed for now
 void UpdateLog(Dataport * dpLog, DWORD timeout)
 {
 	if (sHandle->tmpParticleLog.size()) {
@@ -378,7 +378,7 @@ void UpdateLog(Dataport * dpLog, DWORD timeout)
 		printf("Update hits: %f us\n", (t1 - t0)*1000000.0);
 #endif
 	}
-}
+}*/
 
 // Compute particle teleport
 
