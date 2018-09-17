@@ -235,8 +235,8 @@ void LoadAC() {
 */
 void Load() {
 
-  Databuff *databuffer;
-  databuffer=NULL; //(my) change to import databuffer
+  //Databuff *databuffer; //loadbuffer already initialized/imported in main
+  //databuffer=NULL; //(my) change to import databuffer
   //size_t hSize;
 
   // Load geometry
@@ -251,7 +251,7 @@ void Load() {
   
   printf("Connected to %s\n",loadDpName);
 */
-  if( !LoadSimulation(databuffer) ) {
+  if( !LoadSimulation(loadbuffer) ) {
     //CLOSEDP(loader); Rudi) Don't need that.
     return;
   }
@@ -343,7 +343,7 @@ int main(int argc,char* argv[])
   loadbuffer = new Databuff;loadbuffer->buff=NULL;
 
   //dpControl = OpenDataport(ctrlDpName/*,sizeof(SHCONTROL)*/);
-  //TODO Import control buffer
+  //TODO Import control,hit,load buffer
 
   if(controlbuffer->buff==NULL ) {
     printf("Usage: Cannot connect to MFLWCTRL%s\n",argv[1]);

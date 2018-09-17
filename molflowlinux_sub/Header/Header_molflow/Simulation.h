@@ -233,7 +233,7 @@ void RecordAbsorb(SubprocessFacet *iFacet);
 void RecordHistograms(SubprocessFacet * iFacet);
 void PerformTeleport(SubprocessFacet *iFacet);
 void PerformTransparentPass(SubprocessFacet *iFacet);
-void UpdateHits(Databuff *databuffer, int rank); // (Rudi) Je nachdem, wie die Kommunikation via MPI dann läuft, ist 'int rank' ggf. überflüssig.
+//void UpdateHits(Databuff *databuffer, int rank); // (Rudi) Je nachdem, wie die Kommunikation via MPI dann läuft, ist 'int rank' ggf. überflüssig.
 //void UpdateLog(Dataport *dpLog, DWORD timeout); // (Rudi) Don't need that.
 void UpdateMCHits(Databuff *databuffer, int rank, size_t nbMoments);
 //void UpdateACHits(Dataport *dpHit, int prIdx, DWORD timeout); // (Rudi) Don't need that.
