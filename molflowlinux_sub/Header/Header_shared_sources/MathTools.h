@@ -20,9 +20,9 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #pragma once
 #include <vector>
 
-bool    IsEqual(const double &a, const double &b, double toleranceRatio=1E-6);
+bool   IsEqual(const double &a, const double &b, double toleranceRatio=1E-6);
 double RoundAngle(double a);
-size_t    GetPower2(size_t n);
+size_t GetPower2(size_t n);
 double Pow10(const double& a);
 
 template <typename TYPE> TYPE Min(const TYPE& x, const TYPE& y) { return (x < y) ? x : y; }

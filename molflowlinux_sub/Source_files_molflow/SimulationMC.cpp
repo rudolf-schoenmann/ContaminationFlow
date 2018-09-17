@@ -179,7 +179,7 @@ void UpdateMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 
 	//Global histograms
 	
-		for (int m = 0; m < (1 + nbMoments); m++) {
+		for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 			BYTE *histCurrentMoment = buffer + sizeof(GlobalHitBuffer) + m * sHandle->wp.globalHistogramParams.GetDataSize();
 			if (sHandle->wp.globalHistogramParams.recordBounce) {
 				double* nbHitsHistogram = (double*)histCurrentMoment;
@@ -204,11 +204,11 @@ void UpdateMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 
 	size_t facetHitsSize = (1 + nbMoments) * sizeof(FacetHitBuffer);
 	// Facets
-	for (s = 0; s < sHandle->sh.nbSuper; s++) {
+	for (s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			if (f.hitted) {
 
-				for (int m = 0; m < (1 + nbMoments); m++) {
+				for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 					facetHitBuffer->hit.nbAbsEquiv += f.tmpCounter[m].hit.nbAbsEquiv;
 					facetHitBuffer->hit.nbDesorbed += f.tmpCounter[m].hit.nbDesorbed;
@@ -220,23 +220,23 @@ void UpdateMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 				}
 
 				if (f.sh.isProfile) {
-					for (int m = 0; m < (1 + nbMoments); m++) {
+					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 						ProfileSlice *shProfile = (ProfileSlice *)(buffer + f.sh.hitOffset + facetHitsSize + m * f.profileSize);
-						for (j = 0; j < PROFILE_SIZE; j++) {
+						for (j = 0; j < (int)PROFILE_SIZE; j++) {
 							shProfile[j] += f.profile[m][j];
 						}
 					}
 				}
 
 				if (f.sh.isTextured) {
-					for (int m = 0; m < (1 + nbMoments); m++) {
+					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 						TextureCell *shTexture = (TextureCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
 						//double dCoef = gHits->globalHits.hit.nbDesorbed * 1E4 * sHandle->wp.gasMass / 1000 / 6E23 * MAGIC_CORRECTION_FACTOR;  //1E4 is conversion from m2 to cm2
 						double timeCorrection = m == 0 ? sHandle->wp.finalOutgassingRate : (sHandle->wp.totalDesorbedMolecules) / sHandle->wp.timeWindowSize;
 						//Timecorrection is required to compare constant flow texture values with moment values (for autoscaling)
 
-						for (y = 0; y < f.sh.texHeight; y++) {
-							for (x = 0; x < f.sh.texWidth; x++) {
+						for (y = 0; y < (int)f.sh.texHeight; y++) {
+							for (x = 0; x < (int)f.sh.texWidth; x++) {
 								size_t add = x + y * f.sh.texWidth;
 
 								//Add temporary hit counts
@@ -271,10 +271,10 @@ void UpdateMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 				}
 
 				if (f.sh.countDirection) {
-					for (int m = 0; m < (1 + nbMoments); m++) {
+					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 						DirectionCell *shDir = (DirectionCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*m));
-						for (y = 0; y < f.sh.texHeight; y++) {
-							for (x = 0; x < f.sh.texWidth; x++) {
+						for (y = 0; y < (int)f.sh.texHeight; y++) {
+							for (x = 0; x < (int)f.sh.texWidth; x++) {
 								size_t add = x + y * f.sh.texWidth;
 								shDir[add].dir.x += f.direction[m][add].dir.x;
 								shDir[add].dir.y += f.direction[m][add].dir.y;
@@ -288,8 +288,8 @@ void UpdateMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 
 				if (f.sh.anglemapParams.record) {
 					size_t *shAngleMap = (size_t *)(buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments));
-					for (y = 0; y < (f.sh.anglemapParams.thetaLowerRes + f.sh.anglemapParams.thetaHigherRes); y++) {
-						for (x = 0; x < f.sh.anglemapParams.phiWidth; x++) {
+					for (y = 0; y < (int)(f.sh.anglemapParams.thetaLowerRes + f.sh.anglemapParams.thetaHigherRes); y++) {
+						for (x = 0; x < (int)f.sh.anglemapParams.phiWidth; x++) {
 							size_t add = x + y * f.sh.anglemapParams.phiWidth;
 							shAngleMap[add] += f.angleMap.pdf[add];
 						}
@@ -298,7 +298,7 @@ void UpdateMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 
 				//Facet histograms
 				
-					for (int m = 0; m < (1 + nbMoments); m++) {
+					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 						BYTE *histCurrentMoment = buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments) + f.sh.anglemapParams.GetRecordedDataSize() + m * f.sh.facetHistogramParams.GetDataSize();
 						if (f.sh.facetHistogramParams.recordBounce) {
 							double* nbHitsHistogram = (double*)histCurrentMoment;
@@ -346,7 +346,7 @@ void UpdateMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 }
 
 
-
+/* log not needed for now
 void UpdateLog(Dataport * dpLog, DWORD timeout)
 {
 	if (sHandle->tmpParticleLog.size()) {
@@ -378,7 +378,7 @@ void UpdateLog(Dataport * dpLog, DWORD timeout)
 		printf("Update hits: %f us\n", (t1 - t0)*1000000.0);
 #endif
 	}
-}
+}*/
 
 // Compute particle teleport
 
@@ -406,7 +406,7 @@ void PerformTeleport(SubprocessFacet *iFacet) {
 	//Look in which superstructure is the destination facet:
 	for (size_t i = 0; i < sHandle->sh.nbSuper && (!found); i++) {
 		for (size_t j = 0; j < sHandle->structures[i].facets.size() && (!found); j++) {
-			if (destIndex == sHandle->structures[i].facets[j].globalId) {
+			if (destIndex == (int)sHandle->structures[i].facets[j].globalId) {
 				destination = &(sHandle->structures[i].facets[j]);
 				if (destination->sh.superIdx != -1) {
 					sHandle->currentParticle.structureId = destination->sh.superIdx; //change current superstructure, unless the target is a universal facet
@@ -433,7 +433,8 @@ void PerformTeleport(SubprocessFacet *iFacet) {
 	if (iFacet->sh.anglemapParams.record) RecordAngleMap(iFacet);
 
 	// Relaunch particle from new facet
-	auto[inTheta, inPhi] = CartesianToPolar(sHandle->currentParticle.direction, iFacet->sh.nU, iFacet->sh.nV, iFacet->sh.N);
+	double inTheta, inPhi;
+	std::tie(inTheta, inPhi) = CartesianToPolar(sHandle->currentParticle.direction, iFacet->sh.nU, iFacet->sh.nV, iFacet->sh.N);
 	PolarToCartesian(destination, inTheta, inPhi, false);
 	// Move particle to teleport destination point
 	double u = iFacet->colU;
@@ -484,7 +485,8 @@ bool SimulationMCStep(size_t nbStep) {
 	for (size_t i = 0; i < nbStep; i++) {
 
 		//Prepare output values
-		auto[found, collidedFacet, d] = Intersect(sHandle, sHandle->currentParticle.position, sHandle->currentParticle.direction);
+		bool found; SubprocessFacet *collidedFacet; double d;
+		std::tie(found, collidedFacet, d) = Intersect(sHandle, sHandle->currentParticle.position, sHandle->currentParticle.direction);
 
 		if (found) {
 
@@ -600,9 +602,9 @@ bool StartFromSource() {
 	// Select source
 	srcRnd = rnd() * sHandle->wp.totalDesorbedMolecules;
 
-	while (!found && j < sHandle->sh.nbSuper) { //Go through superstructures
+	while (!found && j < (int)sHandle->sh.nbSuper) { //Go through superstructures
 		i = 0;
-		while (!found && i < sHandle->structures[j].facets.size()) { //Go through facets in a structure
+		while (!found && i < (int)sHandle->structures[j].facets.size()) { //Go through facets in a structure
 			SubprocessFacet& f = sHandle->structures[j].facets[i];
 			if (f.sh.desorbType != DES_NONE) { //there is some kind of outgassing
 				if (f.sh.useOutgassingFile) { //Using SynRad-generated outgassing map
@@ -754,8 +756,9 @@ bool StartFromSource() {
 		break;
 	case DES_ANGLEMAP:
 	{
-		auto [theta, thetaLowerIndex, thetaOvershoot] = src->angleMap.GenerateThetaFromAngleMap(src->sh.anglemapParams);
-		auto phi = src->angleMap.GeneratePhiFromAngleMap(thetaLowerIndex, thetaOvershoot, src->sh.anglemapParams);
+		double theta, phi; int thetaLowerIndex; double thetaOvershoot;
+		std::tie(theta, thetaLowerIndex, thetaOvershoot) = src->angleMap.GenerateThetaFromAngleMap(src->sh.anglemapParams);
+		phi = src->angleMap.GeneratePhiFromAngleMap(thetaLowerIndex, thetaOvershoot, src->sh.anglemapParams);
 		/*
 
 		size_t angleMapSum = src->angleMapLineSums[(src->sh.anglemapParams.thetaLowerRes + src->sh.anglemapParams.thetaHigherRes) - 1];
@@ -848,7 +851,7 @@ bool StartFromSource() {
 		/////////////////////////////
 		*/
 		sHandle->currentParticle.direction = PolarToCartesian(src, PI - theta, phi, false); //angle map contains incident angle (between N and source dir) and theta is dir (between N and dest dir)
-		_ASSERTE(sHandle->currentParticle.direction.x == sHandle->currentParticle.direction.x);
+		//_ASSERTE(sHandle->currentParticle.direction.x == sHandle->currentParticle.direction.x); //windows call-> replace, for debugging
 
 	}
 	}
@@ -907,13 +910,13 @@ std::tuple<double, int, double> Anglemap::GenerateThetaFromAngleMap(const Anglem
 	if (thetaLowerIndex == -1) { //first half section
 		thetaOvershoot = 0.5 + 0.5 * lookupValue / theta_CDF[0]; //between 0.5 and 1
 		theta = GetTheta((double)thetaLowerIndex + 0.5 + thetaOvershoot, anglemapParams); //between 0 and the first section end
-		return { theta, thetaLowerIndex, thetaOvershoot };
+		return { std::tie(theta, thetaLowerIndex, thetaOvershoot) };
 	}
-	else if (thetaLowerIndex == (anglemapParams.thetaLowerRes + anglemapParams.thetaHigherRes - 1)) { //last half section //can this happen?
+	else if (thetaLowerIndex == (int)(anglemapParams.thetaLowerRes + anglemapParams.thetaHigherRes - 1)) { //last half section //can this happen?
 		thetaOvershoot = 0.5 * (lookupValue - theta_CDF[thetaLowerIndex])
 			/ (1.0 - theta_CDF[thetaLowerIndex]); //between 0 and 0.5
 		theta = GetTheta((double)thetaLowerIndex + 0.5 + thetaOvershoot, anglemapParams); //between 0 and the first section end
-		return { theta, thetaLowerIndex, thetaOvershoot };
+		return { std::tie(theta, thetaLowerIndex, thetaOvershoot) };
 	}
 	else { //regular section
 		if (/*true || */phi_CDFsums[thetaLowerIndex] == phi_CDFsums[thetaLowerIndex + 1]) {
@@ -943,8 +946,8 @@ std::tuple<double, int, double> Anglemap::GenerateThetaFromAngleMap(const Anglem
 			theta = GetTheta((double)thetaLowerIndex + 0.5 + thetaOvershoot, anglemapParams);
 		}
 	}
-	_ASSERTE(theta == theta);
-	return { theta, thetaLowerIndex, thetaOvershoot };
+	//_ASSERTE(theta == theta); //for debugging, windows fct
+	return { std::tie(theta, thetaLowerIndex, thetaOvershoot) };
 }
 
 double Anglemap::GeneratePhiFromAngleMap(const int & thetaLowerIndex, const double & thetaOvershoot, const AnglemapParams & anglemapParams)
@@ -958,7 +961,7 @@ double Anglemap::GeneratePhiFromAngleMap(const int & thetaLowerIndex, const doub
 		phiLowerIndex = my_lower_bound(lookupValue, &phi_CDFs[0], anglemapParams.phiWidth); //take entirely the phi ditro belonging to first theta
 		weigh = thetaOvershoot; // [0.5 - 1], will subtract 0.5 when evaluating thetaIndex
 	}
-	else if (thetaLowerIndex == (anglemapParams.thetaLowerRes + anglemapParams.thetaHigherRes - 1)) { //last theta half section
+	else if (thetaLowerIndex == (int)(anglemapParams.thetaLowerRes + anglemapParams.thetaHigherRes - 1)) { //last theta half section
 		lookupValue += phi_CDFs[thetaLowerIndex*anglemapParams.phiWidth]; //periodic BCs over -PI...PI, can be larger than 1
 		phiLowerIndex = my_lower_bound(lookupValue, &phi_CDFs[thetaLowerIndex*anglemapParams.phiWidth], anglemapParams.phiWidth); //take entirely the phi ditro belonging to latest theta
 		weigh = thetaOvershoot; // [0 - 0.5], will add 0.5 when evaluating thetaIndex
@@ -987,7 +990,7 @@ double Anglemap::GeneratePhiFromAngleMap(const int & thetaLowerIndex, const doub
 	double phi, phiOvershoot;
 	double thetaIndex = (double)thetaLowerIndex + 0.5 + weigh;
 	if (phiLowerIndex == -1) { //first half section
-		__debugbreak(); //should not happen since we shifted the lookup value with first value
+		//__debugbreak(); //should not happen since we shifted the lookup value with first value //for debugging, windows fct
 		phiOvershoot = 0.5 + 0.5 * lookupValue / GetPhiCDFValue(thetaIndex, 0, anglemapParams); //between 0.5 and 1
 		phi = GetPhi((double)phiLowerIndex + 0.5 + phiOvershoot, anglemapParams); //between 0 and the first section end
 	}
@@ -1032,8 +1035,8 @@ double Anglemap::GeneratePhiFromAngleMap(const int & thetaLowerIndex, const doub
 			phi = GetPhi((double)phiLowerIndex + 0.5 + phiOvershoot, anglemapParams);
 		}
 	}
-	_ASSERTE(phi == phi);
-	_ASSERTE(phi > -PI && phi < PI);
+	//_ASSERTE(phi == phi); //for debugging, windows fct
+	//_ASSERTE(phi > -PI && phi < PI); //for debugging, windows fct
 	return phi;
 }
 
@@ -1076,10 +1079,10 @@ double Anglemap::GetPhipdfValue(const double & thetaIndex, const int & phiLowerI
 double Anglemap::GetPhiCDFValue(const double & thetaIndex, const int & phiLowerIndex, const AnglemapParams& anglemapParams)
 {
 	if (thetaIndex < 0.5) {
-		return (phiLowerIndex < anglemapParams.phiWidth) ? phi_CDFs[phiLowerIndex] : 1.0 + phi_CDFs[0];
+		return (phiLowerIndex < (int)anglemapParams.phiWidth) ? phi_CDFs[phiLowerIndex] : 1.0 + phi_CDFs[0];
 	}
 	else if (thetaIndex > (double)(anglemapParams.thetaLowerRes + anglemapParams.thetaHigherRes) - 0.5) {
-		return (phiLowerIndex < anglemapParams.phiWidth) ? phi_CDFs[anglemapParams.phiWidth * (anglemapParams.thetaLowerRes + anglemapParams.thetaHigherRes - 1) + phiLowerIndex] : 1.0 + phi_CDFs[anglemapParams.phiWidth * (anglemapParams.thetaLowerRes + anglemapParams.thetaHigherRes - 1)];
+		return (phiLowerIndex < (int)anglemapParams.phiWidth) ? phi_CDFs[anglemapParams.phiWidth * (anglemapParams.thetaLowerRes + anglemapParams.thetaHigherRes - 1) + phiLowerIndex] : 1.0 + phi_CDFs[anglemapParams.phiWidth * (anglemapParams.thetaLowerRes + anglemapParams.thetaHigherRes - 1)];
 	}
 	else {
 		size_t thetaLowerIndex = (size_t)(thetaIndex - 0.5);
@@ -1197,7 +1200,8 @@ void PerformBounce(SubprocessFacet *iFacet) {
 		else  if (reflTypeRnd < (iFacet->sh.reflection.diffusePart + iFacet->sh.reflection.specularPart))
 		{
 			//specular reflection
-			auto [inTheta, inPhi] = CartesianToPolar(sHandle->currentParticle.direction, iFacet->sh.nU, iFacet->sh.nV, iFacet->sh.N);
+			double inTheta, inPhi;
+			std::tie(inTheta, inPhi) = CartesianToPolar(sHandle->currentParticle.direction, iFacet->sh.nU, iFacet->sh.nV, iFacet->sh.N);
 			sHandle->currentParticle.direction = PolarToCartesian(iFacet, PI - inTheta, inPhi, false);
 
 		}
@@ -1392,7 +1396,8 @@ void LogHit(SubprocessFacet * f)
 }
 
 void RecordAngleMap(SubprocessFacet* collidedFacet) {
-	auto[inTheta, inPhi] = CartesianToPolar(sHandle->currentParticle.direction, collidedFacet->sh.nU, collidedFacet->sh.nV, collidedFacet->sh.N);
+	double inTheta, inPhi;
+	std::tie(inTheta, inPhi) = CartesianToPolar(sHandle->currentParticle.direction, collidedFacet->sh.nU, collidedFacet->sh.nV, collidedFacet->sh.N);
 	if (inTheta > PI / 2.0) inTheta = abs(PI - inTheta); //theta is originally respective to N, but we'd like the angle between 0 and PI/2
 	bool countTheta = true;
 	size_t thetaIndex;

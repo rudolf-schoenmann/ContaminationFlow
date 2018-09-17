@@ -41,9 +41,14 @@ Simulation* sHandle; //Global handle to simulation, one per subprocess
 #define WAITTIME    100  // Answer in STOP mode
 //#define TIMEOUT     300  // Process kills itself after no heartbeat (seconds)
 
-static Dataport *dpControl=NULL;
-static Dataport *dpHit=NULL;
-static Dataport *dpLog = NULL;
+//static Dataport *dpControl=NULL;
+//static Dataport *dpHit=NULL;
+//static Dataport *dpLog = NULL;
+
+static Databuff *hitbuffer=NULL;
+static Databuff *controlbuffer=NULL;
+static Databuff *loadbuffer=NULL;
+
 //static int       noHeartBeatSince;
 static int       prIdx;
 static size_t       prState;
@@ -64,15 +69,15 @@ void GetState() {
   prState = PROCESS_READY;
   prParam = 0;
 
-  if( AccessDataport(dpControl) ) {
-    SHCONTROL *master = (SHCONTROL *)dpControl->buff;
+  if( controlbuffer->buff!=NULL ) {
+    SHCONTROL *master = (SHCONTROL *)controlbuffer->buff;
     prState = master->states[prIdx];
     prParam = master->cmdParam[prIdx];
     prParam2 = master->cmdParam2[prIdx];
     master->cmdParam[prIdx] = 0;
     master->cmdParam2[prIdx] = 0;
 
-    ReleaseDataport(dpControl);
+    //ReleaseDataport(dpControl);
 	
 	if (!IsProcessRunning(hostProcessId)) {
 		printf("Host synrad.exe (process id %d) not running. Closing.",(int)hostProcessId);
@@ -95,8 +100,8 @@ void SetState(size_t state,const char *status,bool changeState, bool changeStatu
 
 	prState = state;
 	if (changeState) printf("\n setstate %zd \n",state);
-	if( AccessDataport(dpControl) ) {
-		SHCONTROL *master = (SHCONTROL *)dpControl->buff;
+	if( controlbuffer->buff!=NULL) {
+		SHCONTROL *master = (SHCONTROL *)controlbuffer->buff;
 		if (changeState) master->states[prIdx] = state;
 		if (changeStatus) {
 			strncpy(master->statusStr[prIdx], status, 127);
@@ -105,7 +110,7 @@ void SetState(size_t state,const char *status,bool changeState, bool changeStatu
 		/*if( state==PROCESS_RUNAC ) {
 			master->cmdParam[prIdx] = sHandle->prgAC;
 		}*/
-		ReleaseDataport(dpControl);
+		//ReleaseDataport(dpControl);
 	}
 
 }
@@ -171,11 +176,11 @@ void SetReady() {
 
 void SetStatus(char *status) {
 
-  if( AccessDataport(dpControl) ) {
-    SHCONTROL *master = (SHCONTROL *)dpControl->buff;
+  if( controlbuffer->buff !=NULL) {
+    SHCONTROL *master = (SHCONTROL *)controlbuffer->buff;
 	strncpy(master->statusStr[prIdx], status, 127);
 	master->statusStr[prIdx][127] = 0;
-    ReleaseDataport(dpControl);
+    //ReleaseDataport(dpControl);
   }
 
 }
@@ -230,8 +235,8 @@ void LoadAC() {
 */
 void Load() {
 
-  Databuff *databuffer;
-  databuffer=NULL; //(my) change to import databuffer
+  //Databuff *databuffer; //loadbuffer already initialized/imported in main
+  //databuffer=NULL; //(my) change to import databuffer
   //size_t hSize;
 
   // Load geometry
@@ -246,7 +251,7 @@ void Load() {
   
   printf("Connected to %s\n",loadDpName);
 */
-  if( !LoadSimulation(databuffer) ) {
+  if( !LoadSimulation(loadbuffer) ) {
     //CLOSEDP(loader); Rudi) Don't need that.
     return;
   }
@@ -333,8 +338,14 @@ int main(int argc,char* argv[])
   sprintf(hitsDpName,"MFLWHITS%s",argv[1]);
   sprintf(logDpName, "MFLWLOG%s", argv[1]);
 
-  dpControl = OpenDataport(ctrlDpName/*,sizeof(SHCONTROL)*/);
-  if( !dpControl ) {
+  hitbuffer = new Databuff; hitbuffer->buff=NULL;
+  controlbuffer = new Databuff;controlbuffer->buff=NULL;
+  loadbuffer = new Databuff;loadbuffer->buff=NULL;
+
+  //dpControl = OpenDataport(ctrlDpName/*,sizeof(SHCONTROL)*/);
+  //TODO Import control,hit,load buffer
+
+  if(controlbuffer->buff==NULL ) {
     printf("Usage: Cannot connect to MFLWCTRL%s\n",argv[1]);
     return 1;
   }

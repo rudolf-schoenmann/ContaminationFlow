@@ -15,6 +15,7 @@ void importBuff(char *fileName, Databuff *databuffer)
 {
 
 	std::filebuf fb;
+	databuffer->buff=NULL;
 	if (fb.open(fileName, std::ios::in))
 	{
 
@@ -34,7 +35,9 @@ void importBuff(char *fileName, Databuff *databuffer)
 
 		fb.close();
 	}
-	else{std::cout << "Could not open file to read data from." << std::endl;}
+	else{
+		std::cout << "Could not open file to read data from." << std::endl;
+	}
 	std::cout << "Buffer '" << fileName <<"' imported. Buffersize (read in): " << databuffer->size << std::endl;
 }
 
