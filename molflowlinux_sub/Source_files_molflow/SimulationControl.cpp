@@ -512,7 +512,7 @@ bool UpdateOntheflySimuParams(Dataport *loader) {
 	if (!AccessDataportTimed(loader, 2000)) {
 		SetErrorSub("Failed to connect to loader DP");
 		return false;
-	}
+	} //replace dataport with MPI
 	BYTE* buffer = (BYTE *)loader->buff;
 
 	sHandle->ontheflyParams = READBUFFER(OntheflySimulationParams);
