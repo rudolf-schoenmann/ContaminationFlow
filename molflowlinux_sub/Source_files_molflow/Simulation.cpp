@@ -1,6 +1,5 @@
 #include "Simulation.h"
 #include "IntersectAABB_shared.h"
-#include <string.h>
 
 SuperStructure::SuperStructure()
 {
@@ -25,17 +24,17 @@ Simulation::Simulation()
 	memset(&tmpGlobalResult, 0, sizeof(GlobalHitBuffer));
 
 	sh.nbSuper = 0;
-	acDensity =
-		acMatrix =
-		acDensity =
-		acDesorb =
-		acAbsorb =
-		acTArea =
-		acRho = 
-		acTMatrix =
-		acTDensity = acArea =
-		NULL;
+	//acDensity =
+		//acMatrix =
+		//acDensity =
+		//acDesorb =
+		//acAbsorb =
+		//acTArea =
+		//acRho =
+		//acTMatrix =
+		//acTDensity = acArea =
+		//NULL;
 		
-		acLines =
-		acTLines = NULL;
+		//acLines =
+		//acTLines = NULL;
 }

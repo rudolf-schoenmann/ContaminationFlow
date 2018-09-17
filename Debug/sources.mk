@@ -23,9 +23,9 @@ C_DEPS :=
 
 # Every subdirectory with source files must be described here
 SUBDIRS := \
-. \
 molflowlinux_sub/Source_files_linux \
 molflowlinux_sub/Source_files_molflow \
+molflowlinux_sub/Source_files_shared_sources \
 molflowlinux_sub/TruncatedGaussian \
 molflowlinux_sub \
 

@@ -22,11 +22,10 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 //#include <windows.h> // For GetTickCount()
 #include <Process.h> // For _getpid()
 #else
-//#include <time.h>
-//#include <sys/time.h>
+#include <time.h>
+#include <sys/time.h>
 #include <unistd.h> // (Rudi) For getpid
 #endif
-
 
 #include <math.h>
 #include <stdio.h>
@@ -526,8 +525,8 @@ void UpdateHits(Databuff *databuffer, int rank) {
 	switch (sHandle->wp.sMode) {
 	case MC_MODE:
 	{
-		UpdateMCHits(databuffer, rank sHandle->moments.size());
-		if (dpLog) UpdateLog(dpLog, timeout);
+		UpdateMCHits(databuffer, rank, sHandle->moments.size());
+		//if (dpLog) UpdateLog(dpLog, timeout);
 	}
 		break;
 	case AC_MODE:
@@ -557,7 +556,7 @@ void ResetTmpCounters() {
 		ZEROVECTOR(h.timeHistogram);
 	}
 
-	for (int j = 0; j < sHandle->sh.nbSuper; j++) {
+	for (unsigned int j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (auto& f : sHandle->structures[j].facets) {
 			f.ResetCounter();
 			f.hitted = false;
@@ -616,8 +615,8 @@ bool StartSimulation(size_t sMode) {
 		else {
 			sHandle->stepPerSec = 0.0;
 			return true;
-		}
-	}*/
+		}*/
+	}
 
 	SetErrorSub("Unknown simulation mode");
 	return false;
@@ -722,7 +721,7 @@ double GetTick() {
 int GetIDId(int paramId) {
 
 	int i;
-	for (i = 0; i < (int)sHandle->desorptionParameterIDs.size() && (paramId != sHandle->desorptionParameterIDs[i]); i++); //check if we already had this parameter Id
+	for (i = 0; i < (int)sHandle->desorptionParameterIDs.size() && (paramId != (int)sHandle->desorptionParameterIDs[i]); i++); //check if we already had this parameter Id
 	if (i >= (int)sHandle->desorptionParameterIDs.size()) i = -1; //not found
 	return i;
 }

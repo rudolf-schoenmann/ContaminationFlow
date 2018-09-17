@@ -1,5 +1,5 @@
-molflowlinux_sub/Source_files_molflow/Simulation.o: \
- ../molflowlinux_sub/Source_files_molflow/Simulation.cpp \
+molflowlinux_sub/Source_files_molflow/molflowSub.o: \
+ ../molflowlinux_sub/Source_files_molflow/molflowSub.cpp \
  /home/van/MolflowLinux/molflowlinux_sub/Header/Header_molflow/Simulation.h \
  /home/van/MolflowLinux/molflowlinux_sub/Header/Header_molflow/MolflowTypes.h \
  /home/van/MolflowLinux/molflowlinux_sub/GLApp/GLTypes.h \
@@ -18,8 +18,7 @@ molflowlinux_sub/Source_files_molflow/Simulation.o: \
  /home/van/MolflowLinux/molflowlinux_sub/Header/Header_molflow/Parameter.h \
  /home/van/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources/Distributions.h \
  /home/van/MolflowLinux/molflowlinux_sub/Header/Header_linux/Buffer.h \
- /home/van/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources/SMP.h \
- /home/van/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources/IntersectAABB_shared.h
+ /home/van/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources/SMP.h
 
 /home/van/MolflowLinux/molflowlinux_sub/Header/Header_molflow/Simulation.h:
 
@@ -58,5 +57,3 @@ molflowlinux_sub/Source_files_molflow/Simulation.o: \
 /home/van/MolflowLinux/molflowlinux_sub/Header/Header_linux/Buffer.h:
 
 /home/van/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources/SMP.h:
-
-/home/van/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources/IntersectAABB_shared.h:

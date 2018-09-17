@@ -26,11 +26,14 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "Simulation.h"
 #ifdef WIN
 //#include <Process.h> // For _getpid()
 #endif
+
+typedef void *HANDLE;
 
 // Global process variables
 Simulation* sHandle; //Global handle to simulation, one per subprocess
@@ -72,14 +75,14 @@ void GetState() {
     ReleaseDataport(dpControl);
 	
 	if (!IsProcessRunning(hostProcessId)) {
-		printf("Host synrad.exe (process id %d) not running. Closing.",hostProcessId);
+		printf("Host synrad.exe (process id %d) not running. Closing.",(int)hostProcessId);
 		SetErrorSub("Host synrad.exe not running. Closing subprocess.");
 		end = true;
 	}
   } else {
 	  printf("Subprocess couldn't connect to Molflow.\n");
 	  SetErrorSub("No connection to main program. Closing subprocess.");
-	  Sleep(5000);
+	  sleep(5000);
 	  end = true;
   }
 }
@@ -129,9 +132,9 @@ char *GetSimuStatus() {
     case MC_MODE:
       if( max!=0 ) {
         double percent = (double)(count)*100.0 / (double)(max);
-        sprintf(ret,"(%s) MC %I64d/%I64d (%.1f%%)",sHandle->sh.name.c_str(),count,max,percent);
+        sprintf(ret,"(%s) MC %I64d/%I64d (%.1f%%)",sHandle->sh.name.c_str(),(int)count,(int)max,percent);
       } else {
-        sprintf(ret,"(%s) MC %I64d",sHandle->sh.name.c_str(),count);
+        sprintf(ret,"(%s) MC %I64d",sHandle->sh.name.c_str(),(int)count);
       }
       break;
 
@@ -228,7 +231,8 @@ void LoadAC() {
 void Load() {
 
   Databuff *databuffer;
-  size_t hSize;
+  databuffer=NULL; //(my) change to import databuffer
+  //size_t hSize;
 
   // Load geometry
   //databuffer = OpenDataport(loadDpName,prParam); //Eigentlich brauch ich diese Funktion nicht. Vielleicht ne Sicherungskopie vom Buffer anlegen?
@@ -259,7 +263,7 @@ void Load() {
 		  sHandle->loadOK = false;
 		  return;
 	  }
-	  //*((size_t*)dpLog->buff) = 0; //Autofill with 0. Besides, we don't write without access!
+	  // *((size_t*)dpLog->buff) = 0; //Autofill with 0. Besides, we don't write without access!
   }
   */
 
@@ -302,7 +306,7 @@ bool UpdateParams() {
 			SetErrorSub(err);
 			return false;
 		}
-		//*((size_t*)dpLog->buff) = 0; //Autofill with 0, besides we would need access first
+		// *((size_t*)dpLog->buff) = 0; //Autofill with 0, besides we would need access first
 	}
 	sHandle->tmpParticleLog.clear();
 	sHandle->tmpParticleLog.shrink_to_fit();
@@ -329,7 +333,7 @@ int main(int argc,char* argv[])
   sprintf(hitsDpName,"MFLWHITS%s",argv[1]);
   sprintf(logDpName, "MFLWLOG%s", argv[1]);
 
-  dpControl = OpenDataport(ctrlDpName,sizeof(SHCONTROL));
+  dpControl = OpenDataport(ctrlDpName/*,sizeof(SHCONTROL)*/);
   if( !dpControl ) {
     printf("Usage: Cannot connect to MFLWCTRL%s\n",argv[1]);
     return 1;
@@ -348,7 +352,7 @@ int main(int argc,char* argv[])
     switch(prState) {
 
       case COMMAND_LOAD:
-        printf("COMMAND: LOAD (%zd,%llu)\n",prParam,prParam2);
+        printf("COMMAND: LOAD (%zd,%lu)\n",prParam,prParam2);
         Load();
         if( sHandle->loadOK ) {
           //sHandle->desorptionLimit = prParam2; // 0 for endless
@@ -375,7 +379,7 @@ int main(int argc,char* argv[])
 		  break;*/
 
       case COMMAND_START:
-        printf("COMMAND: START (%zd,%llu)\n",prParam,prParam2);
+        printf("COMMAND: START (%zd,%lu)\n",prParam,prParam2);
         if( sHandle->loadOK ) {
           if( StartSimulation(prParam) )
             SetState(PROCESS_RUN,GetSimuStatus());
@@ -388,7 +392,7 @@ int main(int argc,char* argv[])
         break;
 
       case COMMAND_PAUSE:
-        printf("COMMAND: PAUSE (%zd,%llu)\n",prParam,prParam2);
+        printf("COMMAND: PAUSE (%zd,%lu)\n",prParam,prParam2);
         /* (Rudi) Don't need that. Replace by new code.
         if( !sHandle->lastHitUpdateOK ) {
           // Last update not successful, retry with a longer timeout
@@ -400,18 +404,18 @@ int main(int argc,char* argv[])
         break;
 
       case COMMAND_RESET:
-        printf("COMMAND: RESET (%zd,%llu)\n",prParam,prParam2);
+        printf("COMMAND: RESET (%zd,%lu)\n",prParam,prParam2);
         ResetSimulation();
         SetReady();
         break;
 
       case COMMAND_EXIT:
-        printf("COMMAND: EXIT (%zd,%llu)\n",prParam,prParam2);
+        printf("COMMAND: EXIT (%zd,%lu)\n",prParam,prParam2);
         end = true;
         break;
 
       case COMMAND_CLOSE:
-        printf("COMMAND: CLOSE (%zd,%llu)\n",prParam,prParam2);
+        printf("COMMAND: CLOSE (%zd,%lu)\n",prParam,prParam2);
         ClearSimulation();
         /* (Rudi) Don't need that.
         CLOSEDP(dpHit);
@@ -454,7 +458,7 @@ int main(int argc,char* argv[])
         break;
 
       default:
-        Sleep(WAITTIME);
+        sleep(WAITTIME);
         break;
     }
   }
@@ -470,8 +474,10 @@ int main(int argc,char* argv[])
 
 bool IsProcessRunning(DWORD pid)
 {
+	/* (my) windows stuff. rewrite
 	HANDLE process = OpenProcess(SYNCHRONIZE, false, pid);
 	DWORD ret = WaitForSingleObject(process, 0);
 	CloseHandle(process);
-	return ret == WAIT_TIMEOUT;
+	return ret == WAIT_TIMEOUT;*/
+	return true;
 }

@@ -403,8 +403,8 @@ void UpdateACHits(Dataport *dpHit,int prIdx,DWORD timeout) {
     fHits->density.desorbed = sumDes;
     fHits->density.absorbed = sumAbs;
 
-  }*/
+  }
 
   ReleaseDataport(dpHit);
 
-}
+}*/
