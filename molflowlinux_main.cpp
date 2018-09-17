@@ -1,8 +1,13 @@
+/* Linux-Molflow is based on Molflow+ 2.6.70*/
+
+
 #include <iostream>
 #include <mpi.h>
 #include <string>
 #include <fstream>
 #include "Buffer.h"
+#include <unistd.h>
+
 /*#include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -84,19 +89,19 @@ int main(int argc, char *argv[]) {
 	   *
        */
 
+	  // Initialise buffer
+		Databuff databuffer;
+		databuffer.buff = NULL;
+
+
+
+
       /* Create child processes, each of which has its own variables.
        * From this point on, every process executes a separate copy
        * of this program.  Each process has a different process ID,
        * ranging from 0 to num_procs minus 1, and COPIES of all
        * variables defined in the program. No variables are shared.
        **/
-
-	  // Initialise buffer
-	  Databuff databuffer;
-	  databuffer.buff = NULL;
-
-
-
       MPI_Init(NULL, NULL);
       /* find out MY process ID, and how many processes were started. */
 
@@ -136,14 +141,19 @@ int main(int argc, char *argv[]) {
     		  	  	  	else {std::cout<<databuffer.buff[i]<<std::endl;}
     	      	  		}
     	  //std::cout << argv[1] << ": " << databuffer.buff << std::endl;
+    	  std::cout << "Buffer sent. Wait for 1 second. " <<std::endl;
+    	  }
 
-      	  }
+          //Send buffer to all other processes.
+          MPI_Bcast(&databuffer.size, sizeof(databuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
+          //std::cout << "size of " << argv[1] << " = " << databuffer.size <<std::endl;
+          sleep(1);
 
-
-      //Send buffer to all other processes.
-      //MPI_Bcast(&databuffer, sizeof(databuffer), MPI::BYTE, 0, MPI_COMM_WORLD);
-
-
+          if (rank !=0){ /* do work in any remaining processes */
+              	  databuffer.buff = new BYTE[databuffer.size];
+                }
+          //MPI_Barrier(MPI_COMM_WORLD);
+          MPI_Bcast(databuffer.buff, databuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 
           /*Sharing buffer (Geometry and Parameters) with the other processes
              Send Buffer
@@ -162,27 +172,18 @@ int main(int argc, char *argv[]) {
       if (rank != 0){
     	 /* do work in any remaining processes */
     	 std::cout << "Hello! I'm worker process "<< rank << std::endl;
-    	 //std::cout << "size of " << argv[1] << " = " << databuffer.size <<std::endl;
-    	 //std::cout << "Received buffer: " << databuffer.buff << std::endl;
-
-    	 //delete[] databuffer.buff;
-         //(Receive the Buffer)
+    	 std::cout << "size of " << argv[1] << " = " << databuffer.size <<std::endl;
+    	 std::cout << argv[1] << ": ";
+    	 int i;
+    	 for(i=0; i < 10; i++) {
+    	    	  	  	if (i != (databuffer.size -1)){
+    	    	     	std::cout<<databuffer.buff[i];}
+    	    	     	else {std::cout<<databuffer.buff[i]<<std::endl;}
+    	 	 	 	 	}
 
     	  //InitSimulation(); //Creates sHandle instance, commented as error otherwise
-
     	  //SetReady(); // Rudi: Soll ich das übernehmen?
 
-
-
-
-
-
-
-    	 // Sketch of the worker algorithm:
-
-    	  /* If COMMAND_LOAD is executed successfully, tell process 0 (via MPI)
-          * 
-          */
          /*Do the simulation*/
             /* int m = 0 
              * case PROCESS_RUN:
@@ -193,88 +194,26 @@ int main(int argc, char *argv[]) {
              *      m++
              */
 
-    	 // Here is a simplified copy of the "Main loop" of the Molflow+ subprocess (in molflowSub.cpp) of the Windows application.
-
-    	  /*
-    	   *
-    	   * Main loop
-
-  	  	  	 while( !end ) {
-	GetState();
-    switch(prState) {
-
-      case COMMAND_LOAD:
-        printf("COMMAND: LOAD (%zd,%llu)\n",prParam,prParam2);
-        Load();
-        if( sHandle->loadOK ) {
-          //sHandle->desorptionLimit = prParam2; // 0 for endless
-          SetReady();
-        }
-        break;
-
-      case COMMAND_START:
-        printf("COMMAND: START (%zd,%llu)\n",prParam,prParam2);
-        if( sHandle->loadOK ) {
-          if( StartSimulation(prParam) )
-            SetState(PROCESS_RUN,GetSimuStatus());
-          else {
-            if( GetLocalState()!=PROCESS_ERROR )
-              SetState(PROCESS_DONE,GetSimuStatus());
-          }
-        } else
-          SetErrorSub("No geometry loaded");
-        break;
-
-      case COMMAND_PAUSE:
-        printf("COMMAND: PAUSE (%zd,%llu)\n",prParam,prParam2);
-        if( !sHandle->lastHitUpdateOK ) {
-          // Last update not successful, retry with a longer timeout
-			if (dpHit && (GetLocalState() != PROCESS_ERROR)) UpdateHits(dpHit,dpLog,prIdx,60000);
-        }
-        SetReady();
-        break;
-
-      case COMMAND_EXIT:
-        printf("COMMAND: EXIT (%zd,%llu)\n",prParam,prParam2);
-        end = true;
-        break;
-
-      case PROCESS_RUN:
-        SetStatus(GetSimuStatus()); //update hits only
-        eos = SimulationRun();      // Run during 1 sec
-		if (dpHit && (GetLocalState() != PROCESS_ERROR)) UpdateHits(dpHit,dpLog,prIdx,20); // Update hit with 20ms timeout. If fails, probably an other subprocess is updating, so we'll keep calculating and try it later (latest when the simulation is stopped).
-        if(eos) {
-          if( GetLocalState()!=PROCESS_ERROR ) {
-            // Max desorption reached
-            SetState(PROCESS_DONE,GetSimuStatus());
-            printf("COMMAND: PROCESS_DONE (Max reached)\n");
-          }
-        }
-        break;
-
-      default:
-        Sleep(WAITTIME);
-        break;
-    }
-  }
-
-
-
-    	   * */
-
       }
-      /* Stop this process */
+
+
+
+      MPI_Barrier(MPI_COMM_WORLD);
+
 
       if(rank == 0) {
-          	 //___________________________________________________________________________________________________________________________________________________________
           	 //Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
-
-          	 //char fileexport[] = "/smbhome/schoenmann/buffertest";
+    	     std::cout << "Hello! I'm head process "<< rank << std::endl;
           	 exportBuff(argv[2], &databuffer);
           	 // Build in safety check to not loosing simulation results, if the buffer export does not work?
-          	 delete[] databuffer.buff;
+          	 //delete[] databuffer.buff;
           	std::cout <<"____________________________________________________________________________________________________" << std::endl;
             }
+
+             MPI_Barrier(MPI_COMM_WORLD);
+             delete[] databuffer.buff;
+
+
 
 
     MPI_Finalize();
