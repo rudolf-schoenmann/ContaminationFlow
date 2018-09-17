@@ -133,13 +133,13 @@ int main(int argc, char *argv[]) {
     	   * leave out or put in function?*/
     	  std::cout << "size of " << argv[1] << " = " << databuffer.size <<std::endl;
     	  //std::cout << "size of databuffer = " << sizeof(databuffer) <<std::endl;
-    	  std::cout << argv[1] << ": ";
+    	  /*std::cout << argv[1] << ": ";
     	  int i;
     	  for(i=0; i < databuffer.size; i++) {
     		  	  	  	if (i != (databuffer.size -1)){
     	      	  		std::cout<<databuffer.buff[i];}
     		  	  	  	else {std::cout<<databuffer.buff[i]<<std::endl;}
-    	      	  		}
+    	      	  		}*/
     	  //std::cout << argv[1] << ": " << databuffer.buff << std::endl;
     	  std::cout << "Buffer sent. Wait for 1 second. " <<std::endl;
     	  }
@@ -152,6 +152,7 @@ int main(int argc, char *argv[]) {
           if (rank !=0){ /* do work in any remaining processes */
               	  databuffer.buff = new BYTE[databuffer.size];
                 }
+
           //MPI_Barrier(MPI_COMM_WORLD);
           MPI_Bcast(databuffer.buff, databuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 
@@ -173,13 +174,15 @@ int main(int argc, char *argv[]) {
     	 /* do work in any remaining processes */
     	 std::cout << "Hello! I'm worker process "<< rank << std::endl;
     	 std::cout << "size of " << argv[1] << " = " << databuffer.size <<std::endl;
-    	 std::cout << argv[1] << ": ";
-    	 int i;
+    	 //std::cout << argv[1] << std::endl;
+    	 //char fileexport [] = "/smbhome/schoenmann/buffertest";
+    	 //exportBuff(fileexport, &databuffer);
+    	 /*int i;
     	 for(i=0; i < 10; i++) {
     	    	  	  	if (i != (databuffer.size -1)){
     	    	     	std::cout<<databuffer.buff[i];}
     	    	     	else {std::cout<<databuffer.buff[i]<<std::endl;}
-    	 	 	 	 	}
+    	 	 	 	 	}*/
 
     	  //InitSimulation(); //Creates sHandle instance, commented as error otherwise
     	  //SetReady(); // Rudi: Soll ich das übernehmen?
@@ -197,8 +200,8 @@ int main(int argc, char *argv[]) {
       }
 
 
-
-      MPI_Barrier(MPI_COMM_WORLD);
+      sleep(1);
+      //MPI_Barrier(MPI_COMM_WORLD);
 
 
       if(rank == 0) {
@@ -207,7 +210,7 @@ int main(int argc, char *argv[]) {
           	 exportBuff(argv[2], &databuffer);
           	 // Build in safety check to not loosing simulation results, if the buffer export does not work?
           	 //delete[] databuffer.buff;
-          	std::cout <<"____________________________________________________________________________________________________" << std::endl;
+          	//std::cout <<"____________________________________________________________________________________________________" << std::endl;
             }
 
              MPI_Barrier(MPI_COMM_WORLD);
