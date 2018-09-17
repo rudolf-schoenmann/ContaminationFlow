@@ -28,7 +28,9 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <time.h>
 #include <unistd.h>
 
-#include "Simulation.h"
+//#include "Simulation.h" // already included in SimulationLinux.h
+#include "SimulationLinux.h"
+
 #ifdef WIN
 //#include <Process.h> // For _getpid()
 #endif
@@ -392,7 +394,7 @@ int main(int argc,char* argv[])
       case COMMAND_START:
         printf("COMMAND: START (%zd,%lu)\n",prParam,prParam2);
         if( sHandle->loadOK ) {
-          if( StartSimulation(prParam) )
+          if( StartSimulation() )
             SetState(PROCESS_RUN,GetSimuStatus());
           else {
             if( GetLocalState()!=PROCESS_ERROR )
@@ -454,7 +456,7 @@ int main(int argc,char* argv[])
 
       case PROCESS_RUN:
         SetStatus(GetSimuStatus()); //update hits only
-        eos = SimulationRun();      // Run during 1 sec
+        eos = SimulationRun(1);      // Run during 1 sec
         /*Don't need that.
 		if (dpHit && (GetLocalState() != PROCESS_ERROR)) UpdateHits(dpHit,dpLog,prIdx,20); // Update hit with 20ms timeout. If fails, probably an other subprocess is updating, so we'll keep calculating and try it later (latest when the simulation is stopped).
 		*/

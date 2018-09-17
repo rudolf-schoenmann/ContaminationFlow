@@ -4,13 +4,16 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../molflowlinux_sub/Source_files_linux/Buffer.cpp 
+../molflowlinux_sub/Source_files_linux/Buffer.cpp \
+../molflowlinux_sub/Source_files_linux/SimulationLinux.cpp 
 
 OBJS += \
-./molflowlinux_sub/Source_files_linux/Buffer.o 
+./molflowlinux_sub/Source_files_linux/Buffer.o \
+./molflowlinux_sub/Source_files_linux/SimulationLinux.o 
 
 CPP_DEPS += \
-./molflowlinux_sub/Source_files_linux/Buffer.d 
+./molflowlinux_sub/Source_files_linux/Buffer.d \
+./molflowlinux_sub/Source_files_linux/SimulationLinux.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

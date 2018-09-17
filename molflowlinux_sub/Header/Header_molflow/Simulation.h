@@ -215,13 +215,14 @@ void RecordAngleMap(SubprocessFacet* collidedFacet);
 void InitSimulation();
 void ClearSimulation();
 void SetState(size_t state, const char *status, bool changeState = true, bool changeStatus = true);
+void SetReady();
 void SetErrorSub(const char *msg);
 //void ClearACMatrix();
 bool LoadSimulation(Databuff *databuffer);
 //bool UpdateOntheflySimuParams(Dataport *loader); // (Rudi) I don't think, I need that.
-bool StartSimulation(size_t sMode);
+bool StartSimulation();
 void ResetSimulation();
-bool SimulationRun();
+bool SimulationRun(double simutime);
 bool SimulationMCStep(size_t nbStep);
 void IncreaseDistanceCounters(double d);
 //bool SimulationACStep(int nbStep);
@@ -233,7 +234,7 @@ void RecordAbsorb(SubprocessFacet *iFacet);
 void RecordHistograms(SubprocessFacet * iFacet);
 void PerformTeleport(SubprocessFacet *iFacet);
 void PerformTransparentPass(SubprocessFacet *iFacet);
-//void UpdateHits(Databuff *databuffer, int rank); // (Rudi) Je nachdem, wie die Kommunikation via MPI dann läuft, ist 'int rank' ggf. überflüssig.
+void UpdateHits(Databuff *databuffer, int rank); // (Rudi) Je nachdem, wie die Kommunikation via MPI dann läuft, ist 'int rank' ggf. überflüssig.
 //void UpdateLog(Dataport *dpLog, DWORD timeout); // (Rudi) Don't need that.
 void UpdateMCHits(Databuff *databuffer, int rank, size_t nbMoments);
 //void UpdateACHits(Dataport *dpHit, int prIdx, DWORD timeout); // (Rudi) Don't need that.
