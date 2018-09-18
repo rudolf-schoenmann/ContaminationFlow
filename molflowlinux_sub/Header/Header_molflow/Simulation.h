@@ -222,7 +222,7 @@ bool LoadSimulation(Databuff *databuffer);
 //bool UpdateOntheflySimuParams(Dataport *loader); // (Rudi) I don't think, I need that.
 bool StartSimulation();
 void ResetSimulation();
-bool SimulationRun(double simutime);
+bool SimulationRun();
 bool SimulationMCStep(size_t nbStep);
 void IncreaseDistanceCounters(double d);
 //bool SimulationACStep(int nbStep);
