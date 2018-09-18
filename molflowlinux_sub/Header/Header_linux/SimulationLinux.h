@@ -6,3 +6,6 @@ static const char *min[]={"Minutes","minutes","Minute","minute","min","Min","m",
 
 bool simulateSub(Databuff *hitbuffer, int rank, double simutime, std::string unit);
 double convertunit(double simutime, std::string unit);
+void UpdateSubHits(Databuff *databuffer, int rank);
+void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments);
+void initbufftozero(size_t nbMoments, BYTE *buffer,SubprocessFacet *f);

@@ -8,10 +8,12 @@
 #include "SimulationLinux.h"
 #include <array>
 
+extern Simulation *sHandle; //delcared in molflowSub.cpp
+
 bool simulateSub(Databuff *hitbuffer, int rank, double simutime, std::string unit){
 
 	unsigned int newsimutime = (int)(convertunit(simutime, unit)+0.5);
-	std::cout << "Simulation time " << simutime << unit <<" corresponds to " <<newsimutime <<"s";
+	std::cout << "Simulation time " << simutime << unit <<" converted to " <<newsimutime <<"s" <<std::endl;
 
 	bool eos=false;
 
@@ -21,9 +23,9 @@ bool simulateSub(Databuff *hitbuffer, int rank, double simutime, std::string uni
 	for(unsigned int i=0; i<newsimutime && !eos;i++){
 		eos = SimulationRun();      // Run during 1 sec, performs MC steps
 	}
-	UpdateHits(hitbuffer, rank);
+	UpdateSubHits(hitbuffer, rank);
 
-	return !eos;
+	return true;
 }
 
 double convertunit(double simutime, std::string unit){
@@ -39,3 +41,4 @@ double convertunit(double simutime, std::string unit){
 	return simutime;
 
 }
+
