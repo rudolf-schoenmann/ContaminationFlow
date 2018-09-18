@@ -77,7 +77,7 @@ bool parametercheck(int argc, char *argv[])
 
 
 
-int tempmain(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 
 	  /*Parameters passed to main:
 	   *

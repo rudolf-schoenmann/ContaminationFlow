@@ -40,7 +40,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	buffer = databuffer->buff;
 	gHits = (GlobalHitBuffer *)buffer;
 
-	// Global hits and leaks: adding local hits to shared memory (My) removed + etc
+	// Global hits and leaks: adding local hits to shared memory (My) removed +, etc
 	gHits->globalHits.hit.nbMCHit = sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;
 	gHits->globalHits.hit.nbHitEquiv = sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv;
 	gHits->globalHits.hit.nbAbsEquiv = sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv;
@@ -48,7 +48,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	gHits->distTraveled_total = sHandle->tmpGlobalResult.distTraveled_total;
 	gHits->distTraveledTotal_fullHitsOnly = sHandle->tmpGlobalResult.distTraveledTotal_fullHitsOnly;
 
-	//Memorize current limits, then do a min/max search (MY) change that?
+	//Memorize current limits, then do a min/max search
 	for (i = 0; i < 3; i++) {
 		texture_limits_old[i] = gHits->texture_limits[i];
 		gHits->texture_limits[i].min.all = gHits->texture_limits[i].min.moments_only = HITMAX;
@@ -58,15 +58,15 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	//sHandle->wp.sMode = MC_MODE;
 	//for(i=0;i<BOUNCEMAX;i++) gHits->wallHits[i] += sHandle->wallHits[i];
 
-	// Leak (MY) removed + etc
+	// Leak (MY) removed +, etc
 	for (size_t leakIndex = 0; leakIndex < sHandle->tmpGlobalResult.leakCacheSize; leakIndex++)
 		gHits->leakCache[(leakIndex + gHits->lastLeakIndex) % LEAKCACHESIZE] = sHandle->tmpGlobalResult.leakCache[leakIndex];
 	gHits->nbLeakTotal = sHandle->tmpGlobalResult.nbLeakTotal;
 	gHits->lastLeakIndex = sHandle->tmpGlobalResult.leakCacheSize;
 	gHits->leakCacheSize = sHandle->tmpGlobalResult.leakCacheSize;
 
-	// HHit (Only prIdx 0) //Rudi: I think that's some Hit-History stuff. Not necessary to comment out (presumably).// (MY) removed +, etc
-	if (rank == 1) {
+	// HHit (Only prIdx 0) //Rudi: I think that's some Hit-History stuff. Not necessary to comment out (presumably).
+	if (rank == 1) {// (MY) removed +, etc//(MY) TODO Init for else? or not?
 		for (size_t hitIndex = 0; hitIndex < sHandle->tmpGlobalResult.hitCacheSize; hitIndex++)
 			gHits->hitCache[(hitIndex + gHits->lastHitIndex) % HITCACHESIZE] = sHandle->tmpGlobalResult.hitCache[hitIndex];
 
@@ -79,7 +79,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 
 	//Global histograms (MY) change that?
 
-		for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +, initialize with 0 in else clause
+		for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
 			BYTE *histCurrentMoment = buffer + sizeof(GlobalHitBuffer) + m * sHandle->wp.globalHistogramParams.GetDataSize();
 
 			double* nbHitsHistogram = (double*)histCurrentMoment;
@@ -129,7 +129,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 
 			if (f.hitted) {
 
-				for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +, initializing for else?
+				for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 					facetHitBuffer->hit.nbAbsEquiv = f.tmpCounter[m].hit.nbAbsEquiv;
 					facetHitBuffer->hit.nbDesorbed = f.tmpCounter[m].hit.nbDesorbed;
@@ -140,7 +140,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 					facetHitBuffer->hit.sum_1_per_velocity = f.tmpCounter[m].hit.sum_1_per_velocity;
 				}
 
-				if (f.sh.isProfile) {//(MY) removed +, initializing for else
+				if (f.sh.isProfile) {//(MY) removed +
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 						ProfileSlice *shProfile = (ProfileSlice *)(buffer + f.sh.hitOffset + facetHitsSize + m * f.profileSize);
 						for (j = 0; j < (int)PROFILE_SIZE; j++) {
@@ -149,11 +149,11 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 					}
 				}
 
-				if (f.sh.isTextured) {//(MY) initializing for else
+				if (f.sh.isTextured) {//(MY)
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 						TextureCell *shTexture = (TextureCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
 						//double dCoef = gHits->globalHits.hit.nbDesorbed * 1E4 * sHandle->wp.gasMass / 1000 / 6E23 * MAGIC_CORRECTION_FACTOR;  //1E4 is conversion from m2 to cm2
-						double timeCorrection = m == 0 ? sHandle->wp.finalOutgassingRate : (sHandle->wp.totalDesorbedMolecules) / sHandle->wp.timeWindowSize;
+						//double timeCorrection = m == 0 ? sHandle->wp.finalOutgassingRate : (sHandle->wp.totalDesorbedMolecules) / sHandle->wp.timeWindowSize;
 						//Timecorrection is required to compare constant flow texture values with moment values (for autoscaling)
 
 						for (y = 0; y < (int)f.sh.texHeight; y++) {
@@ -162,7 +162,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 
 								//Add temporary hit counts
 								shTexture[add] = f.texture[m][add]; //(My) removed +
-
+								/* Will be done in SimulationMCmain.cpp
 								double val[3];  //pre-calculated autoscaling values (Pressure, imp.rate, density)
 
 								//TODO (MY) adapt this part of code;
@@ -187,13 +187,13 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 										if (val[v] > 0.0 && val[v] < gHits->texture_limits[v].min.moments_only && f.largeEnough[add])
 											gHits->texture_limits[v].min.moments_only = val[v];
 									}
-								}
+								}*/
 							}
 						}
 					}
 				}
 
-				if (f.sh.countDirection) {//(MY) removed +, initialization for else
+				if (f.sh.countDirection) {//(MY) removed +
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 						DirectionCell *shDir = (DirectionCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*m));
 						for (y = 0; y < (int)f.sh.texHeight; y++) {
@@ -209,7 +209,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 					}
 				}
 
-				if (f.sh.anglemapParams.record) {//(MY) removed +, initialized for else
+				if (f.sh.anglemapParams.record) {//(MY) removed +
 					size_t *shAngleMap = (size_t *)(buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments));
 					for (y = 0; y < (int)(f.sh.anglemapParams.thetaLowerRes + f.sh.anglemapParams.thetaHigherRes); y++) {
 						for (x = 0; x < (int)f.sh.anglemapParams.phiWidth; x++) {
@@ -221,7 +221,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 
 				//Facet histograms
 
-					for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +, initialized for else
+					for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
 						BYTE *histCurrentMoment = buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments) + f.sh.anglemapParams.GetRecordedDataSize() + m * f.sh.facetHistogramParams.GetDataSize();
 
 						if (f.sh.facetHistogramParams.recordBounce) {

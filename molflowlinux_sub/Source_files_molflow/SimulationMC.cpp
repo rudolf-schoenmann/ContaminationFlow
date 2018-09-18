@@ -335,7 +335,7 @@ void UpdateMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	//ReleaseDataport(dpHit); // (Rudi) Don't need that.
 
 	ResetTmpCounters();
-	extern char* GetSimuStatus();
+	//extern char* GetSimuStatus();
 	//SetState(NULL, GetSimuStatus(), false, true); // (Rudi) Don't need that.
 
 #ifdef _DEBUG

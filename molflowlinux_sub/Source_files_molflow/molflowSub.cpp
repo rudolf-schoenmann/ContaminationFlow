@@ -323,7 +323,7 @@ bool UpdateParams() {
 }*/
 
 
-int main(int argc,char* argv[])
+int submain(int argc,char* argv[])
 {
   bool eos = false;
 

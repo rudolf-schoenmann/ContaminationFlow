@@ -8,8 +8,6 @@
 #include "SimulationLinux.h"
 #include <array>
 
-extern Simulation *sHandle; //delcared in molflowSub.cpp
-
 bool simulateSub(Databuff *hitbuffer, int rank, double simutime, std::string unit){
 
 	unsigned int newsimutime = (int)(convertunit(simutime, unit)+0.5);
@@ -17,15 +15,18 @@ bool simulateSub(Databuff *hitbuffer, int rank, double simutime, std::string uni
 
 	bool eos=false;
 
-	InitSimulation();//creates simulation handle
-	SetReady(); //checks simulation status?
+	//InitSimulation();//creates simulation handle
+	//SetReady(); //checks simulation status?
+
+	//TODO LoadSimulation() has to go after InitSimulation and before StartSimulation!!!
+
 	StartSimulation();
 	for(unsigned int i=0; i<newsimutime && !eos;i++){
 		eos = SimulationRun();      // Run during 1 sec, performs MC steps
 	}
 	UpdateSubHits(hitbuffer, rank);
 
-	return true;
+	return !eos;
 }
 
 double convertunit(double simutime, std::string unit){
