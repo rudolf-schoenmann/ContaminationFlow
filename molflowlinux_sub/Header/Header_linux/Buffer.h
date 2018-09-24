@@ -18,6 +18,8 @@ typedef struct {
 
 void importBuff(char *fileName, Databuff *databuffer);
 void exportBuff(char *fileName, Databuff *databuffer);
+void importBuff(std::string fileName, Databuff *databuffer);
+void exportBuff(std::string fileName, Databuff *databuffer);
 
 
 #endif /* MOLFLOWLINUX_SUB_SOURCE_FILES_LINUX_BUFFER_H_ */

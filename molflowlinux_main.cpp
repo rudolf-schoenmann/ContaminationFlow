@@ -7,6 +7,8 @@
 #include <fstream>
 #include "Buffer.h"
 #include <unistd.h>
+#include "Simulation.h"
+#include "SimulationLinux.h"
 
 /*#include <stdio.h>
 #include <unistd.h>
@@ -233,6 +235,31 @@ int main(int argc, char *argv[]) {
                         };
              *      m++
              */
+
+    	  InitSimulation(); //Creates sHandle instance
+    	  // Sub process ready
+    	  SetReady();
+
+    	  if( !LoadSimulation(&loadbuffer) && SimulationTime!=0.0) {
+    		  std::cout << "Geometry not loaded." << std::endl;
+    		  std::cout << "MolflowLinux is terminated now." << std::endl;
+    	    //CLOSEDP(loader); Rudi) Don't need that.
+    		  MPI_Finalize();
+    		  return 0;
+    	  }
+    	  if(!simulateSub(&hitbuffer, rank, SimulationTime,unit)&& SimulationTime!=0.0){
+    		  std::cout << "Maximum desorption reached." << std::endl;
+    	  }
+    	  else{
+    		  std::cout << "Simulation for process " <<rank <<"finished." << std::endl;
+    	  }
+
+
+    	 //test:export buffers
+	  	std::string exportload = "/home/van/loadbuffer" + std::to_string(rank) +".txt";
+	  	std::string exporthit = "/home/van/hitbuffer" + std::to_string(rank) +".txt";
+	  	exportBuff(exporthit, &hitbuffer);
+	  	exportBuff(exportload, &loadbuffer);
 
       }
 
