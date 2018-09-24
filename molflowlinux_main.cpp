@@ -59,6 +59,11 @@
 //#include "GlobalSettings.h"
 #include "ProfilePlotter.h"
 */
+typedef void *HANDLE;
+
+// Global process variables
+Simulation* sHandle; //Global handle to simulation, one per subprocess
+
 
 bool parametercheck(int argc, char *argv[])
       {
@@ -71,9 +76,9 @@ bool parametercheck(int argc, char *argv[])
     	  		std::cout << "MolflowLinux requires 5 mandatory arguments and 1 optional argument."<< std::endl;
     	  		std::cout << "Please pass these arguments to MolflowLinux:"<< std::endl;
     	  		std::cout << "1. Number of Processes (e.g. 7)." << std::endl;
-    	  		std::cout << "2. Name of load-buffer file to read in (e.g. load.txt)." << std::endl;
-    	  		std::cout << "3. Name of hit-buffer file to read in (e.g. hit.txt)." << std::endl;
-    	  		std::cout << "4. Choose a name for the buffer file to export the simulation results (e.g. results.txt)." << std::endl;
+    	  		std::cout << "2. Name of load-buffer file to read in (e.g. loadbuffer)." << std::endl;
+    	  		std::cout << "3. Name of hit-buffer file to read in (e.g. hitbuffer)." << std::endl;
+    	  		std::cout << "4. Choose a name for the buffer file to export the simulation results (e.g. resultbuffer)." << std::endl;
     	  		std::cout << "5. The total simulation time (e.g 2.5)." << std::endl;
     	  		std::cout << "6. [OPTIONAL] Simulation time unit (e.g. seconds, minutes, hours, days). Default set to seconds." << std::endl;
     	  		std::cout << "MolflowLinux is terminated now." << std::endl;
@@ -152,6 +157,7 @@ int main(int argc, char *argv[]) {
     	   * just interesting for debugging => build some conditional (if debug, then show)?
     	   * leave out or put in function?*/
     	  std::cout << "size of " << argv[2] << " = " << hitbuffer.size <<std::endl;
+    	  std::cout << "size of " << argv[1] << " = " << loadbuffer.size <<std::endl;
     	  //std::cout << "size of hitbuffer = " << sizeof(hitbuffer) <<std::endl;
     	  /*std::cout << argv[2] << ": ";
     	  int i;
@@ -167,16 +173,18 @@ int main(int argc, char *argv[]) {
 
       	  // Send load-buffer to all other processes
       	  MPI_Bcast(&loadbuffer.size, sizeof(loadbuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
-      	  //std::cout << "size of " << argv[1] << " = " << loadbuffer.size <<std::endl;
+      	  //std::cout << "size of " << argv[2] << " = " << hitbuffer.size <<std::endl;
       	  sleep(1);
 
       	  if (rank !=0){ /* do work in any remaining processes */
-      		  	  loadbuffer.buff = new BYTE[hitbuffer.size];
-            	}
+          	  loadbuffer.buff = new BYTE[loadbuffer.size];
+            }
 
-      	  MPI_Bcast(loadbuffer.buff, loadbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
+      	  //MPI_Barrier(MPI_COMM_WORLD);
+
       	  sleep(1);
-
+      	  MPI_Bcast(loadbuffer.buff, loadbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
+      	  std::cout << "Loadbuffer sent. Wait for 1 second. " <<std::endl;
 
 
 
@@ -190,8 +198,9 @@ int main(int argc, char *argv[]) {
                 }
 
           //MPI_Barrier(MPI_COMM_WORLD);
-          MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
+
           sleep(1);
+          MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 
 
 
@@ -235,32 +244,36 @@ int main(int argc, char *argv[]) {
                         };
              *      m++
              */
+    	 /*
+    	 if(SimulationTime!=0.0){
+			  InitSimulation(); //Creates sHandle instance
+			  // Sub process ready
+			  SetReady();
 
-    	  InitSimulation(); //Creates sHandle instance
-    	  // Sub process ready
-    	  SetReady();
-
-    	  if( !LoadSimulation(&loadbuffer) && SimulationTime!=0.0) {
-    		  std::cout << "Geometry not loaded." << std::endl;
-    		  std::cout << "MolflowLinux is terminated now." << std::endl;
-    	    //CLOSEDP(loader); Rudi) Don't need that.
-    		  MPI_Finalize();
-    		  return 0;
-    	  }
-    	  if(!simulateSub(&hitbuffer, rank, SimulationTime,unit)&& SimulationTime!=0.0){
-    		  std::cout << "Maximum desorption reached." << std::endl;
-    	  }
-    	  else{
-    		  std::cout << "Simulation for process " <<rank <<"finished." << std::endl;
-    	  }
+			  if( !LoadSimulation(&loadbuffer)) {
+				  std::cout << "Geometry not loaded." << std::endl;
+				  std::cout << "MolflowLinux is terminated now." << std::endl;
+				//CLOSEDP(loader); Rudi) Don't need that.
+				  MPI_Finalize();
+				  return 0;
+			  }
+			  if(!simulateSub(&hitbuffer, rank, SimulationTime,unit)){
+				  std::cout << "Maximum desorption reached." << std::endl;
+			  }
+			  else{
+				  std::cout << "Simulation for process " <<rank <<"finished." << std::endl;
+			  }
+    	 }
+    	 else{std::cout << "Simulation time = 0.0 seconds." << std::endl;}*/
 
 
     	 //test:export buffers
-	  	std::string exportload = "/home/van/loadbuffer" + std::to_string(rank) +".txt";
-	  	std::string exporthit = "/home/van/hitbuffer" + std::to_string(rank) +".txt";
+    	std::cout << "Start export for process " <<rank << std::endl;
+	  	std::string exportload = "/home/van/loadbuffer" + std::to_string(rank);
+	  	std::string exporthit = "/home/van/hitbuffer" + std::to_string(rank);
 	  	exportBuff(exporthit, &hitbuffer);
 	  	exportBuff(exportload, &loadbuffer);
-
+	  	std::cout << "Export for process " <<rank <<"finished." << std::endl;
       }
 
 
