@@ -22,9 +22,7 @@
 #include "MolFlow.h"
 #include "Facet_shared.h"
 #include "MolflowGeometry.h"
-*/
 
-/*
 #include "GLApp/GLFileBox.h"
 #include "GLApp/GLToolkit.h"
 #include "GLApp/GLWindowManager.h"
@@ -36,9 +34,8 @@
 #include "GLApp/GLTextField.h"
 
 #include "RecoveryDialog.h"
-#include "direct.h"*/
+#include "direct.h"
 
-/*
 #include <vector>
 #include <string>
 //#include <io.h>
@@ -65,10 +62,13 @@ bool parametercheck(int argc, char *argv[])
     	  	for(i=0; i < argc; i++) {
     	  		printf("argv[%d]: %s\n", i, argv[i]);
     	  		}
-    	  	if(argc < 3){
-    	  		std::cout << "Please pass 2 arguments to MolflowLinux:"<< std::endl;
-    	  		std::cout << "1. Name of buffer file to read in." << std::endl;
-    	  		std::cout << "2. Choose a name for the buffer file to export the simulation results." << std::endl;
+    	  	if(argc < 6){
+    	  		std::cout << "Please pass 5 arguments to MolflowLinux:"<< std::endl;
+    	  		std::cout << "1. Name of the 'load' buffer file to read in." << std::endl;
+    	  		std::cout << "2. Name of the 'hit' buffer file to read in." << std::endl;
+    	  		std::cout << "3. Choose a name for the buffer file to export the simulation results." << std::endl;
+    	  		std::cout << "4. Choose the simulation duration. Please enter a number." << std::endl;
+    	  		std::cout << "5. Choose the simulation duration. Please enter a unit." << std::endl;
     	  		std::cout << "MolflowLinux is terminated now." << std::endl;
     	  		return false;
     		 	}
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
 	   *
        */
 
-	  // Initialise buffer
+	  // Initialise 'load' buffer and 'hit' buffer
 		Databuff databuffer;
 		databuffer.buff = NULL;
 
