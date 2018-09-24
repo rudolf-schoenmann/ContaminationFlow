@@ -161,6 +161,10 @@ char *GetSimuStatus() {
       }
       break;*/
 
+    default:
+    	std::cout << "Simulation mode is not valid" <<std::endl;
+    	break;
+
   }
 
   return ret;
@@ -251,6 +255,8 @@ void Load() {
     return;
   }
   
+  //TODO Load geometry from buffer here?
+
   printf("Connected to %s\n",loadDpName);
 */
   if( !LoadSimulation(loadbuffer) ) {

@@ -215,7 +215,6 @@ void RecordAngleMap(SubprocessFacet* collidedFacet);
 void InitSimulation();
 void ClearSimulation();
 void SetState(size_t state, const char *status, bool changeState = true, bool changeStatus = true);
-void SetReady();
 void SetErrorSub(const char *msg);
 //void ClearACMatrix();
 bool LoadSimulation(Databuff *databuffer);
