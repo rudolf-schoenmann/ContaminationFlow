@@ -94,6 +94,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 	// Facets
 	for (s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			//TODO Find out whether if clauses can be used or not
 			//if (f.hitted) {
 
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) {

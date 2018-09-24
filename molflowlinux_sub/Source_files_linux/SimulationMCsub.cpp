@@ -24,8 +24,8 @@ void UpdateSubHits(Databuff *databuffer, int rank) {
 void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	BYTE *buffer;
 	GlobalHitBuffer *gHits;
-	TEXTURE_MIN_MAX texture_limits_old[3];
-	int i, j, s, x, y;
+	//TEXTURE_MIN_MAX texture_limits_old[3];
+	int j, s, x, y;
 #ifdef _DEBUG
 	double t0, t1;
 	t0 = GetTick();
@@ -48,12 +48,12 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	gHits->distTraveled_total = sHandle->tmpGlobalResult.distTraveled_total;
 	gHits->distTraveledTotal_fullHitsOnly = sHandle->tmpGlobalResult.distTraveledTotal_fullHitsOnly;
 
-	//Memorize current limits, then do a min/max search
-	for (i = 0; i < 3; i++) {
+	//Memorize current limits, then do a min/max search //(My) not needed for subprocesses
+	/*for (i = 0; i < 3; i++) {
 		texture_limits_old[i] = gHits->texture_limits[i];
 		gHits->texture_limits[i].min.all = gHits->texture_limits[i].min.moments_only = HITMAX;
 		gHits->texture_limits[i].max.all = gHits->texture_limits[i].max.moments_only = 0;
-	}
+	}*/
 
 	//sHandle->wp.sMode = MC_MODE;
 	//for(i=0;i<BOUNCEMAX;i++) gHits->wallHits[i] += sHandle->wallHits[i];
@@ -66,7 +66,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	gHits->leakCacheSize = sHandle->tmpGlobalResult.leakCacheSize;
 
 	// HHit (Only prIdx 0) //Rudi: I think that's some Hit-History stuff. Not necessary to comment out (presumably).
-	if (rank == 1) {// (MY) removed +, etc//(MY) TODO Init for else? or not?
+	//if (rank == 1) {// (MY) removed +, etc//(MY) commented if, assuming mainprocess has rank 1, therefore here we save values from shandle in buffer for all subprocesses
 		for (size_t hitIndex = 0; hitIndex < sHandle->tmpGlobalResult.hitCacheSize; hitIndex++)
 			gHits->hitCache[(hitIndex + gHits->lastHitIndex) % HITCACHESIZE] = sHandle->tmpGlobalResult.hitCache[hitIndex];
 
@@ -75,9 +75,9 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 			gHits->hitCache[gHits->lastHitIndex].type = HIT_LAST; //Penup (border between blocks of consecutive hits in the hit cache)
 			gHits->hitCacheSize = sHandle->tmpGlobalResult.hitCacheSize;
 		}
-	}
+	//}
 
-	//Global histograms (MY) change that?
+	//Global histograms (MY) init to zero for else needed?
 
 		for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
 			BYTE *histCurrentMoment = buffer + sizeof(GlobalHitBuffer) + m * sHandle->wp.globalHistogramParams.GetDataSize();
@@ -165,7 +165,6 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 								/* Will be done in SimulationMCmain.cpp
 								double val[3];  //pre-calculated autoscaling values (Pressure, imp.rate, density)
 
-								//TODO (MY) adapt this part of code;
 
 								val[0] = shTexture[add].sum_v_ort_per_area*timeCorrection; //pressure without dCoef_pressure
 								val[1] = shTexture[add].countEquiv*f.textureCellIncrements[add] * timeCorrection; //imp.rate without dCoef
@@ -253,13 +252,13 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 		} // End nbFacet
 	} // End nbSuper
 
-	//if there were no textures:
-	for (int v = 0; v < 3; v++) {
+	//if there were no textures: //(My) not needed for subprocesses
+	/*for (int v = 0; v < 3; v++) {
 		if (gHits->texture_limits[v].min.all == HITMAX) gHits->texture_limits[v].min.all = texture_limits_old[v].min.all;
 		if (gHits->texture_limits[v].min.moments_only == HITMAX) gHits->texture_limits[v].min.moments_only = texture_limits_old[v].min.moments_only;
 		if (gHits->texture_limits[v].max.all == 0.0) gHits->texture_limits[v].max.all = texture_limits_old[v].max.all;
 		if (gHits->texture_limits[v].max.moments_only == 0.0) gHits->texture_limits[v].max.moments_only = texture_limits_old[v].max.moments_only;
-	}
+	}*/
 
 	//ReleaseDataport(dpHit); // (Rudi) Don't need that.
 
