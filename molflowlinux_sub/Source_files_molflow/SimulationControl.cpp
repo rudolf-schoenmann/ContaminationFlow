@@ -545,7 +545,7 @@ size_t GetHitsSize() {
 }
 
 void ResetTmpCounters() {
-	SetState(NULL, "Resetting local cache...", false, true);
+	//SetState(NULL, "Resetting local cache...", false, true); //(MY) segmentation error otherwise
 
 	memset(&sHandle->tmpGlobalResult, 0, sizeof(GlobalHitBuffer));
 	

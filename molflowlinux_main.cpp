@@ -110,6 +110,7 @@ int main(int argc, char *argv[]) {
 
 		// Init simulation time and unit
 		double SimulationTime;
+		int newsimutime;
 		std::string unit;
 
 
@@ -140,11 +141,6 @@ int main(int argc, char *argv[]) {
     	  {		MPI_Finalize();
       	  	return 0;
     	  }
-    	  // extract Simulation time and unit
-    	  if(argc==5) unit="s";
-    	  else unit = argv[5];
-
-    	  SimulationTime= std::atof(argv[4]);
 
 
     	  //Read in buffer file (exported by Windows-Molflow). File given as first argument to main().
@@ -218,7 +214,21 @@ int main(int argc, char *argv[]) {
           write Result a bufferfile (or maybe??? in a file or .zip archive)*/
 
 
+       // extract Simulation time and unit
+      if(argc==5) unit="s";
+	  else unit = argv[5];
+
+	  SimulationTime= std::atof(argv[4]);
+	  std::cout << SimulationTime <<std::endl;
+
+	  newsimutime = (int)(convertunit(SimulationTime, unit)+0.5);
+	  if(rank==0)
+		  std::cout << "Simulation time " << SimulationTime << unit <<" converted to " <<newsimutime <<"s" <<std::endl;
+
+	  MPI_Barrier(MPI_COMM_WORLD);
+
       if (rank != 0){
+    	  std::cout <<"Process" <<rank <<&hitbuffer.buff  << std::endl;
     	 /* do work in any remaining processes */
     	 std::cout << "Hello! I'm worker process "<< rank << std::endl;
     	 std::cout << "size of " << argv[2] << " = " << hitbuffer.size <<std::endl;
@@ -244,11 +254,14 @@ int main(int argc, char *argv[]) {
                         };
              *      m++
              */
-    	 /*
-    	 if(SimulationTime!=0.0){
+    	 std::cout <<"Process" <<rank << "Test0" << std::endl;
+    	 if(newsimutime!=0){
 			  InitSimulation(); //Creates sHandle instance
+			  std::cout <<"Process" <<rank << "Test0.5" << std::endl;
+
 			  // Sub process ready
-			  SetReady();
+			  //SetReady();
+			  std::cout <<"Process" <<rank << "Test1" << std::endl;
 
 			  if( !LoadSimulation(&loadbuffer)) {
 				  std::cout << "Geometry not loaded." << std::endl;
@@ -257,14 +270,16 @@ int main(int argc, char *argv[]) {
 				  MPI_Finalize();
 				  return 0;
 			  }
-			  if(!simulateSub(&hitbuffer, rank, SimulationTime,unit)){
+			  std::cout <<"Process" <<rank << "Test2" << std::endl;
+			  if(!simulateSub(&hitbuffer, rank, newsimutime)){
 				  std::cout << "Maximum desorption reached." << std::endl;
 			  }
 			  else{
 				  std::cout << "Simulation for process " <<rank <<"finished." << std::endl;
 			  }
+			  std::cout <<"Process" <<rank << "Test3" << std::endl;
     	 }
-    	 else{std::cout << "Simulation time = 0.0 seconds." << std::endl;}*/
+    	 else{std::cout << "Simulation time = 0.0 seconds." << std::endl;}
 
 
     	 //test:export buffers
@@ -274,11 +289,13 @@ int main(int argc, char *argv[]) {
 	  	exportBuff(exporthit, &hitbuffer);
 	  	exportBuff(exportload, &loadbuffer);
 	  	std::cout << "Export for process " <<rank <<"finished." << std::endl;
+	  	std::cout <<"Process" <<rank <<&hitbuffer.buff  << std::endl;
       }
+      std::cout <<"Process" <<rank << "Test6" << std::endl;
 
 
-      sleep(1);
-      //MPI_Barrier(MPI_COMM_WORLD);
+      //sleep(1);
+      MPI_Barrier(MPI_COMM_WORLD);
 
 
       if(rank == 0) {
@@ -290,15 +307,18 @@ int main(int argc, char *argv[]) {
           	//std::cout <<"____________________________________________________________________________________________________" << std::endl;
             }
 
+      std::cout <<"Process" <<rank << "Test7" << std::endl;
+      sleep(1);
              MPI_Barrier(MPI_COMM_WORLD);
-             delete[] hitbuffer.buff;
-             delete[] loadbuffer.buff;
+             if(rank==0){delete[] hitbuffer.buff; hitbuffer.buff=NULL;}
+			 delete[] loadbuffer.buff; loadbuffer.buff=NULL;
 
+			 std::cout <<"Process" <<rank << "Test7.5" << std::endl;
+             MPI_Barrier(MPI_COMM_WORLD);
 
-
-
-    MPI_Finalize();
+             MPI_Finalize();
     
 
+    std::cout <<"Process" <<rank << "Test8" << std::endl;
     return 0;
 }

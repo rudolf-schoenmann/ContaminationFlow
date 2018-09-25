@@ -48,6 +48,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	gHits->distTraveled_total = sHandle->tmpGlobalResult.distTraveled_total;
 	gHits->distTraveledTotal_fullHitsOnly = sHandle->tmpGlobalResult.distTraveledTotal_fullHitsOnly;
 
+
 	//Memorize current limits, then do a min/max search //(My) not needed for subprocesses
 	/*for (i = 0; i < 3; i++) {
 		texture_limits_old[i] = gHits->texture_limits[i];
@@ -65,6 +66,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	gHits->lastLeakIndex = sHandle->tmpGlobalResult.leakCacheSize;
 	gHits->leakCacheSize = sHandle->tmpGlobalResult.leakCacheSize;
 
+
 	// HHit (Only prIdx 0) //Rudi: I think that's some Hit-History stuff. Not necessary to comment out (presumably).
 	//if (rank == 1) {// (MY) removed +, etc//(MY) commented if, assuming mainprocess has rank 1, therefore here we save values from shandle in buffer for all subprocesses
 		for (size_t hitIndex = 0; hitIndex < sHandle->tmpGlobalResult.hitCacheSize; hitIndex++)
@@ -76,6 +78,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 			gHits->hitCacheSize = sHandle->tmpGlobalResult.hitCacheSize;
 		}
 	//}
+
 
 	//Global histograms (MY) init to zero for else needed?
 

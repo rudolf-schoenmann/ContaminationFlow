@@ -16,6 +16,7 @@ typedef struct {
 	BYTE *buff;
 }Databuff;
 
+
 void importBuff(char *fileName, Databuff *databuffer);
 void exportBuff(char *fileName, Databuff *databuffer);
 void importBuff(std::string fileName, Databuff *databuffer);
