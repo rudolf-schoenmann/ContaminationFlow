@@ -36,11 +36,8 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	SetState(NULL, "Updating MC hits...", false, true);
 	if (!sHandle->lastHitUpdateOK) return; //Timeout, will try again later
 	*/
-	buffer=NULL;
 
 	buffer = databuffer->buff;
-	std::cout <<"Process " <<rank <<&databuffer->buff << std::endl;
-	std::cout <<"Process " <<rank <<&buffer << std::endl;
 	gHits = (GlobalHitBuffer *)buffer;
 
 
@@ -219,9 +216,6 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 
 
 	ResetTmpCounters();
-	buffer=NULL;
-	std::cout <<"Process" <<rank <<&databuffer->buff << std::endl;
-	std::cout <<"Process" <<rank <<&buffer << std::endl;
 
 #ifdef _DEBUG
 	t1 = GetTick();

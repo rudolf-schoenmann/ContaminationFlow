@@ -73,14 +73,13 @@ bool parametercheck(int argc, char *argv[])
     	  		printf("argv[%d]: %s\n", i, argv[i]);
     	  		}
     	  	if(argc < 5 || argc > 6){
-    	  		std::cout << "MolflowLinux requires 5 mandatory arguments and 1 optional argument."<< std::endl;
+    	  		std::cout << "MolflowLinux requires 4 mandatory arguments and 1 optional argument."<< std::endl;
     	  		std::cout << "Please pass these arguments to MolflowLinux:"<< std::endl;
-    	  		std::cout << "1. Number of Processes (e.g. 7)." << std::endl;
-    	  		std::cout << "2. Name of load-buffer file to read in (e.g. loadbuffer)." << std::endl;
-    	  		std::cout << "3. Name of hit-buffer file to read in (e.g. hitbuffer)." << std::endl;
-    	  		std::cout << "4. Choose a name for the buffer file to export the simulation results (e.g. resultbuffer)." << std::endl;
-    	  		std::cout << "5. The total simulation time (e.g 2.5)." << std::endl;
-    	  		std::cout << "6. [OPTIONAL] Simulation time unit (e.g. seconds, minutes, hours, days). Default set to seconds." << std::endl;
+    	  		std::cout << "1. Name of load-buffer file to read in (e.g. loadbuffer)." << std::endl;
+    	  		std::cout << "2. Name of hit-buffer file to read in (e.g. hitbuffer)." << std::endl;
+    	  		std::cout << "3. Choose a name for the buffer file to export the simulation results (e.g. resultbuffer)." << std::endl;
+    	  		std::cout << "4. The total simulation time (e.g 2.5)." << std::endl;
+    	  		std::cout << "5. [OPTIONAL] Simulation time unit (e.g. seconds, minutes, hours, days). Default set to seconds." << std::endl;
     	  		std::cout << "MolflowLinux is terminated now." << std::endl;
     	  		return false;
     		 	}
@@ -163,7 +162,7 @@ int main(int argc, char *argv[]) {
     		  	  	  	else {std::cout<<hitbuffer.buff[i]<<std::endl;}
     	      	  		}*/
     	  //std::cout << argv[2] << ": " << hitbuffer.buff << std::endl;
-    	  std::cout << "Buffer sent. Wait for 1 second. " <<std::endl;
+    	  std::cout << "Buffers sent. Wait for a few second. " <<std::endl;
     	  }
 
 
@@ -176,13 +175,10 @@ int main(int argc, char *argv[]) {
           	  loadbuffer.buff = new BYTE[loadbuffer.size];
             }
 
-      	  //MPI_Barrier(MPI_COMM_WORLD);
 
-      	  sleep(1);
       	  MPI_Bcast(loadbuffer.buff, loadbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
-      	  std::cout << "Loadbuffer sent. Wait for 1 second. " <<std::endl;
 
-
+      	  MPI_Barrier(MPI_COMM_WORLD);
 
           //Send hit-buffer to all other processes.
           MPI_Bcast(&hitbuffer.size, sizeof(hitbuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
@@ -193,9 +189,7 @@ int main(int argc, char *argv[]) {
               	  hitbuffer.buff = new BYTE[hitbuffer.size];
                 }
 
-          //MPI_Barrier(MPI_COMM_WORLD);
 
-          sleep(1);
           MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 
 
@@ -219,7 +213,7 @@ int main(int argc, char *argv[]) {
 	  else unit = argv[5];
 
 	  SimulationTime= std::atof(argv[4]);
-	  std::cout << SimulationTime <<std::endl;
+	  //std::cout << SimulationTime <<std::endl;
 
 	  newsimutime = (int)(convertunit(SimulationTime, unit)+0.5);
 	  if(rank==0)
@@ -228,7 +222,6 @@ int main(int argc, char *argv[]) {
 	  MPI_Barrier(MPI_COMM_WORLD);
 
       if (rank != 0){
-    	  std::cout <<"Process" <<rank <<&hitbuffer.buff  << std::endl;
     	 /* do work in any remaining processes */
     	 std::cout << "Hello! I'm worker process "<< rank << std::endl;
     	 std::cout << "size of " << argv[2] << " = " << hitbuffer.size <<std::endl;
@@ -254,14 +247,11 @@ int main(int argc, char *argv[]) {
                         };
              *      m++
              */
-    	 std::cout <<"Process" <<rank << "Test0" << std::endl;
     	 if(newsimutime!=0){
 			  InitSimulation(); //Creates sHandle instance
-			  std::cout <<"Process" <<rank << "Test0.5" << std::endl;
 
 			  // Sub process ready
 			  //SetReady();
-			  std::cout <<"Process" <<rank << "Test1" << std::endl;
 
 			  if( !LoadSimulation(&loadbuffer)) {
 				  std::cout << "Geometry not loaded." << std::endl;
@@ -270,14 +260,12 @@ int main(int argc, char *argv[]) {
 				  MPI_Finalize();
 				  return 0;
 			  }
-			  std::cout <<"Process" <<rank << "Test2" << std::endl;
 			  if(!simulateSub(&hitbuffer, rank, newsimutime)){
 				  std::cout << "Maximum desorption reached." << std::endl;
 			  }
 			  else{
-				  std::cout << "Simulation for process " <<rank <<"finished." << std::endl;
+				  std::cout << "Simulation for process " <<rank <<" finished." << std::endl;
 			  }
-			  std::cout <<"Process" <<rank << "Test3" << std::endl;
     	 }
     	 else{std::cout << "Simulation time = 0.0 seconds." << std::endl;}
 
@@ -288,13 +276,10 @@ int main(int argc, char *argv[]) {
 	  	std::string exporthit = "/home/van/hitbuffer" + std::to_string(rank);
 	  	exportBuff(exporthit, &hitbuffer);
 	  	exportBuff(exportload, &loadbuffer);
-	  	std::cout << "Export for process " <<rank <<"finished." << std::endl;
-	  	std::cout <<"Process" <<rank <<&hitbuffer.buff  << std::endl;
+	  	std::cout << "Export for process " <<rank <<" finished." << std::endl;
       }
-      std::cout <<"Process" <<rank << "Test6" << std::endl;
 
 
-      //sleep(1);
       MPI_Barrier(MPI_COMM_WORLD);
 
 
@@ -307,18 +292,16 @@ int main(int argc, char *argv[]) {
           	//std::cout <<"____________________________________________________________________________________________________" << std::endl;
             }
 
-      std::cout <<"Process" <<rank << "Test7" << std::endl;
-      sleep(1);
-             MPI_Barrier(MPI_COMM_WORLD);
              if(hitbuffer.buff!=NULL){delete[] hitbuffer.buff; hitbuffer.buff=NULL;}
-			 delete[] loadbuffer.buff; loadbuffer.buff=NULL;
+             if(loadbuffer.buff!=NULL){delete[] loadbuffer.buff; loadbuffer.buff=NULL;}
 
-			 std::cout <<"Process" <<rank << "Test7.5" << std::endl;
+
              MPI_Barrier(MPI_COMM_WORLD);
-
+             if(rank==0)
+            	 std::cout << "Closing MPI now." << std::endl;
              MPI_Finalize();
-    
+             if(rank==0)
+            	 std::cout << "Program finished." << std::endl;
 
-    std::cout <<"Process" <<rank << "Test8" << std::endl;
     return 0;
 }
