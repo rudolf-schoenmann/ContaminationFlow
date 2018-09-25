@@ -62,16 +62,17 @@ bool parametercheck(int argc, char *argv[])
     	  	for(i=0; i < argc; i++) {
     	  		printf("argv[%d]: %s\n", i, argv[i]);
     	  		}
-    	  	if(argc < 6){
-    	  		std::cout << "Please pass 5 arguments to MolflowLinux:"<< std::endl;
-    	  		std::cout << "1. Name of the 'load' buffer file to read in." << std::endl;
-    	  		std::cout << "2. Name of the 'hit' buffer file to read in." << std::endl;
-    	  		std::cout << "3. Choose a name for the buffer file to export the simulation results." << std::endl;
-    	  		std::cout << "4. Choose the simulation duration. Please enter a number." << std::endl;
-    	  		std::cout << "5. Choose the simulation duration. Please enter a unit." << std::endl;
-    	  		std::cout << "MolflowLinux is terminated now." << std::endl;
-    	  		return false;
-    		 	}
+    	  	f(argc < 5 || argc > 6){
+    	  	    	  		std::cout << "MolflowLinux requires 4 mandatory arguments and 1 optional argument."<< std::endl;
+    	  	    	  		std::cout << "Please pass these arguments to MolflowLinux:"<< std::endl;
+    	  	    	  		std::cout << "1. Name of load-buffer file to read in (e.g. loadbuffer)." << std::endl;
+    	  	    	  		std::cout << "2. Name of hit-buffer file to read in (e.g. hitbuffer)." << std::endl;
+    	  	    	  		std::cout << "3. Choose a name for the buffer file to export the simulation results (e.g. resultbuffer)." << std::endl;
+    	  	    	  		std::cout << "4. The total simulation time (e.g 2.5)." << std::endl;
+    	  	    	  		std::cout << "5. [OPTIONAL] Simulation time unit (e.g. seconds, minutes, hours, days). Default set to seconds." << std::endl;
+    	  	    	  		std::cout << "MolflowLinux is terminated now." << std::endl;
+    	  	    	  		return false;
+    	  	    		 	}
     	  	return true;
       }
 
