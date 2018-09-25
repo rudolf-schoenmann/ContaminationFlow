@@ -9,7 +9,7 @@ void UpdateSubHits(Databuff *databuffer, int rank) {
 	switch (sHandle->wp.sMode) {
 	case MC_MODE:
 	{
-		UpdateSubMCHits(databuffer, rank, sHandle->moments.size());
+		UpdateSubMCHits(databuffer, rank, (size_t)sHandle->moments.size());
 		//if (dpLog) UpdateLog(dpLog, timeout);
 	}
 		break;
@@ -24,8 +24,8 @@ void UpdateSubHits(Databuff *databuffer, int rank) {
 void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	BYTE *buffer;
 	GlobalHitBuffer *gHits;
-	TEXTURE_MIN_MAX texture_limits_old[3];
-	int i, j, s, x, y;
+	//TEXTURE_MIN_MAX texture_limits_old[3];
+	int j, s, x, y;
 #ifdef _DEBUG
 	double t0, t1;
 	t0 = GetTick();
@@ -40,6 +40,8 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	buffer = databuffer->buff;
 	gHits = (GlobalHitBuffer *)buffer;
 
+
+
 	// Global hits and leaks: adding local hits to shared memory (My) removed +, etc
 	gHits->globalHits.hit.nbMCHit = sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;
 	gHits->globalHits.hit.nbHitEquiv = sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv;
@@ -48,15 +50,9 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	gHits->distTraveled_total = sHandle->tmpGlobalResult.distTraveled_total;
 	gHits->distTraveledTotal_fullHitsOnly = sHandle->tmpGlobalResult.distTraveledTotal_fullHitsOnly;
 
-	//Memorize current limits, then do a min/max search
-	for (i = 0; i < 3; i++) {
-		texture_limits_old[i] = gHits->texture_limits[i];
-		gHits->texture_limits[i].min.all = gHits->texture_limits[i].min.moments_only = HITMAX;
-		gHits->texture_limits[i].max.all = gHits->texture_limits[i].max.moments_only = 0;
-	}
 
-	//sHandle->wp.sMode = MC_MODE;
-	//for(i=0;i<BOUNCEMAX;i++) gHits->wallHits[i] += sHandle->wallHits[i];
+	//Memorize current limits, then do a min/max search //(My) not needed for subprocesses
+
 
 	// Leak (MY) removed +, etc
 	for (size_t leakIndex = 0; leakIndex < sHandle->tmpGlobalResult.leakCacheSize; leakIndex++)
@@ -65,8 +61,9 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	gHits->lastLeakIndex = sHandle->tmpGlobalResult.leakCacheSize;
 	gHits->leakCacheSize = sHandle->tmpGlobalResult.leakCacheSize;
 
+
 	// HHit (Only prIdx 0) //Rudi: I think that's some Hit-History stuff. Not necessary to comment out (presumably).
-	if (rank == 1) {// (MY) removed +, etc//(MY) TODO Init for else? or not?
+	//if (rank == 1) {// (MY) removed +, etc//(MY) commented if, assuming mainprocess has rank 1, therefore here we save values from shandle in buffer for all subprocesses
 		for (size_t hitIndex = 0; hitIndex < sHandle->tmpGlobalResult.hitCacheSize; hitIndex++)
 			gHits->hitCache[(hitIndex + gHits->lastHitIndex) % HITCACHESIZE] = sHandle->tmpGlobalResult.hitCache[hitIndex];
 
@@ -75,9 +72,10 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 			gHits->hitCache[gHits->lastHitIndex].type = HIT_LAST; //Penup (border between blocks of consecutive hits in the hit cache)
 			gHits->hitCacheSize = sHandle->tmpGlobalResult.hitCacheSize;
 		}
-	}
+	//}
 
-	//Global histograms (MY) change that?
+
+	//Global histograms (MY) init to zero for else needed?
 
 		for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
 			BYTE *histCurrentMoment = buffer + sizeof(GlobalHitBuffer) + m * sHandle->wp.globalHistogramParams.GetDataSize();
@@ -91,20 +89,10 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 					nbHitsHistogram[i] = sHandle->tmpGlobalHistograms[m].nbHitsHistogram[i];
 				}
 			}
-			else{
-				for (size_t i = 0; i < sHandle->wp.globalHistogramParams.GetBounceHistogramSize(); i++) {
-					nbHitsHistogram[i] = 0.0;
-				}
-			}
 
 			if (sHandle->wp.globalHistogramParams.recordDistance) {//(MY) removed +
 				for (size_t i = 0; i < (sHandle->wp.globalHistogramParams.GetDistanceHistogramSize()); i++) {
 					distanceHistogram[i] = sHandle->tmpGlobalHistograms[m].distanceHistogram[i];
-				}
-			}
-			else{
-				for (size_t i = 0; i < (sHandle->wp.globalHistogramParams.GetDistanceHistogramSize()); i++) {
-					distanceHistogram[i] = 0.0;
 				}
 			}
 
@@ -113,19 +101,14 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 					timeHistogram[i] = sHandle->tmpGlobalHistograms[m].timeHistogram[i];
 				}
 			}
-			else{
-				for (size_t i = 0; i < (sHandle->wp.globalHistogramParams.GetTimeHistogramSize()); i++) {
-					timeHistogram[i] = 0.0;
-				}
-			}
 		}
-
+	initbufftozero(nbMoments, databuffer);
 
 	size_t facetHitsSize = (1 + nbMoments) * sizeof(FacetHitBuffer);
 	// Facets
 	for (s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			initbufftozero(nbMoments, buffer,&f);
+
 
 			if (f.hitted) {
 
@@ -162,32 +145,8 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 
 								//Add temporary hit counts
 								shTexture[add] = f.texture[m][add]; //(My) removed +
-								/* Will be done in SimulationMCmain.cpp
-								double val[3];  //pre-calculated autoscaling values (Pressure, imp.rate, density)
+								// Autoscaling will be done in SimulationMCmain.cpp
 
-								//TODO (MY) adapt this part of code;
-
-								val[0] = shTexture[add].sum_v_ort_per_area*timeCorrection; //pressure without dCoef_pressure
-								val[1] = shTexture[add].countEquiv*f.textureCellIncrements[add] * timeCorrection; //imp.rate without dCoef
-								val[2] = f.textureCellIncrements[add] * shTexture[add].sum_1_per_ort_velocity* timeCorrection; //particle density without dCoef
-
-								//Global autoscale (MY) how to solve f.largeEnough?
-								for (int v = 0; v < 3; v++) {
-									if (val[v] > gHits->texture_limits[v].max.all && f.largeEnough[add])
-										gHits->texture_limits[v].max.all = val[v];
-
-									if (val[v] > 0.0 && val[v] < gHits->texture_limits[v].min.all && f.largeEnough[add])
-										gHits->texture_limits[v].min.all = val[v];
-
-									//Autoscale ignoring constant flow (moments only) (MY)
-									if (m != 0) {
-										if (val[v] > gHits->texture_limits[v].max.moments_only && f.largeEnough[add])
-											gHits->texture_limits[v].max.moments_only = val[v];
-
-										if (val[v] > 0.0 && val[v] < gHits->texture_limits[v].min.moments_only && f.largeEnough[add])
-											gHits->texture_limits[v].min.moments_only = val[v];
-									}
-								}*/
 							}
 						}
 					}
@@ -253,34 +212,40 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 		} // End nbFacet
 	} // End nbSuper
 
-	//if there were no textures:
-	for (int v = 0; v < 3; v++) {
-		if (gHits->texture_limits[v].min.all == HITMAX) gHits->texture_limits[v].min.all = texture_limits_old[v].min.all;
-		if (gHits->texture_limits[v].min.moments_only == HITMAX) gHits->texture_limits[v].min.moments_only = texture_limits_old[v].min.moments_only;
-		if (gHits->texture_limits[v].max.all == 0.0) gHits->texture_limits[v].max.all = texture_limits_old[v].max.all;
-		if (gHits->texture_limits[v].max.moments_only == 0.0) gHits->texture_limits[v].max.moments_only = texture_limits_old[v].max.moments_only;
-	}
+	//if there were no textures: //(My) not needed for subprocesses
 
-	//ReleaseDataport(dpHit); // (Rudi) Don't need that.
 
 	ResetTmpCounters();
-	//extern char* GetSimuStatus();
-	//SetState(NULL, GetSimuStatus(), false, true); // (Rudi) Don't need that.
 
 #ifdef _DEBUG
 	t1 = GetTick();
 	printf("Update hits: %f us\n", (t1 - t0)*1000000.0);
 #endif
 
+	return;
 }
 
-void initbufftozero(size_t nbMoments, BYTE *buffer,SubprocessFacet *f){
+void initbufftozero(size_t nbMoments, Databuff *databuffer){
+
+
+	BYTE *buffer;
+	GlobalHitBuffer *gHits;
+
+	buffer=NULL;
+	buffer = databuffer->buff;
+	gHits = (GlobalHitBuffer *)buffer;
+
 	//here: init values with zero
 	size_t facetHitsSize = (1 + nbMoments) * sizeof(FacetHitBuffer);
-	int j, x, y;
+	int j, x, y, s;
 
-	for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +, initializing for else?
-						FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f->sh.hitOffset + m * sizeof(FacetHitBuffer));
+	for (s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+			for (SubprocessFacet& f : sHandle->structures[s].facets) {
+
+				//if (f.hitted) {
+
+					for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
+						FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 						facetHitBuffer->hit.nbAbsEquiv = 0.0;
 						facetHitBuffer->hit.nbDesorbed = 0;
 						facetHitBuffer->hit.nbMCHit = 0;
@@ -289,62 +254,91 @@ void initbufftozero(size_t nbMoments, BYTE *buffer,SubprocessFacet *f){
 						facetHitBuffer->hit.sum_v_ort = 0.0;
 						facetHitBuffer->hit.sum_1_per_velocity = 0.0;
 					}
-	for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-							ProfileSlice *shProfile = (ProfileSlice *)(buffer + f->sh.hitOffset + facetHitsSize + m * f->profileSize);
+
+					if (f.sh.isProfile) {//(MY) removed +
+						for (unsigned int m = 0; m < (1 + nbMoments); m++) {
+							ProfileSlice *shProfile = (ProfileSlice *)(buffer + f.sh.hitOffset + facetHitsSize + m * f.profileSize);
 							for (j = 0; j < (int)PROFILE_SIZE; j++) {
 								shProfile[j].countEquiv=0.0; shProfile[j].sum_1_per_ort_velocity=0.0; shProfile[j].sum_v_ort=0.0;
 							}
 						}
-	for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-		TextureCell *shTexture = (TextureCell *)(buffer + (f->sh.hitOffset + facetHitsSize + f->profileSize*(1 + nbMoments) + m * f->textureSize));
-		for (y = 0; y < (int)f->sh.texHeight; y++) {
-			for (x = 0; x < (int)f->sh.texWidth; x++) {
-				size_t add = x + y * f->sh.texWidth;
-				shTexture[add].countEquiv=0.0; shTexture[add].sum_1_per_ort_velocity=0.0; shTexture[add].sum_v_ort_per_area=0.0;
-			}
-		}
-	}
-	for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-		DirectionCell *shDir = (DirectionCell *)(buffer + (f->sh.hitOffset + facetHitsSize + f->profileSize*(1 + nbMoments) + f->textureSize*(1 + nbMoments) + f->directionSize*m));
-		for (y = 0; y < (int)f->sh.texHeight; y++) {
-			for (x = 0; x < (int)f->sh.texWidth; x++) {
-				size_t add = x + y * f->sh.texWidth;
-				shDir[add].dir.x = 0.0;
-				shDir[add].dir.y = 0.0;
-				shDir[add].dir.z = 0.0;
-				//shDir[add].sumSpeed += f.direction[m][add].sumSpeed;
-				shDir[add].count = 0;
-			}
-		}
-	}
-	size_t *shAngleMap = (size_t *)(buffer + f->sh.hitOffset + facetHitsSize + f->profileSize*(1 + nbMoments) + f->textureSize*(1 + nbMoments) + f->directionSize*(1 + nbMoments));
-	for (y = 0; y < (int)(f->sh.anglemapParams.thetaLowerRes + f->sh.anglemapParams.thetaHigherRes); y++) {
-		for (x = 0; x < (int)f->sh.anglemapParams.phiWidth; x++) {
-			size_t add = x + y * f->sh.anglemapParams.phiWidth;
-			shAngleMap[add] = 0;
-		}
-	}
-	for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +, initialized for else
-		BYTE *histCurrentMoment = buffer + f->sh.hitOffset + facetHitsSize + f->profileSize*(1 + nbMoments) + f->textureSize*(1 + nbMoments) + f->directionSize*(1 + nbMoments) + f->sh.anglemapParams.GetRecordedDataSize() + m * f->sh.facetHistogramParams.GetDataSize();
+					}
 
-		double* nbHitsHistogram = (double*)histCurrentMoment;
-		double* distanceHistogram = (double*)(histCurrentMoment + f->sh.facetHistogramParams.GetBouncesDataSize());
-		double* timeHistogram = (double*)(histCurrentMoment + f->sh.facetHistogramParams.GetBouncesDataSize() + f->sh.facetHistogramParams.GetDistanceDataSize());
+					if (f.sh.isTextured) {//(MY)
+						for (unsigned int m = 0; m < (1 + nbMoments); m++) {
+							TextureCell *shTexture = (TextureCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
+
+							for (y = 0; y < (int)f.sh.texHeight; y++) {
+								for (x = 0; x < (int)f.sh.texWidth; x++) {
+									size_t add = x + y * f.sh.texWidth;
+
+									//Add temporary hit counts
+									shTexture[add].countEquiv=0.0; shTexture[add].sum_1_per_ort_velocity=0.0; shTexture[add].sum_v_ort_per_area=0.0;
+
+								}
+							}
+						}
+					}
+
+					if (f.sh.countDirection) {//(MY) removed +
+						for (unsigned int m = 0; m < (1 + nbMoments); m++) {
+							DirectionCell *shDir = (DirectionCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*m));
+							for (y = 0; y < (int)f.sh.texHeight; y++) {
+								for (x = 0; x < (int)f.sh.texWidth; x++) {
+									size_t add = x + y * f.sh.texWidth;
+									shDir[add].dir.x = 0.0;
+									shDir[add].dir.y = 0.0;
+									shDir[add].dir.z = 0.0;
+									//shDir[add].sumSpeed += f.direction[m][add].sumSpeed;
+									shDir[add].count = 0;
+								}
+							}
+						}
+					}
+
+					if (f.sh.anglemapParams.record) {//(MY) removed +
+						size_t *shAngleMap = (size_t *)(buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments));
+						for (y = 0; y < (int)(f.sh.anglemapParams.thetaLowerRes + f.sh.anglemapParams.thetaHigherRes); y++) {
+							for (x = 0; x < (int)f.sh.anglemapParams.phiWidth; x++) {
+								size_t add = x + y * f.sh.anglemapParams.phiWidth;
+								shAngleMap[add] = 0;
+							}
+						}
+					}
+
+					//Facet histograms
+
+						for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
+							BYTE *histCurrentMoment = buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments) + f.sh.anglemapParams.GetRecordedDataSize() + m * f.sh.facetHistogramParams.GetDataSize();
+
+							if (f.sh.facetHistogramParams.recordBounce) {
+								double* nbHitsHistogram = (double*)histCurrentMoment;
+								for (size_t i = 0; i < f.sh.facetHistogramParams.GetBounceHistogramSize(); i++) {
+									nbHitsHistogram[i] = 0.0;
+								}
+							}
 
 
-			for (size_t i = 0; i < f->sh.facetHistogramParams.GetBounceHistogramSize(); i++) {
-				nbHitsHistogram[i] = 0.0;
-			}
+							if (f.sh.facetHistogramParams.recordDistance) {
+								double* distanceHistogram = (double*)(histCurrentMoment + f.sh.facetHistogramParams.GetBouncesDataSize());
+								for (size_t i = 0; i < (f.sh.facetHistogramParams.GetDistanceHistogramSize()); i++) {
+									distanceHistogram[i] = 0.0;
+								}
+							}
 
-			for (size_t i = 0; i < (f->sh.facetHistogramParams.GetDistanceHistogramSize()); i++) {
-				distanceHistogram[i] = 0.0;
-			}
+							if (f.sh.facetHistogramParams.recordTime) {
+								double* timeHistogram = (double*)(histCurrentMoment + f.sh.facetHistogramParams.GetBouncesDataSize() + f.sh.facetHistogramParams.GetDistanceDataSize());
+								for (size_t i = 0; i < (f.sh.facetHistogramParams.GetTimeHistogramSize()); i++) {
+									timeHistogram[i] = 0.0;
+								}
+							}
 
-			for (size_t i = 0; i < (f->sh.facetHistogramParams.GetTimeHistogramSize()); i++) {
-				timeHistogram[i] = 0.0;
-			}
+						}
 
-	}
+				//} // End if(hitted)
+
+			} // End nbFacet
+		} // End nbSuper
 
 	return;
 }

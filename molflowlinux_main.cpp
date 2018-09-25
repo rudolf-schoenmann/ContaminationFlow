@@ -7,6 +7,8 @@
 #include <fstream>
 #include "Buffer.h"
 #include <unistd.h>
+#include "Simulation.h"
+#include "SimulationLinux.h"
 
 /*#include <stdio.h>
 #include <unistd.h>
@@ -54,6 +56,11 @@
 //#include "GlobalSettings.h"
 #include "ProfilePlotter.h"
 */
+typedef void *HANDLE;
+
+// Global process variables
+Simulation* sHandle; //Global handle to simulation, one per subprocess
+
 
 bool parametercheck(int argc, char *argv[])
       {
@@ -62,7 +69,7 @@ bool parametercheck(int argc, char *argv[])
     	  	for(i=0; i < argc; i++) {
     	  		printf("argv[%d]: %s\n", i, argv[i]);
     	  		}
-    	  	f(argc < 5 || argc > 6){
+    	  	if(argc < 5 || argc > 6){
     	  	    	  		std::cout << "MolflowLinux requires 4 mandatory arguments and 1 optional argument."<< std::endl;
     	  	    	  		std::cout << "Please pass these arguments to MolflowLinux:"<< std::endl;
     	  	    	  		std::cout << "1. Name of load-buffer file to read in (e.g. loadbuffer)." << std::endl;
@@ -74,7 +81,7 @@ bool parametercheck(int argc, char *argv[])
     	  	    	  		return false;
     	  	    		 	}
     	  	return true;
-      }
+      	  	}
 
 
 
@@ -90,11 +97,18 @@ int main(int argc, char *argv[]) {
 	   *
        */
 
-	  // Initialise 'load' buffer and 'hit' buffer
-		Databuff databuffer;
-		databuffer.buff = NULL;
 
+	  // Initialise buffer
+		Databuff hitbuffer;
+		hitbuffer.buff = NULL;
 
+		Databuff loadbuffer;
+		loadbuffer.buff= NULL;
+
+		// Init simulation time and unit
+		double SimulationTime;
+		int newsimutime;
+		std::string unit;
 
 
       /* Create child processes, each of which has its own variables.
@@ -125,37 +139,58 @@ int main(int argc, char *argv[]) {
       	  	return 0;
     	  }
 
+
     	  //Read in buffer file (exported by Windows-Molflow). File given as first argument to main().
-    	  importBuff(argv[1], &databuffer);
+    	  importBuff(argv[1], &loadbuffer);
+    	  importBuff(argv[2], &hitbuffer);
+
 
     	  /*
     	   * show informations about the loading
     	   * just interesting for debugging => build some conditional (if debug, then show)?
     	   * leave out or put in function?*/
-    	  std::cout << "size of " << argv[1] << " = " << databuffer.size <<std::endl;
-    	  //std::cout << "size of databuffer = " << sizeof(databuffer) <<std::endl;
-    	  /*std::cout << argv[1] << ": ";
+    	  std::cout << "size of " << argv[2] << " = " << hitbuffer.size <<std::endl;
+    	  std::cout << "size of " << argv[1] << " = " << loadbuffer.size <<std::endl;
+    	  //std::cout << "size of hitbuffer = " << sizeof(hitbuffer) <<std::endl;
+    	  /*std::cout << argv[2] << ": ";
     	  int i;
-    	  for(i=0; i < databuffer.size; i++) {
-    		  	  	  	if (i != (databuffer.size -1)){
-    	      	  		std::cout<<databuffer.buff[i];}
-    		  	  	  	else {std::cout<<databuffer.buff[i]<<std::endl;}
+    	  for(i=0; i < hitbuffer.size; i++) {
+    		  	  	  	if (i != (hitbuffer.size -1)){
+    	      	  		std::cout<<hitbuffer.buff[i];}
+    		  	  	  	else {std::cout<<hitbuffer.buff[i]<<std::endl;}
     	      	  		}*/
-    	  //std::cout << argv[1] << ": " << databuffer.buff << std::endl;
-    	  std::cout << "Buffer sent. Wait for 1 second. " <<std::endl;
+    	  //std::cout << argv[2] << ": " << hitbuffer.buff << std::endl;
+    	  std::cout << "Buffers sent. Wait for a few second. " <<std::endl;
     	  }
 
-          //Send buffer to all other processes.
-          MPI_Bcast(&databuffer.size, sizeof(databuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
-          //std::cout << "size of " << argv[1] << " = " << databuffer.size <<std::endl;
+
+      	  // Send load-buffer to all other processes
+      	  MPI_Bcast(&loadbuffer.size, sizeof(loadbuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
+      	  //std::cout << "size of " << argv[2] << " = " << hitbuffer.size <<std::endl;
+      	  sleep(1);
+
+      	  if (rank !=0){ /* do work in any remaining processes */
+          	  loadbuffer.buff = new BYTE[loadbuffer.size];
+            }
+
+
+      	  MPI_Bcast(loadbuffer.buff, loadbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
+
+      	  MPI_Barrier(MPI_COMM_WORLD);
+
+          //Send hit-buffer to all other processes.
+          MPI_Bcast(&hitbuffer.size, sizeof(hitbuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
+          //std::cout << "size of " << argv[2] << " = " << hitbuffer.size <<std::endl;
           sleep(1);
 
           if (rank !=0){ /* do work in any remaining processes */
-              	  databuffer.buff = new BYTE[databuffer.size];
+              	  hitbuffer.buff = new BYTE[hitbuffer.size];
                 }
 
-          //MPI_Barrier(MPI_COMM_WORLD);
-          MPI_Bcast(databuffer.buff, databuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
+
+          MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
+
+
 
           /*Sharing buffer (Geometry and Parameters) with the other processes
              Send Buffer
@@ -171,18 +206,31 @@ int main(int argc, char *argv[]) {
           write Result a bufferfile (or maybe??? in a file or .zip archive)*/
 
 
+       // extract Simulation time and unit
+      if(argc==5) unit="s";
+	  else unit = argv[5];
+
+	  SimulationTime= std::atof(argv[4]);
+	  //std::cout << SimulationTime <<std::endl;
+
+	  newsimutime = (int)(convertunit(SimulationTime, unit)+0.5);
+	  if(rank==0)
+		  std::cout << "Simulation time " << SimulationTime << unit <<" converted to " <<newsimutime <<"s" <<std::endl;
+
+	  MPI_Barrier(MPI_COMM_WORLD);
+
       if (rank != 0){
     	 /* do work in any remaining processes */
     	 std::cout << "Hello! I'm worker process "<< rank << std::endl;
-    	 std::cout << "size of " << argv[1] << " = " << databuffer.size <<std::endl;
-    	 //std::cout << argv[1] << std::endl;
+    	 std::cout << "size of " << argv[2] << " = " << hitbuffer.size <<std::endl;
+    	 //std::cout << argv[2] << std::endl;
     	 //char fileexport [] = "/smbhome/schoenmann/buffertest";
-    	 //exportBuff(fileexport, &databuffer);
+    	 //exportBuff(fileexport, &hitbuffer);
     	 /*int i;
     	 for(i=0; i < 10; i++) {
-    	    	  	  	if (i != (databuffer.size -1)){
-    	    	     	std::cout<<databuffer.buff[i];}
-    	    	     	else {std::cout<<databuffer.buff[i]<<std::endl;}
+    	    	  	  	if (i != (hitbuffer.size -1)){
+    	    	     	std::cout<<hitbuffer.buff[i];}
+    	    	     	else {std::cout<<hitbuffer.buff[i]<<std::endl;}
     	 	 	 	 	}*/
 
     	  //InitSimulation(); //Creates sHandle instance, commented as error otherwise
@@ -197,31 +245,61 @@ int main(int argc, char *argv[]) {
                         };
              *      m++
              */
+    	 if(newsimutime!=0){
+			  InitSimulation(); //Creates sHandle instance
 
+			  // Sub process ready
+			  //SetReady();
+
+			  if( !LoadSimulation(&loadbuffer)) {
+				  std::cout << "Geometry not loaded." << std::endl;
+				  std::cout << "MolflowLinux is terminated now." << std::endl;
+				//CLOSEDP(loader); Rudi) Don't need that.
+				  MPI_Finalize();
+				  return 0;
+			  }
+			  if(!simulateSub(&hitbuffer, rank, newsimutime)){
+				  std::cout << "Maximum desorption reached." << std::endl;
+			  }
+			  else{
+				  std::cout << "Simulation for process " <<rank <<" finished." << std::endl;
+			  }
+    	 }
+    	 else{std::cout << "Simulation time = 0.0 seconds." << std::endl;}
+
+
+    	 //test:export buffers
+    	std::cout << "Start export for process " <<rank << std::endl;
+	  	std::string exportload = "/home/van/loadbuffer" + std::to_string(rank);
+	  	std::string exporthit = "/home/van/hitbuffer" + std::to_string(rank);
+	  	exportBuff(exporthit, &hitbuffer);
+	  	exportBuff(exportload, &loadbuffer);
+	  	std::cout << "Export for process " <<rank <<" finished." << std::endl;
       }
 
 
-      sleep(1);
-      //MPI_Barrier(MPI_COMM_WORLD);
+      MPI_Barrier(MPI_COMM_WORLD);
 
 
       if(rank == 0) {
           	 //Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
     	     std::cout << "Hello! I'm head process "<< rank << std::endl;
-          	 exportBuff(argv[2], &databuffer);
+          	 exportBuff(argv[3], &hitbuffer);
           	 // Build in safety check to not loosing simulation results, if the buffer export does not work?
           	 //delete[] databuffer.buff;
           	//std::cout <<"____________________________________________________________________________________________________" << std::endl;
             }
 
+             if(hitbuffer.buff!=NULL){delete[] hitbuffer.buff; hitbuffer.buff=NULL;}
+             if(loadbuffer.buff!=NULL){delete[] loadbuffer.buff; loadbuffer.buff=NULL;}
+
+
              MPI_Barrier(MPI_COMM_WORLD);
-             delete[] databuffer.buff;
-
-
-
-
-    MPI_Finalize();
-    
+             if(rank==0)
+            	 std::cout << "Closing MPI now." << std::endl;
+             MPI_Finalize();
+             if(rank==0)
+            	 std::cout << "Program finished." << std::endl;
 
     return 0;
 }

@@ -8,10 +8,10 @@
 #include "SimulationLinux.h"
 #include <array>
 
-bool simulateSub(Databuff *hitbuffer, int rank, double simutime, std::string unit){
+bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
-	unsigned int newsimutime = (int)(convertunit(simutime, unit)+0.5);
-	std::cout << "Simulation time " << simutime << unit <<" converted to " <<newsimutime <<"s" <<std::endl;
+	//unsigned int newsimutime = (int)(convertunit(simutime, unit)+0.5);
+	//std::cout << "Simulation time " << simutime << unit <<" converted to " <<newsimutime <<"s" <<std::endl;
 
 	bool eos=false;
 
@@ -21,7 +21,7 @@ bool simulateSub(Databuff *hitbuffer, int rank, double simutime, std::string uni
 	//TODO LoadSimulation() has to go after InitSimulation and before StartSimulation!!!
 
 	StartSimulation();
-	for(unsigned int i=0; i<newsimutime && !eos;i++){
+	for(int i=0; i<simutime && !eos;i++){
 		eos = SimulationRun();      // Run during 1 sec, performs MC steps
 	}
 	UpdateSubHits(hitbuffer, rank);

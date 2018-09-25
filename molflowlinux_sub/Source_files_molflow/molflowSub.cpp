@@ -38,7 +38,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 typedef void *HANDLE;
 
 // Global process variables
-Simulation* sHandle; //Global handle to simulation, one per subprocess
+extern Simulation* sHandle; //Global handle to simulation, one per subprocess
 
 #define WAITTIME    100  // Answer in STOP mode
 //#define TIMEOUT     300  // Process kills itself after no heartbeat (seconds)
@@ -161,6 +161,10 @@ char *GetSimuStatus() {
       }
       break;*/
 
+    default:
+    	std::cout << "Simulation mode is not valid" <<std::endl;
+    	break;
+
   }
 
   return ret;
@@ -251,6 +255,8 @@ void Load() {
     return;
   }
   
+  //TODO Load geometry from buffer here?
+
   printf("Connected to %s\n",loadDpName);
 */
   if( !LoadSimulation(loadbuffer) ) {

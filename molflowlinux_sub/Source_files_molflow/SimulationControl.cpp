@@ -545,7 +545,7 @@ size_t GetHitsSize() {
 }
 
 void ResetTmpCounters() {
-	SetState(NULL, "Resetting local cache...", false, true);
+	//SetState(NULL, "Resetting local cache...", false, true); //(MY) segmentation error otherwise
 
 	memset(&sHandle->tmpGlobalResult, 0, sizeof(GlobalHitBuffer));
 	
@@ -618,6 +618,9 @@ bool StartSimulation() {
 			sHandle->stepPerSec = 0.0;
 			return true;
 		}*/
+	default:
+	    std::cout << "Simulation mode is not valid" <<std::endl;
+	    return false;
 	}
 
 	SetErrorSub("Unknown simulation mode");

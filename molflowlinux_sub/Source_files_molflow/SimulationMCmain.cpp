@@ -94,6 +94,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 	// Facets
 	for (s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			//TODO Find out whether if clauses can be used or not
 			//if (f.hitted) {
 
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) {
@@ -108,7 +109,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					facetHitBuffer->hit.sum_1_per_velocity += facetHitSub->hit.sum_1_per_velocity;
 				}
 
-				//if (f.sh.isProfile) { //(MY) comment or uncomment if clauses?
+				if (f.sh.isProfile) { //(MY) comment or uncomment if clauses?
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 						ProfileSlice *shProfile = (ProfileSlice *)(buffer + f.sh.hitOffset + facetHitsSize + m * f.profileSize);
 						ProfileSlice *shProfileSub = (ProfileSlice *)(subbuff + f.sh.hitOffset + facetHitsSize + m * f.profileSize);
@@ -116,9 +117,9 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 							shProfile[j] += shProfileSub[j];
 						}
 					}
-				//}
+				}
 
-				//if (f.sh.isTextured) {
+				if (f.sh.isTextured) {
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 						TextureCell *shTexture = (TextureCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
 						TextureCell *shTextureSub = (TextureCell *)(subbuff + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
@@ -160,9 +161,9 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 							}
 						}
 					}
-				//}
+				}
 
-				//if (f.sh.countDirection) {
+				if (f.sh.countDirection) {
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 						DirectionCell *shDir = (DirectionCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*m));
 						DirectionCell *shDirSub = (DirectionCell *)(subbuff + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*m));
@@ -177,9 +178,9 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 							}
 						}
 					}
-				//}
+				}
 
-				//if (f.sh.anglemapParams.record) {
+				if (f.sh.anglemapParams.record) {
 					size_t *shAngleMap = (size_t *)(buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments));
 					size_t *shAngleMapSub = (size_t *)(subbuff + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments));
 					for (y = 0; y < (int)(f.sh.anglemapParams.thetaLowerRes + f.sh.anglemapParams.thetaHigherRes); y++) {
@@ -188,34 +189,34 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 							shAngleMap[add] += shAngleMapSub[add];
 						}
 					}
-				//}
+				}
 
 				//Facet histograms
 
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 						BYTE *histCurrentMoment = buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments) + f.sh.anglemapParams.GetRecordedDataSize() + m * f.sh.facetHistogramParams.GetDataSize();
 						BYTE *histSub = subbuff + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments) + f.sh.anglemapParams.GetRecordedDataSize() + m * f.sh.facetHistogramParams.GetDataSize();
-						//if (f.sh.facetHistogramParams.recordBounce) {
+						if (f.sh.facetHistogramParams.recordBounce) {
 							double* nbHitsHistogram = (double*)histCurrentMoment;
 							double* nbHitsSub = (double*)histSub;
 							for (size_t i = 0; i < f.sh.facetHistogramParams.GetBounceHistogramSize(); i++) {
 								nbHitsHistogram[i] += nbHitsSub[i];
 							}
-						//}
-						//if (f.sh.facetHistogramParams.recordDistance) {
+						}
+						if (f.sh.facetHistogramParams.recordDistance) {
 							double* distanceHistogram = (double*)(histCurrentMoment + f.sh.facetHistogramParams.GetBouncesDataSize());
 							double* distanceSub = (double*)(histSub + f.sh.facetHistogramParams.GetBouncesDataSize());
 							for (size_t i = 0; i < (f.sh.facetHistogramParams.GetDistanceHistogramSize()); i++) {
 								distanceHistogram[i] += distanceSub[i];
 							}
-						//}
-						//if (f.sh.facetHistogramParams.recordTime) {
+						}
+						if (f.sh.facetHistogramParams.recordTime) {
 							double* timeHistogram = (double*)(histCurrentMoment + f.sh.facetHistogramParams.GetBouncesDataSize() + f.sh.facetHistogramParams.GetDistanceDataSize());
 							double* timeSub = (double*)(histSub + f.sh.facetHistogramParams.GetBouncesDataSize() + f.sh.facetHistogramParams.GetDistanceDataSize());
 							for (size_t i = 0; i < (f.sh.facetHistogramParams.GetTimeHistogramSize()); i++) {
 								timeHistogram[i] += timeSub[i];
 							}
-						//}
+						}
 					}
 
 			//} // End if(hitted)
