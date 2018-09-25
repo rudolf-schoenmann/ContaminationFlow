@@ -310,7 +310,7 @@ int main(int argc, char *argv[]) {
       std::cout <<"Process" <<rank << "Test7" << std::endl;
       sleep(1);
              MPI_Barrier(MPI_COMM_WORLD);
-             if(rank==0){delete[] hitbuffer.buff; hitbuffer.buff=NULL;}
+             if(hitbuffer.buff!=NULL){delete[] hitbuffer.buff; hitbuffer.buff=NULL;}
 			 delete[] loadbuffer.buff; loadbuffer.buff=NULL;
 
 			 std::cout <<"Process" <<rank << "Test7.5" << std::endl;
