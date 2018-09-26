@@ -75,7 +75,7 @@ bool parametercheck(int argc, char *argv[])
     	  	    	  		std::cout << "1. Name of load-buffer file to read in (e.g. loadbuffer)." << std::endl;
     	  	    	  		std::cout << "2. Name of hit-buffer file to read in (e.g. hitbuffer)." << std::endl;
     	  	    	  		std::cout << "3. Choose a name for the buffer file to export the simulation results (e.g. resultbuffer)." << std::endl;
-    	  	    	  		std::cout << "4. The total simulation time (e.g 2.5)." << std::endl;
+    	  	    	  		std::cout << "4. The total simulation time (e.g. 2.5)." << std::endl;
     	  	    	  		std::cout << "5. [OPTIONAL] Simulation time unit (e.g. seconds, minutes, hours, days). Default set to seconds." << std::endl;
     	  	    	  		std::cout << "MolflowLinux is terminated now." << std::endl;
     	  	    	  		return false;
