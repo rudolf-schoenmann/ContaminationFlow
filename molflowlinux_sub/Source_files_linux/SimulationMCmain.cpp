@@ -1,4 +1,4 @@
-#include "SimulationMCmain.h"
+#include "SimulationLinux.h"
 #include "GLApp/MathTools.h"
 
 extern Simulation *sHandle; //delcared in molflowSub.cpp
@@ -35,7 +35,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 	SetState(NULL, "Updating MC hits...", false, true);
 	if (!sHandle->lastHitUpdateOK) return; //Timeout, will try again later
 	*/
-	//std::cout <<"shandle size " <<nbMoments << std::endl;
+	std::cout <<"shandle size " <<nbMoments << std::endl;
 
 	buffer = mainbuffer->buff;
 	gHits = (GlobalHitBuffer *)buffer;
@@ -115,6 +115,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 
 	size_t facetHitsSize = (1 + nbMoments) * sizeof(FacetHitBuffer);
 	// Facets
+	//std::cout <<"NBSuper " <<(int)sHandle->sh.nbSuper <<std::endl;
 	for (s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			//if (f.hitted) {
@@ -122,7 +123,17 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 					FacetHitBuffer *facetHitSub = (FacetHitBuffer *)(subbuff + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
-
+/*
+ * For debugging
+					std::cout <<"buffer before" <<std::endl;
+					std::cout <<facetHitBuffer->hit.nbAbsEquiv <<std::endl;
+					std::cout <<facetHitBuffer->hit.nbDesorbed <<std::endl;
+					std::cout <<facetHitBuffer->hit.nbMCHit <<std::endl;
+					std::cout <<facetHitBuffer->hit.nbHitEquiv <<std::endl;
+					std::cout <<facetHitBuffer->hit.sum_1_per_ort_velocity <<std::endl;
+					std::cout <<facetHitBuffer->hit.sum_v_ort <<std::endl;
+					std::cout <<facetHitBuffer->hit.sum_1_per_velocity <<std::endl;
+*/
 					facetHitBuffer->hit.nbAbsEquiv += facetHitSub->hit.nbAbsEquiv;
 					facetHitBuffer->hit.nbDesorbed += facetHitSub->hit.nbDesorbed;
 					facetHitBuffer->hit.nbMCHit += facetHitSub->hit.nbMCHit;
@@ -130,6 +141,15 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					facetHitBuffer->hit.sum_1_per_ort_velocity += facetHitSub->hit.sum_1_per_ort_velocity;
 					facetHitBuffer->hit.sum_v_ort += facetHitSub->hit.sum_v_ort;
 					facetHitBuffer->hit.sum_1_per_velocity += facetHitSub->hit.sum_1_per_velocity;
+/*
+					std::cout <<"buffer afterwards" <<std::endl;
+					std::cout <<facetHitBuffer->hit.nbAbsEquiv <<std::endl;
+					std::cout <<facetHitBuffer->hit.nbDesorbed <<std::endl;
+					std::cout <<facetHitBuffer->hit.nbMCHit <<std::endl;
+					std::cout <<facetHitBuffer->hit.nbHitEquiv <<std::endl;
+					std::cout <<facetHitBuffer->hit.sum_1_per_ort_velocity <<std::endl;
+					std::cout <<facetHitBuffer->hit.sum_v_ort <<std::endl;
+					std::cout <<facetHitBuffer->hit.sum_1_per_velocity <<std::endl;*/
 
 				}
 

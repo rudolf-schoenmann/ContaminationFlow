@@ -9,7 +9,6 @@
 #include <unistd.h>
 #include "Simulation.h"
 #include "SimulationLinux.h"
-#include "SimulationMCmain.h"
 
 /*#include <stdio.h>
 #include <unistd.h>
@@ -226,6 +225,8 @@ int main(int argc, char *argv[]) {
 	  if(rank==0)
 		  std::cout << "Simulation time " << SimulationTime << unit <<" converted to " <<newsimutime <<"s" <<std::endl;
 
+	  MPI_Barrier(MPI_COMM_WORLD);
+
  	 if(newsimutime!=0){
 			  InitSimulation(); //Creates sHandle instance
 
@@ -245,8 +246,8 @@ int main(int argc, char *argv[]) {
 
 		  if (rank != 0){
 			 /* do work in any remaining processes */
-			 std::cout << "Hello! I'm worker process "<< rank << std::endl;
-			 std::cout << "size of " << argv[2] << " = " << hitbuffer.size <<std::endl;
+			 std::cout << "Process "<< rank <<" starting simulation now." << std::endl;
+			 //std::cout << "size of " << argv[2] << " = " << hitbuffer.size <<std::endl;
 			 //std::cout << argv[2] << std::endl;
 			 //char fileexport [] = "/smbhome/schoenmann/buffertest";
 			 //exportBuff(fileexport, &hitbuffer);
@@ -280,7 +281,7 @@ int main(int argc, char *argv[]) {
 
 
 			 //test:export buffers
-			std::cout << "Start export for process " <<rank << std::endl;
+			//std::cout << "Start export for process " <<rank << std::endl;
 			std::string exportload = "/home/van/loadbuffer" + std::to_string(rank);
 			std::string exporthit = "/home/van/hitbuffer" + std::to_string(rank);
 			exportBuff(exporthit, &hitbuffer);
@@ -293,8 +294,10 @@ int main(int argc, char *argv[]) {
 
 		  MPI_Barrier(MPI_COMM_WORLD);
 
+		  //iteratively add hitbuffer from subprocesses
 		  for(int i=1; i<world_size;i++)
 		  {
+			  MPI_Barrier(MPI_COMM_WORLD);
 			  if(rank==i){
 				  MPI_Send(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, 0, MPI_COMM_WORLD);
 
@@ -303,19 +306,20 @@ int main(int argc, char *argv[]) {
 				  //delete[] hitbuffer.buff; hitbuffer.buff = new BYTE[hitbuffer.size];
 				  MPI_Recv(hitbuffer.buff, hitbuffer.size, MPI::BYTE, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-				  std::string exporthit = "/home/van/hitbuffer0" + std::to_string(i);
-				  exportBuff(exporthit, &hitbuffer);
-				  std::cout << "Received hitbuffer from process" <<i << std::endl;
+				  //std::string exporthit = "/home/van/hitbuffer0" + std::to_string(i);
+				  //exportBuff(exporthit, &hitbuffer);
+				  //std::cout << "Received hitbuffer from process" <<i << std::endl;
 
+				  sleep(1);
 				  UpdateMainHits(&hitbuffer_original,&hitbuffer, 0);
-				  std::cout << "Updated hitbuffer from process" <<i << std::endl;
+				  std::cout << "Updated hitbuffer from process " <<i << std::endl;
 			  }
 		  }
 		  MPI_Barrier(MPI_COMM_WORLD);
 
 		  if(rank == 0) {
 				 //Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
-				 std::cout << "Hello! I'm head process "<< rank << std::endl;
+				 std::cout << "Process zero exporting resulting hitbuffer" << std::endl;
 				 exportBuff(argv[3], &hitbuffer_original);
 
 				 // Build in safety check to not loosing simulation results, if the buffer export does not work?
