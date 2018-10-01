@@ -464,7 +464,12 @@ void PerformTeleport(SubprocessFacet *iFacet) {
 	/*iFacet->sh.tmpCounter.hit.nbAbsEquiv++;
 	destination->sh.tmpCounter.hit.nbDesorbed++;*/
 
-	double ortVelocity = sHandle->currentParticle.velocity*abs(Dot(sHandle->currentParticle.direction, iFacet->sh.N));
+	//otherwise orthvelocity zero
+	double dot_dir=Dot(sHandle->currentParticle.direction, iFacet->sh.N);
+	double abs_dot = dot_dir > 0? dot_dir : -1.0*dot_dir;
+	double ortVelocity = sHandle->currentParticle.velocity*abs_dot;
+	//double ortVelocity = sHandle->currentParticle.velocity*abs(Dot(sHandle->currentParticle.direction, iFacet->sh.N));
+
 	//We count a teleport as a local hit, but not as a global one since that would affect the MFP calculation
 	/*iFacet->sh.tmpCounter.hit.nbMCHit++;
 	iFacet->sh.tmpCounter.hit.sum_1_per_ort_velocity += 2.0 / ortVelocity;
@@ -877,7 +882,11 @@ bool StartFromSource() {
 		TreatMovingFacet();
 	}
 
-	double ortVelocity = sHandle->currentParticle.velocity*abs(Dot(sHandle->currentParticle.direction, src->sh.N));
+	//otherwise orthvelocity 0
+	double dot_dir=Dot(sHandle->currentParticle.direction, src->sh.N);
+	double abs_dot = dot_dir > 0? dot_dir : -1.0*dot_dir;
+	double ortVelocity = sHandle->currentParticle.velocity*abs_dot;
+
 	/*src->sh.tmpCounter.hit.nbDesorbed++;
 	src->sh.tmpCounter.hit.sum_1_per_ort_velocity += 2.0 / ortVelocity; //was 2.0 / ortV
 	src->sh.tmpCounter.hit.sum_v_ort += (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity;*/
@@ -1164,7 +1173,11 @@ void PerformBounce(SubprocessFacet *iFacet) {
 
 
 	//Register (orthogonal) velocity
-	double ortVelocity = sHandle->currentParticle.velocity*abs(Dot(sHandle->currentParticle.direction, iFacet->sh.N));
+	//otherwise orthvelocity zero
+	double dot_dir=Dot(sHandle->currentParticle.direction, iFacet->sh.N);
+	double abs_dot = dot_dir > 0? dot_dir : -1.0*dot_dir;
+	double ortVelocity = sHandle->currentParticle.velocity*abs_dot;
+	//double ortVelocity = sHandle->currentParticle.velocity*abs(Dot(sHandle->currentParticle.direction, iFacet->sh.N));
 
 	/*iFacet->sh.tmpCounter.hit.nbMCHit++; //hit facet
 	iFacet->sh.tmpCounter.hit.sum_1_per_ort_velocity += 1.0 / ortVelocity;
@@ -1217,6 +1230,10 @@ void PerformBounce(SubprocessFacet *iFacet) {
 
 	//Texture/Profile outgoing particle
 	//Register outgoing velocity
+	//otherwise orthvelocity zero
+	dot_dir=Dot(sHandle->currentParticle.direction, iFacet->sh.N);
+	abs_dot = dot_dir > 0? dot_dir : -1.0*dot_dir;
+	ortVelocity = sHandle->currentParticle.velocity*abs_dot;
 	ortVelocity = sHandle->currentParticle.velocity*abs(Dot(sHandle->currentParticle.direction, iFacet->sh.N));
 
 	/*iFacet->sh.tmpCounter.hit.sum_1_per_ort_velocity += 1.0 / ortVelocity;
@@ -1257,7 +1274,12 @@ void RecordAbsorb(SubprocessFacet *iFacet) {
 	RecordHistograms(iFacet);
 
 	RecordHit(HIT_ABS);
-	double ortVelocity = sHandle->currentParticle.velocity*abs(Dot(sHandle->currentParticle.direction, iFacet->sh.N));
+	//otherwise orthvelocity zero
+	double dot_dir=Dot(sHandle->currentParticle.direction, iFacet->sh.N);
+	double abs_dot = dot_dir > 0? dot_dir : -1.0*dot_dir;
+	double ortVelocity = sHandle->currentParticle.velocity*abs_dot;
+	//double ortVelocity = sHandle->currentParticle.velocity*abs(Dot(sHandle->currentParticle.direction, iFacet->sh.N));
+
 	IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 1, 0, 1, 2.0 / ortVelocity, (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity);
 	LogHit(iFacet);
 	ProfileFacet(iFacet, sHandle->currentParticle.flightTime, true, 2.0, 1.0); //was 2.0, 1.0
@@ -1335,11 +1357,14 @@ void ProfileFacet(SubprocessFacet *f, double time, bool countHit, double velocit
 
 	if (countHit && f->sh.profileType == PROFILE_ANGULAR) {
 		double dot = Dot(f->sh.N, sHandle->currentParticle.direction);
-		double theta = acos(abs(dot));     // Angle to normal (PI/2 => PI)
+		double abs_dot = dot > 0? dot : -1.0*dot;
+		double theta = acos(abs_dot);     // Angle to normal (PI/2 => PI)
 		size_t pos = (size_t)(theta / (PI / 2)*((double)PROFILE_SIZE)); // To Grad
 		Saturate(pos, 0, PROFILE_SIZE - 1);
 		for (size_t m = 0; m <= nbMoments; m++) {
-			if (m == 0 || abs(time - sHandle->moments[m - 1]) < sHandle->wp.timeWindowSize / 2.0) {
+			double temp=time - sHandle->moments[m - 1];
+			double abs_temp = temp > 0? temp : -1.0*temp;
+			if (m == 0 || abs_temp < sHandle->wp.timeWindowSize / 2.0) {
 				f->profile[m][pos].countEquiv += sHandle->currentParticle.oriRatio;
 			}
 		}
@@ -1350,7 +1375,10 @@ void ProfileFacet(SubprocessFacet *f, double time, bool countHit, double velocit
 			for (size_t m = 0; m <= nbMoments; m++) {
 				if (m == 0 || abs(time - sHandle->moments[m - 1]) < sHandle->wp.timeWindowSize / 2.0) {
 					if (countHit) f->profile[m][pos].countEquiv += sHandle->currentParticle.oriRatio;
-					double ortVelocity = sHandle->currentParticle.velocity*abs(Dot(f->sh.N, sHandle->currentParticle.direction));
+
+					double dot = Dot(f->sh.N, sHandle->currentParticle.direction);
+					double abs_dot = dot > 0? dot : -1.0*dot;
+					double ortVelocity = sHandle->currentParticle.velocity*abs_dot;
 					f->profile[m][pos].sum_1_per_ort_velocity += sHandle->currentParticle.oriRatio * velocity_factor / ortVelocity;
 					f->profile[m][pos].sum_v_ort += sHandle->currentParticle.oriRatio * ortSpeedFactor*(sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity;
 				}
@@ -1513,7 +1541,10 @@ void SubprocessFacet::ResizeCounter(size_t nbMoments) {
 
 void SubprocessFacet::RegisterTransparentPass()
 {
-	double directionFactor = abs(Dot(sHandle->currentParticle.direction, this->sh.N));
+	//otherwise directionfactor zero
+	double dot_dir=Dot(sHandle->currentParticle.direction, this->sh.N);
+	double directionFactor = dot_dir > 0? dot_dir : -1.0*dot_dir;
+	//double directionFactor = abs(Dot(sHandle->currentParticle.direction, this->sh.N));
 	IncreaseFacetCounter(this, sHandle->currentParticle.flightTime + this->colDist / 100.0 / sHandle->currentParticle.velocity, 1, 0, 0, 2.0 / (sHandle->currentParticle.velocity*directionFactor), 2.0*(sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*sHandle->currentParticle.velocity*directionFactor);
 
 	this->hitted = true;

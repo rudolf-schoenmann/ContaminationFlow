@@ -35,7 +35,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 	SetState(NULL, "Updating MC hits...", false, true);
 	if (!sHandle->lastHitUpdateOK) return; //Timeout, will try again later
 	*/
-	std::cout <<"oriratio " <<sHandle->currentParticle.oriRatio << std::endl; //ZERO! -> orth vel zero
+	//std::cout <<"oriratio " <<sHandle->currentParticle.oriRatio << std::endl; //ZERO! -> orth vel zero
 
 	buffer = mainbuffer->buff;
 	gHits = (GlobalHitBuffer *)buffer;
