@@ -23,6 +23,7 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 	StartSimulation();
 	for(int i=0; i<simutime && !eos;i++){
 		eos = SimulationRun();      // Run during 1 sec, performs MC steps
+		std::cout <<"step " <<i <<std::endl;
 	}
 	UpdateSubHits(hitbuffer, rank);
 
