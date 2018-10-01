@@ -3,6 +3,23 @@
 
 extern Simulation *sHandle; //delcared in molflowSub.cpp
 
+void UpdateMainHits(Databuff *databuffer,Databuff *subbuffer, int rank) {
+	switch (sHandle->wp.sMode) {
+	case MC_MODE:
+	{
+		 // std::cout <<"shandle size " <<(double)sHandle->moments.size() << std::endl;
+		UpdateMCmainHits(databuffer, subbuffer, rank, (size_t)sHandle->moments.size());
+		//if (dpLog) UpdateLog(dpLog, timeout);
+	}
+		break;
+	case AC_MODE:
+
+		//UpdateACHits(dpHit, prIdx, timeout);
+		break;
+	}
+
+}
+
 void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t nbMoments) {
 	BYTE *buffer, *subbuff;
 	GlobalHitBuffer *gHits, *subHits;
@@ -18,6 +35,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 	SetState(NULL, "Updating MC hits...", false, true);
 	if (!sHandle->lastHitUpdateOK) return; //Timeout, will try again later
 	*/
+	//std::cout <<"shandle size " <<nbMoments << std::endl;
 
 	buffer = mainbuffer->buff;
 	gHits = (GlobalHitBuffer *)buffer;
@@ -51,8 +69,9 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 	gHits->lastLeakIndex = (gHits->lastLeakIndex + subHits->leakCacheSize) % LEAKCACHESIZE;
 	gHits->leakCacheSize = Min(LEAKCACHESIZE, gHits->leakCacheSize + subHits->leakCacheSize);
 
+
 	// HHit (Only prIdx 0) //Rudi: I think that's some Hit-History stuff. Not necessary to comment out (presumably).
-	if (rank == 1) {
+	if (rank == 0) {
 		for (size_t hitIndex = 0; hitIndex < subHits->hitCacheSize; hitIndex++)
 			gHits->hitCache[(hitIndex + gHits->lastHitIndex) % HITCACHESIZE] = subHits->hitCache[hitIndex];
 
@@ -68,24 +87,28 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 		for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 			BYTE *histCurrentMoment = buffer + sizeof(GlobalHitBuffer) + m * sHandle->wp.globalHistogramParams.GetDataSize();
 			BYTE *subhist = subbuff + sizeof(GlobalHitBuffer) + m * sHandle->wp.globalHistogramParams.GetDataSize();
+			if (sHandle->wp.globalHistogramParams.recordBounce) {
 				double* nbHitsHistogram = (double*)histCurrentMoment;
 				double* nbHitsSub=(double*)subhist;
 				for (size_t i = 0; i < sHandle->wp.globalHistogramParams.GetBounceHistogramSize(); i++) {
 					nbHitsHistogram[i] += nbHitsSub[i];
 				}
+			}
 
-
+			if (sHandle->wp.globalHistogramParams.recordDistance) {
 				double* distanceHistogram = (double*)(histCurrentMoment + sHandle->wp.globalHistogramParams.GetBouncesDataSize());
 				double* distanceSub = (double*)(subhist + sHandle->wp.globalHistogramParams.GetBouncesDataSize());
 				for (size_t i = 0; i < (sHandle->wp.globalHistogramParams.GetDistanceHistogramSize()); i++) {
 					distanceHistogram[i] += distanceSub[i];
 				}
-
+			}
+			if (sHandle->wp.globalHistogramParams.recordTime) {
 				double* timeHistogram = (double*)(histCurrentMoment + sHandle->wp.globalHistogramParams.GetBouncesDataSize() + sHandle->wp.globalHistogramParams.GetDistanceDataSize());
 				double* timeSub = (double*)(subhist + sHandle->wp.globalHistogramParams.GetBouncesDataSize() + sHandle->wp.globalHistogramParams.GetDistanceDataSize());
 				for (size_t i = 0; i < (sHandle->wp.globalHistogramParams.GetTimeHistogramSize()); i++) {
 					timeHistogram[i] += timeSub[i];
 				}
+			}
 
 		}
 
@@ -94,12 +117,12 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 	// Facets
 	for (s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			//TODO Find out whether if clauses can be used or not
 			//if (f.hitted) {
 
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 					FacetHitBuffer *facetHitSub = (FacetHitBuffer *)(subbuff + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
+
 					facetHitBuffer->hit.nbAbsEquiv += facetHitSub->hit.nbAbsEquiv;
 					facetHitBuffer->hit.nbDesorbed += facetHitSub->hit.nbDesorbed;
 					facetHitBuffer->hit.nbMCHit += facetHitSub->hit.nbMCHit;
@@ -107,6 +130,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					facetHitBuffer->hit.sum_1_per_ort_velocity += facetHitSub->hit.sum_1_per_ort_velocity;
 					facetHitBuffer->hit.sum_v_ort += facetHitSub->hit.sum_v_ort;
 					facetHitBuffer->hit.sum_1_per_velocity += facetHitSub->hit.sum_1_per_velocity;
+
 				}
 
 				if (f.sh.isProfile) { //(MY) comment or uncomment if clauses?

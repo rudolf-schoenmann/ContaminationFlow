@@ -51,7 +51,8 @@ molflowlinux_main.o: ../molflowlinux_main.cpp \
  /home/van/MolflowLinux/molflowlinux_sub/Header/Header_molflow/Parameter.h \
  /home/van/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources/Distributions.h \
  /home/van/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources/SMP.h \
- /home/van/MolflowLinux/molflowlinux_sub/Header/Header_linux/SimulationLinux.h
+ /home/van/MolflowLinux/molflowlinux_sub/Header/Header_linux/SimulationLinux.h \
+ /home/van/MolflowLinux/molflowlinux_sub/Header/Header_molflow/SimulationMCmain.h
 
 /usr/include/openmpi-x86_64/mpi.h:
 
@@ -158,3 +159,5 @@ molflowlinux_main.o: ../molflowlinux_main.cpp \
 /home/van/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources/SMP.h:
 
 /home/van/MolflowLinux/molflowlinux_sub/Header/Header_linux/SimulationLinux.h:
+
+/home/van/MolflowLinux/molflowlinux_sub/Header/Header_molflow/SimulationMCmain.h:

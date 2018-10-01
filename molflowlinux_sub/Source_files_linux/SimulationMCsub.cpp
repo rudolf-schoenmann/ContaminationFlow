@@ -50,7 +50,6 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	gHits->distTraveled_total = sHandle->tmpGlobalResult.distTraveled_total;
 	gHits->distTraveledTotal_fullHitsOnly = sHandle->tmpGlobalResult.distTraveledTotal_fullHitsOnly;
 
-
 	//Memorize current limits, then do a min/max search //(My) not needed for subprocesses
 
 
@@ -114,6 +113,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
+
 					facetHitBuffer->hit.nbAbsEquiv = f.tmpCounter[m].hit.nbAbsEquiv;
 					facetHitBuffer->hit.nbDesorbed = f.tmpCounter[m].hit.nbDesorbed;
 					facetHitBuffer->hit.nbMCHit = f.tmpCounter[m].hit.nbMCHit;
