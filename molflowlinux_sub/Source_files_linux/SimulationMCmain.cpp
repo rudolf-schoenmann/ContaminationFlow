@@ -123,7 +123,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 					FacetHitBuffer *facetHitSub = (FacetHitBuffer *)(subbuff + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
-
+/*
 					std::cout <<"buffer before" <<std::endl;
 					std::cout <<facetHitBuffer->hit.nbAbsEquiv <<std::endl;
 					std::cout <<facetHitBuffer->hit.nbDesorbed <<std::endl;
@@ -132,7 +132,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					std::cout <<facetHitBuffer->hit.sum_1_per_ort_velocity <<std::endl;
 					std::cout <<facetHitBuffer->hit.sum_v_ort <<std::endl;
 					std::cout <<facetHitBuffer->hit.sum_1_per_velocity <<std::endl;
-
+*/
 					facetHitBuffer->hit.nbAbsEquiv += facetHitSub->hit.nbAbsEquiv;
 					facetHitBuffer->hit.nbDesorbed += facetHitSub->hit.nbDesorbed;
 					facetHitBuffer->hit.nbMCHit += facetHitSub->hit.nbMCHit;
@@ -140,7 +140,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					facetHitBuffer->hit.sum_1_per_ort_velocity += facetHitSub->hit.sum_1_per_ort_velocity;
 					facetHitBuffer->hit.sum_v_ort += facetHitSub->hit.sum_v_ort;
 					facetHitBuffer->hit.sum_1_per_velocity += facetHitSub->hit.sum_1_per_velocity;
-
+/*
 					std::cout <<"buffer afterwards" <<std::endl;
 					std::cout <<facetHitBuffer->hit.nbAbsEquiv <<std::endl;
 					std::cout <<facetHitBuffer->hit.nbDesorbed <<std::endl;
@@ -149,7 +149,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					std::cout <<facetHitBuffer->hit.sum_1_per_ort_velocity <<std::endl;
 					std::cout <<facetHitBuffer->hit.sum_v_ort <<std::endl;
 					std::cout <<facetHitBuffer->hit.sum_1_per_velocity <<std::endl;
-
+*/
 				}
 
 				if (f.sh.isProfile) { //(MY) comment or uncomment if clauses?

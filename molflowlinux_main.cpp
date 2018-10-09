@@ -279,14 +279,15 @@ int main(int argc, char *argv[]) {
 				  std::cout << "Simulation for process " <<rank <<" finished." << std::endl;
 			  }
 
-
+/*
 			 //test:export buffers
 			//std::cout << "Start export for process " <<rank << std::endl;
 			std::string exportload = "/home/van/loadbuffer" + std::to_string(rank);
 			std::string exporthit = "/home/van/hitbuffer" + std::to_string(rank);
 			exportBuff(exporthit, &hitbuffer);
 			//exportBuff(exportload, &loadbuffer);
-			std::cout << "Export for process " <<rank <<" finished." << std::endl;
+			//std::cout << "Export for process " <<rank <<" finished." << std::endl;
+*/
 		  }
 
 		  //std::cout <<"shandle size " <<(size_t)sHandle->moments.size() << std::endl;
@@ -312,7 +313,7 @@ int main(int argc, char *argv[]) {
 
 				  sleep(1);
 				  UpdateMainHits(&hitbuffer_original,&hitbuffer, 0);
-				  std::cout << "Updated hitbuffer from process " <<i << std::endl;
+				  std::cout << "Updated hitbuffer with process " <<i << std::endl;
 
 				  std::string exporthit = "/home/van/resultbuffer0" + std::to_string(i);
 				  exportBuff(exporthit, &hitbuffer_original);
@@ -322,7 +323,7 @@ int main(int argc, char *argv[]) {
 
 		  if(rank == 0) {
 				 //Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
-				 std::cout << "Process zero exporting resulting hitbuffer" << std::endl;
+				 std::cout << "Process 0 exporting final hitbuffer" << std::endl;
 				 //exportBuff(argv[3], &hitbuffer_original);
 
 				 // Build in safety check to not loosing simulation results, if the buffer export does not work?
@@ -330,7 +331,7 @@ int main(int argc, char *argv[]) {
 				//std::cout <<"____________________________________________________________________________________________________" << std::endl;
 				}
  	 }
- 	 else{std::cout << "Simulation time = 0.0 seconds." << std::endl;}
+ 	 else{std::cout << "Simulation time = 0.0 seconds. Nothing to do." << std::endl;}
 
 
              if(hitbuffer.buff!=NULL){delete[] hitbuffer.buff; hitbuffer.buff=NULL;}
