@@ -487,10 +487,12 @@ bool LoadSimulation(Databuff *databuffer) {
 	sHandle->loadOK = true;
 	t1 = GetTick();
 	//(Rudi) Should I keep the (following) messages?
+	/*
 	printf("  Load %s successful\n", sHandle->sh.name.c_str());
 	printf("  Geometry: %zd vertex %zd facets\n", sHandle->vertices3.size(), sHandle->sh.nbFacet);
-
-	printf("  Geom size: %d bytes\n", /*(size_t)(buffer - bufferStart)*/0);
+	*/
+	//printf("  Geom size: %d bytes\n", /*(size_t)(buffer - bufferStart)*/0); // Warum hat Marton hier die '0' eingefuegt?
+	/*
 	printf("  Number of stucture: %zd\n", sHandle->sh.nbSuper);
 	printf("  Global Hit: %zd bytes\n", sizeof(GlobalHitBuffer));
 	printf("  Facet Hit : %zd bytes\n", sHandle->sh.nbFacet * sizeof(FacetHitBuffer));
@@ -501,6 +503,7 @@ bool LoadSimulation(Databuff *databuffer) {
 	printf("  Total     : %zd bytes\n", GetHitsSize());
 	printf("  Seed: %lu\n", seed);
 	printf("  Loading time: %.3f ms\n", (t1 - t0)*1000.0);
+	*/
 	return true;
 
 }
