@@ -657,7 +657,6 @@ bool SimulationRun() {
 	if (sHandle->stepPerSec == 0.0) {
 		switch (sHandle->wp.sMode) {
 		case MC_MODE:
-			nbStep = 250;
 			break;
 		case AC_MODE:
 			//nbStep = 1; (my) no AC_MODE
@@ -681,7 +680,8 @@ bool SimulationRun() {
 	}
 
 	t1 = GetTick();
-	sHandle->stepPerSec = (double)(nbStep) / (t1 - t0);
+	sHandle->stepPerSec =1000.0* (double)(nbStep) / (t1 - t0);
+	//std::cout <<t1-t0 <<std::endl;
 #ifdef _DEBUG
 	printf("Running: stepPerSec = %f\n", sHandle->stepPerSec);
 #endif

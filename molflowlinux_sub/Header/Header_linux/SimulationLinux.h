@@ -8,4 +8,7 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime);
 double convertunit(double simutime, std::string unit);
 void UpdateSubHits(Databuff *databuffer, int rank);
 void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments);
-void initbufftozero(size_t nbMoments, Databuff *buffer);
+//void initbufftozero(size_t nbMoments, Databuff *buffer);
+
+void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t nbMoments);
+void UpdateMainHits(Databuff *databuffer,Databuff *subbuffer, int rank);

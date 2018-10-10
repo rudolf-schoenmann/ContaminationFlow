@@ -102,6 +102,9 @@ int main(int argc, char *argv[]) {
 		Databuff hitbuffer;
 		hitbuffer.buff = NULL;
 
+		Databuff hitbuffer_original;
+		hitbuffer_original.buff = NULL;
+
 		Databuff loadbuffer;
 		loadbuffer.buff= NULL;
 
@@ -130,6 +133,7 @@ int main(int argc, char *argv[]) {
 
       if(rank == 0) {
     	  /* do some work as process 0 */
+    	  //std::cout << "World size "<< world_size << std::endl;
     	  std::cout << "Hello! I'm head process "<< rank << std::endl;
     	  //std::cout << "Number of started processes: "<< world_size << std::endl;
 
@@ -143,6 +147,7 @@ int main(int argc, char *argv[]) {
     	  //Read in buffer file (exported by Windows-Molflow). File given as first argument to main().
     	  importBuff(argv[1], &loadbuffer);
     	  importBuff(argv[2], &hitbuffer);
+    	  importBuff(argv[2], &hitbuffer_original);//TODO: copy content from pointer rather than read again?
 
 
     	  /*
@@ -160,6 +165,7 @@ int main(int argc, char *argv[]) {
     		  	  	  	else {std::cout<<hitbuffer.buff[i]<<std::endl;}
     	      	  		}*/
     	  //std::cout << argv[2] << ": " << hitbuffer.buff << std::endl;
+
     	  std::cout << "Buffers sent. Wait for a few second. " <<std::endl;
     	  }
 
@@ -219,33 +225,7 @@ int main(int argc, char *argv[]) {
 
 	  MPI_Barrier(MPI_COMM_WORLD);
 
-      if (rank != 0){
-    	 /* do work in any remaining processes */
-    	 std::cout << "Hello! I'm worker process "<< rank << std::endl;
-    	 std::cout << "size of " << argv[2] << " = " << hitbuffer.size <<std::endl;
-    	 //std::cout << argv[2] << std::endl;
-    	 //char fileexport [] = "/smbhome/schoenmann/buffertest";
-    	 //exportBuff(fileexport, &hitbuffer);
-    	 /*int i;
-    	 for(i=0; i < 10; i++) {
-    	    	  	  	if (i != (hitbuffer.size -1)){
-    	    	     	std::cout<<hitbuffer.buff[i];}
-    	    	     	else {std::cout<<hitbuffer.buff[i]<<std::endl;}
-    	 	 	 	 	}*/
-
-    	  //InitSimulation(); //Creates sHandle instance, commented as error otherwise
-    	  //SetReady(); // Rudi: Soll ich das übernehmen?
-
-         /*Do the simulation*/
-            /* int m = 0 
-             * case PROCESS_RUN:
-             *      //SetStatus(GetSimuStatus) deactivate HitUpdate function
-             *      if(m == SimulationTime) {
-             *          Tell process 0 via MPI PROCESS_DONE, MPI update Hits an den Hauptprozess
-                        };
-             *      m++
-             */
-    	 if(newsimutime!=0){
+ 	 if(newsimutime!=0){
 			  InitSimulation(); //Creates sHandle instance
 
 			  // Sub process ready
@@ -258,37 +238,99 @@ int main(int argc, char *argv[]) {
 				  MPI_Finalize();
 				  return 0;
 			  }
+
+
+		  MPI_Barrier(MPI_COMM_WORLD);
+
+		  if (rank != 0){
+			 /* do work in any remaining processes */
+			 std::cout << "Process "<< rank <<" starting simulation now." << std::endl;
+			 //std::cout << "size of " << argv[2] << " = " << hitbuffer.size <<std::endl;
+			 //std::cout << argv[2] << std::endl;
+			 //char fileexport [] = "/smbhome/schoenmann/buffertest";
+			 //exportBuff(fileexport, &hitbuffer);
+			 /*int i;
+			 for(i=0; i < 10; i++) {
+							if (i != (hitbuffer.size -1)){
+							std::cout<<hitbuffer.buff[i];}
+							else {std::cout<<hitbuffer.buff[i]<<std::endl;}
+							}*/
+
+			  //InitSimulation(); //Creates sHandle instance, commented as error otherwise
+			  //SetReady(); // Rudi: Soll ich das übernehmen?
+
+			 /*Do the simulation*/
+				/* int m = 0
+				 * case PROCESS_RUN:
+				 *      //SetStatus(GetSimuStatus) deactivate HitUpdate function
+				 *      if(m == SimulationTime) {
+				 *          Tell process 0 via MPI PROCESS_DONE, MPI update Hits an den Hauptprozess
+							};
+				 *      m++
+				 */
+
+			 //Do simulation
 			  if(!simulateSub(&hitbuffer, rank, newsimutime)){
 				  std::cout << "Maximum desorption reached." << std::endl;
 			  }
 			  else{
 				  std::cout << "Simulation for process " <<rank <<" finished." << std::endl;
 			  }
-    	 }
-    	 else{std::cout << "Simulation time = 0.0 seconds." << std::endl;}
+
+/*
+			 //test:export buffers
+			//std::cout << "Start export for process " <<rank << std::endl;
+			std::string exportload = "/home/van/loadbuffer" + std::to_string(rank);
+			std::string exporthit = "/home/van/hitbuffer" + std::to_string(rank);
+			exportBuff(exporthit, &hitbuffer);
+			//exportBuff(exportload, &loadbuffer);
+			//std::cout << "Export for process " <<rank <<" finished." << std::endl;
+*/
+		  }
+
+		  //std::cout <<"shandle size " <<(size_t)sHandle->moments.size() << std::endl;
 
 
-    	 //test:export buffers
-    	std::cout << "Start export for process " <<rank << std::endl;
-	  	std::string exportload = "/home/van/loadbuffer" + std::to_string(rank);
-	  	std::string exporthit = "/home/van/hitbuffer" + std::to_string(rank);
-	  	exportBuff(exporthit, &hitbuffer);
-	  	exportBuff(exportload, &loadbuffer);
-	  	std::cout << "Export for process " <<rank <<" finished." << std::endl;
-      }
+		  MPI_Barrier(MPI_COMM_WORLD);
 
+		  //iteratively add hitbuffer from subprocesses
+		  for(int i=1; i<world_size;i++)
+		  {
+			  MPI_Barrier(MPI_COMM_WORLD);
+			  if(rank==i){
+				  MPI_Send(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, 0, MPI_COMM_WORLD);
 
-      MPI_Barrier(MPI_COMM_WORLD);
+			  }
+			  else if(rank==0){
+				  //delete[] hitbuffer.buff; hitbuffer.buff = new BYTE[hitbuffer.size];
+				  MPI_Recv(hitbuffer.buff, hitbuffer.size, MPI::BYTE, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
+				  //std::string exporthit = "/home/van/hitbuffer0" + std::to_string(i);
+				  //exportBuff(exporthit, &hitbuffer);
+				  //std::cout << "Received hitbuffer from process" <<i << std::endl;
 
-      if(rank == 0) {
-          	 //Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
-    	     std::cout << "Hello! I'm head process "<< rank << std::endl;
-          	 exportBuff(argv[3], &hitbuffer);
-          	 // Build in safety check to not loosing simulation results, if the buffer export does not work?
-          	 //delete[] databuffer.buff;
-          	//std::cout <<"____________________________________________________________________________________________________" << std::endl;
-            }
+				  sleep(1);
+				  UpdateMainHits(&hitbuffer_original,&hitbuffer, 0);
+				  std::cout << "Updated hitbuffer with process " <<i << std::endl;
+
+				  std::string exporthit = "/home/van/resultbuffer0" + std::to_string(i);
+				  exportBuff(exporthit, &hitbuffer_original);
+			  }
+		  }
+		  MPI_Barrier(MPI_COMM_WORLD);
+
+		  if(rank == 0) {
+				 //Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
+				 std::cout << "Process 0 exporting final hitbuffer" << std::endl;
+				 //exportBuff(argv[3], &hitbuffer_original);
+
+				 // Build in safety check to not loosing simulation results, if the buffer export does not work?
+				 //delete[] databuffer.buff;
+				//std::cout <<"____________________________________________________________________________________________________" << std::endl;
+				}
+ 	 }
+ 	 else{std::cout << "Simulation time = 0.0 seconds. Nothing to do." << std::endl;}
+
 
              if(hitbuffer.buff!=NULL){delete[] hitbuffer.buff; hitbuffer.buff=NULL;}
              if(loadbuffer.buff!=NULL){delete[] loadbuffer.buff; loadbuffer.buff=NULL;}

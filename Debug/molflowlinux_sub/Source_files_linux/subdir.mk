@@ -6,16 +6,19 @@
 CPP_SRCS += \
 ../molflowlinux_sub/Source_files_linux/Buffer.cpp \
 ../molflowlinux_sub/Source_files_linux/SimulationLinux.cpp \
+../molflowlinux_sub/Source_files_linux/SimulationMCmain.cpp \
 ../molflowlinux_sub/Source_files_linux/SimulationMCsub.cpp 
 
 OBJS += \
 ./molflowlinux_sub/Source_files_linux/Buffer.o \
 ./molflowlinux_sub/Source_files_linux/SimulationLinux.o \
+./molflowlinux_sub/Source_files_linux/SimulationMCmain.o \
 ./molflowlinux_sub/Source_files_linux/SimulationMCsub.o 
 
 CPP_DEPS += \
 ./molflowlinux_sub/Source_files_linux/Buffer.d \
 ./molflowlinux_sub/Source_files_linux/SimulationLinux.d \
+./molflowlinux_sub/Source_files_linux/SimulationMCmain.d \
 ./molflowlinux_sub/Source_files_linux/SimulationMCsub.d 
 
 
