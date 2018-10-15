@@ -315,8 +315,8 @@ int main(int argc, char *argv[]) {
 				  UpdateMainHits(&hitbuffer_original,&hitbuffer, 0);
 				  std::cout << "Updated hitbuffer with process " <<i << std::endl;
 
-				  std::string exporthit = "/home/van/resultbuffer0" + std::to_string(i);
-				  exportBuff(exporthit, &hitbuffer_original);
+				  //std::string exporthit = "/home/van/resultbuffer0" + std::to_string(i);
+				  //exportBuff(exporthit, &hitbuffer_original);
 			  }
 		  }
 		  MPI_Barrier(MPI_COMM_WORLD);
@@ -324,7 +324,7 @@ int main(int argc, char *argv[]) {
 		  if(rank == 0) {
 				 //Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
 				 std::cout << "Process 0 exporting final hitbuffer" << std::endl;
-				 //exportBuff(argv[3], &hitbuffer_original);
+				 exportBuff(argv[3], &hitbuffer_original);
 
 				 // Build in safety check to not loosing simulation results, if the buffer export does not work?
 				 //delete[] databuffer.buff;

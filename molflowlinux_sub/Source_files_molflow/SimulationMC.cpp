@@ -1513,6 +1513,7 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 			f->tmpCounter[m].hit.sum_1_per_ort_velocity += sHandle->currentParticle.oriRatio * sum_1_per_v;
 			f->tmpCounter[m].hit.sum_v_ort += sHandle->currentParticle.oriRatio * sum_v_ort;
 			f->tmpCounter[m].hit.sum_1_per_velocity += (hitEquiv + static_cast<double>(desorb)) / sHandle->currentParticle.velocity;
+			//f->tmpCounter[m].hit.covering += updatecovering(f);
 		}
 	}
 }

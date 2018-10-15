@@ -500,6 +500,7 @@ typedef union {
 		double sum_1_per_ort_velocity;    // sum of reciprocials of orthogonal velocity components, used to determine the density, regardless of facet orientation
 		double sum_1_per_velocity;          //For average molecule speed calculation
 		double sum_v_ort;          // sum of orthogonal speeds of incident velocities, used to determine the pressure
+		double covering; //new counter
 	} hit;
 
 	struct {
@@ -535,7 +536,8 @@ typedef union {
 				CEREAL_NVP(hit.nbAbsEquiv),
 				CEREAL_NVP(hit.sum_1_per_ort_velocity),
 				CEREAL_NVP(hit.sum_1_per_velocity),
-				CEREAL_NVP(hit.sum_v_ort)
+				CEREAL_NVP(hit.sum_v_ort),
+				CEREAL_NVP(hit.covering)
 				);
 		}
 
