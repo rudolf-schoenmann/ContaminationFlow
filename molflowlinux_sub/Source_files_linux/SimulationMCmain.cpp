@@ -200,7 +200,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 				if (f.sh.isProfile) { //(MY) comment or uncomment if clauses?
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 						ProfileSlice *shProfile = (ProfileSlice *)(buffer + f.sh.hitOffset +8*num_f + facetHitsSize + m * f.profileSize);
-						ProfileSlice *shProfileSub = (ProfileSlice *)(subbuff + f.sh.hitOffset + facetHitsSize + m * f.profileSize);
+						ProfileSlice *shProfileSub = (ProfileSlice *)(subbuff + f.sh.hitOffset+8*num_f + facetHitsSize + m * f.profileSize);
 						for (j = 0; j < (int)PROFILE_SIZE; j++) {
 							shProfile[j] += shProfileSub[j];
 						}

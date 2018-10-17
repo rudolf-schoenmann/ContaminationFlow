@@ -65,6 +65,7 @@ typedef void *HANDLE;
 Simulation* sHandle; //Global handle to simulation, one per subprocess
 
 
+//This function checks if the correct number of arguments has been passed, however it does not check their validity, e.g. double, correct filename, etc
 bool parametercheck(int argc, char *argv[])
       {
     	    int i;
