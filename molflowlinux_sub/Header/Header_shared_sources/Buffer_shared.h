@@ -500,7 +500,7 @@ typedef union {
 		double sum_1_per_ort_velocity;    // sum of reciprocials of orthogonal velocity components, used to determine the density, regardless of facet orientation
 		double sum_1_per_velocity;          //For average molecule speed calculation
 		double sum_v_ort;          // sum of orthogonal speeds of incident velocities, used to determine the pressure
-		double covering; //new counter
+		double covering; //new counter for covering
 	} hit;
 
 	struct {
@@ -510,21 +510,22 @@ typedef union {
 		double absorbed;
 	} density;
 
-	/* original Windows-Molflow code
+	//original Windows-Molflow code
 	template<class Archive>
 	void serialize(Archive & archive)
 	{
 		archive(
-			CEREAL_NVP(nbDesorbed),
-			CEREAL_NVP(nbMCHit),
-			CEREAL_NVP(nbHitEquiv),
-			CEREAL_NVP(nbAbsEquiv),
-			CEREAL_NVP(sum_1_per_ort_velocity),
-			CEREAL_NVP(sum_1_per_velocity),
-			CEREAL_NVP(sum_v_ort)
+			CEREAL_NVP(hit.nbDesorbed),
+			CEREAL_NVP(hit.nbMCHit),
+			CEREAL_NVP(hit.nbHitEquiv),
+			CEREAL_NVP(hit.nbAbsEquiv),
+			CEREAL_NVP(hit.sum_1_per_ort_velocity),
+			CEREAL_NVP(hit.sum_1_per_velocity),
+			CEREAL_NVP(hit.sum_v_ort),
+			CEREAL_NVP(hit.covering)
 			);
-	}*/
-
+	}
+/*
 	//new code added by Rudi:
 	template<class Archive>
 		void serialize(Archive & archive)
@@ -539,7 +540,7 @@ typedef union {
 				CEREAL_NVP(hit.sum_v_ort),
 				CEREAL_NVP(hit.covering)
 				);
-		}
+		}*/
 
 } FacetHitBuffer;
 #endif
