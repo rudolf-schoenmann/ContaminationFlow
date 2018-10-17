@@ -10,12 +10,11 @@ void UpdateSubHits(Databuff *databuffer, int rank) {
 	case MC_MODE:
 	{
 		UpdateSubMCHits(databuffer, rank, (size_t)sHandle->moments.size());
-		//if (dpLog) UpdateLog(dpLog, timeout);
 	}
 		break;
-	case AC_MODE:
+	default:
 
-		//UpdateACHits(dpHit, prIdx, timeout);
+		std::cout <<"Unknown Mode" <<std::endl;
 		break;
 	}
 
@@ -42,7 +41,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 
 
 
-	// Global hits and leaks: adding local hits to shared memory (My) removed +, etc
+	// Global hits and leaks: save local hits to shared memory
 	gHits->globalHits.hit.nbMCHit = sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;
 	gHits->globalHits.hit.nbHitEquiv = sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv;
 	gHits->globalHits.hit.nbAbsEquiv = sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv;
@@ -54,7 +53,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	//Memorize current limits, then do a min/max search //(My) not needed for subprocesses
 
 
-	// Leak (MY) removed +, etc
+	// Leak saved
 	for (size_t leakIndex = 0; leakIndex < sHandle->tmpGlobalResult.leakCacheSize; leakIndex++)//TODO which one correct?
 		gHits->leakCache[(leakIndex) % LEAKCACHESIZE] = sHandle->tmpGlobalResult.leakCache[leakIndex];
 		//gHits->leakCache[(leakIndex + gHits->lastLeakIndex) % LEAKCACHESIZE] = sHandle->tmpGlobalResult.leakCache[leakIndex];
@@ -64,7 +63,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 
 
 	// HHit (Only prIdx 0) //Rudi: I think that's some Hit-History stuff. Not necessary to comment out (presumably).
-	//if (rank == 1) {// (MY) removed +, etc//(MY) commented if, assuming mainprocess has rank 1, therefore here we save values from shandle in buffer for all subprocesses
+	//if (rank == 1) {// (MY) save hitcache
 		for (size_t hitIndex = 0; hitIndex < sHandle->tmpGlobalResult.hitCacheSize; hitIndex++)//TODO which one correct?
 			gHits->hitCache[(hitIndex) % HITCACHESIZE] = sHandle->tmpGlobalResult.hitCache[hitIndex];
 			//gHits->hitCache[(hitIndex + gHits->lastHitIndex) % HITCACHESIZE] = sHandle->tmpGlobalResult.hitCache[hitIndex];
@@ -77,7 +76,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	//}
 
 
-	//Global histograms (MY) init to zero for else needed?
+	//Global histograms saved
 
 		for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
 			BYTE *histCurrentMoment = buffer + sizeof(GlobalHitBuffer) + m * sHandle->wp.globalHistogramParams.GetDataSize();
@@ -104,19 +103,15 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 				}
 			}
 		}
-	//initbufftozero(nbMoments, databuffer); //now as else statement
 
 	size_t facetHitsSize = (1 + nbMoments) * sizeof(FacetHitBuffer);
-	size_t num_f=0;
 	// Facets
 	for (s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			num_f++;
-
 			if (f.hitted) {
 
-				for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
-					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset+8*num_f + m * sizeof(FacetHitBuffer));
+				for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) save hits
+					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 
 					facetHitBuffer->hit.nbAbsEquiv = f.tmpCounter[m].hit.nbAbsEquiv;
 					facetHitBuffer->hit.nbDesorbed = f.tmpCounter[m].hit.nbDesorbed;
@@ -129,18 +124,18 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 					//facetHitBuffer->hit.covering= 0.0;
 				}
 
-				if (f.sh.isProfile) {//(MY) removed +
+				if (f.sh.isProfile) {//(MY) save profile
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-						ProfileSlice *shProfile = (ProfileSlice *)(buffer + f.sh.hitOffset+8*num_f + facetHitsSize + m * f.profileSize);
+						ProfileSlice *shProfile = (ProfileSlice *)(buffer + f.sh.hitOffset + facetHitsSize + m * f.profileSize);
 						for (j = 0; j < (int)PROFILE_SIZE; j++) {
 							shProfile[j] = f.profile[m][j];
 						}
 					}
 				}
 
-				if (f.sh.isTextured) {//(MY)
+				if (f.sh.isTextured) {//(MY) save texture
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-						TextureCell *shTexture = (TextureCell *)(buffer + (f.sh.hitOffset+8*num_f + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
+						TextureCell *shTexture = (TextureCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
 						//double dCoef = gHits->globalHits.hit.nbDesorbed * 1E4 * sHandle->wp.gasMass / 1000 / 6E23 * MAGIC_CORRECTION_FACTOR;  //1E4 is conversion from m2 to cm2
 						//double timeCorrection = m == 0 ? sHandle->wp.finalOutgassingRate : (sHandle->wp.totalDesorbedMolecules) / sHandle->wp.timeWindowSize;
 						//Timecorrection is required to compare constant flow texture values with moment values (for autoscaling)
@@ -149,7 +144,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 							for (x = 0; x < (int)f.sh.texWidth; x++) {
 								size_t add = x + y * f.sh.texWidth;
 
-								//Add temporary hit counts
+								//Temporary hit counts
 								shTexture[add] = f.texture[m][add]; //(My) removed +
 								// Autoscaling will be done in SimulationMCmain.cpp
 
@@ -158,9 +153,9 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 					}
 				}
 
-				if (f.sh.countDirection) {//(MY) removed +
+				if (f.sh.countDirection) {//(MY) save this
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-						DirectionCell *shDir = (DirectionCell *)(buffer + (f.sh.hitOffset+8*num_f + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*m));
+						DirectionCell *shDir = (DirectionCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*m));
 						for (y = 0; y < (int)f.sh.texHeight; y++) {
 							for (x = 0; x < (int)f.sh.texWidth; x++) {
 								size_t add = x + y * f.sh.texWidth;
@@ -174,8 +169,8 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 					}
 				}
 
-				if (f.sh.anglemapParams.record) {//(MY) removed +
-					size_t *shAngleMap = (size_t *)(buffer + f.sh.hitOffset+8*num_f + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments));
+				if (f.sh.anglemapParams.record) {//(MY) save this
+					size_t *shAngleMap = (size_t *)(buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments));
 					for (y = 0; y < (int)(f.sh.anglemapParams.thetaLowerRes + f.sh.anglemapParams.thetaHigherRes); y++) {
 						for (x = 0; x < (int)f.sh.anglemapParams.phiWidth; x++) {
 							size_t add = x + y * f.sh.anglemapParams.phiWidth;
@@ -185,9 +180,8 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 				}
 
 				//Facet histograms
-
-					for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
-						BYTE *histCurrentMoment = buffer + f.sh.hitOffset+8*num_f + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments) + f.sh.anglemapParams.GetRecordedDataSize() + m * f.sh.facetHistogramParams.GetDataSize();
+					for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) Save histogrms
+						BYTE *histCurrentMoment = buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments) + f.sh.anglemapParams.GetRecordedDataSize() + m * f.sh.facetHistogramParams.GetDataSize();
 
 						if (f.sh.facetHistogramParams.recordBounce) {
 							double* nbHitsHistogram = (double*)histCurrentMoment;
@@ -216,8 +210,8 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 			} // End if(hitted)
 			else // if not hitted, initialize to zero
 			{
-				for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
-					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset+8*num_f + m * sizeof(FacetHitBuffer));
+				for (unsigned int m = 0; m < (1 + nbMoments); m++) {//hits
+					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 					facetHitBuffer->hit.nbAbsEquiv = 0.0;
 					facetHitBuffer->hit.nbDesorbed = 0;
 					facetHitBuffer->hit.nbMCHit = 0;
@@ -228,24 +222,24 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 					facetHitBuffer->hit.covering= 0.0;
 				}
 
-				if (f.sh.isProfile) {//(MY) removed +
+				if (f.sh.isProfile) {//profile
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-						ProfileSlice *shProfile = (ProfileSlice *)(buffer + f.sh.hitOffset+8*num_f + facetHitsSize + m * f.profileSize);
+						ProfileSlice *shProfile = (ProfileSlice *)(buffer + f.sh.hitOffset + facetHitsSize + m * f.profileSize);
 						for (j = 0; j < (int)PROFILE_SIZE; j++) {
 							shProfile[j].countEquiv=0.0; shProfile[j].sum_1_per_ort_velocity=0.0; shProfile[j].sum_v_ort=0.0;
 						}
 					}
 				}
 
-				if (f.sh.isTextured) {//(MY)
+				if (f.sh.isTextured) {//texture
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-						TextureCell *shTexture = (TextureCell *)(buffer + (f.sh.hitOffset+8*num_f + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
+						TextureCell *shTexture = (TextureCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
 
 						for (y = 0; y < (int)f.sh.texHeight; y++) {
 							for (x = 0; x < (int)f.sh.texWidth; x++) {
 								size_t add = x + y * f.sh.texWidth;
 
-								//Add temporary hit counts
+								//temporary hit counts
 								shTexture[add].countEquiv=0.0; shTexture[add].sum_1_per_ort_velocity=0.0; shTexture[add].sum_v_ort_per_area=0.0;
 
 							}
@@ -253,9 +247,9 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 					}
 				}
 
-				if (f.sh.countDirection) {//(MY) removed +
+				if (f.sh.countDirection) {//
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-						DirectionCell *shDir = (DirectionCell *)(buffer + (f.sh.hitOffset+8*num_f + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*m));
+						DirectionCell *shDir = (DirectionCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*m));
 						for (y = 0; y < (int)f.sh.texHeight; y++) {
 							for (x = 0; x < (int)f.sh.texWidth; x++) {
 								size_t add = x + y * f.sh.texWidth;
@@ -269,8 +263,8 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 					}
 				}
 
-				if (f.sh.anglemapParams.record) {//(MY) removed +
-					size_t *shAngleMap = (size_t *)(buffer + f.sh.hitOffset+8*num_f + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments));
+				if (f.sh.anglemapParams.record) {//
+					size_t *shAngleMap = (size_t *)(buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments));
 					for (y = 0; y < (int)(f.sh.anglemapParams.thetaLowerRes + f.sh.anglemapParams.thetaHigherRes); y++) {
 						for (x = 0; x < (int)f.sh.anglemapParams.phiWidth; x++) {
 							size_t add = x + y * f.sh.anglemapParams.phiWidth;
@@ -281,8 +275,8 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 
 				//Facet histograms
 
-					for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
-						BYTE *histCurrentMoment = buffer + f.sh.hitOffset+8*num_f + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments) + f.sh.anglemapParams.GetRecordedDataSize() + m * f.sh.facetHistogramParams.GetDataSize();
+					for (unsigned int m = 0; m < (1 + nbMoments); m++) {//facet histograms
+						BYTE *histCurrentMoment = buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments) + f.sh.anglemapParams.GetRecordedDataSize() + m * f.sh.facetHistogramParams.GetDataSize();
 
 						if (f.sh.facetHistogramParams.recordBounce) {
 							double* nbHitsHistogram = (double*)histCurrentMoment;

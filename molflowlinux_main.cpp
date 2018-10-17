@@ -65,7 +65,8 @@ typedef void *HANDLE;
 Simulation* sHandle; //Global handle to simulation, one per subprocess
 
 
-//This function checks if the correct number of arguments has been passed, however it does not check their validity, e.g. double, correct filename, etc
+//This function checks if the correct number of arguments has been passed
+//does not check their validity, e.g. right type such as double/string, correct filename, etc
 bool parametercheck(int argc, char *argv[])
       {
     	    int i;
@@ -93,11 +94,11 @@ int main(int argc, char *argv[]) {
 
 	  /*Parameters passed to main:
 	   *
-	   * 1. Name of buffer file to read in.
-	   * 2. Choose a name for the buffer file to export the simulation results.
-	   * 3. Simulation time.
-	   * 4.
-	   * 5.
+	   * 1. Name of load buffer file to read in.
+	   * 2. Name of hit buffer file to read in.
+	   * 3. Choose a name for the buffer file to export the simulation results to.
+	   * 4. Simulation time (number)
+	   * 5. Simulation time (unit, e.g. min)
 	   *
        */
 
@@ -135,11 +136,6 @@ int main(int argc, char *argv[]) {
       MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
       if(rank == 0) {
-    	  /* do some work as process 0 */
-    	  //std::cout << "World size "<< world_size << std::endl;
-    	  std::cout << "Hello! I'm head process "<< rank << std::endl;
-    	  //std::cout << "Number of started processes: "<< world_size << std::endl;
-
     	  // Parameter check for MolflowLinux
     	  if (!parametercheck(argc, argv))
     	  {		MPI_Finalize();
@@ -159,120 +155,85 @@ int main(int argc, char *argv[]) {
     	   * leave out or put in function?*/
     	  std::cout << "size of " << argv[2] << " = " << hitbuffer.size <<std::endl;
     	  std::cout << "size of " << argv[1] << " = " << loadbuffer.size <<std::endl;
-    	  //std::cout << "size of hitbuffer = " << sizeof(hitbuffer) <<std::endl;
-    	  /*std::cout << argv[2] << ": ";
-    	  int i;
-    	  for(i=0; i < hitbuffer.size; i++) {
-    		  	  	  	if (i != (hitbuffer.size -1)){
-    	      	  		std::cout<<hitbuffer.buff[i];}
-    		  	  	  	else {std::cout<<hitbuffer.buff[i]<<std::endl;}
-    	      	  		}*/
-    	  //std::cout << argv[2] << ": " << hitbuffer.buff << std::endl;
 
-    	  std::cout << "Buffers sent. Wait for a few second. " <<std::endl;
-    	  }
+    	  std::cout << "Buffers sent. Wait for a few seconds. " <<std::endl;
+      }
 
 
-      	  // Send load-buffer to all other processes
-      	  MPI_Bcast(&loadbuffer.size, sizeof(loadbuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
-      	  //std::cout << "size of " << argv[2] << " = " << hitbuffer.size <<std::endl;
-      	  sleep(1);
+	  // Send load-buffer to all other processes
+      // Send size of buffer
+	  MPI_Bcast(&loadbuffer.size, sizeof(loadbuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
+	  MPI_Barrier(MPI_COMM_WORLD);
+	  // Allocate memory for buffer
+	  if (rank !=0){ /* do work in any remaining processes */
+		  loadbuffer.buff = new BYTE[loadbuffer.size];
+		}
 
-      	  if (rank !=0){ /* do work in any remaining processes */
-          	  loadbuffer.buff = new BYTE[loadbuffer.size];
-            }
+	  // Send buffer content
+	  MPI_Bcast(loadbuffer.buff, loadbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
+	  MPI_Barrier(MPI_COMM_WORLD);
 
+	  //Send hit-buffer to all other processes.
+	  // Send size of buffer
+	  MPI_Bcast(&hitbuffer.size, sizeof(hitbuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
+	  MPI_Barrier(MPI_COMM_WORLD);
+	  // Allocate memory for buffer
+	  if (rank !=0){ /* do work in any remaining processes */
+			  hitbuffer.buff = new BYTE[hitbuffer.size];
+			}
 
-      	  MPI_Bcast(loadbuffer.buff, loadbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
-
-      	  MPI_Barrier(MPI_COMM_WORLD);
-
-          //Send hit-buffer to all other processes.
-          MPI_Bcast(&hitbuffer.size, sizeof(hitbuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
-          //std::cout << "size of " << argv[2] << " = " << hitbuffer.size <<std::endl;
-          sleep(1);
-
-          if (rank !=0){ /* do work in any remaining processes */
-              	  hitbuffer.buff = new BYTE[hitbuffer.size];
-                }
-
-
-          MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
+	  // Send buffer content
+	  MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 
 
 
-          /*Sharing buffer (Geometry and Parameters) with the other processes
-             Send Buffer
-              * Send SimulationTime
-              * Tell the other processes via MPI, that they should execute COMMAND_LOAD (???)
-              * If all Processes successfully executed COMMAND_LOAD, then tell them to execute COMMAND_START
-          The other processes are simulating. I do nothing.
-          After PROCESS_DONE Messages from the other processes, Receive Data from the other processes
-          Sum up Data from the other processes
-             First Step: Stationary Simulation => do nothing here
-             Second Step: Time dependend Mode (Maybe copy Algorithm from Marton,  when ready)
-                 Iterative Algorithm: Update Parameters (Is parallisation necessary/desirable for updating?) + Sharing new Parameters with the other processes
-          write Result a bufferfile (or maybe??? in a file or .zip archive)*/
+	  /*Sharing buffer (Geometry and Parameters) with the other processes
+		 Send Buffer
+		  * Send SimulationTime
+		  * Tell the other processes via MPI, that they should execute COMMAND_LOAD (???)
+		  * If all Processes successfully executed COMMAND_LOAD, then tell them to execute COMMAND_START
+	  The other processes are simulating. I do nothing.
+	  After PROCESS_DONE Messages from the other processes, Receive Data from the other processes
+	  Sum up Data from the other processes
+		 First Step: Stationary Simulation => do nothing here
+		 Second Step: Time dependend Mode (Maybe copy Algorithm from Marton,  when ready)
+			 Iterative Algorithm: Update Parameters (Is parallisation necessary/desirable for updating?) + Sharing new Parameters with the other processes
+	  write Result a bufferfile (or maybe??? in a file or .zip archive)*/
 
 
-       // extract Simulation time and unit
+	  // extract Simulation time and unit
       if(argc==5) unit="s";
 	  else unit = argv[5];
-
 	  SimulationTime= std::atof(argv[4]);
-	  //std::cout << SimulationTime <<std::endl;
 
+	  //compute simulation time in seconds
 	  newsimutime = (int)(convertunit(SimulationTime, unit)+0.5);
 	  if(rank==0)
 		  std::cout << "Simulation time " << SimulationTime << unit <<" converted to " <<newsimutime <<"s" <<std::endl;
-
 	  MPI_Barrier(MPI_COMM_WORLD);
 
- 	 if(newsimutime!=0){
-			  InitSimulation(); //Creates sHandle instance
+	  // Start of Simulation
+	  if(newsimutime!=0){
+		  //Creates sHandle instance
+		  InitSimulation();
 
-			  // Sub process ready
-			  //SetReady();
+		  //SetReady();
 
-			  if( !LoadSimulation(&loadbuffer)) {
-				  std::cout << "Geometry not loaded." << std::endl;
-				  std::cout << "MolflowLinux is terminated now." << std::endl;
-				//CLOSEDP(loader); Rudi) Don't need that.
-				  MPI_Finalize();
-				  return 0;
-			  }
-
-
+		  // Load geometry from buffer to sHandle
+		  if( !LoadSimulation(&loadbuffer)) {
+			  std::cout << "Geometry not loaded." << std::endl;
+			  std::cout << "MolflowLinux is terminated now." << std::endl;
+			  MPI_Finalize();
+			  return 0;
+		  }
 		  MPI_Barrier(MPI_COMM_WORLD);
 
+		  //Simulation on subprocesses
 		  if (rank != 0){
 			 /* do work in any remaining processes */
 			 std::cout << "Process "<< rank <<" starting simulation now." << std::endl;
-			 //std::cout << "size of " << argv[2] << " = " << hitbuffer.size <<std::endl;
-			 //std::cout << argv[2] << std::endl;
-			 //char fileexport [] = "/smbhome/schoenmann/buffertest";
-			 //exportBuff(fileexport, &hitbuffer);
-			 /*int i;
-			 for(i=0; i < 10; i++) {
-							if (i != (hitbuffer.size -1)){
-							std::cout<<hitbuffer.buff[i];}
-							else {std::cout<<hitbuffer.buff[i]<<std::endl;}
-							}*/
 
-			  //InitSimulation(); //Creates sHandle instance, commented as error otherwise
-			  //SetReady(); // Rudi: Soll ich das übernehmen?
-
-			 /*Do the simulation*/
-				/* int m = 0
-				 * case PROCESS_RUN:
-				 *      //SetStatus(GetSimuStatus) deactivate HitUpdate function
-				 *      if(m == SimulationTime) {
-				 *          Tell process 0 via MPI PROCESS_DONE, MPI update Hits an den Hauptprozess
-							};
-				 *      m++
-				 */
-
-			 //Do simulation
+			 //Do the simulation
 			  if(!simulateSub(&hitbuffer, rank, newsimutime)){
 				  std::cout << "Maximum desorption reached." << std::endl;
 			  }
@@ -291,20 +252,17 @@ int main(int argc, char *argv[]) {
 */
 		  }
 
-		  //std::cout <<"shandle size " <<(size_t)sHandle->moments.size() << std::endl;
-
-
-		  MPI_Barrier(MPI_COMM_WORLD);
-
 		  //iteratively add hitbuffer from subprocesses
 		  for(int i=1; i<world_size;i++)
 		  {
 			  MPI_Barrier(MPI_COMM_WORLD);
 			  if(rank==i){
+				  //Process i sends hitbuffer to Process 0
 				  MPI_Send(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, 0, MPI_COMM_WORLD);
 
 			  }
 			  else if(rank==0){
+				  // Process 0 receives hitbuffer from Process i
 				  //delete[] hitbuffer.buff; hitbuffer.buff = new BYTE[hitbuffer.size];
 				  MPI_Recv(hitbuffer.buff, hitbuffer.size, MPI::BYTE, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
@@ -312,7 +270,7 @@ int main(int argc, char *argv[]) {
 				  //exportBuff(exporthit, &hitbuffer);
 				  //std::cout << "Received hitbuffer from process" <<i << std::endl;
 
-				  sleep(1);
+				  //sleep(1);
 				  UpdateMainHits(&hitbuffer_original,&hitbuffer, 0);
 				  std::cout << "Updated hitbuffer with process " <<i << std::endl;
 
@@ -328,7 +286,6 @@ int main(int argc, char *argv[]) {
 				 exportBuff(argv[3], &hitbuffer_original);
 
 				 // Build in safety check to not loosing simulation results, if the buffer export does not work?
-				 //delete[] databuffer.buff;
 				//std::cout <<"____________________________________________________________________________________________________" << std::endl;
 				}
  	 }

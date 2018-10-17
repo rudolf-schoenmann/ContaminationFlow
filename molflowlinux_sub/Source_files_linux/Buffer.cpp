@@ -9,7 +9,8 @@
 #include <fstream>      // std::filebuf
 #include "Buffer.h"
 
-
+//Import/export of buffer files with filename given as char* or std::string
+//-> no need for conversion
 
 void importBuff(char *fileName, Databuff *databuffer)
 {

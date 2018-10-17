@@ -40,7 +40,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 	buffer = mainbuffer->buff;
 	gHits = (GlobalHitBuffer *)buffer;
 
-	//added subbuffer
+	//added subbuffer that contains simulation results from a subprocess, to be added to mainbuffer
 	subbuff=subbuffer->buff;
 	subHits=(GlobalHitBuffer *)subbuff;
 /*
@@ -144,26 +144,21 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 
 
 	size_t facetHitsSize = (1 + nbMoments) * sizeof(FacetHitBuffer);
-	size_t num_f=0;
 	// Facets
 	//std::cout <<"NBSuper " <<(int)sHandle->sh.nbSuper <<std::endl;
 	for (s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			//if (f.hitted) {
-			num_f++;
 
-				for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-					//FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
-					//FacetHitBuffer *facetHitSub = (FacetHitBuffer *)(subbuff + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
-					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset +8*num_f + m * sizeof(FacetHitBuffer));
-					FacetHitBuffer *facetHitSub = (FacetHitBuffer *)(subbuff + f.sh.hitOffset +8*num_f+ m * sizeof(FacetHitBuffer));
+				for (unsigned int m = 0; m < (1 + nbMoments); m++) { // Add hits
+					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
+					FacetHitBuffer *facetHitSub = (FacetHitBuffer *)(subbuff + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 /*
 					std::cout <<sizeof(GlobalHitBuffer) <<std::endl;
 					std::cout <<f.sh.hitOffset  <<std::endl;
 					std::cout <<sizeof(FacetHitBuffer) <<std::endl;
 					std::cout <<facetHitSub->hit.covering <<std::endl;*/
-
 
 
 					std::cout <<"buffer before" <<std::endl;
@@ -197,20 +192,20 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 
 				}
 
-				if (f.sh.isProfile) { //(MY) comment or uncomment if clauses?
+				if (f.sh.isProfile) { //(MY) Add profiles
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-						ProfileSlice *shProfile = (ProfileSlice *)(buffer + f.sh.hitOffset +8*num_f + facetHitsSize + m * f.profileSize);
-						ProfileSlice *shProfileSub = (ProfileSlice *)(subbuff + f.sh.hitOffset+8*num_f + facetHitsSize + m * f.profileSize);
+						ProfileSlice *shProfile = (ProfileSlice *)(buffer + f.sh.hitOffset + facetHitsSize + m * f.profileSize);
+						ProfileSlice *shProfileSub = (ProfileSlice *)(subbuff + f.sh.hitOffset + facetHitsSize + m * f.profileSize);
 						for (j = 0; j < (int)PROFILE_SIZE; j++) {
 							shProfile[j] += shProfileSub[j];
 						}
 					}
 				}
 
-				if (f.sh.isTextured) {
+				if (f.sh.isTextured) {// Add texture
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-						TextureCell *shTexture = (TextureCell *)(buffer + (f.sh.hitOffset +8*num_f + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
-						TextureCell *shTextureSub = (TextureCell *)(subbuff + (f.sh.hitOffset +8*num_f+ facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
+						TextureCell *shTexture = (TextureCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
+						TextureCell *shTextureSub = (TextureCell *)(subbuff + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
 						//double dCoef = gHits->globalHits.hit.nbDesorbed * 1E4 * sHandle->wp.gasMass / 1000 / 6E23 * MAGIC_CORRECTION_FACTOR;  //1E4 is conversion from m2 to cm2
 						double timeCorrection = m == 0 ? sHandle->wp.finalOutgassingRate : (sHandle->wp.totalDesorbedMolecules) / sHandle->wp.timeWindowSize;
 						//Timecorrection is required to compare constant flow texture values with moment values (for autoscaling)
@@ -220,7 +215,6 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 								size_t add = x + y * f.sh.texWidth;
 
 								//Add temporary hit counts
-								//(MY) what does f.textureCellIncrements do? Is it set in LoadSimulation?
 								shTexture[add] += shTextureSub[add];
 
 								double val[3];  //pre-calculated autoscaling values (Pressure, imp.rate, density)
@@ -253,8 +247,8 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 
 				if (f.sh.countDirection) {
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-						DirectionCell *shDir = (DirectionCell *)(buffer + (f.sh.hitOffset +8*num_f + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*m));
-						DirectionCell *shDirSub = (DirectionCell *)(subbuff + (f.sh.hitOffset +8*num_f+ facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*m));
+						DirectionCell *shDir = (DirectionCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*m));
+						DirectionCell *shDirSub = (DirectionCell *)(subbuff + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*m));
 						for (y = 0; y < (int)f.sh.texHeight; y++) {
 							for (x = 0; x < (int)f.sh.texWidth; x++) {
 								size_t add = x + y * f.sh.texWidth;
@@ -269,8 +263,8 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 				}
 
 				if (f.sh.anglemapParams.record) {
-					size_t *shAngleMap = (size_t *)(buffer + f.sh.hitOffset +8*num_f + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments));
-					size_t *shAngleMapSub = (size_t *)(subbuff + f.sh.hitOffset +8*num_f+ facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments));
+					size_t *shAngleMap = (size_t *)(buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments));
+					size_t *shAngleMapSub = (size_t *)(subbuff + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments));
 					for (y = 0; y < (int)(f.sh.anglemapParams.thetaLowerRes + f.sh.anglemapParams.thetaHigherRes); y++) {
 						for (x = 0; x < (int)f.sh.anglemapParams.phiWidth; x++) {
 							size_t add = x + y * f.sh.anglemapParams.phiWidth;
@@ -282,8 +276,8 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 				//Facet histograms
 
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-						BYTE *histCurrentMoment = buffer + f.sh.hitOffset +8*num_f + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments) + f.sh.anglemapParams.GetRecordedDataSize() + m * f.sh.facetHistogramParams.GetDataSize();
-						BYTE *histSub = subbuff + f.sh.hitOffset + facetHitsSize +8*num_f+ f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments) + f.sh.anglemapParams.GetRecordedDataSize() + m * f.sh.facetHistogramParams.GetDataSize();
+						BYTE *histCurrentMoment = buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments) + f.sh.anglemapParams.GetRecordedDataSize() + m * f.sh.facetHistogramParams.GetDataSize();
+						BYTE *histSub = subbuff + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments) + f.sh.anglemapParams.GetRecordedDataSize() + m * f.sh.facetHistogramParams.GetDataSize();
 						if (f.sh.facetHistogramParams.recordBounce) {
 							double* nbHitsHistogram = (double*)histCurrentMoment;
 							double* nbHitsSub = (double*)histSub;
@@ -319,7 +313,6 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 		if (gHits->texture_limits[v].max.moments_only == 0.0) gHits->texture_limits[v].max.moments_only = texture_limits_old[v].max.moments_only;
 	}
 
-	//ReleaseDataport(dpHit); // (Rudi) Don't need that.
 
 	ResetTmpCounters();
 	//extern char* GetSimuStatus();

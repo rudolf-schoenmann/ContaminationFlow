@@ -10,21 +10,18 @@
 
 bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
-	//unsigned int newsimutime = (int)(convertunit(simutime, unit)+0.5);
-	//std::cout << "Simulation time " << simutime << unit <<" converted to " <<newsimutime <<"s" <<std::endl;
-
+	// Set end of simulation flag
 	bool eos=false;
 
-	//InitSimulation();//creates simulation handle
-	//SetReady(); //checks simulation status?
-
-	//TODO LoadSimulation() has to go after InitSimulation and before StartSimulation!!!
-
+	// Start Simulation = create first particle
 	StartSimulation();
+
+	// Run Simulation for simutime steps. One step ~ 1 seconds
 	for(int i=0; i<simutime && !eos;i++){
 		eos = SimulationRun();      // Run during 1 sec, performs MC steps
-		//std::cout <<"step " <<i <<std::endl;
 	}
+
+	// Save simulation results in hitbuffer
 	UpdateSubHits(hitbuffer, rank);
 
 	return !eos;
@@ -32,14 +29,18 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
 double convertunit(double simutime, std::string unit){
 	for(int i=0; i<6;i++){
+		// day to seconds
 		if(unit==day[i]) return (simutime*3600.0*24.0);
 	}
 	for(int i=0; i<8;i++){
+		// hour to seconds
 			if(unit==hour[i]) return (simutime*3600.0);
 		}
 	for(int i=0; i<8;i++){
+		// minute to seconds
 			if(unit==min[i]) return (simutime*60.0);
 		}
+	//default: seconds
 	return simutime;
 
 }
