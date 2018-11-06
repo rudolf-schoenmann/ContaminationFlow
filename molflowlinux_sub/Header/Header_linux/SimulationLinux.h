@@ -12,3 +12,9 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments);
 
 void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t nbMoments);
 void UpdateMainHits(Databuff *databuffer,Databuff *subbuffer, int rank);
+
+void UpdadeSticking();
+
+double estimateTmin();
+
+

@@ -1,9 +1,20 @@
 #include "SimulationLinux.h"
 
 
-extern Simulation *sHandle; //delcared in molflowSub.cpp
+extern Simulation *sHandle;
 
+void UpdadeSticking(){
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		std::cout <<"Sticking" <<std::endl;
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			calcStickingnew(&f);
+			//f.sh.sticking *=calcKrealvirt();
+			std::cout <<f.sh.sticking <<std::endl;
 
+		}
+	}
+
+}
 
 void UpdateSubHits(Databuff *databuffer, int rank) {
 	switch (sHandle->wp.sMode) {
@@ -309,7 +320,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	//if there were no textures: //(My) not needed for subprocesses
 
 
-	ResetTmpCounters();
+	//ResetTmpCounters();
 
 #ifdef _DEBUG
 	t1 = GetTick();

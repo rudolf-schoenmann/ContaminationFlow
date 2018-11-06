@@ -209,6 +209,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 						//double dCoef = gHits->globalHits.hit.nbDesorbed * 1E4 * sHandle->wp.gasMass / 1000 / 6E23 * MAGIC_CORRECTION_FACTOR;  //1E4 is conversion from m2 to cm2
 						double timeCorrection = m == 0 ? sHandle->wp.finalOutgassingRate : (sHandle->wp.totalDesorbedMolecules) / sHandle->wp.timeWindowSize;
 						//Timecorrection is required to compare constant flow texture values with moment values (for autoscaling)
+						//std::cout <<"timecorrection: " <<timeCorrection <<std::endl<<std::endl;
 
 						for (y = 0; y < (int)f.sh.texHeight; y++) {
 							for (x = 0; x < (int)f.sh.texWidth; x++) {

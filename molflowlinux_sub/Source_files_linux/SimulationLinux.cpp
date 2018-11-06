@@ -7,7 +7,7 @@
 
 #include "SimulationLinux.h"
 #include <array>
-
+extern Simulation *sHandle;
 bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
 	// Set end of simulation flag
@@ -23,7 +23,12 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
 	// Save simulation results in hitbuffer
 	UpdateSubHits(hitbuffer, rank);
+	UpdadeSticking();
 
+	//std::cout <<"test " <<sHandle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv  <<std::endl;
+	std::cout <<"test " <<estimateTmin() <<std::endl;
+
+	ResetTmpCounters(); //resets counter in sHandle
 	return !eos;
 }
 
