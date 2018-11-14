@@ -22,11 +22,10 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
  * Import and export of buffer file
  */
 
+#include "MolflowLinuxTypes.h"
+
 #ifndef MOLFLOWLINUX_SUB_SOURCE_FILES_LINUX_BUFFER_H_
 #define MOLFLOWLINUX_SUB_SOURCE_FILES_LINUX_BUFFER_H_
-
-
-typedef unsigned char BYTE;
 
 typedef struct {
 	signed int size;

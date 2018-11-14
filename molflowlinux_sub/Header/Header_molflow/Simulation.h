@@ -227,7 +227,7 @@ bool LoadSimulation(Databuff *databuffer);
 //bool UpdateOntheflySimuParams(Dataport *loader); // (Rudi) I don't think, I need that.
 bool StartSimulation();
 void ResetSimulation();
-bool SimulationRun();
+bool SimulationRun(double time=1000.0);
 bool SimulationMCStep(size_t nbStep);
 void IncreaseDistanceCounters(double d);
 //bool SimulationACStep(int nbStep);
@@ -260,5 +260,6 @@ void   IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t 
 void   TreatMovingFacet();
 
 void calcStickingnew(SubprocessFacet *iFacet);
+double calcDesorption(SubprocessFacet *iFacet);
 double calcCoveringUpdate(SubprocessFacet *iFacet);
 double calcNmono(SubprocessFacet *iFacet);

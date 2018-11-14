@@ -19,7 +19,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 */
 #include "Distributions.h"
 //#include "GLApp/MathTools.h"
-#include "MathTools.h"
+#include "GLApp/MathTools.h"
 #include <vector>
 
 std::vector<double> DistributionND::InterpolateY(const double & x, const bool & allowExtrapolate)

@@ -234,7 +234,7 @@ int main(int argc, char *argv[]) {
 	newsimutime = (int) (convertunit(SimulationTime, unit) + 0.5);
 	if (rank == 0)
 		std::cout << "Simulation time " << SimulationTime << unit
-				<< " converted to " << newsimutime << "s" << std::endl;
+				<< " converted to " << newsimutime << "ms" << std::endl;
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	// Start of Simulation

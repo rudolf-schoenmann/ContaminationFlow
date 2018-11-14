@@ -651,7 +651,7 @@ void RecordLeakPos() {
 	}
 }
 
-bool SimulationRun() {
+bool SimulationRun(double time) {
 
 	// 1s step
 	double t0, t1;
@@ -661,7 +661,7 @@ bool SimulationRun() {
 	if (sHandle->stepPerSec == 0.0) {
 		switch (sHandle->wp.sMode) {
 		case MC_MODE:
-			nbStep = 500000;
+			nbStep = 500*time;
 			break;
 		case AC_MODE:
 			//nbStep = 1; (my) no AC_MODE
@@ -671,7 +671,7 @@ bool SimulationRun() {
 	}
 
 	if (sHandle->stepPerSec != 0.0)
-		nbStep = (int)((sHandle->stepPerSec + 0.5));
+		nbStep = (int)((time*(sHandle->stepPerSec)/1000.0 + 0.5));
 	if (nbStep < 1) nbStep = 1;
 	t0 = GetTick();
 	switch (sHandle->wp.sMode) {

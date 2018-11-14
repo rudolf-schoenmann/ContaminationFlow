@@ -45,8 +45,7 @@ double estimateTmin(){//TODO something is wrong here
 
 				//covering
 				double coveringtemp=f.tmpCounter[m].hit.covering;
-				if(coveringtemp>0)
-					sum_abs+=calcNmono(&f)*coveringtemp; //mass
+				sum_abs+=calcNmono(&f)*coveringtemp; //mass
 				//sum_hits+=f.tmpCounter[m].hit.nbHitEquiv;//or nbMChit
 			}
 		}
