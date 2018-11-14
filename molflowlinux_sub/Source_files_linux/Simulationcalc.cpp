@@ -1,3 +1,27 @@
+/*
+Program:     ContaminationFlow
+Description: Monte Carlo simulator for satellite contanimation studies
+Authors:     Rudolf Schönmann / Hoai My Van
+Copyright:   TU Munich
+Forked from: Molflow (CERN) (https://cern.ch/molflow)
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
+*/
+
+/*
+ *  This file contains calculations for the contamination
+ */
+
 #include "Simulation.h"
 #include "GLApp/MathTools.h"
 #include <math.h>
@@ -33,7 +57,7 @@ double calcRealCovering(SubprocessFacet *iFacet){ //TODO not sure yet
 
 
 // calculations for simulation
-double calcCovering(SubprocessFacet *iFacet)
+double calcCoveringUpdate(SubprocessFacet *iFacet)
 {
 	//TODO: adapt units, this may not yet be the correct result
 	double N_mono= calcNmono(iFacet);
@@ -70,7 +94,7 @@ void calcStickingnew(SubprocessFacet *iFacet) {
 
 }
 
-void calcDesorption(SubprocessFacet *iFacet){
+double calcDesorption(SubprocessFacet *iFacet){
 	double tau=1;
 	double d=1;
 	double E_de= 2.5E-21;
@@ -81,7 +105,7 @@ void calcDesorption(SubprocessFacet *iFacet){
 
 	double desorption=0.0;
 
-	if(covering){
+	if(covering>0.0){
 		temperature=iFacet->sh.temperature;
 		double N_mono= calcNmono(iFacet);
 		double dN_surf=calcdNsurf();
@@ -89,6 +113,8 @@ void calcDesorption(SubprocessFacet *iFacet){
 		desorption= 1/tau * pow(covering,d) *exp(-E_de/(kb*temperature)) * N_mono/dN_surf;
 
 	}
+
+	return desorption;
 }
 
 

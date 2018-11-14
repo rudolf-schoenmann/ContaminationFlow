@@ -1,3 +1,27 @@
+/*
+Program:     ContaminationFlow
+Description: Monte Carlo simulator for satellite contanimation studies
+Authors:     Rudolf Schönmann / Hoai My Van
+Copyright:   TU Munich
+Forked from: Molflow (CERN) (https://cern.ch/molflow)
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
+*/
+
+/*
+ * This file contains calculations for the iterative algorithm
+ */
+
 #include "SimulationLinux.h"
 
 extern Simulation *sHandle;
@@ -15,7 +39,8 @@ double estimateTmin(){//TODO something is wrong here
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			for (size_t m = 0; m <= nbMoments; m++) {
 				//sum_1_v_orth
-				sum_1_v_ort+=f.tmpCounter[m].hit.sum_1_per_ort_velocity*f.sh.area; //(s/m)*m^2
+				//sum_1_v_ort+=f.tmpCounter[m].hit.sum_1_per_ort_velocity*f.sh.area; //(s/m)*m^2
+				sum_1_v_ort+=f.tmpCounter[m].hit.sum_v_ort*f.sh.area; //(s/m)*m^2
 				facetcounter++;
 
 				//covering
@@ -26,6 +51,7 @@ double estimateTmin(){//TODO something is wrong here
 			}
 		}
 	}
+	sum_1_v_ort=1/sum_1_v_ort;
 	sum_1_v_ort /=facetcounter;//(s*m)
 	//double Nmean=sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv/sum_abs;//(1/mass) //nbHitEquiv or nbMCHit
 	double Nmean=1/sum_abs;//(1/mass) //nbHitEquiv or nbMCHit
@@ -35,6 +61,7 @@ double estimateTmin(){//TODO something is wrong here
 	//TODO durchschnittstrecke
 	//double dmean=sHandle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv;//m
 	double dmean=sHandle->tmpGlobalResult.distTraveled_total;//m
+	//double dmean= sHandle->tmpGlobalResult.distTraveledTotal_fullHitsOnly;
 	std::cout <<"test " <<dmean <<std::endl;
 
 	tmin=dmean*sum_1_v_ort*Nmean;//s
