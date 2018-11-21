@@ -27,6 +27,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #ifndef MOLFLOWLINUX_SUB_SOURCE_FILES_LINUX_BUFFER_H_
 #define MOLFLOWLINUX_SUB_SOURCE_FILES_LINUX_BUFFER_H_
 
+
 typedef struct {
 	signed int size;
 	BYTE *buff;
@@ -37,6 +38,22 @@ void importBuff(char *fileName, Databuff *databuffer);
 void exportBuff(char *fileName, Databuff *databuffer);
 void importBuff(std::string fileName, Databuff *databuffer);
 void exportBuff(std::string fileName, Databuff *databuffer);
+/*
+// Tried Databuff class
+class Databuff{
 
+public:
+	Databuff();
+	~Databuff();
+
+	unsigned int size;
+	BYTE *buff;
+
+	void importBuff(char *fileName);
+	void exportBuff(char *fileName);
+	void importBuff(std::string fileName);
+	void exportBuff(std::string fileName);
+};
+*/
 
 #endif /* MOLFLOWLINUX_SUB_SOURCE_FILES_LINUX_BUFFER_H_ */

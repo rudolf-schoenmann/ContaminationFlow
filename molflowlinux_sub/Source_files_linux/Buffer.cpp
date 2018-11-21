@@ -25,6 +25,10 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <iostream>     // std::ios, std::istream, std::cout
 #include <fstream>      // std::filebuf
 #include "Buffer.h"
+#include <cstring>		//std::memcpy
+
+
+
 
 //Import/export of buffer files with filename given as char* or std::string
 //-> no need for conversion
@@ -145,4 +149,112 @@ void exportBuff(std::string fileName, Databuff *databuffer)
 	return 0;
 }*/
 
+// Tried databuff class
+/*
+Databuff::Databuff(){
+	buff=NULL;
+	size=0;
+}
+
+Databuff::~Databuff(){
+	if(buff!=NULL){
+		delete[] buff;
+		buff=NULL;
+	}
+}
+
+void Databuff::importBuff(char *fileName)
+{
+
+	std::filebuf fb;
+	buff=NULL;
+	if (fb.open(fileName, std::ios::in))
+	{
+
+		std::istream is(&fb);
+		if (is) {
+			is.seekg(0, is.end);
+			signed int length = is.tellg();
+			is.seekg(0, is.beg);
+
+			char *temp = new char[length];
+			buff = new BYTE[length];
+
+			is.read(temp, length);
+			size = length;
+			buff = (BYTE*)temp;
+		}
+
+		fb.close();
+	}
+	else{
+		std::cout << "Could not open file to read data from." << std::endl;
+	}
+	std::cout << "Buffer '" << fileName <<"' imported. Buffersize (read in): " << size << std::endl;
+}
+
+void Databuff::importBuff(std::string fileName)
+{
+
+	std::filebuf fb;
+	buff=NULL;
+	if (fb.open(fileName, std::ios::in))
+	{
+
+		std::istream is(&fb);
+		if (is) {
+			is.seekg(0, is.end);
+			signed int length = is.tellg();
+			is.seekg(0, is.beg);
+
+			char *temp = new char[length];
+			buff = new BYTE[length];
+
+			is.read(temp, length);
+			size = length;
+			buff = (BYTE*)temp;
+		}
+
+		fb.close();
+	}
+	else{
+		std::cout << "Could not open file to read data from." << std::endl;
+	}
+	std::cout << "Buffer '" << fileName <<"' imported. Buffersize (read in): " << size << std::endl;
+}
+
+void Databuff::exportBuff(char *fileName)
+{
+	std::filebuf f;
+	if (f.open(fileName, std::ios::out))
+	{
+		std::ostream os(&f);
+		if (os)
+		{
+			signed int length = size;
+			os.write(reinterpret_cast<const char *>(buff), length);
+		}
+		f.close();
+	}
+	else {std::cout << "Could not open file to write data in." << std::endl;}
+	std::cout << "Buffersize (write in file): " << size << std::endl;
+}
+
+void Databuff::exportBuff(std::string fileName)
+{
+	std::filebuf f;
+	if (f.open(fileName, std::ios::out))
+	{
+		std::ostream os(&f);
+		if (os)
+		{
+			signed int length = size;
+			os.write(reinterpret_cast<const char *>(buff), length);
+		}
+		f.close();
+	}
+	else {std::cout << "Could not open file to write data in." << std::endl;}
+	std::cout << "Buffersize (write in file): " << size << std::endl;
+}
+*/
 

@@ -28,7 +28,9 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
+	TimeTest test;
 	double timestep=1000;
+	double realtimestep;
 
 	// Set end of simulation flag
 	bool eos=false;
@@ -37,12 +39,17 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 	StartSimulation();
 
 	// Run Simulation for simutime steps. One step ~ 1 seconds
-	for(double i=0; i<(double)(simutime) && !eos;i+=timestep){
+	for(double i=0; i<(double)(simutime) && !eos;i+=realtimestep){
+		test.appendList(i);
 		if(i+timestep>=(double)(simutime)){
-			eos = SimulationRun(250.0+(double)simutime*1.0002-i); // Some additional simulation, as Simulation does not run for exactly timestep ms
+			std::tie(eos,realtimestep) = SimulationRun((double)simutime-i); // Some additional simulation, as Simulation does not run for exactly timestep ms
+			test.appendList(i+realtimestep);
 			break;
 		}
-		eos = SimulationRun(timestep);      // Run during timestep ms, performs MC steps
+		std::tie(eos, realtimestep) = SimulationRun(timestep);      // Run during timestep ms, performs MC steps
+
+
+		//calc new timestep?
 
 	}
 
@@ -56,6 +63,8 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 	std::cout <<"test " <<estimateTmin() <<std::endl;
 
 	ResetTmpCounters(); //resets counter in sHandle
+
+	test.print();
 	return !eos;
 }
 

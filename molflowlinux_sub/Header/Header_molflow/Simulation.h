@@ -227,7 +227,7 @@ bool LoadSimulation(Databuff *databuffer);
 //bool UpdateOntheflySimuParams(Dataport *loader); // (Rudi) I don't think, I need that.
 bool StartSimulation();
 void ResetSimulation();
-bool SimulationRun(double time=1000.0);
+std::pair<bool,double> SimulationRun(double time=1000.0);
 bool SimulationMCStep(size_t nbStep);
 void IncreaseDistanceCounters(double d);
 //bool SimulationACStep(int nbStep);
@@ -259,7 +259,4 @@ double GetOpacityAt(SubprocessFacet *src, double time);
 void   IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t desorb, size_t absorb, double sum_1_per_v, double sum_v_ort);
 void   TreatMovingFacet();
 
-void calcStickingnew(SubprocessFacet *iFacet);
-double calcDesorption(SubprocessFacet *iFacet);
 double calcCoveringUpdate(SubprocessFacet *iFacet);
-double calcNmono(SubprocessFacet *iFacet);

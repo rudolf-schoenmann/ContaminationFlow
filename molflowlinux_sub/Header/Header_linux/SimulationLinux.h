@@ -23,10 +23,21 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
  */
 
 #include "Simulation.h"
+#include <vector>
 
 static const char *day[]={"day","Day","days","Days","d","D"};
 static const char *hour[]={"hour","Hour","hours","Hours","h","H","hr","Hr"};
 static const char *min[]={"Minutes","minutes","Minute","minute","min","Min","m","M"};
+
+class TimeTest{
+public:
+	TimeTest();
+	std::vector< std::pair<double,std::vector<double>> > pointintime_list;
+
+	void appendList(double time);
+	void print();
+};
+
 
 bool simulateSub(Databuff *hitbuffer, int rank, int simutime);
 double convertunit(double simutime, std::string unit);
@@ -38,6 +49,12 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 void UpdateMainHits(Databuff *databuffer,Databuff *subbuffer, int rank);
 
 void UpdadeSticking();
+
+void calcStickingnew(SubprocessFacet *iFacet);
+double calcDesorption(SubprocessFacet *iFacet);
+double calcNmono(SubprocessFacet *iFacet);
+double calcRealCovering(SubprocessFacet *iFacet);
+
 
 double estimateTmin();
 

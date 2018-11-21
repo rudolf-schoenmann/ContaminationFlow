@@ -22,7 +22,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
  *  This file contains calculations for the contamination
  */
 
-#include "Simulation.h"
+#include "SimulationLinux.h"
 #include "GLApp/MathTools.h"
 #include <math.h>
 

@@ -651,7 +651,7 @@ void RecordLeakPos() {
 	}
 }
 
-bool SimulationRun(double time) {
+std::pair<bool,double> SimulationRun(double time) {
 
 	// 1s step
 	double t0, t1;
@@ -691,7 +691,7 @@ bool SimulationRun(double time) {
 	printf("Running: stepPerSec = %f\n", sHandle->stepPerSec);
 #endif
 
-	return !goOn;
+	return std::make_pair(!goOn,t1-t0);
 
 }
 

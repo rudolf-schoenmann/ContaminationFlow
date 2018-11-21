@@ -66,3 +66,39 @@ double estimateTmin(){//TODO something is wrong here
 	tmin=dmean*sum_1_v_ort*Nmean;//s
 	return tmin*1000;//ms
 }
+
+TimeTest::TimeTest(){
+	pointintime_list=std::vector< std::pair<double,std::vector<double>> >();
+}
+
+void TimeTest::appendList(double time){
+
+	std::vector<double> currentstep;
+	currentstep =std::vector<double> ();
+
+	double covering;
+
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			covering=calcRealCovering(&f);
+			currentstep.push_back(covering);
+		}
+	}
+	pointintime_list.push_back(std::make_pair(time,currentstep));
+
+}
+
+void::TimeTest::print(){
+	for(int i=0;i<pointintime_list.size();i++)
+	{
+		std::cout <<pointintime_list[i].first;
+
+		for(int j=0; j<pointintime_list[i].second.size();j++)
+		{
+			std::cout <<'\t' <<pointintime_list[i].second[j];
+		}
+
+		std::cout <<std::endl;
+
+	}
+}

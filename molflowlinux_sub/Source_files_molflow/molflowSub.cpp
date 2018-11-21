@@ -466,7 +466,7 @@ int submain(int argc,char* argv[])
 
       case PROCESS_RUN:
         SetStatus(GetSimuStatus()); //update hits only
-        eos = SimulationRun();      // Run during 1 sec
+        std::tie(eos,std::ignore) = SimulationRun();      // Run during 1 sec
         /*Don't need that.
 		if (dpHit && (GetLocalState() != PROCESS_ERROR)) UpdateHits(dpHit,dpLog,prIdx,20); // Update hit with 20ms timeout. If fails, probably an other subprocess is updating, so we'll keep calculating and try it later (latest when the simulation is stopped).
 		*/
