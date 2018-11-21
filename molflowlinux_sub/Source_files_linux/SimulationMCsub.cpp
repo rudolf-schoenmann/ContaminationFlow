@@ -33,8 +33,9 @@ void UpdadeSticking(){
 		std::cout <<"Sticking" <<std::endl;
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			calcStickingnew(&f);
-			std::cout <<f.sh.sticking <<std::endl;
-			std::cout <<f.sh.outgassing+calcDesorption(&f) <<std::endl;
+			std::cout <<"area\t" <<f.sh.area <<std::endl;
+			std::cout <<"sc\t" <<f.sh.sticking <<std::endl;
+			std::cout <<"out\t" <<f.sh.outgassing+calcDesorption(&f) <<std::endl;
 			//std::cout <<f.sh.totalOutgassing <<std::endl;
 
 		}

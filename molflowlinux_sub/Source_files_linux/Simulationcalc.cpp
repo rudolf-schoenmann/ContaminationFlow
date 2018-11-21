@@ -32,7 +32,7 @@ extern Simulation* sHandle; //Declared at molflowSub.cpp
 // calculation of used values
 double calcNmono(SubprocessFacet *iFacet)
 {
-	return iFacet->sh.area/Sqr(76E-12);
+	return (iFacet->sh.area*1E-4)/Sqr(76E-12);
 }
 
 double calcdNsurf(){

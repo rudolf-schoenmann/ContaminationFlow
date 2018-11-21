@@ -40,7 +40,7 @@ double estimateTmin(){//TODO something is wrong here
 			for (size_t m = 0; m <= nbMoments; m++) {
 				//sum_1_v_orth
 				//sum_1_v_ort+=f.tmpCounter[m].hit.sum_1_per_ort_velocity*f.sh.area; //(s/m)*m^2
-				sum_1_v_ort+=f.tmpCounter[m].hit.sum_v_ort*f.sh.area; //(s/m)*m^2
+				sum_1_v_ort+=f.tmpCounter[m].hit.sum_v_ort*f.sh.area*1E-4; //(s/m)*m^2
 				facetcounter++;
 
 				//covering

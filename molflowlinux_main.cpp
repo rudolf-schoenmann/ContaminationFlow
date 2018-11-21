@@ -169,6 +169,9 @@ int main(int argc, char *argv[]) {
 		//Read in buffer file (exported by Windows-Molflow). File given as first argument to main().
 		importBuff(argv[1],&loadbuffer);
 		importBuff(argv[2],&hitbuffer);
+
+		//loadbuffer.importBuff(argv[1]);
+		//hitbuffer.importBuff(argv[2]);
 		//importBuff(argv[2], &hitbuffer_original); //TODO: copy content from pointer rather than read again?
 
 		//TODO Copy constructor?
@@ -179,6 +182,7 @@ int main(int argc, char *argv[]) {
 
 		//hitbuffer_original=hitbuffer;
 		exportBuff("/home/van/hitbuffertest",&hitbuffer_original);
+		//hitbuffer_original.importBuff("/home/van/hitbuffertest");
 
 		/*
 		 * show informations about the loading
@@ -318,6 +322,7 @@ int main(int argc, char *argv[]) {
 			//Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
 			std::cout << "Process 0 exporting final hitbuffer" << std::endl;
 			exportBuff(argv[3],&hitbuffer_original);
+			//hitbuffer_original.exportBuff(argv[3]);
 
 			// Build in safety check to not loosing simulation results, if the buffer export does not work?
 			//std::cout <<"____________________________________________________________________________________________________" << std::endl;
@@ -326,7 +331,7 @@ int main(int argc, char *argv[]) {
 		std::cout << "Simulation time = 0.0 seconds. Nothing to do."
 				<< std::endl;
 	}
-/*
+
 	if (hitbuffer.buff != NULL) {
 		delete[] hitbuffer.buff;
 		hitbuffer.buff = NULL;
@@ -335,7 +340,7 @@ int main(int argc, char *argv[]) {
 		delete[] loadbuffer.buff;
 		loadbuffer.buff = NULL;
 	}
-*/
+
 	MPI_Barrier(MPI_COMM_WORLD);
 	if (rank == 0)
 		std::cout << "Closing MPI now." << std::endl;

@@ -38,6 +38,7 @@ void importBuff(char *fileName, Databuff *databuffer);
 void exportBuff(char *fileName, Databuff *databuffer);
 void importBuff(std::string fileName, Databuff *databuffer);
 void exportBuff(std::string fileName, Databuff *databuffer);
+
 /*
 // Tried Databuff class
 class Databuff{
