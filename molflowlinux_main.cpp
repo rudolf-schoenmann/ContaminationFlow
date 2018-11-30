@@ -181,7 +181,7 @@ int main(int argc, char *argv[]) {
 
 
 		//hitbuffer_original=hitbuffer;
-		exportBuff("/home/van/hitbuffertest",&hitbuffer_original);
+		exportBuff(argv[3],&hitbuffer_original);
 		//hitbuffer_original.importBuff("/home/van/hitbuffertest");
 
 		/*
