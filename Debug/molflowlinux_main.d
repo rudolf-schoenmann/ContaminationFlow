@@ -33,6 +33,7 @@ molflowlinux_main.o: ../molflowlinux_main.cpp \
  /usr/include/openmpi-x86_64/openmpi/ompi/mpi/cxx/win_inln.h \
  /usr/include/openmpi-x86_64/openmpi/ompi/mpi/cxx/file_inln.h \
  /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_linux/Buffer.h \
+ /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_linux/MolflowLinuxTypes.h \
  /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_molflow/Simulation.h \
  /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_molflow/MolflowTypes.h \
  /scratch/schoenmann/MolflowLinux/molflowlinux_sub/GLApp/GLTypes.h \
@@ -120,6 +121,8 @@ molflowlinux_main.o: ../molflowlinux_main.cpp \
 /usr/include/openmpi-x86_64/openmpi/ompi/mpi/cxx/file_inln.h:
 
 /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_linux/Buffer.h:
+
+/scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_linux/MolflowLinuxTypes.h:
 
 /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_molflow/Simulation.h:
 

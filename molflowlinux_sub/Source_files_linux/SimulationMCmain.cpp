@@ -1,3 +1,27 @@
+/*
+Program:     ContaminationFlow
+Description: Monte Carlo simulator for satellite contanimation studies
+Authors:     Rudolf Schönmann / Hoai My Van
+Copyright:   TU Munich
+Forked from: Molflow (CERN) (https://cern.ch/molflow)
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
+*/
+
+/*
+ * This file contains the functions that adds up Databuff structs
+ */
+
 #include "SimulationLinux.h"
 #include "GLApp/MathTools.h"
 
@@ -40,9 +64,25 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 	buffer = mainbuffer->buff;
 	gHits = (GlobalHitBuffer *)buffer;
 
-	//added subbuffer
+	//added subbuffer that contains simulation results from a subprocess, to be added to mainbuffer
 	subbuff=subbuffer->buff;
 	subHits=(GlobalHitBuffer *)subbuff;
+/*
+	std::cout <<gHits->globalHits.hit.nbMCHit  <<std::endl;
+	std::cout <<gHits->globalHits.hit.nbHitEquiv   <<std::endl;
+	std::cout <<gHits->globalHits.hit.nbAbsEquiv  <<std::endl;
+	std::cout <<gHits->globalHits.hit.nbDesorbed <<std::endl;
+	std::cout <<gHits->globalHits.hit.covering <<std::endl;
+	std::cout <<gHits->distTraveled_total  <<std::endl;
+	std::cout <<gHits->distTraveledTotal_fullHitsOnly <<std::endl <<std::endl;
+
+	std::cout <<subHits->globalHits.hit.nbMCHit  <<std::endl;
+	std::cout <<subHits->globalHits.hit.nbHitEquiv   <<std::endl;
+	std::cout <<subHits->globalHits.hit.nbAbsEquiv  <<std::endl;
+	std::cout <<subHits->globalHits.hit.nbDesorbed <<std::endl;
+	std::cout <<subHits->globalHits.hit.covering <<std::endl;
+	std::cout <<subHits->distTraveled_total  <<std::endl;
+	std::cout <<subHits->distTraveledTotal_fullHitsOnly <<std::endl<<std::endl;*/
 
 	// Global hits and leaks: adding local hits to shared memory
 	gHits->globalHits.hit.nbMCHit += subHits->globalHits.hit.nbMCHit;
@@ -51,6 +91,15 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 	gHits->globalHits.hit.nbDesorbed += subHits->globalHits.hit.nbDesorbed;
 	gHits->distTraveled_total += subHits->distTraveled_total;
 	gHits->distTraveledTotal_fullHitsOnly += subHits->distTraveledTotal_fullHitsOnly;
+/*
+	std::cout <<gHits->globalHits.hit.nbMCHit  <<std::endl;
+	std::cout <<gHits->globalHits.hit.nbHitEquiv   <<std::endl;
+	std::cout <<gHits->globalHits.hit.nbAbsEquiv  <<std::endl;
+	std::cout <<gHits->globalHits.hit.nbDesorbed <<std::endl;
+	std::cout <<gHits->globalHits.hit.covering <<std::endl;
+	std::cout <<gHits->distTraveled_total  <<std::endl;
+	std::cout <<gHits->distTraveledTotal_fullHitsOnly <<std::endl<<std::endl;
+	std::cout <<gHits->hitCacheSize <<std::endl;*/
 
 	//Memorize current limits, then do a min/max search
 	for (i = 0; i < 3; i++) {
@@ -81,6 +130,11 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 			gHits->hitCacheSize = Min(HITCACHESIZE, gHits->hitCacheSize + subHits->hitCacheSize);
 		}
 	}
+	/*
+	std::cout <<gHits->hitCacheSize <<std::endl;
+	std::cout <<gHits->leakCacheSize <<std::endl;
+	std::cout <<gHits->nbLeakTotal <<std::endl<<std::endl;*/
+
 
 	//Global histograms
 
@@ -117,13 +171,20 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 	// Facets
 	//std::cout <<"NBSuper " <<(int)sHandle->sh.nbSuper <<std::endl;
 	for (s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			//if (f.hitted) {
 
-				for (unsigned int m = 0; m < (1 + nbMoments); m++) {
+				for (unsigned int m = 0; m < (1 + nbMoments); m++) { // Add hits
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 					FacetHitBuffer *facetHitSub = (FacetHitBuffer *)(subbuff + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 /*
+					std::cout <<sizeof(GlobalHitBuffer) <<std::endl;
+					std::cout <<f.sh.hitOffset  <<std::endl;
+					std::cout <<sizeof(FacetHitBuffer) <<std::endl;
+					std::cout <<facetHitSub->hit.covering <<std::endl;*/
+
+
 					std::cout <<"buffer before" <<std::endl;
 					std::cout <<facetHitBuffer->hit.nbAbsEquiv <<std::endl;
 					std::cout <<facetHitBuffer->hit.nbDesorbed <<std::endl;
@@ -132,7 +193,8 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					std::cout <<facetHitBuffer->hit.sum_1_per_ort_velocity <<std::endl;
 					std::cout <<facetHitBuffer->hit.sum_v_ort <<std::endl;
 					std::cout <<facetHitBuffer->hit.sum_1_per_velocity <<std::endl;
-*/
+					std::cout <<facetHitBuffer->hit.covering <<std::endl;
+
 					facetHitBuffer->hit.nbAbsEquiv += facetHitSub->hit.nbAbsEquiv;
 					facetHitBuffer->hit.nbDesorbed += facetHitSub->hit.nbDesorbed;
 					facetHitBuffer->hit.nbMCHit += facetHitSub->hit.nbMCHit;
@@ -140,7 +202,8 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					facetHitBuffer->hit.sum_1_per_ort_velocity += facetHitSub->hit.sum_1_per_ort_velocity;
 					facetHitBuffer->hit.sum_v_ort += facetHitSub->hit.sum_v_ort;
 					facetHitBuffer->hit.sum_1_per_velocity += facetHitSub->hit.sum_1_per_velocity;
-/*
+					facetHitBuffer->hit.covering += facetHitSub->hit.covering;
+
 					std::cout <<"buffer afterwards" <<std::endl;
 					std::cout <<facetHitBuffer->hit.nbAbsEquiv <<std::endl;
 					std::cout <<facetHitBuffer->hit.nbDesorbed <<std::endl;
@@ -149,10 +212,11 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					std::cout <<facetHitBuffer->hit.sum_1_per_ort_velocity <<std::endl;
 					std::cout <<facetHitBuffer->hit.sum_v_ort <<std::endl;
 					std::cout <<facetHitBuffer->hit.sum_1_per_velocity <<std::endl;
-*/
+					std::cout <<facetHitBuffer->hit.covering <<std::endl<<std::endl;
+
 				}
 
-				if (f.sh.isProfile) { //(MY) comment or uncomment if clauses?
+				if (f.sh.isProfile) { //(MY) Add profiles
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 						ProfileSlice *shProfile = (ProfileSlice *)(buffer + f.sh.hitOffset + facetHitsSize + m * f.profileSize);
 						ProfileSlice *shProfileSub = (ProfileSlice *)(subbuff + f.sh.hitOffset + facetHitsSize + m * f.profileSize);
@@ -162,20 +226,20 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					}
 				}
 
-				if (f.sh.isTextured) {
+				if (f.sh.isTextured) {// Add texture
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 						TextureCell *shTexture = (TextureCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
 						TextureCell *shTextureSub = (TextureCell *)(subbuff + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
 						//double dCoef = gHits->globalHits.hit.nbDesorbed * 1E4 * sHandle->wp.gasMass / 1000 / 6E23 * MAGIC_CORRECTION_FACTOR;  //1E4 is conversion from m2 to cm2
 						double timeCorrection = m == 0 ? sHandle->wp.finalOutgassingRate : (sHandle->wp.totalDesorbedMolecules) / sHandle->wp.timeWindowSize;
 						//Timecorrection is required to compare constant flow texture values with moment values (for autoscaling)
+						//std::cout <<"timecorrection: " <<timeCorrection <<std::endl<<std::endl;
 
 						for (y = 0; y < (int)f.sh.texHeight; y++) {
 							for (x = 0; x < (int)f.sh.texWidth; x++) {
 								size_t add = x + y * f.sh.texWidth;
 
 								//Add temporary hit counts
-								//(MY) what does f.textureCellIncrements do? Is it set in LoadSimulation?
 								shTexture[add] += shTextureSub[add];
 
 								double val[3];  //pre-calculated autoscaling values (Pressure, imp.rate, density)
@@ -274,7 +338,6 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 		if (gHits->texture_limits[v].max.moments_only == 0.0) gHits->texture_limits[v].max.moments_only = texture_limits_old[v].max.moments_only;
 	}
 
-	//ReleaseDataport(dpHit); // (Rudi) Don't need that.
 
 	ResetTmpCounters();
 	//extern char* GetSimuStatus();

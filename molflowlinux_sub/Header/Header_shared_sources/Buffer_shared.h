@@ -1,9 +1,9 @@
 /*
-Program:     MolFlow+ / Synrad+
-Description: Monte Carlo simulator for ultra-high vacuum and synchrotron radiation
-Authors:     Jean-Luc PONS / Roberto KERSEVAN / Marton ADY
-Copyright:   E.S.R.F / CERN
-Website:     https://cern.ch/molflow
+Program:     ContaminationFlow
+Description: Monte Carlo simulator for satellite contanimation studies
+Authors:     Rudolf Schönmann / Hoai My Van
+Copyright:   TU Munich
+Forked from: Molflow (CERN) (https://cern.ch/molflow)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,6 +17,10 @@ GNU General Public License for more details.
 
 Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 */
+
+/*
+ * Definitions of properties, e.g. FacetProperties, GeomProperties, etc.
+ */
 #define MOLFLOW	1 // added by Rudi.
 
 #pragma once
@@ -114,6 +118,7 @@ public:
 	double sticking;       // Sticking (0=>reflection  , 1=>absorption)   - can be overridden by time-dependent parameter
 	double opacity;        // opacity  (0=>transparent , 1=>opaque)
 	double area;           // Facet area (m^2)
+	//double covering;
 
 	int    profileType;    // Profile type
 	int    superIdx;       // Super structure index (Indexed from 0) -1: facet belongs to all structures (typically counter facets)
@@ -500,6 +505,7 @@ typedef union {
 		double sum_1_per_ort_velocity;    // sum of reciprocials of orthogonal velocity components, used to determine the density, regardless of facet orientation
 		double sum_1_per_velocity;          //For average molecule speed calculation
 		double sum_v_ort;          // sum of orthogonal speeds of incident velocities, used to determine the pressure
+		double covering; //new counter for covering
 	} hit;
 
 	struct {
@@ -509,21 +515,22 @@ typedef union {
 		double absorbed;
 	} density;
 
-	/* original Windows-Molflow code
+	//original Windows-Molflow code
 	template<class Archive>
 	void serialize(Archive & archive)
 	{
 		archive(
-			CEREAL_NVP(nbDesorbed),
-			CEREAL_NVP(nbMCHit),
-			CEREAL_NVP(nbHitEquiv),
-			CEREAL_NVP(nbAbsEquiv),
-			CEREAL_NVP(sum_1_per_ort_velocity),
-			CEREAL_NVP(sum_1_per_velocity),
-			CEREAL_NVP(sum_v_ort)
+			CEREAL_NVP(hit.nbDesorbed),
+			CEREAL_NVP(hit.nbMCHit),
+			CEREAL_NVP(hit.nbHitEquiv),
+			CEREAL_NVP(hit.nbAbsEquiv),
+			CEREAL_NVP(hit.sum_1_per_ort_velocity),
+			CEREAL_NVP(hit.sum_1_per_velocity),
+			CEREAL_NVP(hit.sum_v_ort),
+			CEREAL_NVP(hit.covering)
 			);
-	}*/
-
+	}
+/*
 	//new code added by Rudi:
 	template<class Archive>
 		void serialize(Archive & archive)
@@ -535,9 +542,10 @@ typedef union {
 				CEREAL_NVP(hit.nbAbsEquiv),
 				CEREAL_NVP(hit.sum_1_per_ort_velocity),
 				CEREAL_NVP(hit.sum_1_per_velocity),
-				CEREAL_NVP(hit.sum_v_ort)
+				CEREAL_NVP(hit.sum_v_ort),
+				CEREAL_NVP(hit.covering)
 				);
-		}
+		}*/
 
 } FacetHitBuffer;
 #endif

@@ -1,9 +1,9 @@
 /*
-Program:     MolFlow+ / Synrad+
-Description: Monte Carlo simulator for ultra-high vacuum and synchrotron radiation
-Authors:     Jean-Luc PONS / Roberto KERSEVAN / Marton ADY
-Copyright:   E.S.R.F / CERN
-Website:     https://cern.ch/molflow
+Program:     ContaminationFlow
+Description: Monte Carlo simulator for satellite contanimation studies
+Authors:     Rudolf Schönmann / Hoai My Van
+Copyright:   TU Munich
+Forked from: Molflow (CERN) (https://cern.ch/molflow)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,6 +17,10 @@ GNU General Public License for more details.
 
 Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 */
+
+/*
+ * This file contains general function for the Simulation, e.g. initialization.
+ */
 #ifdef WIN
 #define NOMINMAX
 //#include <windows.h> // For GetTickCount()
@@ -650,7 +654,7 @@ void RecordLeakPos() {
 	}
 }
 
-bool SimulationRun() {
+std::pair<bool,double> SimulationRun(double time) {
 
 	// 1s step
 	double t0, t1;
@@ -660,6 +664,7 @@ bool SimulationRun() {
 	if (sHandle->stepPerSec == 0.0) {
 		switch (sHandle->wp.sMode) {
 		case MC_MODE:
+			nbStep = 500*time;
 			break;
 		case AC_MODE:
 			//nbStep = 1; (my) no AC_MODE
@@ -669,7 +674,7 @@ bool SimulationRun() {
 	}
 
 	if (sHandle->stepPerSec != 0.0)
-		nbStep = (int)((sHandle->stepPerSec + 0.5));
+		nbStep = (int)((time*(sHandle->stepPerSec)/1000.0 + 0.5));
 	if (nbStep < 1) nbStep = 1;
 	t0 = GetTick();
 	switch (sHandle->wp.sMode) {
@@ -684,12 +689,12 @@ bool SimulationRun() {
 
 	t1 = GetTick();
 	sHandle->stepPerSec =1000.0* (double)(nbStep) / (t1 - t0);
-	//std::cout <<t1-t0 <<std::endl;
+	std::cout <<t1-t0 <<std::endl;
 #ifdef _DEBUG
 	printf("Running: stepPerSec = %f\n", sHandle->stepPerSec);
 #endif
 
-	return !goOn;
+	return std::make_pair(!goOn,t1-t0);
 
 }
 

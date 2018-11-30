@@ -18,6 +18,7 @@ molflowlinux_sub/Source_files_molflow/SimulationControl.o: \
  /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_molflow/Parameter.h \
  /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources/Distributions.h \
  /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_linux/Buffer.h \
+ /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_linux/MolflowLinuxTypes.h \
  /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources/SMP.h \
  /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources/IntersectAABB_shared.h \
  /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources/Random.h \
@@ -62,6 +63,8 @@ molflowlinux_sub/Source_files_molflow/SimulationControl.o: \
 /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources/Distributions.h:
 
 /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_linux/Buffer.h:
+
+/scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_linux/MolflowLinuxTypes.h:
 
 /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources/SMP.h:
 

@@ -1,9 +1,9 @@
 /*
-Program:     MolFlow+ / Synrad+
-Description: Monte Carlo simulator for ultra-high vacuum and synchrotron radiation
-Authors:     Jean-Luc PONS / Roberto KERSEVAN / Marton ADY
-Copyright:   E.S.R.F / CERN
-Website:     https://cern.ch/molflow
+Program:     ContaminationFlow
+Description: Monte Carlo simulator for satellite contanimation studies
+Authors:     Rudolf Schönmann / Hoai My Van
+Copyright:   TU Munich
+Forked from: Molflow (CERN) (https://cern.ch/molflow)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,6 +17,10 @@ GNU General Public License for more details.
 
 Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 */
+
+/*
+ * This file does nothing. molflowlinux_main.cpp was derived from this.
+ */
 #define NOMINMAX
 //#include <windows.h>
 //#include <tlhelp32.h>
@@ -462,7 +466,7 @@ int submain(int argc,char* argv[])
 
       case PROCESS_RUN:
         SetStatus(GetSimuStatus()); //update hits only
-        eos = SimulationRun();      // Run during 1 sec
+        std::tie(eos,std::ignore) = SimulationRun();      // Run during 1 sec
         /*Don't need that.
 		if (dpHit && (GetLocalState() != PROCESS_ERROR)) UpdateHits(dpHit,dpLog,prIdx,20); // Update hit with 20ms timeout. If fails, probably an other subprocess is updating, so we'll keep calculating and try it later (latest when the simulation is stopped).
 		*/

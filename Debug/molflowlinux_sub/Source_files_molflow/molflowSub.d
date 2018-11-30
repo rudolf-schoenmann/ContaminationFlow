@@ -19,6 +19,7 @@ molflowlinux_sub/Source_files_molflow/molflowSub.o: \
  /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_molflow/Parameter.h \
  /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources/Distributions.h \
  /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_linux/Buffer.h \
+ /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_linux/MolflowLinuxTypes.h \
  /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources/SMP.h
 
 /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_linux/SimulationLinux.h:
@@ -58,5 +59,7 @@ molflowlinux_sub/Source_files_molflow/molflowSub.o: \
 /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources/Distributions.h:
 
 /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_linux/Buffer.h:
+
+/scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_linux/MolflowLinuxTypes.h:
 
 /scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources/SMP.h:
