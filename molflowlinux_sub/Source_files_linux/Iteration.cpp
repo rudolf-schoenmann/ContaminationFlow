@@ -27,6 +27,39 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 extern Simulation *sHandle;
 
+double estimateTmin_RudiTest(){
+	double tmin=1;
+	// TODO Code eine Sekunde lang simulieren lassen.
+	//const double distribution_factor = 3*(3.14159265359/8)^0.5*(8,314472/MolareGasMasse in (kg/mol))^0.5;
+	double sum_v_avg = 0;
+	double normalization_factor_v = 0;
+	double sum_sc = 0;
+	double normalization_factor_sc = sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;
+	//avarage of <v> (<v> is the average velocity on a single facet depending on temperature)
+	// over all facets weighted with the rate of outgoing particles (outgassing + desorption) per facet
+	size_t nbMoments = sHandle->moments.size();
+	/*
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			for (size_t m = 0; m <= nbMoments; m++) {
+
+				//avarage of <v>
+				sum_v_avg += distribution_factor*(f.sh.temperature)^0.5 * (f.sh.outgassing + Desorptionsrate);
+				normalization_factor_v += (f.sh.outgassing + Desorptionsrate)
+
+				//average sticking coefficient
+				sum_sc += f.sh.sticking*f.tmpCounter.hit.nbMCHit;
+			}
+		}
+	}*/
+	//double avg_v_avg = sum_v_avg/normalization_factor_v;
+	//double avg_sc = sum_sc/normalization_factor_sc;
+	//double avg_path_length = sHandle->tmpGlobalResult.distTraveled_total / sHandle->tmpGlobalResult.globalHits.hit.nbMCHit/ avg_sc;
+	//tmin = vg_path_length /avg_v_avg;
+	return tmin;
+
+}
+
 double estimateTmin(){//TODO something is wrong here
 	double tmin=1;
 	int facetcounter=0;
@@ -59,7 +92,7 @@ double estimateTmin(){//TODO something is wrong here
 	std::cout <<"test " <<Nmean <<std::endl;
 
 	//TODO durchschnittstrecke
-	//double dmean=sHandle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv;//m
+	//double dmean=c/sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv;//m
 	double dmean=sHandle->tmpGlobalResult.distTraveled_total;//m
 	//double dmean= sHandle->tmpGlobalResult.distTraveledTotal_fullHitsOnly;
 	std::cout <<"test " <<dmean <<std::endl;
