@@ -23,9 +23,11 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
  */
 
 #include "SimulationLinux.h"
+#include <fstream>
+#include <sstream>
 
 extern Simulation *sHandle;
-
+/*
 double estimateTmin(){//TODO something is wrong here
 	double tmin=1;
 	int facetcounter=0;
@@ -65,6 +67,31 @@ double estimateTmin(){//TODO something is wrong here
 
 	tmin=dmean*sum_1_v_ort*Nmean;//s
 	return tmin*1000;//ms
+}*/
+
+double estimateTmin(){
+	double sum=0;
+	double sum_1=0;
+	size_t nbMoments = sHandle->moments.size();
+	double facetcounter=0;
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			for (size_t m = 0; m <= nbMoments; m++) {
+				//sum_1_v_orth
+				//sum_1_v_ort+=f.tmpCounter[m].hit.sum_1_per_ort_velocity*f.sh.area; //(s/m)*m^2
+				sum+=f.tmpCounter[m].hit.sum_v_ort; //(s/m)*m^2
+				sum_1+=f.tmpCounter[m].hit.sum_1_per_velocity;
+				facetcounter++;
+			}
+		}
+	}
+
+	double temp=(double)sHandle->tmpGlobalResult.distTraveled_total;
+	double temp2= pow((double)sHandle->tmpGlobalResult.globalHits.hit.nbMCHit,2);
+	std::cout <<temp <<'\t'<<sum<<'\t' <<sum_1<<'\t'<<temp2 <<std::endl;
+	std::cout <<temp*1000/sum <<std::endl;
+	//std::cout <<(temp/temp2)*1000/sum <<std::endl;
+	return (temp/temp2)*sum_1*1000;
 }
 
 TimeTest::TimeTest(){
@@ -101,4 +128,50 @@ void::TimeTest::print(){
 		std::cout <<std::endl;
 
 	}
+}
+
+void::TimeTest::write(std::string filename){
+	//std::string write = "/home/van/history"+std::to_string(num)+".txt";
+	std::ofstream outfile(filename,std::ofstream::out|std::ios::trunc);
+
+	for(int i=0;i<pointintime_list.size();i++)
+	{
+		outfile <<pointintime_list[i].first;
+
+		for(int j=0; j<pointintime_list[i].second.size();j++)
+		{
+			outfile <<'\t' <<pointintime_list[i].second[j];
+		}
+
+		outfile <<'\n';
+
+	}
+	outfile.close();
+}
+
+void::TimeTest::read(std::string filename){
+	pointintime_list=std::vector< std::pair<double,std::vector<double>> >();
+	//std::string read = "/home/van/history"+std::to_string(num)+".txt";
+	std::string line;
+
+	std::ifstream input(filename,std::ifstream::in);
+
+	while(std::getline(input,line)){
+		std::vector<double> currentstep;
+		currentstep =std::vector<double> ();
+
+		double covering;
+		double time;
+		std::istringstream is( line );
+
+		is >> time;
+		while(!is.eof()){
+			is >> covering;
+			//std::cout <<time <<'\t';
+			currentstep.push_back(covering);
+
+		}
+		pointintime_list.push_back(std::make_pair(time,currentstep));
+	}
+
 }
