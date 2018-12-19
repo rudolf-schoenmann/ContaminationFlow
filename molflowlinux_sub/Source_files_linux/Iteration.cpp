@@ -150,7 +150,7 @@ void::TimeTest::write(std::string filename){
 }
 
 void::TimeTest::read(std::string filename){
-	pointintime_list=std::vector< std::pair<double,std::vector<double>> >();
+	pointintime_list.clear();
 	//std::string read = "/home/van/history"+std::to_string(num)+".txt";
 	std::string line;
 
@@ -167,11 +167,11 @@ void::TimeTest::read(std::string filename){
 		is >> time;
 		while(!is.eof()){
 			is >> covering;
-			//std::cout <<time <<'\t';
 			currentstep.push_back(covering);
 
 		}
 		pointintime_list.push_back(std::make_pair(time,currentstep));
 	}
+	input.close();
 
 }

@@ -28,7 +28,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
-	TimeTest test,test2;
+	TimeTest test;
 	double timestep=1000;
 	double realtimestep;
 
@@ -64,13 +64,9 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
 
 
-	std::string name0 = "/home/van/history0.txt";
-	std::string name1 = "/home/van/history1.txt";
+	std::string name0 = "/home/van/history"+std::to_string(rank)+".txt";
 	test.print();
 	test.write(name0);
-	test2.read(name0);
-	test2.print();
-	test2.write(name1);
 
 	ResetTmpCounters(); //resets counter in sHandle
 	return !eos;
