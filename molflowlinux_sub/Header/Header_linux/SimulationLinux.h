@@ -36,6 +36,8 @@ public:
 
 	void appendList(double time);
 	void print();
+	void write(std::string filename);
+	void read(std::string filename);
 };
 
 

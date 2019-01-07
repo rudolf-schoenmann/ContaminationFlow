@@ -62,9 +62,13 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 	//std::cout <<"test " <<sHandle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv  <<std::endl;
 	std::cout <<"test " <<estimateTmin() <<std::endl;
 
-	ResetTmpCounters(); //resets counter in sHandle
 
+
+	std::string name0 = "/home/van/history"+std::to_string(rank)+".txt";
 	test.print();
+	test.write(name0);
+
+	ResetTmpCounters(); //resets counter in sHandle
 	return !eos;
 }
 

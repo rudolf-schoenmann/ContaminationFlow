@@ -312,7 +312,7 @@ int main(int argc, char *argv[]) {
 				std::cout << "Updated hitbuffer with process " << i
 						<< std::endl;
 
-				//std::string exporthit = "/home/van/resultbuffer0" + std::to_string(i);
+				//std::string exporthit = "~/resultbuffer0" + std::to_string(i);
 				//exportBuff(exporthit, &hitbuffer_original);
 			}
 		}
