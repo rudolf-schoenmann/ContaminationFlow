@@ -60,7 +60,7 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 	UpdadeSticking();
 
 	//std::cout <<"test " <<sHandle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv  <<std::endl;
-	std::cout <<"test " <<estimateTmin() <<std::endl;
+	std::cout <<"test of estimatetTmin() [unit = seconds]: " <<estimateTmin() <<std::endl;
 
 
 
