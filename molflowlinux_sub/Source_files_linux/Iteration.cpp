@@ -94,7 +94,29 @@ double estimateTmin(){
 
 CoveringHistory::CoveringHistory(){
 	pointintime_list=std::vector< std::pair<double,std::vector<double>> >();
-	//pointintime_list_read=std::vector< std::pair<double,std::vector<double>> >();
+}
+
+CoveringHistory::CoveringHistory(Databuff *hitbuffer){
+	pointintime_list=std::vector< std::pair<double,std::vector<double>> >();
+	std::vector<double> currentstep;
+	currentstep =std::vector<double> ();
+
+	BYTE *buffer;
+	buffer = hitbuffer->buff;
+
+	double covering;
+	std::cout <<"Reading covering values from buffer\t";
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+			for (SubprocessFacet& f : sHandle->structures[s].facets) {
+				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
+				covering = facetHitBuffer->hit.covering;
+				std::cout <<covering <<"\t";
+				currentstep.push_back(covering);
+				f.tmpCounter[0].hit.covering=covering;
+			}
+	}
+	std::cout <<std::endl;
+	pointintime_list.push_back(std::make_pair(0.0,currentstep));
 }
 
 void CoveringHistory::appendList(double time){

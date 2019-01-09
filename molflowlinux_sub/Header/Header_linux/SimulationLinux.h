@@ -32,6 +32,7 @@ static const char *min[]={"Minutes","minutes","Minute","minute","min","Min","m",
 class CoveringHistory{
 public:
 	CoveringHistory();
+	CoveringHistory(Databuff *hitbuffer);
 	std::vector< std::pair<double,std::vector<double>> > pointintime_list;
 	//std::vector< std::pair<double,std::vector<double>> > pointintime_list_read;
 

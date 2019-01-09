@@ -113,7 +113,7 @@ void calcStickingnew(SubprocessFacet *iFacet) {
 double calcDesorption(SubprocessFacet *iFacet){
 	double tau=1;
 	double d=1;
-	double E_de= 2.5E-21;
+	double E_de= 1.5E-21;
 	double kb = 1.38E-23;
 
 	double temperature;

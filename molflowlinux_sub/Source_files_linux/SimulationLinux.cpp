@@ -28,7 +28,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
-	CoveringHistory covhistory;
+	CoveringHistory covhistory(hitbuffer);
 	double timestep=1000; // desired length per iteration for simulation, here hardcoded to 1 second
 	double realtimestep; // actual time elapsed for iteration step
 
@@ -37,14 +37,17 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
 	// Read covering list, saves list in covhistory
 	std::string name1 = "/home/van/simcovering.txt";
-	covhistory.read(name1);
+	//covhistory.read(name1);
 
 	// Start Simulation = create first particle
 	StartSimulation();
 
 	// Run Simulation for simutime steps. One step ~ 1 seconds
 	for(double i=0; i<(double)(simutime) && !eos;i+=realtimestep){
-		covhistory.appendList(i); //append list with current time and covering
+		if(i!=0||covhistory.pointintime_list.empty()){
+			covhistory.appendList(i); //append list with current time and covering //TODO offset if covering list does not end with timestep 0
+		}
+
 		if(i+timestep>=(double)(simutime)){ //last timestep
 			std::tie(eos,realtimestep) = SimulationRun((double)simutime-i); // Some additional simulation, as iteration step  does not run for exactly timestep ms
 			covhistory.appendList(i+realtimestep); // append list with last entry
