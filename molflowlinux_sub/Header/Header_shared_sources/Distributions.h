@@ -28,7 +28,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 class FileReader;
 #include <vector>
 #include <algorithm>
-#include "assert.h"
+#include <assert.h>
 
 template <class Datatype> class Distribution{ //All methods except Interpolate
 protected:
@@ -106,7 +106,7 @@ template <class Datatype> size_t Distribution<Datatype>::GetSize() {
 }
 
 template <class Datatype> double Distribution<Datatype>::GetX(const size_t& index) {
-	_ASSERTE(index < values.size());
+	assert(index < values.size());
 	return values[index].first;
 }
 

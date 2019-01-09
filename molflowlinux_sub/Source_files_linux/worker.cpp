@@ -29,31 +29,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 //MolFlow *mApp;
 extern Simulation *sHandle; //delcared in molflowSub.cpp
 
-Worker::Worker() {
-
-	//Molflow specific
-	temperatures = std::vector<double>();
-	//moments = std::vector<double>();
-	//desorptionParameterIDs = std::vector<size_t>();
-	//userMoments = std::vector<std::string>(); //strings describing moments, to be parsed
-	CDFs = std::vector<std::vector<std::pair<double, double>>>();
-	//IDs = std::vector<std::vector<std::pair<double, double>>>();
-	parameters = std::vector<Parameter>();
-	//displayedMoment = 0; //By default, steady-state is displayed
-	/*
-	sHandle->wp.timeWindowSize = 1E-10; //Dirac-delta desorption pulse at t=0
-	sHandle->wp.useMaxwellDistribution = true;
-	sHandle->wp.calcConstantFlow = true;
-	sHandle->wp.gasMass = 28.0;
-	sHandle->wp.enableDecay = false;
-	sHandle->wp.halfLife = 1;
-	sHandle->wp.finalOutgassingRate = sHandle->wp.finalOutgassingRate_Pa_m3_sec = sHandle->wp.totalDesorbedMolecules = 0.0;
-	sHandle->wp.motionType = 0;
-	sHandle->wp.sMode = MC_MODE;*/
-}
-
-
-std::vector<std::pair<double, double>> Worker::Generate_CDF(double gasTempKelvins, double gasMassGramsPerMol, size_t size){
+std::vector<std::pair<double, double>> Generate_CDF(double gasTempKelvins, double gasMassGramsPerMol, size_t size){
 	std::vector<std::pair<double, double>> cdf; cdf.reserve(size);
 	double Kb = 1.38E-23;
 	double R = 8.3144621;
@@ -74,22 +50,22 @@ std::vector<std::pair<double, double>> Worker::Generate_CDF(double gasTempKelvin
 	return cdf;
 }
 
-int Worker::GetCDFId(double temperature) {
+int GetCDFId(double temperature) {
 
 	int i;
-	for (i = 0; i<(int)temperatures.size() && (abs(temperature - (double)(temperatures[i]))>1E-5); i++); //check if we already had this temperature
-	if (i >= (int)temperatures.size()) i = -1; //not found
+	for (i = 0; i<(int)sHandle->temperatures.size() && (abs(temperature - (double)(sHandle->temperatures[i]))>1E-5); i++); //check if we already had this temperature
+	if (i >= (int)sHandle->temperatures.size()) i = -1; //not found
 	return i;
 }
 
-int Worker::GenerateNewCDF(double temperature){
-	size_t i = temperatures.size();
-	temperatures.push_back(temperature);
-	CDFs.push_back(Generate_CDF(temperature, sHandle->wp.gasMass, CDF_SIZE));
+int GenerateNewCDF(double temperature){
+	size_t i = sHandle->temperatures.size();
+	sHandle->temperatures.push_back(temperature);
+	sHandle->CDFs.push_back(Generate_CDF(temperature, sHandle->wp.gasMass, CDF_SIZE));
 	return (int)i;
 }
 
-void Worker::CalcTotalOutgassing() {
+void CalcTotalOutgassingWorker() {
 	// Compute the outgassing of all source facet
 	sHandle->wp.totalDesorbedMolecules = sHandle->wp.finalOutgassingRate_Pa_m3_sec = sHandle->wp.finalOutgassingRate = 0.0;
 
@@ -110,9 +86,9 @@ void Worker::CalcTotalOutgassing() {
 						sHandle->wp.finalOutgassingRate_Pa_m3_sec += f.sh.outgassing;
 					}
 					else { //time-dependent outgassing
-						//sHandle->wp.totalDesorbedMolecules += IDs[f.sh.IDid].back().second / (1.38E-23*f.sh.temperature);
-						size_t lastIndex = parameters[f.sh.outgassing_paramId].GetSize() - 1;
-						double finalRate_mbar_l_s = parameters[f.sh.outgassing_paramId].GetY(lastIndex);
+						sHandle->wp.totalDesorbedMolecules += sHandle->IDs[f.sh.IDid].back().second / (1.38E-23*f.sh.temperature);
+						size_t lastIndex = sHandle->parameters[f.sh.outgassing_paramId].GetSize() - 1;
+						double finalRate_mbar_l_s = sHandle->parameters[f.sh.outgassing_paramId].GetY(lastIndex);
 						sHandle->wp.finalOutgassingRate += finalRate_mbar_l_s *0.100 / (1.38E-23*f.sh.temperature); //0.1: mbar*l/s->Pa*m3/s
 						sHandle->wp.finalOutgassingRate_Pa_m3_sec += finalRate_mbar_l_s *0.100;
 					}
@@ -124,5 +100,81 @@ void Worker::CalcTotalOutgassing() {
 
 }
 
+std::vector<std::pair<double, double>> Generate_ID(int paramId){
+	std::vector<std::pair<double, double>> ID;
+	//First, let's check at which index is the latest moment
+	size_t indexBeforeLastMoment;
+	for (indexBeforeLastMoment = 0; indexBeforeLastMoment < sHandle->parameters[paramId].GetSize() &&
+		(sHandle->parameters[paramId].GetX(indexBeforeLastMoment) < sHandle->wp.latestMoment); indexBeforeLastMoment++);
+		if (indexBeforeLastMoment >= sHandle->parameters[paramId].GetSize()) indexBeforeLastMoment = sHandle->parameters[paramId].GetSize() - 1; //not found, set as last moment
 
+	//Construct integral from 0 to latest moment
+	//Zero
+	ID.push_back(std::make_pair(0.0, 0.0));
+
+	//First moment
+	ID.push_back(std::make_pair(sHandle->parameters[paramId].GetX(0),
+			sHandle->parameters[paramId].GetX(0)*sHandle->parameters[paramId].GetY(0)*0.100)); //for the first moment (0.1: mbar*l/s -> Pa*m3/s)
+
+	//Intermediate moments
+	for (size_t pos = 1; pos <= indexBeforeLastMoment; pos++) {
+		if (IsEqual(sHandle->parameters[paramId].GetY(pos) , sHandle->parameters[paramId].GetY(pos-1))) //two equal values follow, simple integration by multiplying
+			ID.push_back(std::make_pair(sHandle->parameters[paramId].GetX(pos),
+			ID.back().second +
+			(sHandle->parameters[paramId].GetX(pos) - sHandle->parameters[paramId].GetX(pos-1))*sHandle->parameters[paramId].GetY(pos)*0.100));
+		else { //difficult case, we'll integrate by dividing to 20 equal sections
+			for (double delta = 0.05; delta < 1.0001; delta += 0.05) {
+				double delta_t = sHandle->parameters[paramId].GetX(pos) - sHandle->parameters[paramId].GetX(pos-1);
+				double time = sHandle->parameters[paramId].GetX(pos-1) + delta*delta_t;
+				double avg_value = (sHandle->parameters[paramId].InterpolateY(time - 0.05*delta_t,false) + sHandle->parameters[paramId].InterpolateY(time,false))*0.100 / 2.0;
+				ID.push_back(std::make_pair(time,
+					ID.back().second +
+					0.05*delta_t*avg_value));
+			}
+		}
+	}
+
+	//wp.latestMoment
+	double valueAtlatestMoment = sHandle->parameters[paramId].InterpolateY(sHandle->wp.latestMoment,false);
+	if (IsEqual(valueAtlatestMoment , sHandle->parameters[paramId].GetY(indexBeforeLastMoment))) //two equal values follow, simple integration by multiplying
+		ID.push_back(std::make_pair(sHandle->wp.latestMoment,
+		ID.back().second +
+		(sHandle->wp.latestMoment - sHandle->parameters[paramId].GetX(indexBeforeLastMoment))*sHandle->parameters[paramId].GetY(indexBeforeLastMoment)*0.100));
+	else { //difficult case, we'll integrate by dividing two 5equal sections
+		for (double delta = 0.0; delta < 1.0001; delta += 0.05) {
+			double delta_t = sHandle->wp.latestMoment - sHandle->parameters[paramId].GetX(indexBeforeLastMoment);
+			double time = sHandle->parameters[paramId].GetX(indexBeforeLastMoment) + delta*delta_t;
+			double avg_value = (sHandle->parameters[paramId].GetY(indexBeforeLastMoment)*0.100 + sHandle->parameters[paramId].InterpolateY(time, false)*0.100) / 2.0;
+			ID.push_back(std::make_pair(time,
+				ID.back().second +
+				0.05*delta_t*avg_value));
+		}
+	}
+
+	return ID;
+
+}
+
+int GenerateNewID(int paramId){
+	size_t i = sHandle->desorptionParameterIDs.size();
+	sHandle->desorptionParameterIDs.push_back(paramId);
+	sHandle->IDs.push_back(Generate_ID(paramId));
+	return (int)i;
+}
+/*
+int GetIDId(int paramId) {
+
+	int i;
+	for (i = 0; i < (int)sHandle->desorptionParameterIDs.size() && (paramId != sHandle->desorptionParameterIDs[i]); i++); //check if we already had this parameter Id
+	if (i >= (int)sHandle->desorptionParameterIDs.size()) i = -1; //not found
+	return i;
+
+}*/
+
+int GetParamId(const std::string name) {
+	int foundId = -1;
+	for (int i = 0; foundId == -1 && i < (int)sHandle->parameters.size(); i++)
+		if (name.compare(sHandle->parameters[i].name) == 0) foundId = i;
+	return foundId;
+}
 

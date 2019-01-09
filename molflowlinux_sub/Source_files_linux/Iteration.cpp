@@ -96,6 +96,7 @@ double estimateTmin(){
 
 TimeTest::TimeTest(){
 	pointintime_list=std::vector< std::pair<double,std::vector<double>> >();
+	//pointintime_list_read=std::vector< std::pair<double,std::vector<double>> >();
 }
 
 void TimeTest::appendList(double time){
@@ -105,10 +106,13 @@ void TimeTest::appendList(double time){
 
 	double covering;
 
+	int i=0;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			covering=calcRealCovering(&f);
+			//covering=calcRealCovering(&f);
+			covering=calcCovering(&f);
 			currentstep.push_back(covering);
+			i+=1;
 		}
 	}
 	pointintime_list.push_back(std::make_pair(time,currentstep));
@@ -122,7 +126,7 @@ void::TimeTest::print(){
 
 		for(int j=0; j<pointintime_list[i].second.size();j++)
 		{
-			std::cout <<'\t' <<pointintime_list[i].second[j];
+			std::cout <<"\t\t" <<pointintime_list[i].second[j];
 		}
 
 		std::cout <<std::endl;
@@ -151,6 +155,7 @@ void::TimeTest::write(std::string filename){
 
 void::TimeTest::read(std::string filename){
 	pointintime_list.clear();
+	//pointintime_list_read.clear();
 	//std::string read = "/home/van/history"+std::to_string(num)+".txt";
 	std::string line;
 
@@ -173,5 +178,21 @@ void::TimeTest::read(std::string filename){
 		pointintime_list.push_back(std::make_pair(time,currentstep));
 	}
 	input.close();
+
+	int i=0;
+	double covering=0.0;
+	size_t nbMoments = sHandle->moments.size();
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			for (size_t m = 0; m <= nbMoments; m++) {
+				covering=pointintime_list.back().second[i]/calcCoveringUpdate(&f);
+				f.tmpCounter[m].hit.covering = pointintime_list.back().second[i]/covering;
+
+				i+=1;
+				std::cout <<"covering\t" <<f.tmpCounter[m].hit.covering<< '\t' <<calcCoveringUpdate(&f) <<std::endl;
+			}
+
+		}
+	}
 
 }

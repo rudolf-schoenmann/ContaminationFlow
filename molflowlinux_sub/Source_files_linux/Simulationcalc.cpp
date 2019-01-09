@@ -25,7 +25,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "SimulationLinux.h"
 #include "GLApp/MathTools.h"
 #include <math.h>
-
+#include <assert.h>
 // Global handles
 extern Simulation* sHandle; //Declared at molflowSub.cpp
 
@@ -39,17 +39,45 @@ double calcdNsurf(){
 	return sHandle->wp.gasMass/12.011;
 }
 
-double calcKrealvirt(int m){ //TODO not sure yet
-	double timeCorrection = m == 0 ? sHandle->wp.finalOutgassingRate : (sHandle->wp.totalDesorbedMolecules) / sHandle->wp.timeWindowSize;
-	return timeCorrection;
+std::tuple<double, double> calctotalDesorption(){ //adapted from totaloutgassingworker in worker.cpp
+	double desrate, totaldes=0.0;
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+					double facetdes=calcDesorption(&f);
+					desrate+=facetdes/ (1.38E-23*f.sh.temperature);
+					totaldes+=sHandle->wp.latestMoment * facetdes / (1.38E-23*f.sh.temperature);;
+			}
+	}
+	return {std::make_tuple(desrate, totaldes)};
 }
+// TODO is this correct?
+double calcKrealvirt(SubprocessFacet *iFacet, int m){ //TODO not sure yet
+	double desrate, totaldes=0.0;
+	std::tie( desrate,  totaldes)=calctotalDesorption();
+	double timeCorrection = m == 0 ? (sHandle->wp.finalOutgassingRate+desrate) : (sHandle->wp.totalDesorbedMolecules + totaldes) / sHandle->wp.timeWindowSize;
+	//std::cout <<sHandle->wp.finalOutgassingRate <<"\t" <<(sHandle->wp.totalDesorbedMolecules + calcDesorption(iFacet)) / sHandle->wp.timeWindowSize <<std::endl;
+	assert(timeCorrection>0.0);
+	return timeCorrection;
+
+}
+
 
 double calcRealCovering(SubprocessFacet *iFacet){ //TODO not sure yet
 	double covering=0.0;
 
 	size_t nbMoments = sHandle->moments.size();
 	for (size_t m = 0; m <= nbMoments; m++) {
-		covering += (double)iFacet->tmpCounter[m].hit.covering*calcKrealvirt(m);
+		covering += ((double)iFacet->tmpCounter[m].hit.covering)*calcKrealvirt(iFacet,m);
+	}
+	return covering;
+}
+
+double calcCovering(SubprocessFacet *iFacet){ //TODO not sure yet
+	double covering=0.0;
+
+	size_t nbMoments = sHandle->moments.size();
+	for (size_t m = 0; m <= nbMoments; m++) {
+		covering += (double)iFacet->tmpCounter[m].hit.covering;
 
 	}
 	return covering;
@@ -75,16 +103,16 @@ void calcStickingnew(SubprocessFacet *iFacet) {
 	double kb = 1.38 * pow(10, -23);
 
 	double temperature;
-	double covering=calcRealCovering(iFacet);
+	double covering=calcRealCovering(iFacet); // double covering=calcCovering(iFacet);
 
 	if(covering>0.0){
 		temperature=iFacet->sh.temperature;
 		if (covering < 1) {
-			iFacet->sh.sticking = (s1*(1 - covering) + s2 * covering)*(1 - exp(-E_ad / (kb*temperature)));
+			iFacet->sh.sticking = (s1*(1.0 - covering) + s2 * covering)*(1.0 - exp(-E_ad / (kb*temperature)));
 		}
 		else
 		{
-			iFacet->sh.sticking  = s2 * (1 - exp(-E_ad / (kb*temperature)));
+			iFacet->sh.sticking  = s2 * (1.0 - exp(-E_ad / (kb*temperature)));
 		}
 
 	}
@@ -101,7 +129,7 @@ double calcDesorption(SubprocessFacet *iFacet){
 	double kb = 1.38E-23;
 
 	double temperature;
-	double covering=calcRealCovering(iFacet);
+	double covering=calcCovering(iFacet); // double covering=calcRealCovering(iFacet);
 
 	double desorption=0.0;
 
@@ -110,7 +138,7 @@ double calcDesorption(SubprocessFacet *iFacet){
 		double N_mono= calcNmono(iFacet);
 		double dN_surf=calcdNsurf();
 
-		desorption= 1/tau * pow(covering,d) *exp(-E_de/(kb*temperature)) * N_mono/dN_surf;
+		desorption= 1.0/tau * pow(covering,d) *exp(-E_de/(kb*temperature)) * N_mono/dN_surf;
 
 	}
 

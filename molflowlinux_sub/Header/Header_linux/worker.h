@@ -26,6 +26,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <string>
 #include <vector>
 #include "GLApp/GLTypes.h"
+#include "GLApp/MathTools.h"
 //#include "Smp.h"
 #include "Buffer_shared.h" //LEAK, HIT
 
@@ -36,34 +37,13 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #define CDF_SIZE 100 //points in a cumulative distribution function
 
 
-class Worker
-{
-
-public:
-
-  // Constructor
-  Worker();
-  ~Worker();
-
-  // Return a handle to the currently loaded geometry
-
-  //std::vector<std::pair<double, double>> Generate_ID(int paramId);
-  //int GenerateNewID(int paramId);
+  std::vector<std::pair<double, double>> Generate_ID(int paramId);
+  int GenerateNewID(int paramId);
   std::vector<std::pair<double, double>> Generate_CDF(double gasTempKelvins, double gasMassGramsPerMol, size_t size);
   int GenerateNewCDF(double temperature);
-  void CalcTotalOutgassing();
+  void CalcTotalOutgassingWorker();
   int GetCDFId(double temperature);
-  //int GetIDId(int paramId);
+  //int GetIDId(int paramId); // already defined in simulation control
 
-  std::vector<Parameter> parameters;
-  //int displayedMoment;
+  int GetParamId(const std::string); //Get ID of parameter name
 
-  std::vector<std::vector<std::pair<double, double>>> CDFs; //cumulative distribution function for each temperature
-  //std::vector<std::vector<std::pair<double, double>>> IDs; //integrated distribution function for each time-dependent desorption type
-  std::vector<double> temperatures; //keeping track of all temperatures that have a CDF already generated
-  //std::vector<double> moments;             //moments when a time-dependent simulation state is recorded
-  //std::vector<size_t> desorptionParameterIDs; //time-dependent parameters which are used as desorptions, therefore need to be integrated
-  //std::vector<std::string> userMoments;    //user-defined text values for defining time moments (can be time or time series)
-
-
-};

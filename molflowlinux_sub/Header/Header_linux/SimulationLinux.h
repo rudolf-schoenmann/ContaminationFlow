@@ -33,6 +33,7 @@ class TimeTest{
 public:
 	TimeTest();
 	std::vector< std::pair<double,std::vector<double>> > pointintime_list;
+	//std::vector< std::pair<double,std::vector<double>> > pointintime_list_read;
 
 	void appendList(double time);
 	void print();
@@ -53,9 +54,10 @@ void UpdateMainHits(Databuff *databuffer,Databuff *subbuffer, int rank);
 void UpdadeSticking();
 
 void calcStickingnew(SubprocessFacet *iFacet);
-double calcDesorption(SubprocessFacet *iFacet);
+//double calcDesorption(SubprocessFacet *iFacet);
 double calcNmono(SubprocessFacet *iFacet);
 double calcRealCovering(SubprocessFacet *iFacet);
+double calcKrealvirt(SubprocessFacet *iFacet, int m);
 
 
 double estimateTmin();

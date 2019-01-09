@@ -28,12 +28,15 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
-	TimeTest test;
+	TimeTest test, test2;
 	double timestep=1000;
 	double realtimestep;
 
 	// Set end of simulation flag
 	bool eos=false;
+
+	std::string name1 = "/home/van/simcovering.txt";
+	test.read(name1);
 
 	// Start Simulation = create first particle
 	StartSimulation();
@@ -47,7 +50,7 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 			break;
 		}
 		std::tie(eos, realtimestep) = SimulationRun(timestep);      // Run during timestep ms, performs MC steps
-
+		UpdadeSticking();
 
 		//calc new timestep?
 
