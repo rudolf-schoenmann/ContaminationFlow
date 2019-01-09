@@ -686,7 +686,7 @@ std::pair<bool,double> SimulationRun(double time) {
 
 	t1 = GetTick();
 	sHandle->stepPerSec =1000.0* (double)(nbStep) / (t1 - t0);
-	std::cout <<t1-t0 <<std::endl;
+	std::cout <<"Elapsed time for iteration step: " <<t1-t0 <<std::endl;
 #ifdef _DEBUG
 	printf("Running: stepPerSec = %f\n", sHandle->stepPerSec);
 #endif

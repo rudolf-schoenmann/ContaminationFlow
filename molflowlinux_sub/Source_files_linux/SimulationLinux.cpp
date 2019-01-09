@@ -28,29 +28,30 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
-	TimeTest test, test2;
-	double timestep=1000;
-	double realtimestep;
+	CoveringHistory covhistory;
+	double timestep=1000; // desired length per iteration for simulation, here hardcoded to 1 second
+	double realtimestep; // actual time elapsed for iteration step
 
 	// Set end of simulation flag
 	bool eos=false;
 
+	// Read covering list, saves list in covhistory
 	std::string name1 = "/home/van/simcovering.txt";
-	test.read(name1);
+	covhistory.read(name1);
 
 	// Start Simulation = create first particle
 	StartSimulation();
 
 	// Run Simulation for simutime steps. One step ~ 1 seconds
 	for(double i=0; i<(double)(simutime) && !eos;i+=realtimestep){
-		test.appendList(i);
-		if(i+timestep>=(double)(simutime)){
-			std::tie(eos,realtimestep) = SimulationRun((double)simutime-i); // Some additional simulation, as Simulation does not run for exactly timestep ms
-			test.appendList(i+realtimestep);
+		covhistory.appendList(i); //append list with current time and covering
+		if(i+timestep>=(double)(simutime)){ //last timestep
+			std::tie(eos,realtimestep) = SimulationRun((double)simutime-i); // Some additional simulation, as iteration step  does not run for exactly timestep ms
+			covhistory.appendList(i+realtimestep); // append list with last entry
 			break;
 		}
 		std::tie(eos, realtimestep) = SimulationRun(timestep);      // Run during timestep ms, performs MC steps
-		UpdadeSticking();
+		UpdateSticking(); // calculates new sticking
 
 		//calc new timestep?
 
@@ -60,16 +61,15 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 	UpdateSubHits(hitbuffer, rank);
 
 	// Update quantaties for contamination
-	UpdadeSticking();
+	UpdateSticking();
 
-	//std::cout <<"test " <<sHandle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv  <<std::endl;
-	std::cout <<"test " <<estimateTmin() <<std::endl;
-
+	std::cout <<"estimated Tmin:\t (dist_total/hits^2)*sum_1_v_ort*1000 [ms]\t" <<estimateTmin() <<std::endl<<std::endl;
 
 
+	//Save history to new file
 	std::string name0 = "/home/van/history"+std::to_string(rank)+".txt";
-	test.print();
-	test.write(name0);
+	covhistory.print();
+	covhistory.write(name0);
 
 	ResetTmpCounters(); //resets counter in sHandle
 	return !eos;

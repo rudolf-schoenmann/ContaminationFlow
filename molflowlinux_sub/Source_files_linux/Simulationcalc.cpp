@@ -51,11 +51,10 @@ std::tuple<double, double> calctotalDesorption(){ //adapted from totaloutgassing
 	return {std::make_tuple(desrate, totaldes)};
 }
 // TODO is this correct?
-double calcKrealvirt(SubprocessFacet *iFacet, int m){ //TODO not sure yet
+double calcKrealvirt(SubprocessFacet *iFacet, int moment){ //TODO not sure yet
 	double desrate, totaldes=0.0;
 	std::tie( desrate,  totaldes)=calctotalDesorption();
-	double timeCorrection = m == 0 ? (sHandle->wp.finalOutgassingRate+desrate) : (sHandle->wp.totalDesorbedMolecules + totaldes) / sHandle->wp.timeWindowSize;
-	//std::cout <<sHandle->wp.finalOutgassingRate <<"\t" <<(sHandle->wp.totalDesorbedMolecules + calcDesorption(iFacet)) / sHandle->wp.timeWindowSize <<std::endl;
+	double timeCorrection = moment == 0 ? (sHandle->wp.finalOutgassingRate+desrate) : (sHandle->wp.totalDesorbedMolecules + totaldes) / sHandle->wp.timeWindowSize;
 	assert(timeCorrection>0.0);
 	return timeCorrection;
 
@@ -63,23 +62,12 @@ double calcKrealvirt(SubprocessFacet *iFacet, int m){ //TODO not sure yet
 
 
 double calcRealCovering(SubprocessFacet *iFacet){ //TODO not sure yet
-	double covering=0.0;
-
-	size_t nbMoments = sHandle->moments.size();
-	for (size_t m = 0; m <= nbMoments; m++) {
-		covering += ((double)iFacet->tmpCounter[m].hit.covering)*calcKrealvirt(iFacet,m);
-	}
+	double covering= ((double)iFacet->tmpCounter[0].hit.covering)*calcKrealvirt(iFacet,0); // only one moment used
 	return covering;
 }
 
 double calcCovering(SubprocessFacet *iFacet){ //TODO not sure yet
-	double covering=0.0;
-
-	size_t nbMoments = sHandle->moments.size();
-	for (size_t m = 0; m <= nbMoments; m++) {
-		covering += (double)iFacet->tmpCounter[m].hit.covering;
-
-	}
+	double covering = (double)iFacet->tmpCounter[0].hit.covering; // only one moment used
 	return covering;
 }
 
@@ -103,7 +91,7 @@ void calcStickingnew(SubprocessFacet *iFacet) {
 	double kb = 1.38 * pow(10, -23);
 
 	double temperature;
-	double covering=calcRealCovering(iFacet); // double covering=calcCovering(iFacet);
+	double covering=calcCovering(iFacet); // double covering=calcRealCovering(iFacet);
 
 	if(covering>0.0){
 		temperature=iFacet->sh.temperature;

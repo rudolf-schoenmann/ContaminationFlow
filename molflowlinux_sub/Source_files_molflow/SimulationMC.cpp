@@ -624,7 +624,7 @@ bool StartFromSource() {
 		i = 0;
 		while (!found && i < (int)sHandle->structures[j].facets.size()) { //Go through facets in a structure
 			SubprocessFacet& f = sHandle->structures[j].facets[i];
-			double des=calcDesorption(&f); //double des = sHandle->wp.latestMoment *calcDesorption(&f)/ (1.38E-23*f.sh.temperature); // which one is right?
+			double des=calcDesorption(&f); //double des = sHandle->wp.latestMoment *calcDesorption(&f)/ (1.38E-23*f.sh.temperature); // TODO which one is right?
 			if (f.sh.desorbType != DES_NONE || des>0.0) { //there is some kind of outgassing
 				if (f.sh.useOutgassingFile) { //Using SynRad-generated outgassing map
 					if (f.sh.totalOutgassing +des > 0.0) { //TODO what to add to totaloutgassing?

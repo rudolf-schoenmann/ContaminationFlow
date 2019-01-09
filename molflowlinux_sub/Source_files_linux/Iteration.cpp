@@ -70,36 +70,34 @@ double estimateTmin(){//TODO something is wrong here
 }*/
 
 double estimateTmin(){
-	double sum=0;
-	double sum_1=0;
-	size_t nbMoments = sHandle->moments.size();
+	double sum_v_ort=0;
+	double sum_1_v_ort=0;
 	double facetcounter=0;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			for (size_t m = 0; m <= nbMoments; m++) {
 				//sum_1_v_orth
 				//sum_1_v_ort+=f.tmpCounter[m].hit.sum_1_per_ort_velocity*f.sh.area; //(s/m)*m^2
-				sum+=f.tmpCounter[m].hit.sum_v_ort; //(s/m)*m^2
-				sum_1+=f.tmpCounter[m].hit.sum_1_per_velocity;
+				sum_v_ort+=f.tmpCounter[0].hit.sum_v_ort; //(s/m)*m^2
+				sum_1_v_ort+=f.tmpCounter[0].hit.sum_1_per_velocity;
 				facetcounter++;
-			}
+
 		}
 	}
 
-	double temp=(double)sHandle->tmpGlobalResult.distTraveled_total;
-	double temp2= pow((double)sHandle->tmpGlobalResult.globalHits.hit.nbMCHit,2);
-	std::cout <<temp <<'\t'<<sum<<'\t' <<sum_1<<'\t'<<temp2 <<std::endl;
-	std::cout <<temp*1000/sum <<std::endl;
-	//std::cout <<(temp/temp2)*1000/sum <<std::endl;
-	return (temp/temp2)*sum_1*1000;
+	double dist_total=(double)sHandle->tmpGlobalResult.distTraveled_total;
+	double hits2= pow((double)sHandle->tmpGlobalResult.globalHits.hit.nbMCHit,2);
+	std::cout <<"dist_total, hits^2, sum_v_ort, sum_1_v_ort: \t\t\t" <<dist_total <<'\t'<<hits2<<'\t'<<sum_v_ort<<'\t' <<sum_1_v_ort <<std::endl;
+	std::cout <<"Alternative 1 for Tmin\t (dist_total*1000)/sum_v_ort [ms]\t" <<dist_total*1000/sum_v_ort <<std::endl;
+	std::cout <<"Alternative 1 for Tmin\t(dist_total/hits^2)*1000/sum_v_ort [ms]\t" <<(dist_total/hits2)*1000/sum_v_ort <<std::endl;
+	return (dist_total/hits2)*sum_1_v_ort*1000;
 }
 
-TimeTest::TimeTest(){
+CoveringHistory::CoveringHistory(){
 	pointintime_list=std::vector< std::pair<double,std::vector<double>> >();
 	//pointintime_list_read=std::vector< std::pair<double,std::vector<double>> >();
 }
 
-void TimeTest::appendList(double time){
+void CoveringHistory::appendList(double time){
 
 	std::vector<double> currentstep;
 	currentstep =std::vector<double> ();
@@ -119,9 +117,18 @@ void TimeTest::appendList(double time){
 
 }
 
-void::TimeTest::print(){
+void::CoveringHistory::print(){
+
+	std::cout <<"time";
 	for(int i=0;i<pointintime_list.size();i++)
 	{
+		if(i==0){
+			for(int j=0; j<pointintime_list[i].second.size();j++)
+					{
+						std::cout <<"\t\t" <<j;
+					}
+		}
+		std::cout<<std::endl;
 		std::cout <<pointintime_list[i].first;
 
 		for(int j=0; j<pointintime_list[i].second.size();j++)
@@ -129,12 +136,11 @@ void::TimeTest::print(){
 			std::cout <<"\t\t" <<pointintime_list[i].second[j];
 		}
 
-		std::cout <<std::endl;
-
 	}
+	std::cout<<std::endl<<std::endl;
 }
 
-void::TimeTest::write(std::string filename){
+void::CoveringHistory::write(std::string filename){
 	//std::string write = "/home/van/history"+std::to_string(num)+".txt";
 	std::ofstream outfile(filename,std::ofstream::out|std::ios::trunc);
 
@@ -153,14 +159,14 @@ void::TimeTest::write(std::string filename){
 	outfile.close();
 }
 
-void::TimeTest::read(std::string filename){
+void::CoveringHistory::read(std::string filename){
 	pointintime_list.clear();
 	//pointintime_list_read.clear();
 	//std::string read = "/home/van/history"+std::to_string(num)+".txt";
 	std::string line;
 
 	std::ifstream input(filename,std::ifstream::in);
-
+	std::cout <<"Reading in covering history from " <<filename <<std::endl;
 	while(std::getline(input,line)){
 		std::vector<double> currentstep;
 		currentstep =std::vector<double> ();
@@ -180,19 +186,16 @@ void::TimeTest::read(std::string filename){
 	input.close();
 
 	int i=0;
-	double covering=0.0;
-	size_t nbMoments = sHandle->moments.size();
+	double num_mol=0.0;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			for (size_t m = 0; m <= nbMoments; m++) {
-				covering=pointintime_list.back().second[i]/calcCoveringUpdate(&f);
-				f.tmpCounter[m].hit.covering = pointintime_list.back().second[i]/covering;
+				num_mol=pointintime_list.back().second[i]/calcCoveringUpdate(&f);
+				f.tmpCounter[0].hit.covering = pointintime_list.back().second[i];
 
+				std::cout <<"Facet "<<i <<"\t covering: " <<f.tmpCounter[0].hit.covering <<"\t Corresponding number of particles: " <<num_mol <<std::endl;
 				i+=1;
-				std::cout <<"covering\t" <<f.tmpCounter[m].hit.covering<< '\t' <<calcCoveringUpdate(&f) <<std::endl;
-			}
-
 		}
 	}
+	std::cout <<std::endl;
 
 }

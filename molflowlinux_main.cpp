@@ -92,6 +92,7 @@ bool parametercheck(int argc, char *argv[]) {
 	for (i = 0; i < argc; i++) {
 		printf("argv[%d]: %s\n", i, argv[i]);
 	}
+	std::cout <<std::endl;
 	if (argc < 5 || argc > 6) {
 		std::cout
 				<< "MolflowLinux requires 4 mandatory arguments and 1 optional argument."
@@ -193,7 +194,7 @@ int main(int argc, char *argv[]) {
 		std::cout << "size of " << argv[1] << " = " << loadbuffer.size
 				<< std::endl;
 
-		std::cout << "Buffers sent. Wait for a few seconds. " << std::endl;
+		std::cout << "Buffers sent. Wait for a few seconds. " << std::endl<< std::endl;
 	}
 
 	// Send load-buffer to all other processes
@@ -269,7 +270,7 @@ int main(int argc, char *argv[]) {
 		//Simulation on subprocesses
 		if (rank != 0) {
 			/* do work in any remaining processes */
-			std::cout << "Process " << rank << " starting simulation now."
+			std::cout <<std::endl << "Process " << rank << " starting simulation now."
 					<< std::endl;
 
 			//Do the simulation
@@ -309,7 +310,7 @@ int main(int argc, char *argv[]) {
 
 				//sleep(1);
 				UpdateMainHits(&hitbuffer_original, &hitbuffer, 0);
-				std::cout << "Updated hitbuffer with process " << i
+				std::cout << "Updated hitbuffer with process " << i <<std::endl
 						<< std::endl;
 
 				//std::string exporthit = "~/resultbuffer0" + std::to_string(i);
@@ -343,7 +344,7 @@ int main(int argc, char *argv[]) {
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	if (rank == 0)
-		std::cout << "Closing MPI now." << std::endl;
+		std::cout <<std::endl << "Closing MPI now." << std::endl;
 	MPI_Finalize();
 	if (rank == 0)
 		std::cout << "Program finished." << std::endl;

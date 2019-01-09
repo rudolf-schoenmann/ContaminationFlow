@@ -28,20 +28,21 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 extern Simulation *sHandle;
 
-void UpdadeSticking(){
+void UpdateSticking(){
+	std::cout <<"    Facet information:" <<std::endl;
+	int i = 0;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-		std::cout <<"Sticking" <<std::endl;
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			calcStickingnew(&f);
-			//std::cout <<"area\t" <<f.sh.area <<std::endl;
-			std::cout <<"sc\t" <<f.sh.sticking <<std::endl;
-			std::cout <<"out\t" <<f.sh.outgassing+calcDesorption(&f) <<std::endl;
-			std::cout <<"cov\t" <<calcCovering(&f) <<std::endl;
-			std::cout <<"cov\t" <<calcRealCovering(&f) <<std::endl;
-
+			std::cout <<"    Facet " <<i <<":" <<std::endl;
+			std::cout <<"\t sticking\t" <<f.sh.sticking <<std::endl;
+			std::cout <<"\t outg+des\t" <<f.sh.outgassing+calcDesorption(&f) <<std::endl;
+			std::cout <<"\t covering\t" <<calcCovering(&f) <<std::endl;
+			std::cout <<"\t real covering\t" <<calcRealCovering(&f) <<std::endl;
+			i+=1;
 		}
 	}
-
+	std::cout <<std::endl;
 }
 
 void UpdateSubHits(Databuff *databuffer, int rank) {
