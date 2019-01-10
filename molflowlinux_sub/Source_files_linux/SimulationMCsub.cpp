@@ -28,27 +28,21 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 extern Simulation *sHandle;
 
-void UpdadeSticking(){
+void UpdateSticking(){
+	std::cout <<"    Facet information:" <<std::endl;
+	int i = 0;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-		std::cout <<"Sticking" <<std::endl; // Was soll uns das sagen:"Sticking"
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			calcStickingnew(&f);
-			std::cout << "facet number\t" << f.globalId << "\t";
-			std::cout <<"facet area\t" <<f.sh.area << "\t";
-			if (f.sh.sticking == 0){
-				std::cout <<"facet sticking coefficient\t" <<f.sh.sticking << "\t \t";}
-			else {std::cout <<"facet sticking coefficient\t" <<f.sh.sticking << "\t";}
-			std::cout <<"facet outgassing rate\t" <<f.sh.outgassing+calcDesorption(&f) <<std::endl;
-			/*
-			std::cout <<"area\t" <<f.sh.area <<std::endl;
-			std::cout <<"sc\t" <<f.sh.sticking <<std::endl;
-			std::cout <<"out\t" <<f.sh.outgassing+calcDesorption(&f) <<std::endl;
-			*/
-			//std::cout <<f.sh.totalOutgassing <<std::endl;
-
+			std::cout <<"    Facet " <<i <<":" <<std::endl;
+			std::cout <<"\t sticking\t" <<f.sh.sticking <<std::endl;
+			std::cout <<"\t outg+des\t" <<f.sh.outgassing+calcDesorption(&f) <<std::endl;
+			std::cout <<"\t covering\t" <<calcCovering(&f) <<std::endl;
+			std::cout <<"\t real covering\t" <<calcRealCovering(&f) <<std::endl;
+			i+=1;
 		}
 	}
-
+	std::cout <<std::endl;
 }
 
 void UpdateSubHits(Databuff *databuffer, int rank) {

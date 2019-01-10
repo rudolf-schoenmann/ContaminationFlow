@@ -169,12 +169,12 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 
 	size_t facetHitsSize = (1 + nbMoments) * sizeof(FacetHitBuffer);
 	// Facets
-	//std::cout <<"NBSuper " <<(int)sHandle->sh.nbSuper <<std::endl;
+	int num=0;
 	for (s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			//if (f.hitted) {
-
+				std::cout <<"Facet " <<num <<std::endl;
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) { // Add hits
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 					FacetHitBuffer *facetHitSub = (FacetHitBuffer *)(subbuff + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
@@ -195,6 +195,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					std::cout <<"hit.sum_1_per_velocity\t\t"<<facetHitBuffer->hit.sum_1_per_velocity <<std::endl;
 					std::cout <<"hit.covering\t\t\t"<<facetHitBuffer->hit.covering <<std::endl;
 
+
 					facetHitBuffer->hit.nbAbsEquiv += facetHitSub->hit.nbAbsEquiv;
 					facetHitBuffer->hit.nbDesorbed += facetHitSub->hit.nbDesorbed;
 					facetHitBuffer->hit.nbMCHit += facetHitSub->hit.nbMCHit;
@@ -203,6 +204,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					facetHitBuffer->hit.sum_v_ort += facetHitSub->hit.sum_v_ort;
 					facetHitBuffer->hit.sum_1_per_velocity += facetHitSub->hit.sum_1_per_velocity;
 					facetHitBuffer->hit.covering += facetHitSub->hit.covering;
+
 
 					std::cout <<"buffer afterwards" <<std::endl;
 					std::cout <<"hit.nbAbsEquiv\t\t\t"<<facetHitBuffer->hit.nbAbsEquiv <<std::endl;
@@ -213,7 +215,6 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					std::cout <<"hit.sum_v_ort\t\t\t"<<facetHitBuffer->hit.sum_v_ort <<std::endl;
 					std::cout <<"hit.sum_1_per_velocity\t\t"<<facetHitBuffer->hit.sum_1_per_velocity <<std::endl;
 					std::cout <<"hit.covering\t\t\t"<<facetHitBuffer->hit.covering <<std::endl<<std::endl;
-
 				}
 
 				if (f.sh.isProfile) { //(MY) Add profiles

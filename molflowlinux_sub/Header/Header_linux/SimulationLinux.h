@@ -29,10 +29,12 @@ static const char *day[]={"day","Day","days","Days","d","D"};
 static const char *hour[]={"hour","Hour","hours","Hours","h","H","hr","Hr"};
 static const char *min[]={"Minutes","minutes","Minute","minute","min","Min","m","M"};
 
-class TimeTest{
+class CoveringHistory{
 public:
-	TimeTest();
+	CoveringHistory();
+	CoveringHistory(Databuff *hitbuffer);
 	std::vector< std::pair<double,std::vector<double>> > pointintime_list;
+	//std::vector< std::pair<double,std::vector<double>> > pointintime_list_read;
 
 	void appendList(double time);
 	void print();
@@ -50,12 +52,13 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments);
 void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t nbMoments);
 void UpdateMainHits(Databuff *databuffer,Databuff *subbuffer, int rank);
 
-void UpdadeSticking();
+void UpdateSticking();
 
 void calcStickingnew(SubprocessFacet *iFacet);
-double calcDesorption(SubprocessFacet *iFacet);
+//double calcDesorption(SubprocessFacet *iFacet);
 double calcNmono(SubprocessFacet *iFacet);
 double calcRealCovering(SubprocessFacet *iFacet);
+double calcKrealvirt(SubprocessFacet *iFacet, int m);
 
 
 double estimateTmin();

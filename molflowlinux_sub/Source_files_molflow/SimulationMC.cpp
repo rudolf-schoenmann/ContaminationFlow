@@ -610,18 +610,25 @@ bool StartFromSource() {
 			return false;
 		}
 	}
-
+	double totaldes=0.0;
 	// Select source
-	srcRnd = rnd() * sHandle->wp.totalDesorbedMolecules;
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+			for (SubprocessFacet& f : sHandle->structures[s].facets) {
+				totaldes+=sHandle->wp.latestMoment *calcDesorption(&f)/ (1.38E-23*f.sh.temperature);
+			}
+		}
+	srcRnd = rnd() * (sHandle->wp.totalDesorbedMolecules+totaldes);
+	//std::cout <<srcRnd <<std::endl;
 
 	while (!found && j < (int)sHandle->sh.nbSuper) { //Go through superstructures
 		i = 0;
 		while (!found && i < (int)sHandle->structures[j].facets.size()) { //Go through facets in a structure
 			SubprocessFacet& f = sHandle->structures[j].facets[i];
-			if (f.sh.desorbType != DES_NONE) { //there is some kind of outgassing
+			double des=calcDesorption(&f); //double des = sHandle->wp.latestMoment *calcDesorption(&f)/ (1.38E-23*f.sh.temperature); // TODO which one is right?
+			if (f.sh.desorbType != DES_NONE || des>0.0) { //there is some kind of outgassing
 				if (f.sh.useOutgassingFile) { //Using SynRad-generated outgassing map
-					if (f.sh.totalOutgassing > 0.0) {
-						found = (srcRnd >= sumA) && (srcRnd < (sumA + sHandle->wp.latestMoment * f.sh.totalOutgassing / (1.38E-23*f.sh.temperature)));
+					if (f.sh.totalOutgassing +des > 0.0) { //TODO what to add to totaloutgassing?
+						found = (srcRnd >= sumA) && (srcRnd < (sumA + sHandle->wp.latestMoment * (f.sh.totalOutgassing+des) / (1.38E-23*f.sh.temperature)));
 						if (found) {
 							//look for exact position in map
 							double rndRemainder = (srcRnd - sumA) / sHandle->wp.latestMoment*(1.38E-23*f.sh.temperature); //remainder, should be less than f.sh.totalOutgassing
@@ -647,14 +654,14 @@ bool StartFromSource() {
 								return false;
 							}*/
 						}
-						sumA += sHandle->wp.latestMoment * f.sh.totalOutgassing / (1.38E-23*f.sh.temperature);
+						sumA += sHandle->wp.latestMoment * (f.sh.totalOutgassing+des) / (1.38E-23*f.sh.temperature);
 					}
 				} //end outgassing file block
 				else { //constant or time-dependent outgassing
 					double facetOutgassing =
 						(f.sh.outgassing_paramId >= 0)
 						? sHandle->IDs[f.sh.IDid].back().second / (1.38E-23*f.sh.temperature)
-						: sHandle->wp.latestMoment*f.sh.outgassing / (1.38E-23*f.sh.temperature);
+						: sHandle->wp.latestMoment*(f.sh.outgassing+des) / (1.38E-23*f.sh.temperature);
 					found = (srcRnd >= sumA) && (srcRnd < (sumA + facetOutgassing));
 					sumA += facetOutgassing;
 				} //end constant or time-dependent outgassing block
@@ -669,7 +676,18 @@ bool StartFromSource() {
 		SetErrorSub("No starting point, aborting");
 		return false;
 	}
+
 	src = &(sHandle->structures[j].facets[i]);
+	bool desorbed_b=true;
+	//std::cout <<"test\t" <<(src->sh.desorbType)<<j <<i <<calcDesorption(src) <<std::endl;
+	if(src->sh.desorbType != DES_NONE ){
+		desorbed_b=false;
+		double des=calcDesorption(src);
+		//std::cout <<"test\t" <<(src->sh.outgassing) <<des <<std::endl;
+		if(rnd()<des/(src->sh.outgassing+des) ){
+			desorbed_b=true;
+		}
+	}
 
 	sHandle->currentParticle.lastHitFacet = src;
 	//sHandle->currentParticle.distanceTraveled = 0.0;  //for mean free path calculations
@@ -895,7 +913,7 @@ bool StartFromSource() {
 	/*src->sh.tmpCounter.hit.nbDesorbed++;
 	src->sh.tmpCounter.hit.sum_1_per_ort_velocity += 2.0 / ortVelocity; //was 2.0 / ortV
 	src->sh.tmpCounter.hit.sum_v_ort += (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity;*/
-	IncreaseFacetCounter(src, sHandle->currentParticle.flightTime, 0, 1, 0, 2.0 / ortVelocity, (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity);
+	IncreaseFacetCounter(src, sHandle->currentParticle.flightTime, 0, 1, 0, 2.0 / ortVelocity, (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity, desorbed_b);
 	//Desorption doesn't contribute to angular profiles, nor to angle maps
 	ProfileFacet(src, sHandle->currentParticle.flightTime, false, 2.0, 1.0); //was 2.0, 1.0
 	LogHit(src);
@@ -1505,7 +1523,7 @@ void TreatMovingFacet() {
 	sHandle->currentParticle.velocity = newVelocity.Norme();
 }
 
-void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t desorb, size_t absorb, double sum_1_per_v, double sum_v_ort) {
+void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t desorb, size_t absorb, double sum_1_per_v, double sum_v_ort, bool desorbed) {
 	size_t nbMoments = sHandle->moments.size();
 	for (size_t m = 0; m <= nbMoments; m++) {
 		if (m == 0 || abs((double)time - (double)sHandle->moments[m - 1]) < sHandle->wp.timeWindowSize / 2.0) {
@@ -1519,9 +1537,10 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 			f->tmpCounter[m].hit.sum_1_per_velocity += (hitEquiv + static_cast<double>(desorb)) / sHandle->currentParticle.velocity;
 
 			//update covering: increases with every absorb, decreases with every desorb
-			if (absorb>0)
+			if (absorb>0){
 				f->tmpCounter[m].hit.covering += calcCoveringUpdate(f);
-			if (desorb>0)
+			}
+			if (desorbed)
 				f->tmpCounter[m].hit.covering -= calcCoveringUpdate(f);
 
 			f->tmpCounter[m].hit.covering = f->tmpCounter[m].hit.covering < 0.0 ? 0 : f->tmpCounter[m].hit.covering;

@@ -35,7 +35,6 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "SMP.h"
 #include "string.h"
 
-
 class Anglemap {
 public:
 	std::vector<size_t>   pdf;		  // Incident angle distribution, phi and theta, not normalized. Used either for recording or for 2nd order interpolation
@@ -256,7 +255,9 @@ double GenerateRandomVelocity(int CDFId);
 double GenerateDesorptionTime(SubprocessFacet* src);
 double GetStickingAt(SubprocessFacet *src, double time);
 double GetOpacityAt(SubprocessFacet *src, double time);
-void   IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t desorb, size_t absorb, double sum_1_per_v, double sum_v_ort);
+void   IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t desorb, size_t absorb, double sum_1_per_v, double sum_v_ort, bool desorbed = false);
 void   TreatMovingFacet();
 
 double calcCoveringUpdate(SubprocessFacet *iFacet);
+double calcDesorption(SubprocessFacet *iFacet);
+double calcCovering(SubprocessFacet *iFacet);

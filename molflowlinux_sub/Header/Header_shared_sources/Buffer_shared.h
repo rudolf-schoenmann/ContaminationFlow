@@ -168,7 +168,7 @@ public:
 #ifdef MOLFLOW
 							 // Molflow-specific facet parameters
 	double temperature;    // Facet temperature (Kelvin)                  - can be overridden by time-dependent parameter
-	double outgassing;           // (in unit *m^3/s)                      - can be overridden by time-dependent parameter
+	double outgassing;           // (in unit Pa*m^3/s)                      - can be overridden by time-dependent parameter
 
 	int sticking_paramId;    // -1 if use constant value, 0 or more if referencing time-dependent parameter
 	int opacity_paramId;     // -1 if use constant value, 0 or more if referencing time-dependent parameter
