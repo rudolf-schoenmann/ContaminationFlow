@@ -111,7 +111,7 @@ void calcStickingnew(SubprocessFacet *iFacet) {
 }
 
 double calcDesorption(SubprocessFacet *iFacet){
-	double tau=1;
+	double tau=pow(10, -13);
 	double d=1;
 	double E_de= 1.5E-21;
 	double kb = 1.38E-23;
@@ -123,11 +123,10 @@ double calcDesorption(SubprocessFacet *iFacet){
 
 	if(covering>0.0){
 		temperature=iFacet->sh.temperature;
-		double N_mono= calcNmono(iFacet);
-		double dN_surf=calcdNsurf();
-
-		desorption= 1.0/tau * pow(covering,d) *exp(-E_de/(kb*temperature)) * N_mono/dN_surf;
-
+		//double N_mono= calcNmono(iFacet);
+		//double dN_surf=calcdNsurf();
+		//desorption= 1.0/tau * pow(covering,d) *exp(-E_de/(kb*temperature)) * N_mono/dN_surf;
+		desorption= 1.0/tau * pow(covering,d) *exp(-E_de/(kb*temperature)); //Rudi: I think, the last factor (N_mono/dN_surf) is wrong.
 	}
 
 	return desorption;

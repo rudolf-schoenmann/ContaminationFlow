@@ -174,7 +174,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			//if (f.hitted) {
-				std::cout <<"Facet " <<num <<std::endl;
+				//std::cout <<"Facet " <<num <<std::endl; // Da wird immer "0" angezeigt. Was ist der Sinn?
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) { // Add hits
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 					FacetHitBuffer *facetHitSub = (FacetHitBuffer *)(subbuff + f.sh.hitOffset + m * sizeof(FacetHitBuffer));

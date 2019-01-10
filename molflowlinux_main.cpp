@@ -118,16 +118,6 @@ bool parametercheck(int argc, char *argv[]) {
 
 int main(int argc, char *argv[]) {
 
-	/*Parameters passed to main:
-	 *
-	 * 1. Name of load buffer file to read in.
-	 * 2. Name of hit buffer file to read in.
-	 * 3. Choose a name for the buffer file to export the simulation results to.
-	 * 4. Simulation time (number)
-	 * 5. Simulation time (unit, e.g. min)
-	 *
-	 */
-
 	// Initialise buffer
 	Databuff hitbuffer;
 	hitbuffer.buff=NULL;
@@ -223,19 +213,6 @@ int main(int argc, char *argv[]) {
 
 	// Send buffer content
 	MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
-
-	/*Sharing buffer (Geometry and Parameters) with the other processes
-	 Send Buffer
-	 * Send SimulationTime
-	 * Tell the other processes via MPI, that they should execute COMMAND_LOAD (???)
-	 * If all Processes successfully executed COMMAND_LOAD, then tell them to execute COMMAND_START
-	 The other processes are simulating. I do nothing.
-	 After PROCESS_DONE Messages from the other processes, Receive Data from the other processes
-	 Sum up Data from the other processes
-	 First Step: Stationary Simulation => do nothing here
-	 Second Step: Time dependend Mode (Maybe copy Algorithm from Marton,  when ready)
-	 Iterative Algorithm: Update Parameters (Is parallisation necessary/desirable for updating?) + Sharing new Parameters with the other processes
-	 write Result a bufferfile (or maybe??? in a file or .zip archive)*/
 
 	// extract Simulation time and unit
 	if (argc == 5)
