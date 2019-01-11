@@ -145,7 +145,6 @@ CoveringHistory::CoveringHistory(Databuff *hitbuffer){
 
 	double covering;
 	std::cout <<"Reading covering values from buffer\t";
-	std::cout << "Warum kommt hier immer Null raus?" << std::endl;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
