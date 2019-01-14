@@ -198,7 +198,7 @@ void::CoveringHistory::print(){
 			std::cout <<"\t" <<pointintime_list[i].second[j] <<"\t\t";
 			}
 			else{
-			std::cout <<"\t" <<pointintime_list[i].second[j]<<"\t";
+			std::cout <<"\t" <<pointintime_list[i].second[j]<<"\t\t";
 			}
 		}
 

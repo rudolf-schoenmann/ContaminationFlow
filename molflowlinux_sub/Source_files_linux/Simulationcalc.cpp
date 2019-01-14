@@ -30,20 +30,22 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 extern Simulation* sHandle; //Declared at molflowSub.cpp
 
 // calculation of used values
-double calcNmono(SubprocessFacet *iFacet)
-{
-	return (iFacet->sh.area*1E-4)/Sqr(76E-12);
+double calcNmono(SubprocessFacet *iFacet){//Calculates the Number of (carbon equivalent) particles of one monolayer
+	return (iFacet->sh.area*1E-4)/(pow(76E-12, 2));
 }
 
-double calcdNsurf(){
+double calcdNsurf(){//Calculates the (carbon equivalent) mass
 	return sHandle->wp.gasMass/12.011;
 }
 
 std::tuple<double, double> calctotalDesorption(){ //adapted from totaloutgassingworker in worker.cpp
+	//Since this old Molflow code 'calctotalDesorption' calculates the Number of particles which have left all facets due to OUTGASSING;
+	//Therefore, in order to get he Number of particles which have left all facets due to OUTGASSING and due to the desorption of the adsorbate
+	//you have to add the desrate (= Number of particles which have left all facets due to desorption of the adsorbate);
 	double desrate, totaldes=0.0;
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
-					double facetdes=calcDesorption(&f);
+					double facetdes=calcDesorptionRate(&f);
 					desrate+=facetdes/ (1.38E-23*f.sh.temperature);
 					totaldes+=sHandle->wp.latestMoment * facetdes / (1.38E-23*f.sh.temperature);;
 			}
@@ -51,10 +53,12 @@ std::tuple<double, double> calctotalDesorption(){ //adapted from totaloutgassing
 	return {std::make_tuple(desrate, totaldes)};
 }
 // TODO is this correct?
-double calcKrealvirt(SubprocessFacet *iFacet, int moment){ //TODO not sure yet
+double calcKrealvirt(SubprocessFacet *iFacet, int moment){ //TODO not sure yet; c.f. Worker::GetMoleculesPerTP
 	double desrate, totaldes=0.0;
 	std::tie( desrate,  totaldes)=calctotalDesorption();
 	double timeCorrection = moment == 0 ? (sHandle->wp.finalOutgassingRate+desrate) : (sHandle->wp.totalDesorbedMolecules + totaldes) / sHandle->wp.timeWindowSize;
+	//Hier entspricht jetzt ein einziger Hit der (Ausgas + Desorptions)-Rate!
+	//Rudi: Lass uns den Code von GetMoleculesPerTP nutzen. Dann müssen wir nur noch schauen, wie wir das mit dem globalHitCache machen
 	assert(timeCorrection>0.0);
 	return timeCorrection;
 
@@ -62,6 +66,7 @@ double calcKrealvirt(SubprocessFacet *iFacet, int moment){ //TODO not sure yet
 
 
 double calcRealCovering(SubprocessFacet *iFacet){ //TODO not sure yet
+
 	double covering= ((double)iFacet->tmpCounter[0].hit.covering)*calcKrealvirt(iFacet,0); // only one moment used
 	return covering;
 }
@@ -83,7 +88,7 @@ double calcCoveringUpdate(SubprocessFacet *iFacet)
 
 }
 
-void calcStickingnew(SubprocessFacet *iFacet) {
+void calcStickingnew(SubprocessFacet *iFacet) {//Calculates sticking coefficient dependent on covering.
 	double s1 = 0.1;
 	double s2 = 0.2;
 	double E_ad = pow(10, -21);
@@ -110,7 +115,7 @@ void calcStickingnew(SubprocessFacet *iFacet) {
 
 }
 
-double calcDesorption(SubprocessFacet *iFacet){
+double calcDesorption(SubprocessFacet *iFacet){ //This returns ((d'covering')/dt)de. So to speak desorption rate in units of [1/s]
 	double tau=pow(10, -13);
 	double d=1;
 	double E_de= 1.5E-21;
@@ -132,4 +137,8 @@ double calcDesorption(SubprocessFacet *iFacet){
 	return desorption;
 }
 
-
+double calcDesorptionRate(SubprocessFacet *iFacet) {//This returns ((d'covering')/dt)de * Nmono * kb*T. So to speak desorption rate in units of [Pa m³/s]
+	double desorption = calcDesorption(iFacet);
+	double desorptionRate = desorption * calcNmono(iFacet) * 1.38E-23* iFacet->sh.temperature;
+	return desorptionRate;
+}
