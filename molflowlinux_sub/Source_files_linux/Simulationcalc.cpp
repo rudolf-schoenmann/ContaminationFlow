@@ -118,9 +118,9 @@ double calcCoveringUpdate(SubprocessFacet *iFacet)
 void calcStickingnew(SubprocessFacet *iFacet) {//Calculates sticking coefficient dependent on covering.
 	double s1 = 0.1;
 	double s2 = 0.2;
-	double E_ad = pow(10, -21);
-	//double E_de = 1.5*pow(10, -21);
-	double kb = 1.38 * pow(10, -23);
+	double E_ad = 1E-21;
+	//double E_de = 1.5E-21;
+	double kb = 1.38E-23;
 
 	double temperature;
 	int facetidx = getFacetIndex(iFacet);
@@ -148,7 +148,7 @@ void calcStickingnew(SubprocessFacet *iFacet) {//Calculates sticking coefficient
 }
 
 double calcDesorption(SubprocessFacet *iFacet){//This returns ((d'covering')/dt)de. So to speak desorption rate in units of [1/s]
-	double tau=pow(10, -13);
+	double tau=1E-13;
 	double d=1;
 	double E_de= 1.5E-21;
 	double kb = 1.38E-23;

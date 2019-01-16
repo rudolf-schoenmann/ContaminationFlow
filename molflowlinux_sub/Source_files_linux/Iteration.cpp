@@ -215,6 +215,7 @@ void::CoveringHistory::read(std::string filename){
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				num_mol=pointintime_list.back().second[i]/calcCoveringUpdate(&f);
 				f.tmpCounter[0].hit.covering = pointintime_list.back().second[i];
+				calcStickingnew(&f); // calculate new sticking for new covering value
 
 				std::cout <<"Facet "<<i <<"\t covering: " <<f.tmpCounter[0].hit.covering <<"\t Corresponding number of particles: " <<num_mol <<std::endl;
 				i+=1;
