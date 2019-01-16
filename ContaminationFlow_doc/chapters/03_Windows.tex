@@ -1,0 +1,62 @@
+% !TeX root = ../main.tex
+% Add the above to each chapter to make compiling the PDF easier in some editors.
+
+\chapter{ContaminationFlow Windows}\label{chapter:Windows}
+
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Create Geometry and set parameters such as pumping speed or sticking
+\item Evaluate profiles such as pressure profile
+\item Simulation also possible for testing, but mostly done on Linux
+\end{itemize}
+%\smallskip
+
+\section{Graphical User Interface}
+Add screenshot of GUI
+
+\section{Application}
+\subsection{Communication}
+\textbf{Import and export of buffer files via GUI}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item New Databuff struct \code{typedef unsigned char BYTE;\\typedef struct {\\
+	\hphantom{\quad}signed int size;\\
+	\hphantom{\quad}BYTE *buff;\\
+}Databuff;}
+\item New functions \codew{importBuff($\cdot$)} and \codew{exportBuff($\cdot$)} for import and export of buffer files/Databuff struct
+\item New options in file menu: \codew{Export buffer} and \codew{Import buffer}
+\end{itemize}
+
+\subsection{New Quantities}
+\textbf{New counter \codew{covering}}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Covering computed in \codew{SimulationMC.cpp} file in \codew{updatecovering($\cdot$)}
+\item Added covering counter to hitbuffer
+\item Added covering to GUI, can be defined through textfield
+\end{itemize}
+\bigskip
+\textbf{Compute sticking factor based on covering}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Sticking factor computed in \codew{Molflow.cpp} file in \codew{calcStickingnew()}
+\item Updated automatically whenever covering is changed
+\end{itemize}
+\bigskip
+\textbf{Removal of Flow-Sticking dependency}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item \codew{calcSticking()} and \codew{calcFlow()} in \codew{Molflow.cpp} file not used anymore
+\item Flow not needed for iterative Algorithm
+\end{itemize}
+
+\subsection{Iterative algorithm}
+\textbf{New class to store covering for all facets at any time} 
+\begin{itemize}[noitemsep,topsep=0pt]
+\item In \codew{HistoryWin.cpp} and \codew{HistoryWin.h} file
+\item \codew{std::vector< std::pair< double,std::vector<double> > > pointintime\_list} to store points in time and respective covering for all facets
+\item New GUI option to add and remove entries for \codew{pointintime\_list}
+\item New GUI option to export or import a complete list
+\end{itemize}
+\bigskip
+%\section{Adaptation of Existing Code}
+%\textbf{Thats changed}
+%\begin{itemize}[noitemsep,topsep=0pt]
+%\item use this for 
+%\item list
+%\end{itemize}

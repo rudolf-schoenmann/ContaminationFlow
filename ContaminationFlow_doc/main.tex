@@ -1,0 +1,88 @@
+\RequirePackage[l2tabu,orthodox]{nag}
+% TODO: decide if one-sided/two-sided
+%\documentclass[headsepline,footsepline,footinclude=false,fontsize=11pt,paper=a4,listof=totoc,bibliography=totoc,BCOR=12mm,DIV=12]{scrbook} % two-sided
+\documentclass[headsepline,footsepline,footinclude=false,oneside,fontsize=12pt,paper=a4,listof=totoc,bibliography=totoc]{scrbook} % one-sided
+
+% TODO: change citation style in settings
+\input{settings}
+\usepackage[margin=2.5cm]{geometry}
+	%\addtolength{\oddsidemargin}{-.5cm}
+	%\addtolength{\evensidemargin}{-.5cm}
+	%\addtolength{\textwidth}{1cm}
+\renewcommand*{\chapterheadstartvskip}%
+    {\vspace*{\baselineskip}}% Originalwert 2.3\baselineskip
+
+\definecolor{light-gray}{gray}{0.95}
+\newcommand{\codew}[1]{\colorbox{light-gray}{\texttt{#1}}}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable}
+\newcommand{\code}[1]{\texttt{\begin{tcolorbox}[breakable,colframe=light-gray,arc=0pt,outer arc=0pt]#1\end{tcolorbox}}}
+
+\usepackage{pbox}
+\usepackage{enumitem}% http://ctan.org/pkg/enumitem
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes,arrows,calc}
+
+\usepackage{amsmath}
+
+%\usepackage[noframe]{showframe}
+
+% TODO: change thesis information
+%\newcommand*{\getUniversity}{Technische Universität München}
+%\newcommand*{\getFaculty}{Neuroscientific System Theory}
+\newcommand*{\getTitle}{ContaminationFlow\par\medskip on Linux and Windows}
+%\newcommand*{\getTitleGer}{Muskelbasierte Roboter in der Neurorobotics Platform}
+\newcommand*{\getAuthor}{Hoai My Van}
+\newcommand*{\getDoctype}{Documentation}
+%\newcommand*{\getSupervisor}{Prof. Dr. Jörg Conradt}
+%\newcommand*{\getAdvisor}{M.Sc. Alexander Kuhn}
+\newcommand*{\getSubmissionDate}{2018}
+\newcommand*{\getSubmissionLocation}{Munich}
+
+%\addbibresource{mybib.bib}
+\begin{document}
+
+\tikzstyle{textbox}=[rectangle, draw=black,
+        text centered, anchor=north, text=black, text width=4cm]
+
+\tikzstyle{textboxmed}=[rectangle, draw=black,
+        text centered, anchor=north, text=black, text width=3.5cm]
+
+\tikzstyle{textboxsmall}=[rectangle, draw=black,
+        text centered, anchor=north, text=black, text width=3cm]
+
+%\tikzstyle{myarrow}=[->, >=open triangle 90, thick]
+%\tikzstyle{line}=[-, thick]
+
+% Set page numbering to avoid "destination with the same identifier has been already used" warning for cover page.
+% (see https://en.wikibooks.org/wiki/LaTeX/Hyperlinks#Problems_with_Links_and_Pages).
+\pagenumbering{alph}
+\input{pages/cover}
+
+\frontmatter{}
+
+%\input{pages/title}
+%\input{pages/disclaimer}
+%\input{pages/acknowledgements}
+%\input{pages/abstract}
+\microtypesetup{protrusion=false}
+\tableofcontents{}
+\microtypesetup{protrusion=true}
+
+\mainmatter{}
+
+\input{chapters/01_general}
+\input{chapters/02_Linux}
+\input{chapters/03_Windows}
+% TODO: add more chapters here
+
+\appendix{}
+\input{chapters/06_appendix_molflow}
+\microtypesetup{protrusion=false}
+%\listoffigures{}
+%\listoftables{}
+\microtypesetup{protrusion=true}
+%\newpage
+%\nocite{*}
+%\printbibliography
+\end{document}
