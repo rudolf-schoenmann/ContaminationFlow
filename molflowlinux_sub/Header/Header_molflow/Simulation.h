@@ -260,4 +260,5 @@ void   TreatMovingFacet();
 
 double calcCoveringUpdate(SubprocessFacet *iFacet);
 double calcDesorption(SubprocessFacet *iFacet);
+double calcDesorptionRate(SubprocessFacet *iFacet);
 double calcCovering(SubprocessFacet *iFacet);

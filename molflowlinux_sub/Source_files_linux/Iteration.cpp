@@ -147,7 +147,7 @@ void::CoveringHistory::print(){
 		if(i==0){
 			for(int j=0; j<pointintime_list[i].second.size();j++)
 					{
-						std::cout <<"\t\t" <<j;
+						std::cout <<"\t Covering for Facet " <<j;
 					}
 		}
 		std::cout<<std::endl;
@@ -156,6 +156,8 @@ void::CoveringHistory::print(){
 		for(int j=0; j<pointintime_list[i].second.size();j++)
 		{
 			std::cout <<"\t\t" <<pointintime_list[i].second[j];
+			if(pointintime_list[i].second[j] == 0.0)
+				std::cout <<"\t";
 		}
 
 	}

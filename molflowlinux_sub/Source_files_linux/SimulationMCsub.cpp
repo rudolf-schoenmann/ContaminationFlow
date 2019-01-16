@@ -35,10 +35,15 @@ void UpdateSticking(){
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			calcStickingnew(&f);
 			std::cout <<"    Facet " <<i <<":" <<std::endl;
-			std::cout <<"\t sticking\t" <<f.sh.sticking <<std::endl;
-			std::cout <<"\t outg+des\t" <<f.sh.outgassing+calcDesorption(&f) <<std::endl;
-			std::cout <<"\t covering\t" <<calcCovering(&f) <<std::endl;
-			std::cout <<"\t real covering\t" <<calcRealCovering(&f) <<std::endl;
+			std::cout <<"\t Facet area [cm²]\t\t\t"<< f.sh.area << std::endl;
+			std::cout <<"\t Facet temperature [K] \t\t\t" << f.sh.temperature << std::endl;
+			std::cout <<"\t Sticking [1]\t\t\t\t" <<f.sh.sticking <<std::endl;
+			std::cout <<"\t Outgassing [Pa m³/s]\t\t\t" <<f.sh.outgassing <<std::endl;
+			std::cout <<"\t Desorption rate [1/s]\t\t\t" <<calcDesorption(&f) <<std::endl;
+			std::cout <<"\t Desorption rate [Pa m³/s]\t\t" <<calcDesorptionRate(&f) << std::endl;
+			std::cout <<"\t Outgassing + Desorption rate [Pa m³/s]\t" <<f.sh.outgassing + calcDesorptionRate(&f)<<std::endl;
+			std::cout <<"\t Covering [1]\t\t\t\t" <<calcCovering(&f) <<std::endl;
+			std::cout <<"\t real covering\t\t\t\t" <<calcRealCovering(&f) <<std::endl;
 			i+=1;
 		}
 	}
@@ -160,7 +165,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 					facetHitBuffer->hit.sum_1_per_ort_velocity = f.tmpCounter[m].hit.sum_1_per_ort_velocity;
 					facetHitBuffer->hit.sum_v_ort = f.tmpCounter[m].hit.sum_v_ort;
 					facetHitBuffer->hit.sum_1_per_velocity = f.tmpCounter[m].hit.sum_1_per_velocity;
-					facetHitBuffer->hit.covering= f.tmpCounter[m].hit.covering;
+					facetHitBuffer->hit.covering= f.tmpCounter[m].hit.covering-facetHitBuffer->hit.covering; //TODO correct?
 					//facetHitBuffer->hit.covering= 0.0;
 				}
 

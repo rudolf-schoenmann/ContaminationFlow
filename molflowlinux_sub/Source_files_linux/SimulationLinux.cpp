@@ -25,10 +25,12 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "SimulationLinux.h"
 #include <array>
 //extern Simulation *sHandle;
+extern CoveringHistory* covhistory;
+
 
 bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
-	CoveringHistory covhistory(hitbuffer);
+	covhistory = new CoveringHistory (hitbuffer);
 	double timestep=1000; // desired length per iteration for simulation, here hardcoded to 1 second
 	double realtimestep; // actual time elapsed for iteration step
 
@@ -37,20 +39,20 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
 	// Read covering list, saves list in covhistory
 	std::string name1 = "/home/van/simcovering.txt";
-	//covhistory.read(name1);
+	//covhistory->read(name1); //TODO parameterübergabe in kommandezeile, nicht hardcoden!
 
 	// Start Simulation = create first particle
 	StartSimulation();
 
 	// Run Simulation for simutime steps. One step ~ 1 seconds
 	for(double i=0; i<(double)(simutime) && !eos;i+=realtimestep){
-		if(i!=0||covhistory.pointintime_list.empty()){
-			covhistory.appendList(i); //append list with current time and covering //TODO offset if covering list does not end with timestep 0
+		if(i!=0||covhistory->pointintime_list.empty()){
+			covhistory->appendList(i); //append list with current time and covering //TODO offset if covering list does not end with timestep 0
 		}
 
 		if(i+timestep>=(double)(simutime)){ //last timestep
 			std::tie(eos,realtimestep) = SimulationRun((double)simutime-i); // Some additional simulation, as iteration step  does not run for exactly timestep ms
-			covhistory.appendList(i+realtimestep); // append list with last entry
+			covhistory->appendList(i+realtimestep); // append list with last entry
 			break;
 		}
 		std::tie(eos, realtimestep) = SimulationRun(timestep);      // Run during timestep ms, performs MC steps
@@ -71,8 +73,8 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
 	//Save history to new file
 	std::string name0 = "/home/van/history"+std::to_string(rank)+".txt";
-	covhistory.print();
-	covhistory.write(name0);
+	covhistory->print();
+	covhistory->write(name0);
 
 	ResetTmpCounters(); //resets counter in sHandle
 	return !eos;
