@@ -53,13 +53,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 	double t0, t1;
 	t0 = GetTick();
 #endif
-	/* (Rudi) Don't need that.
-	SetState(NULL, "Waiting for 'hits' dataport access...", false, true);
-	sHandle->lastHitUpdateOK = AccessDataportTimed(dpHit, timeout);
-	SetState(NULL, "Updating MC hits...", false, true);
-	if (!sHandle->lastHitUpdateOK) return; //Timeout, will try again later
-	*/
-	//std::cout <<"oriratio " <<sHandle->currentParticle.oriRatio << std::endl; //ZERO! -> orth vel zero
+
 
 	buffer = mainbuffer->buff;
 	gHits = (GlobalHitBuffer *)buffer;
@@ -184,17 +178,18 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					std::cout <<sizeof(FacetHitBuffer) <<std::endl;
 					std::cout <<facetHitSub->hit.covering <<std::endl;*/
 
-					std::cout << "facet number\t\t\t"<< f.globalId <<std::endl;
+					if(f.globalId == 1){
+					std::cout <<"facet number\t\t\t"<< f.globalId <<std::endl;
 					std::cout <<"buffer before\t\t\t" <<std::endl;
-					std::cout <<"hit.nbAbsEquiv\t\t\t"<<facetHitBuffer->hit.nbAbsEquiv <<std::endl;
+					std::cout <<"hit.nbAbsEquiv\t\t\t"<<facetHitBuffer->hit.nbAbsEquiv <<"\t (as nbMCHitEquiv)"<<std::endl;
 					std::cout <<"hit.nbDesorbed\t\t\t"<<facetHitBuffer->hit.nbDesorbed <<std::endl;
 					std::cout <<"hit.nbMCHit\t\t\t"<<facetHitBuffer->hit.nbMCHit <<std::endl;
-					std::cout <<"hit.nbHitEquiv\t\t\t"<<facetHitBuffer->hit.nbHitEquiv <<std::endl;
+					std::cout <<"hit.nbHitEquiv\t\t\t"<<facetHitBuffer->hit.nbHitEquiv <<"\t gives the number of equivalent MC hits in low flux mode"<<std::endl;
 					std::cout <<"hit.sum_1_per_ort_velocity\t"<<facetHitBuffer->hit.sum_1_per_ort_velocity <<std::endl;
 					std::cout <<"hit.sum_v_ort\t\t\t"<<facetHitBuffer->hit.sum_v_ort <<std::endl;
 					std::cout <<"hit.sum_1_per_velocity\t\t"<<facetHitBuffer->hit.sum_1_per_velocity <<std::endl;
 					std::cout <<"hit.covering\t\t\t"<<facetHitBuffer->hit.covering <<std::endl;
-
+					}
 
 					facetHitBuffer->hit.nbAbsEquiv += facetHitSub->hit.nbAbsEquiv;
 					facetHitBuffer->hit.nbDesorbed += facetHitSub->hit.nbDesorbed;
@@ -206,15 +201,17 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					facetHitBuffer->hit.covering += facetHitSub->hit.covering;
 
 
+					if(f.globalId == 1){
 					std::cout <<"buffer afterwards" <<std::endl;
-					std::cout <<"hit.nbAbsEquiv\t\t\t"<<facetHitBuffer->hit.nbAbsEquiv <<std::endl;
+					std::cout <<"hit.nbAbsEquiv\t\t\t"<<facetHitBuffer->hit.nbAbsEquiv <<"\t (as nbMCHitEquiv)"<<std::endl;
 					std::cout <<"hit.nbDesorbed\t\t\t"<<facetHitBuffer->hit.nbDesorbed <<std::endl;
 					std::cout <<"hit.nbMCHit\t\t\t"<<facetHitBuffer->hit.nbMCHit <<std::endl;
-					std::cout <<"hit.nbHitEquiv\t\t\t"<<facetHitBuffer->hit.nbHitEquiv <<std::endl;
+					std::cout <<"hit.nbHitEquiv\t\t\t"<<facetHitBuffer->hit.nbHitEquiv <<"\t gives the number of equivalent MC hits in low flux mode"<<std::endl;
 					std::cout <<"hit.sum_1_per_ort_velocity\t"<<facetHitBuffer->hit.sum_1_per_ort_velocity <<std::endl;
 					std::cout <<"hit.sum_v_ort\t\t\t"<<facetHitBuffer->hit.sum_v_ort <<std::endl;
 					std::cout <<"hit.sum_1_per_velocity\t\t"<<facetHitBuffer->hit.sum_1_per_velocity <<std::endl;
 					std::cout <<"hit.covering\t\t\t"<<facetHitBuffer->hit.covering <<std::endl<<std::endl;
+					}
 				}
 
 				if (f.sh.isProfile) { //(MY) Add profiles

@@ -28,6 +28,21 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <assert.h>
 // Global handles
 extern Simulation* sHandle; //Declared at molflowSub.cpp
+extern CoveringHistory* covhistory;
+
+int getFacetIndex(SubprocessFacet *iFacet){
+	int idx = 0;
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+				//std::cout <<iFacet << '\t' <<&f <<std::endl;
+					if(iFacet==&f){
+						return idx;
+					}
+					idx+=1;
+			}
+	}
+	return -1;
+}
 
 // calculation of used values
 double calcNmono(SubprocessFacet *iFacet){//Calculates the Number of (carbon equivalent) particles of one monolayer
@@ -52,7 +67,8 @@ std::tuple<double, double> calctotalDesorption(){ //adapted from totaloutgassing
 	}
 	return {std::make_tuple(desrate, totaldes)};
 }
-// TODO is this correct?
+/*
+// TODO is this correct? => Definitively not! Use GetMolecules per TP
 double calcKrealvirt(SubprocessFacet *iFacet, int moment){ //TODO not sure yet; c.f. Worker::GetMoleculesPerTP
 	double desrate, totaldes=0.0;
 	std::tie( desrate,  totaldes)=calctotalDesorption();
@@ -63,11 +79,28 @@ double calcKrealvirt(SubprocessFacet *iFacet, int moment){ //TODO not sure yet; 
 	return timeCorrection;
 
 }
-
+*/
+double GetMoleculesPerTP(size_t moment) // alternative for calcKrealvirt
+//Returns how many physical molecules one test particle represents
+{
+	if (sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed == 0) return 0; //avoid division by 0
+	double desrate, totaldes=0.0;
+	std::tie( desrate,  totaldes)=calctotalDesorption();
+	if (moment == 0) {
+		//Constant flow
+		//Each test particle represents a certain real molecule influx per second
+		return (sHandle->wp.finalOutgassingRate+desrate) / sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed;
+	}
+	else {
+		//Time-dependent mode
+		//Each test particle represents a certain absolute number of real molecules
+		return ((sHandle->wp.totalDesorbedMolecules+totaldes) / sHandle->wp.timeWindowSize) / sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed;
+	}
+}
 
 double calcRealCovering(SubprocessFacet *iFacet){ //TODO not sure yet
 
-	double covering= ((double)iFacet->tmpCounter[0].hit.covering)*calcKrealvirt(iFacet,0); // only one moment used
+	double covering= ((double)iFacet->tmpCounter[0].hit.covering)*GetMoleculesPerTP(0); // only one moment used; one moment means stationary simulation, first moment is moment 0
 	return covering;
 }
 
@@ -91,12 +124,17 @@ double calcCoveringUpdate(SubprocessFacet *iFacet)
 void calcStickingnew(SubprocessFacet *iFacet) {//Calculates sticking coefficient dependent on covering.
 	double s1 = 0.1;
 	double s2 = 0.2;
-	double E_ad = pow(10, -21);
-	//double E_de = 1.5*pow(10, -21);
-	double kb = 1.38 * pow(10, -23);
+	double E_ad = 1E-21;
+	//double E_de = 1.5E-21;
+	double kb = 1.38E-23;
 
 	double temperature;
-	double covering=calcCovering(iFacet); // double covering=calcRealCovering(iFacet);
+	int facetidx = getFacetIndex(iFacet);
+	//std::cout <<facetidx <<std::endl<<std::endl;
+	assert(facetidx < covhistory->pointintime_list.back().second.size());
+	double covering = covhistory->pointintime_list.back().second[facetidx];
+	//std::cout <<facetidx <<'\t' <<covering<<std::endl;
+	//double covering=calcCovering(iFacet); // double covering=calcRealCovering(iFacet);
 
 	if(covering>0.0){
 		temperature=iFacet->sh.temperature;
@@ -115,23 +153,26 @@ void calcStickingnew(SubprocessFacet *iFacet) {//Calculates sticking coefficient
 
 }
 
-double calcDesorption(SubprocessFacet *iFacet){ //This returns ((d'covering')/dt)de. So to speak desorption rate in units of [1/s]
-	double tau=pow(10, -13);
+double calcDesorption(SubprocessFacet *iFacet){//This returns ((d'covering')/dt)de. So to speak desorption rate in units of [1/s]
+	double tau=1E-13;
 	double d=1;
 	double E_de= 1.5E-21;
 	double kb = 1.38E-23;
 
 	double temperature;
-	double covering=calcCovering(iFacet); // double covering=calcRealCovering(iFacet);
+
+	int facetidx = getFacetIndex(iFacet);
+	//std::cout <<facetidx <<std::endl<<std::endl;
+	assert(facetidx < covhistory->pointintime_list.back().second.size());
+	double covering = covhistory->pointintime_list.back().second[facetidx];
+	//std::cout <<facetidx <<'\t' <<covering<<std::endl;
+	//double covering=calcCovering(iFacet); // double covering=calcRealCovering(iFacet);
 
 	double desorption=0.0;
 
 	if(covering>0.0){
 		temperature=iFacet->sh.temperature;
-		//double N_mono= calcNmono(iFacet);
-		//double dN_surf=calcdNsurf();
-		//desorption= 1.0/tau * pow(covering,d) *exp(-E_de/(kb*temperature)) * N_mono/dN_surf;
-		desorption= 1.0/tau * pow(covering,d) *exp(-E_de/(kb*temperature)); //Rudi: I think, the last factor (N_mono/dN_surf) is wrong.
+		desorption= 1.0/tau * pow(covering,d) *exp(-E_de/(kb*temperature));
 	}
 
 	return desorption;

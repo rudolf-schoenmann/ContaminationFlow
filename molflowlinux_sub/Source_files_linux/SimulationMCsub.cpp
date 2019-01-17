@@ -34,16 +34,20 @@ void UpdateSticking(){
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			calcStickingnew(&f);
+			if(i==1){
+			std::cout <<"    (Just for Facet " << i << " to have less output in console.)" << std::endl;
 			std::cout <<"    Facet " <<i <<":" <<std::endl;
 			std::cout <<"\t Facet area [cm²]\t\t\t"<< f.sh.area << std::endl;
-			std::cout << "\t Facet temperature [K] \t\t\t" << f.sh.temperature << std::endl;
+			std::cout <<"\t Facet temperature [K] \t\t\t" << f.sh.temperature << std::endl;
 			std::cout <<"\t Sticking [1]\t\t\t\t" <<f.sh.sticking <<std::endl;
 			std::cout <<"\t Outgassing [Pa m³/s]\t\t\t" <<f.sh.outgassing <<std::endl;
 			std::cout <<"\t Desorption rate [1/s]\t\t\t" <<calcDesorption(&f) <<std::endl;
 			std::cout <<"\t Desorption rate [Pa m³/s]\t\t" <<calcDesorptionRate(&f) << std::endl;
 			std::cout <<"\t Outgassing + Desorption rate [Pa m³/s]\t" <<f.sh.outgassing + calcDesorptionRate(&f)<<std::endl;
 			std::cout <<"\t Covering [1]\t\t\t\t" <<calcCovering(&f) <<std::endl;
-			std::cout <<"\t real covering\t\t\t\t" <<calcRealCovering(&f) <<std::endl;
+			//std::cout <<"\t real covering\t\t\t\t" <<calcRealCovering(&f) <<std::endl; // Das macht hier gar keinen Sinn. Erst wenn alle Subprozesse ihre Counter
+			// zum Prozess 0 geschickt haben und alle Counter addiert wurden, wird Krealvirt berechnet. Dann kann man ein real Covering ausgeben.
+			}
 			i+=1;
 		}
 	}
@@ -165,7 +169,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 					facetHitBuffer->hit.sum_1_per_ort_velocity = f.tmpCounter[m].hit.sum_1_per_ort_velocity;
 					facetHitBuffer->hit.sum_v_ort = f.tmpCounter[m].hit.sum_v_ort;
 					facetHitBuffer->hit.sum_1_per_velocity = f.tmpCounter[m].hit.sum_1_per_velocity;
-					facetHitBuffer->hit.covering= f.tmpCounter[m].hit.covering;
+					facetHitBuffer->hit.covering= f.tmpCounter[m].hit.covering-facetHitBuffer->hit.covering; //TODO correct?
 					//facetHitBuffer->hit.covering= 0.0;
 				}
 

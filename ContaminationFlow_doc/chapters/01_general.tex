@@ -1,0 +1,76 @@
+% !TeX root = ../main.tex
+% Add the above to each chapter to make compiling the PDF easier in some editors.
+\chapter{General  Structure}\label{chapter:general}
+
+%Here comes structure Molflow Linux Molflow Windows, Communication.
+
+\begin{center}
+\begin{tikzpicture}[node distance=2cm]
+%\draw [help lines] (0,0) grid (4,4);
+	\node (Windows)[textbox, rectangle split, rectangle split parts=2] at (0,4)
+	{
+		\textbf{ContaminationFlow Windows}
+		\nodepart{second}
+			\begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Main process \item GUI \item Create Geometry \item Set parameters \item View profiles \end{itemize}
+	};
+
+	\node (Loadbuffer)[textboxsmall, rectangle split, rectangle split parts=2] at (5.5,4)
+	{
+		\textbf{Loadbuffer}
+		\nodepart{second} \begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Geometry \end{itemize}
+	};
+
+	\path let\p1=(Windows.south) in node (Hitbuffer)[textboxsmall, anchor=south, rectangle split, rectangle split parts=2] at (5.5,\y1)
+	{
+		\textbf{Hitbuffer}
+		\nodepart{second} \begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Counters \item etc. \end{itemize}
+	};
+
+	\node (Linux)[textbox, rectangle split, rectangle split parts=2] at (11,4)
+	{
+		\textbf{ContaminationFlow Linux}
+		\nodepart{second}
+			\begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Worker processes \item Command line \item Parallel simulation \item Update of hitbuffer \end{itemize}	
+	};
+
+	%\draw[->, line width=0.04cm] (2.15,3.2) -- (3.85,3.2);
+	%\node [above] at (3,3.2) {export};
+	\draw let \p1=(Windows.east), \p2=(Loadbuffer.second west) in [->, line width=0.04cm] (\x1,\y2) --  (\p2);
+	\path let \p1=(Windows.east), \p2=(Loadbuffer.second west) in node[above] at (0.5*\x1+0.5*\x2,\y2) {Export};
+
+	%\draw[->, line width=0.04cm] (7.15,3.2) -- (8.85,3.2);
+	%\node [above] at (8,3.2) {import};
+	\draw let \p1=(Linux.west), \p2=(Loadbuffer.second east) in [<-, line width=0.04cm] (\x1,\y2) --  (\p2);
+	\path let \p1=(Linux.west), \p2=(Loadbuffer.second east) in node[above] at (0.5*\x1+0.5*\x2,\y2) {Import};
+
+	%\draw[->, line width=0.04cm] (2.15,1.7) -- (3.85,1.7);
+	%\node [above] at (3,1.7) {export};
+	%\draw[->, line width=0.04cm] (7.15,1.7) -- (8.85,1.7);
+	%\node [above] at (8,1.7) {import};
+	\draw let \p1=(Windows.east), \p2=(Hitbuffer.second west) in [->, line width=0.04cm] (\x1,\y2+0.1cm) --  ([yshift=0.1cm]\p2);
+	\path let \p1=(Windows.east), \p2=(Hitbuffer.second west) in node[above] at (0.5*\x1+0.5*\x2,\y2+0.1cm) {Export};
+	\draw let \p1=(Linux.west), \p2=(Hitbuffer.second east) in [<-, line width=0.04cm] (\x1,\y2+0.1cm) --  ([yshift=0.1cm]\p2);
+	\path let \p1=(Linux.west), \p2=(Hitbuffer.second east) in node[above] at (0.5*\x1+0.5*\x2,\y2+0.1cm) {Import};
+
+	%\draw[<-, line width=0.04cm] (2.15,1.4) -- (3.85,1.4);
+	%\node [below] at (3,1.4) {import};
+	%\draw[<-, line width=0.04cm] (7.15,1.4) -- (8.85,1.4);
+	%\node [below] at (8,1.4) {export};
+	\draw let \p1=(Windows.east), \p2=(Hitbuffer.second west) in [<-, line width=0.04cm] (\x1,\y2-0.1cm) --  ([yshift=-0.1cm]\p2);
+	\path let \p1=(Windows.east), \p2=(Hitbuffer.second west) in node[below] at (0.5*\x1+0.5*\x2,\y2-0.1cm) {Import};
+	\draw let \p1=(Linux.west), \p2=(Hitbuffer.second east) in [->, line width=0.04cm] (\x1,\y2-0.1cm) --  ([yshift=-0.1cm]\p2);
+	\path let \p1=(Linux.west), \p2=(Hitbuffer.second east) in node[below] at (0.5*\x1+0.5*\x2,\y2-0.1cm) {Export};
+
+\end{tikzpicture}
+\end{center}
+\vspace{1cm}
+General structure for ContaminationFlow simulation
+\begin{itemize}[noitemsep,topsep=2pt]
+\item Code adapted from Molflow
+\item ContaminationFlow Windows used to create Geometry 
+\item ContaminationFlow Linux used for simulation and calculation of counters, profiles, etc.
+\item Loadbuffer contains information of geometry
+\item Hitbuffer contains information such as hit counters, profiles, etc.
+\item Import and export of buffer files for communication between Molflow Windows and Molflow Linux
+\item Import and export of covering history for both linux and windows
+\end{itemize}

@@ -180,13 +180,13 @@ void CoveringHistory::appendList(double time){
 
 void::CoveringHistory::print(){
 
-	std::cout <<"time";
+	std::cout <<"time\t";
 	for(int i=0;i<pointintime_list.size();i++)
 	{
 		if(i==0){
 			for(int j=0; j<pointintime_list[i].second.size();j++)
 					{
-						std::cout <<"\tcovering of Facet #" <<j;
+					std::cout <<"\tCovering for Facet " <<j;
 					}
 		}
 		std::cout<<std::endl;
@@ -194,12 +194,9 @@ void::CoveringHistory::print(){
 
 		for(int j=0; j<pointintime_list[i].second.size();j++)
 		{
-			if (pointintime_list[i].second[j]==0){
-			std::cout <<"\t" <<pointintime_list[i].second[j] <<"\t\t";
-			}
-			else{
-			std::cout <<"\t" <<pointintime_list[i].second[j]<<"\t\t";
-			}
+			std::cout <<"\t\t" <<pointintime_list[i].second[j]<<"\t";
+			/*if(pointintime_list[i].second[j] == 0.0)
+				std::cout <<"\t";*/
 		}
 
 	}
@@ -257,6 +254,7 @@ void::CoveringHistory::read(std::string filename){
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				num_mol=pointintime_list.back().second[i]/calcCoveringUpdate(&f);
 				f.tmpCounter[0].hit.covering = pointintime_list.back().second[i];
+				calcStickingnew(&f); // calculate new sticking for new covering value
 
 				std::cout <<"Facet "<<i <<"\t covering: " <<f.tmpCounter[0].hit.covering <<"\t Corresponding number of particles: " <<num_mol <<std::endl;
 				i+=1;

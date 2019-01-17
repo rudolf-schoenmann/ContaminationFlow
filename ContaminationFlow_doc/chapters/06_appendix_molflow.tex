@@ -1,0 +1,32 @@
+% !TeX root = ../main.tex
+% Add the above to each chapter to make compiling the PDF easier in some editors.
+
+\chapter{Formulas for new Quantities}\label{chapter:Formulas}
+
+
+\subsubsection*{Covering $\theta$}
+\begin{equation}
+	\begin{split}
+		\Delta N_{surf}&=\frac{m}{12.011}\\
+		N_{surf}&=\sum\limits_{\substack{\text{adsorbed}\\\text{particles}}}\ \Delta N_{surf}\\
+		N_{mono}&=\frac{\text{Area of Facet[m$^2$]}}{(76 \cdot 10^{-12}\text{m})^2}\\
+		\theta&=\frac{N_{surf}}{N_{mono}}
+	\end{split}
+\end{equation}
+
+\subsubsection*{Sticking factor $sc$}
+\begin{equation}
+	sc(\theta)=
+	\begin{cases}
+		(s_1 (1-\theta) + s_2 \theta) \cdot (1 -  \exp({-\frac{E_{ad}}{K_b T}})), & \text{if}\ \theta < 1\\
+		s_2 (1 -  \exp({-\frac{E_{ad}}{K_b T}})), & \text{otherwise}.
+	\end{cases}
+\end{equation}
+
+\subsubsection*{Desorption rate $des$}
+\begin{equation}
+	des=\frac{1}{\tau}\ \theta^d\ \exp({-\frac{E_{de}}{K_b T}})\cdot \frac{N_{mono}}{\Delta N_{surf}}.
+\end{equation}
+
+
+
