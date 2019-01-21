@@ -28,12 +28,12 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 extern Simulation *sHandle;
 
-void UpdateSticking(){
+void UpdateSticking(Databuff *hitbuffer){
 	std::cout <<"    Facet information:" <<std::endl;
 	int i = 0;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			calcStickingnew(&f);
+			calcStickingnew(&f, hitbuffer);
 			if(i==1){
 			std::cout <<"    (Just for Facet " << i << " to have less output in console.)" << std::endl;
 			std::cout <<"    Facet " <<i <<":" <<std::endl;

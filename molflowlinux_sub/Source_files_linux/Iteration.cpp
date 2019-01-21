@@ -222,7 +222,7 @@ void::CoveringHistory::write(std::string filename){
 	outfile.close();
 }
 
-void::CoveringHistory::read(std::string filename){
+void::CoveringHistory::read(std::string filename, Databuff *hitbuffer){//Rudi: Not ready yet.
 	pointintime_list.clear();
 	//pointintime_list_read.clear();
 	//std::string read = "/home/van/history"+std::to_string(num)+".txt";
@@ -254,8 +254,9 @@ void::CoveringHistory::read(std::string filename){
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				num_mol=pointintime_list.back().second[i]/calcCoveringUpdate(&f);
 				f.tmpCounter[0].hit.covering = pointintime_list.back().second[i];
-				calcStickingnew(&f); // calculate new sticking for new covering value
-
+				//calcStickingnew(&f, hitbuffer); // calculate new sticking for new covering value
+				// 1) Update the hitbuffer with the last covering value
+				// 2) calcStickingnew(&f, hitbuffer);
 				std::cout <<"Facet "<<i <<"\t covering: " <<f.tmpCounter[0].hit.covering <<"\t Corresponding number of particles: " <<num_mol <<std::endl;
 				i+=1;
 		}

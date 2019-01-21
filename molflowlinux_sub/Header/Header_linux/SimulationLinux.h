@@ -39,7 +39,7 @@ public:
 	void appendList(double time);
 	void print();
 	void write(std::string filename);
-	void read(std::string filename);
+	void read(std::string filename, Databuff *hitbuffer);
 };
 
 
@@ -52,9 +52,9 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments);
 void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t nbMoments);
 void UpdateMainHits(Databuff *databuffer,Databuff *subbuffer, int rank);
 
-void UpdateSticking();
+void UpdateSticking(Databuff *hitbuffer);
 
-void calcStickingnew(SubprocessFacet *iFacet);
+void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
 //double calcDesorption(SubprocessFacet *iFacet);
 double calcNmono(SubprocessFacet *iFacet);
 double calcRealCovering(SubprocessFacet *iFacet);

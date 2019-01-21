@@ -41,7 +41,7 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 	std::string name1 = "/home/van/simcovering.txt";
 	//covhistory->read(name1); //TODO parameterübergabe in kommandezeile, nicht hardcoden!
 
-	UpdateSticking();
+	UpdateSticking(hitbuffer);
 
 	// Start Simulation = create first particle
 	StartSimulation();

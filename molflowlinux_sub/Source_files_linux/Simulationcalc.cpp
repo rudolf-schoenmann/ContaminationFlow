@@ -113,7 +113,6 @@ double calcCovering(SubprocessFacet *iFacet){ //TODO not sure yet
 // calculations for simulation
 double calcCoveringUpdate(SubprocessFacet *iFacet)
 {
-	//TODO: adapt units, this may not yet be the correct result
 	double N_mono= calcNmono(iFacet);
 	double dN_surf=calcdNsurf();
 
@@ -121,18 +120,35 @@ double calcCoveringUpdate(SubprocessFacet *iFacet)
 
 }
 
-void calcStickingnew(SubprocessFacet *iFacet) {//Calculates sticking coefficient dependent on covering.
+void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates sticking coefficient dependent on covering.
 	double s1 = 0.1;
 	double s2 = 0.2;
 	double E_ad = 1E-21;
 	//double E_de = 1.5E-21;
 	double kb = 1.38E-23;
-
+	double covering;
 	double temperature;
-	int facetidx = getFacetIndex(iFacet);
+	//int facetidx = getFacetIndex(iFacet);
 	//std::cout <<facetidx <<std::endl<<std::endl;
+	BYTE *buffer;
+	buffer = hitbuffer->buff;
+	/*
+	GlobalHitBuffer *gHits;
+	double globalCovering;
+	//Should wie introduce globalCovering? It does some kind of average covering over all facets.
+	//That is not really helpful, but could be a measure of how many particles are leaving the geometry through a hole/pump.
+	//globalCovering = sHandle->tmpGlobalResult.globalHits.hit.covering;
+	*/
+	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
+	covering = facetHitBuffer->hit.covering;
+	/*
+	 * Ich würde das covering lieber aus dem Hitbuffer neu berechnen lassen.
+	 * covhistory können wir ja behalten. Vielleicht nur im Hauptprozess, da hat es am meisten Sinn...
+	 * Wie schaut covhistory aus, wenn wir eine Texture haben?
+	 *
 	assert(facetidx < covhistory->pointintime_list.back().second.size());
 	double covering = covhistory->pointintime_list.back().second[facetidx];
+	*/
 	//std::cout <<facetidx <<'\t' <<covering<<std::endl;
 	//double covering=calcCovering(iFacet); // double covering=calcRealCovering(iFacet);
 
