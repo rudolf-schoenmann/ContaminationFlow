@@ -45,6 +45,7 @@ void UpdateSticking(Databuff *hitbuffer){
 			std::cout <<"\t Desorption rate [Pa m³/s]\t\t" <<calcDesorptionRate(&f) << std::endl;
 			std::cout <<"\t Outgassing + Desorption rate [Pa m³/s]\t" <<f.sh.outgassing + calcDesorptionRate(&f)<<std::endl;
 			std::cout <<"\t Covering [1]\t\t\t\t" <<calcCovering(&f) <<std::endl;
+			std::cout <<"\t Covering [Number of particles]\t\t" << calcCovering(&f) * calcNmono(&f) << std::endl;
 			//std::cout <<"\t real covering\t\t\t\t" <<calcRealCovering(&f) <<std::endl; // Das macht hier gar keinen Sinn. Erst wenn alle Subprozesse ihre Counter
 			// zum Prozess 0 geschickt haben und alle Counter addiert wurden, wird Krealvirt berechnet. Dann kann man ein real Covering ausgeben.
 			}

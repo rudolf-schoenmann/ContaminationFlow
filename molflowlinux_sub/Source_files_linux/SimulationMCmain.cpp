@@ -189,6 +189,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					std::cout <<"hit.sum_v_ort\t\t\t"<<facetHitBuffer->hit.sum_v_ort <<std::endl;
 					std::cout <<"hit.sum_1_per_velocity\t\t"<<facetHitBuffer->hit.sum_1_per_velocity <<std::endl;
 					std::cout <<"hit.covering\t\t\t"<<facetHitBuffer->hit.covering <<std::endl;
+					std::cout <<"hit.covering [Number of particles]\t" << facetHitBuffer->hit.covering * calcNmono(&f) << std::endl;
 					}
 
 					facetHitBuffer->hit.nbAbsEquiv += facetHitSub->hit.nbAbsEquiv;
@@ -210,7 +211,8 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					std::cout <<"hit.sum_1_per_ort_velocity\t"<<facetHitBuffer->hit.sum_1_per_ort_velocity <<std::endl;
 					std::cout <<"hit.sum_v_ort\t\t\t"<<facetHitBuffer->hit.sum_v_ort <<std::endl;
 					std::cout <<"hit.sum_1_per_velocity\t\t"<<facetHitBuffer->hit.sum_1_per_velocity <<std::endl;
-					std::cout <<"hit.covering\t\t\t"<<facetHitBuffer->hit.covering <<std::endl<<std::endl;
+					std::cout <<"hit.covering\t\t\t"<<facetHitBuffer->hit.covering <<std::endl;
+					std::cout <<"hit.covering [Number of particles]\t" << facetHitBuffer->hit.covering * calcNmono(&f) << std::endl;
 					}
 				}
 

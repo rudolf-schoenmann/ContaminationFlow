@@ -115,8 +115,8 @@ double calcCoveringUpdate(SubprocessFacet *iFacet)
 {
 	double N_mono= calcNmono(iFacet);
 	double dN_surf=calcdNsurf();
-
-	return dN_surf/N_mono;
+	//return dN_surf/N_mono;
+	return 1; //Das ist natürlich falsch und nur zu Testzwecken eingebaut.
 
 }
 

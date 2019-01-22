@@ -582,7 +582,7 @@ bool SimulationMCStep(size_t nbStep) {
 	return true;
 }
 
-void IncreaseDistanceCounters(double distanceIncrement)
+void IncreaseDistanceCounters(double distanceIncrement) //distanceIncrement has the unit cm!
 {
 	sHandle->tmpGlobalResult.distTraveled_total += distanceIncrement;
 	sHandle->tmpGlobalResult.distTraveledTotal_fullHitsOnly += distanceIncrement;
@@ -1537,7 +1537,19 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 			f->tmpCounter[m].hit.sum_1_per_velocity += (hitEquiv + static_cast<double>(desorb)) / sHandle->currentParticle.velocity;
 			//update covering: increases with every absorb, decreases with every desorb
 			if (absorb>0){
+				//std::cout<< f->tmpCounter[m].hit.covering << std::endl;
+				//double a = f->tmpCounter[m].hit.covering;
 				f->tmpCounter[m].hit.covering += calcCoveringUpdate(f);
+				//double b = f->tmpCounter[m].hit.covering;
+				//std::cout << "a = "<< a << "; b = " << b << "; a - b = " << a-b << std::endl;
+				//std::cout << calcCoveringUpdate(f) << std::endl;
+				//std::cout<< f->tmpCounter[m].hit.covering << std::endl;
+				/*if(b-a > 0)
+					std::cout<< "Covering counter vergrößert" << std::endl;
+				if (b-a < 0)
+					std::cout<< "Covering counter verkleinert" << std::endl;
+				if (a-b == 0)
+					std::cout<< "Covering counter bleibt" << std::endl;*/
 				}
 			if (desorbed){
 				f->tmpCounter[m].hit.covering -= calcCoveringUpdate(f);

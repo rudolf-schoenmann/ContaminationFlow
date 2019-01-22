@@ -27,21 +27,19 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 extern Simulation *sHandle;
 
-/*double estimateTmin_RudiTest(){ //not ready yet => finish? Do we need this test function?
-	double tmin=1;
-	// TODO Code eine Sekunde lang simulieren lassen.
-	//const double distribution_factor = 3*(3.14159265359/8)^0.5*(8,314472/MolareGasMasse in (kg/mol))^0.5;
+double estimateTmin_RudiTest(){ //not ready yet => finish? Do we need this test function?
+	double tmin=0;
 	double sum_v_avg = 0;
 	double normalization_factor_v = 0;
+	//avarage of <v> (<v> is the average velocity on a single facet depending on temperature)
+    // over all facets weighted with the rate of outgoing particles (outgassing + desorption) per facet
 	double sum_sc = 0;
 	double normalization_factor_sc = sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;
-	//avarage of <v> (<v> is the average velocity on a single facet depending on temperature)
-	// over all facets weighted with the rate of outgoing particles (outgassing + desorption) per facet
-	size_t nbMoments = sHandle->moments.size();
 
-	//for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-		//for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			//for (size_t m = 0; m <= nbMoments; m++) {
+	//const double distribution_factor = 3*(3.14159265359/8)^0.5*(8,314472/MolareGasMasse in (kg/mol))^0.5; Ändern???
+
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 
 				//avarage of <v>
 				//sum_v_avg += distribution_factor*(f.sh.temperature)^0.5 * (f.sh.outgassing + Desorptionsrate);
@@ -50,63 +48,24 @@ extern Simulation *sHandle;
 				//average sticking coefficient
 				//sum_sc += f.sh.sticking*f.tmpCounter.hit.nbMCHit;
 			//}
-		//}
-	//}
+		}
+	}
 	//double avg_v_avg = sum_v_avg/normalization_factor_v;
 	//double avg_sc = sum_sc/normalization_factor_sc;
 	//double avg_path_length = sHandle->tmpGlobalResult.distTraveled_total / sHandle->tmpGlobalResult.globalHits.hit.nbMCHit/ avg_sc;
 	//tmin = vg_path_length /avg_v_avg;
-	//return tmin;
+	std::cout << "estimateTmin_RudiTest = " <<tmin<< "ms"<< std::endl;
+	std::cout << "_______________________________________________________________________________________________________"<< std::endl<<std::endl;
+	return tmin;
 
-//}*/
+}
 
 
 #include <fstream>
 #include <sstream>
 
 extern Simulation *sHandle;
-/*
->>>>>>> 97482344e8cb71a50aff6e320834812c507aff51
-double estimateTmin(){//TODO something is wrong here
-	double tmin=1;
-	int facetcounter=0;
-	double sum_1_v_ort=0.0;
-	double sum_abs=0.0;
-	//double sum_hits=0.0;
 
-	//mittelwert 1/v_ort
-	size_t nbMoments = sHandle->moments.size();
-	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			for (size_t m = 0; m <= nbMoments; m++) {
-				//sum_1_v_orth
-				//sum_1_v_ort+=f.tmpCounter[m].hit.sum_1_per_ort_velocity*f.sh.area; //(s/m)*m^2
-				sum_1_v_ort+=f.tmpCounter[m].hit.sum_v_ort*f.sh.area*1E-4; //(s/m)*m^2
-				facetcounter++;
-
-				//covering
-				double coveringtemp=f.tmpCounter[m].hit.covering;
-				sum_abs+=calcNmono(&f)*coveringtemp; //mass
-				//sum_hits+=f.tmpCounter[m].hit.nbHitEquiv;//or nbMChit
-			}
-		}
-	}
-	sum_1_v_ort=1/sum_1_v_ort;
-	sum_1_v_ort /=facetcounter;//(s*m)
-	//double Nmean=sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv/sum_abs;//(1/mass) //nbHitEquiv or nbMCHit
-	double Nmean=1/sum_abs;//(1/mass) //nbHitEquiv or nbMCHit
-	std::cout <<"test " <<sum_1_v_ort <<std::endl;
-	std::cout <<"test " <<Nmean <<std::endl;
-
-	//TODO durchschnittstrecke
-	//double dmean=c/sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv;//m
-	double dmean=sHandle->tmpGlobalResult.distTraveled_total;//m
-	//double dmean= sHandle->tmpGlobalResult.distTraveledTotal_fullHitsOnly;
-	std::cout <<"test " <<dmean <<std::endl;
-
-	tmin=dmean*sum_1_v_ort*Nmean;//s
-	return tmin*1000;//ms
-}*/
 
 double estimateTmin(){
 	double sum_v_ort=0;
@@ -115,19 +74,30 @@ double estimateTmin(){
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				//sum_1_v_orth
-				//sum_1_v_ort+=f.tmpCounter[m].hit.sum_1_per_ort_velocity*f.sh.area; //(s/m)*m^2
-				sum_v_ort+=f.tmpCounter[0].hit.sum_v_ort; //(s/m)*m^2
+				//sum_1_v_ort+=f.tmpCounter[m].hit.sum_1_per_ort_velocity*f.sh.area;
+				sum_v_ort+=f.tmpCounter[0].hit.sum_v_ort;
 				sum_1_v_ort+=f.tmpCounter[0].hit.sum_1_per_velocity;
 				facetcounter++;
-
 		}
 	}
-
-	double dist_total=(double)sHandle->tmpGlobalResult.distTraveled_total;
+	double dist_total=0.01*(double)sHandle->tmpGlobalResult.distTraveled_total; //factor 0.01 to convert distance from cm to m.
+	double hits= (double)sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;
 	double hits2= pow((double)sHandle->tmpGlobalResult.globalHits.hit.nbMCHit,2);
-	std::cout <<"dist_total, hits^2, sum_v_ort, sum_1_v_ort: \t\t\t" <<dist_total <<'\t'<<hits2<<'\t'<<sum_v_ort<<'\t' <<sum_1_v_ort <<std::endl;
+	double particlenumber = (double)sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed;
+	std::cout << "_______________________________________________________________________________________________________"<< std::endl;
+	std::cout <<"Current version of estimate Tmin"<< std::endl;
+	std::cout <<"dist total [m]\t\t" << dist_total << std::endl;
+	std::cout <<"hits \t\t\t" << hits << std::endl;
+	std::cout <<"hits^2 \t\t\t" << hits2 << std::endl;
+	std::cout <<"sum_v_ort [m/s]\t\t" << sum_v_ort<< std::endl;
+	std::cout <<"<v_ort>[m/s]\t\t"<< sum_v_ort/hits << std::endl;
+	std::cout <<"1/<v_ort>[s/m]\t\t"<< hits/sum_v_ort<< std::endl;
+	std::cout <<"sum_1_v_ort [s/m]\t" << sum_1_v_ort << std::endl;
+	std::cout <<"<1/v_ort>[s/m]\t\t"<<sum_1_v_ort/hits << std::endl;
 	std::cout <<"Alternative 1 for Tmin\t (dist_total*1000)/sum_v_ort [ms]\t" <<dist_total*1000/sum_v_ort <<std::endl;
-	std::cout <<"Alternative 1 for Tmin\t(dist_total/hits^2)*1000/sum_v_ort [ms]\t" <<(dist_total/hits2)*1000/sum_v_ort <<std::endl;
+	std::cout <<"Alternative 3 for Tmin\t(dist_total/hits^2)*1000*sum_1_v_ort [ms]\t" <<(dist_total/hits2)*1000*sum_1_v_ort <<std::endl;
+	std::cout << "Currently used: Alternative 3" << std::endl;
+	std::cout << "_______________________________________________________________________________________________________"<< std::endl;
 	return (dist_total/hits2)*sum_1_v_ort*1000;
 }
 

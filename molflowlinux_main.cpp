@@ -158,6 +158,25 @@ int main(int argc, char *argv[]) {
 			return 0;
 		}
 
+		int a = 1;
+		long b = 1;
+		llong c = 1;
+		float d = 1;
+		double e = 1;
+		long double f = 1;
+		char g = 1;
+		long long h = 1;
+		std::cout<<"size of int a = "<< sizeof(a)<<std::endl;
+		std::cout<<"size of long b = "<< sizeof(b)<<std::endl;
+		std::cout<<"size of uint_64 c = "<< sizeof(c)<<std::endl;
+		std::cout<<"size of float d = "<< sizeof(d)<<std::endl;
+		std::cout<<"size of double e = "<< sizeof(e)<<std::endl;
+		std::cout<<"size of long double f = "<< sizeof(f)<<std::endl;
+		std::cout<<"size of char g = "<< sizeof(g)<<std::endl;
+		std::cout<<"size of long long h = "<< sizeof(h)<<std::endl;
+
+
+
 		//Read in buffer file (exported by Windows-Molflow). File given as first argument to main().
 		importBuff(argv[1],&loadbuffer);
 		importBuff(argv[2],&hitbuffer);
@@ -212,7 +231,7 @@ int main(int argc, char *argv[]) {
 		hitbuffer.buff = new BYTE[hitbuffer.size];
 	}
 
-	for(int it=0;it<2;it++){ //TODO parameterübergabe, simulationszeit anpassen
+	for(int it=0;it<1;it++){ //TODO parameterübergabe, simulationszeit anpassen
 
 		if(rank == 0){
 		std::cout <<std::endl <<"Starting iteration " <<it <<std::endl;

@@ -70,7 +70,8 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 	// Update quantaties for contamination
 
 	//UpdateSticking();
-	std::cout <<"estimated Tmin [unit = milliseconds]:\t (dist_total/hits^2)*sum_1_v_ort*1000 [ms]\t" <<estimateTmin() <<std::endl<<std::endl;
+	estimateTmin();
+	estimateTmin_RudiTest();
 
 
 	//Save history to new file
