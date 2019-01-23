@@ -27,37 +27,41 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 extern Simulation *sHandle;
 
-double estimateTmin_RudiTest(){ //not ready yet => finish? Do we need this test function?
+double estimateTmin_RudiTest(){ //not ready yet => finish
 	double tmin=0;
 	double sum_v_avg = 0;
 	double normalization_factor_v = 0;
 	//avarage of <v> (<v> is the average velocity on a single facet depending on temperature)
     // over all facets weighted with the rate of outgoing particles (outgassing + desorption) per facet
-	double sum_sc = 0;
-	double normalization_factor_sc = sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;
-
-	//const double distribution_factor = 3*(3.14159265359/8)^0.5*(8,314472/MolareGasMasse in (kg/mol))^0.5; Ändern???
-
+	double tmin_particles_out = 0;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
-
-				//avarage of <v>
-				//sum_v_avg += distribution_factor*(f.sh.temperature)^0.5 * (f.sh.outgassing + Desorptionsrate);
-				//normalization_factor_v += (f.sh.outgassing + Desorptionsrate)
-
-				//average sticking coefficient
-				//sum_sc += f.sh.sticking*f.tmpCounter.hit.nbMCHit;
-			//}
-		}
+				double v_avg_therm = 3*pow((3.14159265359/8),0.5)* pow((8.314472* f.sh.temperature/(sHandle->wp.gasMass*0.001)),0.5); //0.001 to convert MolarMass form g to kg
+				//sum_v_avg += v_avg_therm * (outgassing + desorption);
+				//normalization_factor_v += (outgassing + desorption);
+				/*
+				if (tmin = 0){
+					if ((outgassing + desorption) > 0)
+					tmin_particles_out = (covering/(outgassing +desorption));
+					}
+				if (tmin_particles_out > (covering/(outgassing +desorption))
+					tmin_particles_out = (covering/(outgassing +desorption));
+				 */
+			}
 	}
-	//double avg_v_avg = sum_v_avg/normalization_factor_v;
-	//double avg_sc = sum_sc/normalization_factor_sc;
-	//double avg_path_length = sHandle->tmpGlobalResult.distTraveled_total / sHandle->tmpGlobalResult.globalHits.hit.nbMCHit/ avg_sc;
-	//tmin = vg_path_length /avg_v_avg;
-	std::cout << "estimateTmin_RudiTest = " <<tmin<< "ms"<< std::endl;
+	//double v_avg = sum_v_ag/normalization_factor_v;
+	double av_path_length = sHandle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;
+	//tmin = av_path_length /v_avg;
+
+	/*if (tmin < tmin_particles_out)
+	 	return tmin;
+	else
+		return tmin_particles_out
+	*/
+	std::cout << "estimateTmin_RudiTest: tmin = " <<tmin<< "ms"<< std::endl;
+	//std::cout << "estimateTmin_RudiTest: tmin_particles_out = " <<tmin_particles_out<< "ms"<< std::endl;
 	std::cout << "_______________________________________________________________________________________________________"<< std::endl<<std::endl;
 	return tmin;
-
 }
 
 
