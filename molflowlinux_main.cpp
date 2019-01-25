@@ -18,9 +18,7 @@ GNU General Public License for more details.
 Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 */
 
-/*
- * Main function
- */
+
 #include <iostream>
 #include <mpi.h>
 #include <string>
@@ -30,55 +28,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "Simulation.h"
 #include "SimulationLinux.h"
 
-/*#include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <cstring>
-//#include <tuple>
-#include "Types.h"
-//#include "tuple.hpp"
-#include "File.h"
-//#includ <mpi.h>
-#include <math.h>
-//#include <malloc.h>
-#include "MolFlow.h"
-#include "Facet_shared.h"
-#include "MolflowGeometry.h"
-*/
 
-/*
-#include "GLApp/GLFileBox.h"
-#include "GLApp/GLToolkit.h"
-#include "GLApp/GLWindowManager.h"
-#include "GLApp/MathTools.h"
-#include "GLApp/GLMenuBar.h"
-#include "GLApp/GLButton.h"
-#include "GLApp/GLLabel.h"
-#include "GLApp/GLCombo.h"
-#include "GLApp/GLTextField.h"
-
-#include "RecoveryDialog.h"
-#include "direct.h"*/
-
-/*
-#include <vector>
-#include <string>
-//#include <io.h>
-#include <thread>
-#include <numeric> //std::iota
-
-#include "Interface.h"
-#include "Worker.h"
-//#include "ImportDesorption.h"
-//#include "TimeSettings.h"
-//#include "Movement.h"
-#include "FacetAdvParams.h"
-#include "FacetDetails.h"
-#include "Viewer3DSettings.h"
-#include "TextureScaling.h"
-//#include "GlobalSettings.h"
-#include "ProfilePlotter.h"
-*/
 typedef void *HANDLE;
 
 // Global process variables
@@ -117,6 +67,8 @@ bool parametercheck(int argc, char *argv[]) {
 	return true;
 }
 
+
+//Main Function
 int main(int argc, char *argv[]) {
 
 	// Initialise buffer
@@ -157,7 +109,7 @@ int main(int argc, char *argv[]) {
 			MPI_Finalize();
 			return 0;
 		}
-
+/* Check for Size of integer and float types
 		int a = 1;
 		long b = 1;
 		llong c = 1;
@@ -174,26 +126,21 @@ int main(int argc, char *argv[]) {
 		std::cout<<"size of long double f = "<< sizeof(f)<<std::endl;
 		std::cout<<"size of char g = "<< sizeof(g)<<std::endl;
 		std::cout<<"size of long long h = "<< sizeof(h)<<std::endl;
-
+*/
 
 
 		//Read in buffer file (exported by Windows-Molflow). File given as first argument to main().
 		importBuff(argv[1],&loadbuffer);
 		importBuff(argv[2],&hitbuffer);
 
-		//loadbuffer.importBuff(argv[1]);
-		//hitbuffer.importBuff(argv[2]);
-		//importBuff(argv[2], &hitbuffer_original); //TODO: copy content from pointer rather than read again?
-
-		//TODO Copy constructor?
+		//Save a copy of original loaded hitbuffer
+		//This copy will be used in process 0. The hitbuffers of all subprocesses will be add up and writen in the hitbuffer_original
 		hitbuffer_original.buff = new BYTE[hitbuffer.size];
 		memcpy(hitbuffer_original.buff,hitbuffer.buff,hitbuffer.size);
 		hitbuffer_original.size =hitbuffer.size;
 
+		//exportBuff(argv[3],&hitbuffer_original); //Kann weg, oder?
 
-		//hitbuffer_original=hitbuffer;
-		exportBuff(argv[3],&hitbuffer_original);
-		//hitbuffer_original.importBuff("/home/van/hitbuffertest");
 
 		/*
 		 * show informations about the loading
@@ -217,7 +164,7 @@ int main(int argc, char *argv[]) {
 		loadbuffer.buff = new BYTE[loadbuffer.size];
 	}
 
-	// Send buffer content
+	// Send laodbuffer content to all subprocesses
 	MPI_Bcast(loadbuffer.buff, loadbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 	MPI_Barrier(MPI_COMM_WORLD);
 
@@ -231,13 +178,17 @@ int main(int argc, char *argv[]) {
 		hitbuffer.buff = new BYTE[hitbuffer.size];
 	}
 
-	for(int it=0;it<1;it++){ //TODO parameterübergabe, simulationszeit anpassen
+
+//for loop to let the simulation run 'iterationnumber' times
+//will be replaced later by the time dependent mode to calculate the prediction of contamination
+	int iterationnumber = 2;
+	for(int it=0;it<iterationnumber;it++){ //TODO parameterübergabe, simulationszeit anpassen
 
 		if(rank == 0){
 		std::cout <<std::endl <<"Starting iteration " <<it <<std::endl;
 		}
 
-		// Send buffer content
+		// Send hitbuffer content to all subprocesses
 		MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 
 		// extract Simulation time and unit
@@ -259,13 +210,9 @@ int main(int argc, char *argv[]) {
 		// Start of Simulation
 		if (newsimutime != 0) {
 			if(it==0){
-				//Creates sHandle instance
+				//Creates sHandle instance for process 0 and all subprocesses (before the first iteration step starts)
 				InitSimulation();
-
-				//SetReady();
-
 				// Load geometry from buffer to sHandle
-				// nur wenn it!=0 !?!
 				if (!LoadSimulation(&loadbuffer)) {
 					std::cout << "Geometry not loaded." << std::endl;
 					std::cout << "MolflowLinux is terminated now." << std::endl;
@@ -295,27 +242,18 @@ int main(int argc, char *argv[]) {
 					MPI_Send(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, 0,MPI_COMM_WORLD);
 
 				} else if (rank == 0) {
-					// Process 0 receives hitbuffer from Process i
-					//delete[] hitbuffer.buff; hitbuffer.buff = new BYTE[hitbuffer.size];
+					//Process 0 receives hitbuffer from Process i
 					MPI_Recv(hitbuffer.buff, hitbuffer.size, MPI::BYTE, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-					//std::string exporthit = "/home/van/hitbuffer0" + std::to_string(i);
-					//exportBuff(exporthit, &hitbuffer);
-					//std::cout << "Received hitbuffer from process" <<i << std::endl;
-
 					//sleep(1);
 					UpdateMainHits(&hitbuffer_original, &hitbuffer, 0);
 					std::cout << "Updated hitbuffer with process " << i <<std::endl
 							<< std::endl;
-
-					//std::string exporthit = "~/resultbuffer0" + std::to_string(i);
-					//exportBuff(exporthit, &hitbuffer_original);
 				}
 			}
 			MPI_Barrier(MPI_COMM_WORLD);
 
 			if (rank == 0) {
-				//hitbuffer.buff = new BYTE[hitbuffer_original.size];
+				//Hier muss noch die Anwendung von Krealvirt hin
 				memcpy(hitbuffer.buff,hitbuffer_original.buff,hitbuffer_original.size);
 				std::cout << "ending iteration " << it <<std::endl;
 				//________________________________________________________________________
