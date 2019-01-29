@@ -49,7 +49,7 @@ double calcNmono(SubprocessFacet *iFacet){//Calculates the Number of (carbon equ
 	return (iFacet->sh.area*1E-4)/(pow(76E-12, 2));
 }
 
-double calcdNsurf(){//Calculates the (carbon equivalent) mass
+double calcdNsurf(){//Calculates the (carbon equivalent relative) mass factor
 	return sHandle->wp.gasMass/12.011;
 }
 
@@ -194,8 +194,8 @@ double calcDesorption(SubprocessFacet *iFacet){//This returns ((d'covering')/dt)
 	return desorption;
 }
 
-double calcDesorptionRate(SubprocessFacet *iFacet) {//This returns ((d'covering')/dt)de * Nmono * kb*T. So to speak desorption rate in units of [Pa m³/s]
+double calcDesorptionRate(SubprocessFacet *iFacet) {//This returns ((d'covering')/dt)de * (Nmono/dNSurf) * kb*T. So to speak desorption rate in units of [Pa m³/s]
 	double desorption = calcDesorption(iFacet);
-	double desorptionRate = desorption * calcNmono(iFacet) * 1.38E-23* iFacet->sh.temperature;
+	double desorptionRate = desorption * (calcNmono(iFacet) / calcdNsurf()) * 1.38E-23* iFacet->sh.temperature;
 	return desorptionRate;
 }

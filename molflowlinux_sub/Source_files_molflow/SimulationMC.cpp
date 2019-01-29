@@ -1554,7 +1554,12 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 			if (desorbed){
 				f->tmpCounter[m].hit.covering -= calcCoveringUpdate(f);
 				}
-			f->tmpCounter[m].hit.covering = f->tmpCounter[m].hit.covering < 0.0 ? 0 : f->tmpCounter[m].hit.covering;
+			f->tmpCounter[m].hit.covering = f->tmpCounter[m].hit.covering < 0.0 ? 0 : f->tmpCounter[m].hit.covering;//Für den Fall,
+			//dass covering kleiner Null würde. Das ist aber nicht die physikalisch richtige Lösung => überlegen.
+			//Für den Fall könnte die Simulation (nachdem das Teilchen beendet ist) abgebrochen werden, die Werte an den Hauptprozess geschickt, summiert,
+			//und ein neuer Schritt (nach ca. Tmin) gestartet werden (mit covering = Null auf der entsprechenden Facette).
+			//Das wäre nur dann ein Problem, wenn auf einer Facet immer so wenig Teilchen sind, dass das dauernd nacheinander passiert.
+
 		}
 	}
 }
