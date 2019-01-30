@@ -505,7 +505,7 @@ typedef union {
 		double sum_1_per_ort_velocity;    // sum of reciprocials of orthogonal velocity components, used to determine the density, regardless of facet orientation
 		double sum_1_per_velocity;          //For average molecule speed calculation
 		double sum_v_ort;          // sum of orthogonal speeds of incident velocities, used to determine the pressure
-		double covering; //new counter for covering
+		llong covering; //new counter for covering
 	} hit;
 
 	struct {

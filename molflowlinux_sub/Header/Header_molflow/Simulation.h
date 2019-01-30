@@ -259,6 +259,6 @@ void   IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t 
 void   TreatMovingFacet();
 
 double calcCoveringUpdate(SubprocessFacet *iFacet);
-double calcDesorption(SubprocessFacet *iFacet);
-double calcDesorptionRate(SubprocessFacet *iFacet);
+double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer);
+double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
 double calcCovering(SubprocessFacet *iFacet);

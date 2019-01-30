@@ -97,20 +97,22 @@ double GetMoleculesPerTP(size_t moment) // alternative for calcKrealvirt
 		return ((sHandle->wp.totalDesorbedMolecules+totaldes) / sHandle->wp.timeWindowSize) / sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed;
 	}
 }
-
+/* //Wahrscheinlich brauchen wir das nicht.
 double calcRealCovering(SubprocessFacet *iFacet){ //TODO not sure yet
 
 	double covering= ((double)iFacet->tmpCounter[0].hit.covering)*GetMoleculesPerTP(0); // only one moment used; one moment means stationary simulation, first moment is moment 0
 	return covering;
 }
 
+*/
+// Brauchen wir calcCoverting???
 double calcCovering(SubprocessFacet *iFacet){ //TODO not sure yet
 	double covering = (double)iFacet->tmpCounter[0].hit.covering; // only one moment used
 	return covering;
 }
 
-
-// calculations for simulation
+// Brauchen wir eigentlich auch nciht.
+/*
 double calcCoveringUpdate(SubprocessFacet *iFacet)
 {
 	double N_mono= calcNmono(iFacet);
@@ -118,7 +120,7 @@ double calcCoveringUpdate(SubprocessFacet *iFacet)
 	//return dN_surf/N_mono;
 	return 1; //Das ist natürlich falsch und nur zu Testzwecken eingebaut.
 
-}
+}*/
 
 void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates sticking coefficient dependent on covering.
 	double s1 = 0.1;
@@ -126,7 +128,8 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates
 	double E_ad = 1E-21;
 	//double E_de = 1.5E-21;
 	double kb = 1.38E-23;
-	double covering;
+	llong covering;
+	double coverage;
 	double temperature;
 	//int facetidx = getFacetIndex(iFacet);
 	//std::cout <<facetidx <<std::endl<<std::endl;
@@ -152,50 +155,57 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates
 	//std::cout <<facetidx <<'\t' <<covering<<std::endl;
 	//double covering=calcCovering(iFacet); // double covering=calcRealCovering(iFacet);
 
-	if(covering>0.0){
-		temperature=iFacet->sh.temperature;
-		if (covering < 1) {
-			iFacet->sh.sticking = (s1*(1.0 - covering) + s2 * covering)*(1.0 - exp(-E_ad / (kb*temperature)));
-		}
-		else
-		{
-			iFacet->sh.sticking  = s2 * (1.0 - exp(-E_ad / (kb*temperature)));
-		}
 
+	temperature=iFacet->sh.temperature;
+	coverage = covering /(calcNmono/calcdNsurf);
+	if (covering < 1) {
+		iFacet->sh.sticking = (s1*(1.0 - coverage) + s2 * coverage)*(1.0 - exp(-E_ad / (kb*temperature)));
 	}
-	else{
-		iFacet->sh.sticking =0.0;
+	else
+	{
+		iFacet->sh.sticking  = s2 * (1.0 - exp(-E_ad / (kb*temperature)));
 	}
+
+
 
 }
 
-double calcDesorption(SubprocessFacet *iFacet){//This returns ((d'covering')/dt)de. So to speak desorption rate in units of [1/s]
+double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This returns ((d'coverage')/dt)de. So to speak desorption rate in units of [1/s]
 	double tau=1E-13;
 	double d=1;
 	double E_de= 1.5E-21;
 	double kb = 1.38E-23;
-
+	llong covering;
+	double coverage;
 	double temperature;
 
-	int facetidx = getFacetIndex(iFacet);
+	//int facetidx = getFacetIndex(iFacet);
 	//std::cout <<facetidx <<std::endl<<std::endl;
+	/*
+		 * Ich würde das covering lieber aus dem Hitbuffer neu berechnen lassen.
+		 * covhistory können wir ja behalten. Vielleicht nur im Hauptprozess, da hat es am meisten Sinn...
+		 * Wie schaut covhistory aus, wenn wir eine Texture haben?
+		 *
 	assert(facetidx < covhistory->pointintime_list.back().second.size());
 	double covering = covhistory->pointintime_list.back().second[facetidx];
 	//std::cout <<facetidx <<'\t' <<covering<<std::endl;
 	//double covering=calcCovering(iFacet); // double covering=calcRealCovering(iFacet);
-
+	*/
 	double desorption=0.0;
+	BYTE *buffer;
+	buffer = hitbuffer->buff;
+	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
+	covering = facetHitBuffer->hit.covering;
+	coverage = covering /(calcNmono/calcdNsurf);
+	temperature=iFacet->sh.temperature;
+	desorption= 1.0/tau * pow(coverage,d) *exp(-E_de/(kb*temperature));
 
-	if(covering>0.0){
-		temperature=iFacet->sh.temperature;
-		desorption= 1.0/tau * pow(covering,d) *exp(-E_de/(kb*temperature));
-	}
 
 	return desorption;
 }
 
-double calcDesorptionRate(SubprocessFacet *iFacet) {//This returns ((d'covering')/dt)de * (Nmono/dNSurf) * kb*T. So to speak desorption rate in units of [Pa m³/s]
-	double desorption = calcDesorption(iFacet);
+double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer) {//This returns ((d'coverage')/dt)de * (Nmono/dNSurf) * kb*T. So to speak desorption rate in units of [Pa m³/s]
+	double desorption = calcDesorption(iFacet, Databuff *hitbuffer);
 	double desorptionRate = desorption * (calcNmono(iFacet) / calcdNsurf()) * 1.38E-23* iFacet->sh.temperature;
 	return desorptionRate;
 }
