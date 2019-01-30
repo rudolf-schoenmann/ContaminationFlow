@@ -41,9 +41,9 @@ void UpdateSticking(Databuff *hitbuffer){
 			std::cout <<"\t Facet temperature [K] \t\t\t" << f.sh.temperature << std::endl;
 			std::cout <<"\t Sticking [1]\t\t\t\t" <<f.sh.sticking <<std::endl;
 			std::cout <<"\t Outgassing [Pa m³/s]\t\t\t" <<f.sh.outgassing <<std::endl;
-			std::cout <<"\t Desorption rate [1/s]\t\t\t" <<calcDesorption(&f) <<std::endl;
-			std::cout <<"\t Desorption rate [Pa m³/s]\t\t" <<calcDesorptionRate(&f) << std::endl;
-			std::cout <<"\t Outgassing + Desorption rate [Pa m³/s]\t" <<f.sh.outgassing + calcDesorptionRate(&f)<<std::endl;
+			std::cout <<"\t Desorption rate [1/s]\t\t\t" <<calcDesorption(&f, hitbuffer) <<std::endl;
+			std::cout <<"\t Desorption rate [Pa m³/s]\t\t" <<calcDesorptionRate(&f, hitbuffer) << std::endl;
+			std::cout <<"\t Outgassing + Desorption rate [Pa m³/s]\t" <<f.sh.outgassing + calcDesorptionRate(&f, hitbuffer)<<std::endl;
 			std::cout <<"\t Covering [1]\t\t\t\t" <<calcCovering(&f) <<std::endl;
 			std::cout <<"\t Covering [Number of particles]\t\t" << calcCovering(&f) * calcNmono(&f) << std::endl;
 			//std::cout <<"\t real covering\t\t\t\t" <<calcRealCovering(&f) <<std::endl; // Das macht hier gar keinen Sinn. Erst wenn alle Subprozesse ihre Counter

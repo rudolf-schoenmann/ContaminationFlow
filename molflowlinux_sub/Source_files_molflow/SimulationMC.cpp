@@ -491,7 +491,7 @@ void PerformTeleport(SubprocessFacet *iFacet) {
 
 // Perform nbStep simulation steps (a step is a bounce)
 
-bool SimulationMCStep(size_t nbStep) {
+bool SimulationMCStep(size_t nbStep, Databuff *hitbuffer) {
 
 	// Perform simulation steps
 	for (size_t i = 0; i < nbStep; i++) {
@@ -518,7 +518,7 @@ bool SimulationMCStep(size_t nbStep) {
 				sHandle->tmpGlobalResult.distTraveled_total += remainderFlightPath * sHandle->currentParticle.oriRatio;
 				RecordHit(HIT_LAST);
 				//sHandle->distTraveledSinceUpdate += sHandle->currentParticle.distanceTraveled;
-				if (!StartFromSource())
+				if (!StartFromSource(hitbuffer))
 					// desorptionLimit reached
 					return false;
 			}
@@ -540,7 +540,7 @@ bool SimulationMCStep(size_t nbStep) {
 							//Absorbed
 							RecordAbsorb(collidedFacet);
 							//sHandle->distTraveledSinceUpdate += sHandle->currentParticle.distanceTraveled;
-							if (!StartFromSource())
+							if (!StartFromSource(hitbuffer))
 								// desorptionLimit reached
 								return false;
 						}
@@ -562,7 +562,7 @@ bool SimulationMCStep(size_t nbStep) {
 							PerformBounce(collidedFacet);
 						}
 						else { //eliminate remainder and create new particle
-							if (!StartFromSource())
+							if (!StartFromSource(hitbuffer))
 								// desorptionLimit reached
 								return false;
 						}
@@ -574,7 +574,7 @@ bool SimulationMCStep(size_t nbStep) {
 			// No intersection found: Leak
 			sHandle->tmpGlobalResult.nbLeakTotal++;
 			RecordLeakPos();
-			if (!StartFromSource())
+			if (!StartFromSource(hitbuffer))
 				// desorptionLimit reached
 				return false;
 		}
@@ -592,7 +592,7 @@ void IncreaseDistanceCounters(double distanceIncrement) //distanceIncrement has 
 // Launch a ray from a source facet. The ray 
 // direction is chosen according to the desorption type.
 
-bool StartFromSource() {
+bool StartFromSource(Databuff *hitbuffer) {
 	bool found = false;
 	bool foundInMap = false;
 	bool reverse;
@@ -614,7 +614,7 @@ bool StartFromSource() {
 	// Select source
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				totaldes+=sHandle->wp.latestMoment *calcDesorptionRate(&f)/ (1.38E-23*f.sh.temperature);
+				totaldes+=sHandle->wp.latestMoment *calcDesorptionRate(&f, hitbuffer)/ (1.38E-23*f.sh.temperature);
 			}
 		}
 	srcRnd = rnd() * (sHandle->wp.totalDesorbedMolecules+totaldes);
@@ -624,7 +624,7 @@ bool StartFromSource() {
 		i = 0;
 		while (!found && i < (int)sHandle->structures[j].facets.size()) { //Go through facets in a structure
 			SubprocessFacet& f = sHandle->structures[j].facets[i];
-			double des=calcDesorptionRate(&f); //double des = sHandle->wp.latestMoment *calcDesorption(&f)/ (1.38E-23*f.sh.temperature); // TODO which one is right?
+			double des=calcDesorptionRate(&f, hitbuffer); //double des = sHandle->wp.latestMoment *calcDesorption(&f)/ (1.38E-23*f.sh.temperature); // TODO which one is right?
 			if (f.sh.desorbType != DES_NONE || des>0.0) { //there is some kind of outgassing
 				if (f.sh.useOutgassingFile) { //Using SynRad-generated outgassing map
 					if (f.sh.totalOutgassing +des > 0.0) { //TODO what to add to totaloutgassing?
@@ -682,7 +682,7 @@ bool StartFromSource() {
 	//std::cout <<"test\t" <<(src->sh.desorbType)<<j <<i <<calcDesorption(src) <<std::endl;
 	if(src->sh.desorbType != DES_NONE ){
 		desorbed_b=false;
-		double des=calcDesorption(src);
+		double des=calcDesorption(src, hitbuffer);
 		//std::cout <<"test\t" <<(src->sh.outgassing) <<des <<std::endl;
 		if(rnd()<des/(src->sh.outgassing+des) ){
 			desorbed_b=true;
@@ -1539,7 +1539,7 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 			if (absorb>0){
 				//std::cout<< f->tmpCounter[m].hit.covering << std::endl;
 				//double a = f->tmpCounter[m].hit.covering;
-				f->tmpCounter[m].hit.covering += calcCoveringUpdate(f);
+				f->tmpCounter[m].hit.covering += 1;
 				//double b = f->tmpCounter[m].hit.covering;
 				//std::cout << "a = "<< a << "; b = " << b << "; a - b = " << a-b << std::endl;
 				//std::cout << calcCoveringUpdate(f) << std::endl;
@@ -1552,7 +1552,7 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 					std::cout<< "Covering counter bleibt" << std::endl;*/
 				}
 			if (desorbed){
-				f->tmpCounter[m].hit.covering -= calcCoveringUpdate(f);
+				f->tmpCounter[m].hit.covering -= 1;
 				}
 			f->tmpCounter[m].hit.covering = f->tmpCounter[m].hit.covering < 0.0 ? 0 : f->tmpCounter[m].hit.covering;//Für den Fall,
 			//dass covering kleiner Null würde. Das ist aber nicht die physikalisch richtige Lösung => überlegen.

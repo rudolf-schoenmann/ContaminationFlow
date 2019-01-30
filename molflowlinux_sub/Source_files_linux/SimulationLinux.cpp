@@ -44,7 +44,7 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 	UpdateSticking(hitbuffer);
 
 	// Start Simulation = create first particle
-	StartSimulation();
+	StartSimulation(hitbuffer);
 
 	// Run Simulation for simutime steps. One step ~ 1 seconds
 	for(double i=0; i<(double)(simutime) && !eos;i+=realtimestep){

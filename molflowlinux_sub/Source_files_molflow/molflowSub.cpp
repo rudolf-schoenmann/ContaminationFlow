@@ -404,7 +404,7 @@ int submain(int argc,char* argv[])
       case COMMAND_START:
         printf("COMMAND: START (%zd,%lu)\n",prParam,prParam2);
         if( sHandle->loadOK ) {
-          if( StartSimulation() )
+          if( StartSimulation(hitbuffer))
             SetState(PROCESS_RUN,GetSimuStatus());
           else {
             if( GetLocalState()!=PROCESS_ERROR )

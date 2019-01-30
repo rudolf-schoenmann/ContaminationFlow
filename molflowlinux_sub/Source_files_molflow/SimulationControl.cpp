@@ -609,12 +609,12 @@ void ResetSimulation() {
 
 }
 
-bool StartSimulation() {
+bool StartSimulation(Databuff *hitbuffer) {
 	size_t sMode=0; //MC Mode by dafault
 	sHandle->wp.sMode = sMode;
 	switch (sMode) {
 	case MC_MODE:
-		if (!sHandle->currentParticle.lastHitFacet) StartFromSource();
+		if (!sHandle->currentParticle.lastHitFacet) StartFromSource(hitbuffer);
 		return (sHandle->currentParticle.lastHitFacet != NULL);
 	/*case AC_MODE: (my) no AC_MODE
 		if (sHandle->prgAC != 100) {
@@ -654,7 +654,7 @@ void RecordLeakPos() {
 	}
 }
 
-std::pair<bool,double> SimulationRun(double time) {
+std::pair<bool,double> SimulationRun(double time, Databuff *hitbuffer) {
 
 	// 1s step
 	double t0, t1;
@@ -680,7 +680,7 @@ std::pair<bool,double> SimulationRun(double time) {
 	switch (sHandle->wp.sMode) {
 	case MC_MODE:
 
-		goOn = SimulationMCStep(nbStep);
+		goOn = SimulationMCStep(nbStep, hitbuffer);
 		break;
 	case AC_MODE:
 		//goOn = SimulationACStep(nbStep); (my) no AC_MODE

@@ -226,7 +226,7 @@ void::CoveringHistory::read(std::string filename, Databuff *hitbuffer){//Rudi: N
 	double num_mol=0.0;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				num_mol=pointintime_list.back().second[i]/calcCoveringUpdate(&f);
+				num_mol=pointintime_list.back().second[i]; //Rudi: Maybe wrong, since we changed covering and introduced coverage.
 				f.tmpCounter[0].hit.covering = pointintime_list.back().second[i];
 				//calcStickingnew(&f, hitbuffer); // calculate new sticking for new covering value
 				// 1) Update the hitbuffer with the last covering value

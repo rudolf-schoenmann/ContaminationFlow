@@ -53,14 +53,14 @@ double calcdNsurf(){//Calculates the (carbon equivalent relative) mass factor
 	return sHandle->wp.gasMass/12.011;
 }
 
-std::tuple<double, double> calctotalDesorption(){ //adapted from totaloutgassingworker in worker.cpp
+std::tuple<double, double> calctotalDesorption(Databuff *hitbuffer){ //adapted from totaloutgassingworker in worker.cpp
 	//Since this old Molflow code 'calctotalDesorption' calculates the Number of particles which have left all facets due to OUTGASSING;
 	//Therefore, in order to get he Number of particles which have left all facets due to OUTGASSING and due to the desorption of the adsorbate
 	//you have to add the desrate (= Number of particles which have left all facets due to desorption of the adsorbate);
 	double desrate, totaldes=0.0;
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
-					double facetdes=calcDesorptionRate(&f);
+					double facetdes=calcDesorptionRate(&f, hitbuffer);
 					desrate+=facetdes/ (1.38E-23*f.sh.temperature);
 					totaldes+=sHandle->wp.latestMoment * facetdes / (1.38E-23*f.sh.temperature);;
 			}
@@ -80,12 +80,12 @@ double calcKrealvirt(SubprocessFacet *iFacet, int moment){ //TODO not sure yet; 
 
 }
 */
-double GetMoleculesPerTP(size_t moment) // alternative for calcKrealvirt
+double GetMoleculesPerTP(size_t moment, Databuff *hitbuffer) // alternative for calcKrealvirt
 //Returns how many physical molecules one test particle represents
 {
 	if (sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed == 0) return 0; //avoid division by 0
 	double desrate, totaldes=0.0;
-	std::tie( desrate,  totaldes)=calctotalDesorption();
+	std::tie( desrate,  totaldes)=calctotalDesorption(hitbuffer);
 	if (moment == 0) {
 		//Constant flow
 		//Each test particle represents a certain real molecule influx per second
@@ -157,7 +157,7 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates
 
 
 	temperature=iFacet->sh.temperature;
-	coverage = covering /(calcNmono/calcdNsurf);
+	coverage = covering /(calcNmono(iFacet)/calcdNsurf());
 	if (covering < 1) {
 		iFacet->sh.sticking = (s1*(1.0 - coverage) + s2 * coverage)*(1.0 - exp(-E_ad / (kb*temperature)));
 	}
@@ -196,7 +196,7 @@ double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This retur
 	buffer = hitbuffer->buff;
 	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
 	covering = facetHitBuffer->hit.covering;
-	coverage = covering /(calcNmono/calcdNsurf);
+	coverage = covering /(calcNmono(iFacet)/calcdNsurf());
 	temperature=iFacet->sh.temperature;
 	desorption= 1.0/tau * pow(coverage,d) *exp(-E_de/(kb*temperature));
 
@@ -205,7 +205,7 @@ double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This retur
 }
 
 double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer) {//This returns ((d'coverage')/dt)de * (Nmono/dNSurf) * kb*T. So to speak desorption rate in units of [Pa m³/s]
-	double desorption = calcDesorption(iFacet, Databuff *hitbuffer);
+	double desorption = calcDesorption(iFacet, hitbuffer);
 	double desorptionRate = desorption * (calcNmono(iFacet) / calcdNsurf()) * 1.38E-23* iFacet->sh.temperature;
 	return desorptionRate;
 }
