@@ -682,7 +682,7 @@ bool StartFromSource(Databuff *hitbuffer) {
 	//std::cout <<"test\t" <<(src->sh.desorbType)<<j <<i <<calcDesorption(src) <<std::endl;
 	if(src->sh.desorbType != DES_NONE ){
 		desorbed_b=false;
-		double des=calcDesorption(src, hitbuffer);
+		double des=calcDesorptionRate(src, hitbuffer);
 		//std::cout <<"test\t" <<(src->sh.outgassing) <<des <<std::endl;
 		if(rnd()<des/(src->sh.outgassing+des) ){
 			desorbed_b=true;

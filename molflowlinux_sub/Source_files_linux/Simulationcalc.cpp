@@ -53,20 +53,50 @@ double calcdNsurf(){//Calculates the (carbon equivalent relative) mass factor
 	return sHandle->wp.gasMass/12.011;
 }
 
-std::tuple<double, double> calctotalDesorption(Databuff *hitbuffer){ //adapted from totaloutgassingworker in worker.cpp
-	//Since this old Molflow code 'calctotalDesorption' calculates the Number of particles which have left all facets due to OUTGASSING;
-	//Therefore, in order to get he Number of particles which have left all facets due to OUTGASSING and due to the desorption of the adsorbate
-	//you have to add the desrate (= Number of particles which have left all facets due to desorption of the adsorbate);
+std::tuple<double, double> calctotalDesorption(Databuff *hitbuffer){
 	double desrate, totaldes=0.0;
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
-					double facetdes=calcDesorptionRate(&f, hitbuffer);
+					double facetdes = calcDesorptionRate(&f, hitbuffer);
 					desrate+=facetdes/ (1.38E-23*f.sh.temperature);
 					totaldes+=sHandle->wp.latestMoment * facetdes / (1.38E-23*f.sh.temperature);;
 			}
 	}
 	return {std::make_tuple(desrate, totaldes)};
 }
+
+//Brauchen wir nicht, weil wir CaclTotalOutgassing haben.
+/*
+std::tuple<double, double> calctotalOutgassing(){
+	double outgassrate, totalout=0.0;
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+					double facetoutgassrate = f.sh.outgassing;
+					outgassrate+=facetoutgassrate/ (1.38E-23*f.sh.temperature);
+					totalout+=sHandle->wp.latestMoment * facetoutgassrate / (1.38E-23*f.sh.temperature);;
+			}
+	}
+	return {std::make_tuple(outgassrate, totalout)};
+}
+*/
+
+
+//Brauchen wir wahrscheinlich nicht.
+/*
+std::tuple<double, double> calctotalParticles_out(Databuff *hitbuffer){
+	std::tuple<double,double> particles_outDes = calctotalDesorption(hitbuffer);
+	double desrate = std::get<0>(particles_outDes);
+	double totaldes = std::get<1>(particles_outDes);
+	std::tuple<double,double> particles_outOut = calctotalOutgassing();
+	double outgassrate = std::get<0>(particles_outOut);
+	double totalout = std::get<1>(particles_outOut);
+	double sum_rate = desrate + outgassrate;
+	double sum_total = totaldes + totalout;
+
+	return{std::make_tuple(sum_rate, sum_total)};
+}
+*/
+
 /*
 // TODO is this correct? => Definitively not! Use GetMolecules per TP
 double calcKrealvirt(SubprocessFacet *iFacet, int moment){ //TODO not sure yet; c.f. Worker::GetMoleculesPerTP
@@ -80,23 +110,19 @@ double calcKrealvirt(SubprocessFacet *iFacet, int moment){ //TODO not sure yet; 
 
 }
 */
-double GetMoleculesPerTP(size_t moment, Databuff *hitbuffer) // alternative for calcKrealvirt
+double GetMoleculesPerTP(Databuff *hitbuffer) // Calculation of Krealvirt
 //Returns how many physical molecules one test particle represents
 {
 	if (sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed == 0) return 0; //avoid division by 0
-	double desrate, totaldes=0.0;
-	std::tie( desrate,  totaldes)=calctotalDesorption(hitbuffer);
-	if (moment == 0) {
-		//Constant flow
-		//Each test particle represents a certain real molecule influx per second
-		return (sHandle->wp.finalOutgassingRate+desrate) / sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed;
+	double desrate, totaldes =0.0;
+	std::tie(desrate,  totaldes)=calctotalDesorption(hitbuffer);
+	CalcTotalOutgassingWorker();
+	//Constant flow
+	//Each test particle represents a certain real molecule influx per second
+	return (sHandle->wp.finalOutgassingRate+desrate) / sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed;
+
+
 	}
-	else {
-		//Time-dependent mode
-		//Each test particle represents a certain absolute number of real molecules
-		return ((sHandle->wp.totalDesorbedMolecules+totaldes) / sHandle->wp.timeWindowSize) / sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed;
-	}
-}
 /* //Wahrscheinlich brauchen wir das nicht.
 double calcRealCovering(SubprocessFacet *iFacet){ //TODO not sure yet
 
@@ -111,7 +137,7 @@ double calcCovering(SubprocessFacet *iFacet){ //TODO not sure yet
 	return covering;
 }
 
-// Brauchen wir eigentlich auch nciht.
+// Brauchen wir eigentlich auch nicht.
 /*
 double calcCoveringUpdate(SubprocessFacet *iFacet)
 {
@@ -135,13 +161,7 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates
 	//std::cout <<facetidx <<std::endl<<std::endl;
 	BYTE *buffer;
 	buffer = hitbuffer->buff;
-	/*
-	GlobalHitBuffer *gHits;
-	double globalCovering;
-	//Should wie introduce globalCovering? It does some kind of average covering over all facets.
-	//That is not really helpful, but could be a measure of how many particles are leaving the geometry through a hole/pump.
-	//globalCovering = sHandle->tmpGlobalResult.globalHits.hit.covering;
-	*/
+
 	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
 	covering = facetHitBuffer->hit.covering;
 	/*

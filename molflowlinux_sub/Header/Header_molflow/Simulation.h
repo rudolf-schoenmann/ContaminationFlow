@@ -262,3 +262,4 @@ double calcCoveringUpdate(SubprocessFacet *iFacet);
 double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer);
 double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
 double calcCovering(SubprocessFacet *iFacet);
+void CalcTotalOutgassingWorker();
