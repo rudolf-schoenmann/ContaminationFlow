@@ -46,7 +46,7 @@ int getFacetIndex(SubprocessFacet *iFacet){
 
 // calculation of used values
 double calcNmono(SubprocessFacet *iFacet){//Calculates the Number of (carbon equivalent) particles of one monolayer
-	return (iFacet->sh.area*1E-4)/(pow(76E-12, 2));
+	return (iFacet->sh.area*1E-4)/(pow(carbondiameter, 2));
 }
 
 double calcdNsurf(){//Calculates the (carbon equivalent relative) mass factor
@@ -219,7 +219,6 @@ double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This retur
 	coverage = covering /(calcNmono(iFacet)/calcdNsurf());
 	temperature=iFacet->sh.temperature;
 	desorption= 1.0/tau * pow(coverage,d) *exp(-E_de/(kb*temperature));
-
 
 	return desorption;
 }

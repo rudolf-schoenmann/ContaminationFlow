@@ -672,7 +672,6 @@ std::pair<bool,double> SimulationRun(double time, Databuff *hitbuffer) {
 		}
 
 	}
-
 	if (sHandle->stepPerSec != 0.0)
 		nbStep = (int)((time*(sHandle->stepPerSec)/1000.0 + 0.5));
 	if (nbStep < 1) nbStep = 1;

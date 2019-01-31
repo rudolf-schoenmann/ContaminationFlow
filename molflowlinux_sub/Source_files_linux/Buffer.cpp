@@ -58,7 +58,7 @@ void importBuff(char *fileName, Databuff *databuffer)
 		fb.close();
 	}
 	else{
-		std::cout << "Could not open file to read data from." << std::endl;
+		std::cout << "Could not open " << fileName <<" to read data from." << std::endl;
 	}
 	std::cout << "Buffer '" << fileName <<"' imported. Buffersize (read in): " << databuffer->size << std::endl;
 }

@@ -109,7 +109,8 @@ int main(int argc, char *argv[]) {
 			MPI_Finalize();
 			return 0;
 		}
-/* Check for Size of integer and float types
+//Check for Size of integer and float types
+		/*
 		int a = 1;
 		long b = 1;
 		llong c = 1;
@@ -126,7 +127,7 @@ int main(int argc, char *argv[]) {
 		std::cout<<"size of long double f = "<< sizeof(f)<<std::endl;
 		std::cout<<"size of char g = "<< sizeof(g)<<std::endl;
 		std::cout<<"size of long long h = "<< sizeof(h)<<std::endl;
-*/
+		*/
 
 
 		//Read in buffer file (exported by Windows-Molflow). File given as first argument to main().
@@ -153,6 +154,7 @@ int main(int argc, char *argv[]) {
 
 		std::cout << "Buffers sent. Wait for a few seconds. " << std::endl<< std::endl;
 	}
+
 
 	// Send load-buffer to all other processes
 	// Send size of buffer

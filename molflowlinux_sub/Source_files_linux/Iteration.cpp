@@ -117,7 +117,7 @@ CoveringHistory::CoveringHistory(Databuff *hitbuffer){
 	BYTE *buffer;
 	buffer = hitbuffer->buff;
 
-	double covering;
+	llong covering;
 	std::cout <<"Reading covering values from buffer\t";
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {

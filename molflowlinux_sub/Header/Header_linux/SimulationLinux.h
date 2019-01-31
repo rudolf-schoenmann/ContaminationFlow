@@ -57,6 +57,8 @@ void UpdateSticking(Databuff *hitbuffer);
 void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
 //double calcDesorption(SubprocessFacet *iFacet);
 double calcNmono(SubprocessFacet *iFacet);
+const double carbondiameter = 2 *76E-12;
+double calcdNsurf();
 double calcRealCovering(SubprocessFacet *iFacet);
 double calcKrealvirt(SubprocessFacet *iFacet, int m);
 
