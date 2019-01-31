@@ -29,6 +29,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 //#include <cstdint>
 #define __int64 int64_t
 #define  llong uint64_t
+
 #define size_t uint64_t
 
 typedef unsigned char BYTE; 

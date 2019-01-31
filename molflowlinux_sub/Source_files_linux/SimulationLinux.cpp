@@ -54,11 +54,11 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 		}
 
 		if(i+timestep>=(double)(simutime)){ //last timestep
-			std::tie(eos,realtimestep) = SimulationRun((double)simutime-i); // Some additional simulation, as iteration step  does not run for exactly timestep ms
+			std::tie(eos,realtimestep) = SimulationRun((double)simutime-i, hitbuffer); // Some additional simulation, as iteration step  does not run for exactly timestep ms
 			covhistory->appendList(i+realtimestep); // append list with last entry
 			break;
 		}
-		std::tie(eos, realtimestep) = SimulationRun(timestep);      // Run during timestep ms, performs MC steps
+		std::tie(eos, realtimestep) = SimulationRun(timestep, hitbuffer);      // Run during timestep ms, performs MC steps
 		//UpdateSticking(); // calculates new sticking
 
 		//calc new timestep?

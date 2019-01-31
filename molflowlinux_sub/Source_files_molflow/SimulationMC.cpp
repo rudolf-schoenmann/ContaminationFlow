@@ -31,6 +31,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "GLApp/MathTools.h"
 #include <tuple> //std::tie
 
+
 extern Simulation *sHandle; //delcared in molflowSub.cpp
 
 // Compute area of all the desorption facet
@@ -490,9 +491,7 @@ void PerformTeleport(SubprocessFacet *iFacet) {
 }
 
 // Perform nbStep simulation steps (a step is a bounce)
-
 bool SimulationMCStep(size_t nbStep, Databuff *hitbuffer) {
-	std::cout << "Number of steps per second = " << nbStep << std::endl;
 	// Perform simulation steps
 	for (size_t i = 0; i < nbStep; i++) {
 
@@ -578,9 +577,7 @@ bool SimulationMCStep(size_t nbStep, Databuff *hitbuffer) {
 				// desorptionLimit reached
 				return false;
 		}
-		std::cout << "Nach "<< i << " Simulationsteps bricht das Programm ab!" << std::endl<<std::endl;
 	}
-
 	return true;
 }
 
