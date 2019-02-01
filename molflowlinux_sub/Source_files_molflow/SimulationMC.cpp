@@ -613,7 +613,7 @@ bool StartFromSource(Databuff *hitbuffer) {
 	// Select source
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				totaldes+=sHandle->wp.latestMoment *calcDesorptionRate(&f, hitbuffer)/ (1.38E-23*f.sh.temperature);
+				totaldes+=sHandle->wp.latestMoment *f.sh.desorption/ (1.38E-23*f.sh.temperature);
 			}
 		}
 	srcRnd = rnd() * (sHandle->wp.totalDesorbedMolecules+totaldes);
@@ -623,10 +623,10 @@ bool StartFromSource(Databuff *hitbuffer) {
 		i = 0;
 		while (!found && i < (int)sHandle->structures[j].facets.size()) { //Go through facets in a structure
 			SubprocessFacet& f = sHandle->structures[j].facets[i];
-			double des=calcDesorptionRate(&f, hitbuffer); //double des = sHandle->wp.latestMoment *calcDesorption(&f)/ (1.38E-23*f.sh.temperature); // TODO which one is right?
+			double des=f.sh.desorption; //double des = sHandle->wp.latestMoment *calcDesorption(&f)/ (1.38E-23*f.sh.temperature); // TODO which one is right?
 			if (f.sh.desorbType != DES_NONE || des>0.0) { //there is some kind of outgassing
 				if (f.sh.useOutgassingFile) { //Using SynRad-generated outgassing map
-					if (f.sh.totalOutgassing +des > 0.0) { //TODO what to add to totaloutgassing?
+					if (f.sh.totalOutgassing +des > 0.0) {
 						found = (srcRnd >= sumA) && (srcRnd < (sumA + sHandle->wp.latestMoment * (f.sh.totalOutgassing+des) / (1.38E-23*f.sh.temperature)));
 						if (found) {
 							//look for exact position in map
@@ -681,7 +681,7 @@ bool StartFromSource(Databuff *hitbuffer) {
 	//std::cout <<"test\t" <<(src->sh.desorbType)<<j <<i <<calcDesorption(src) <<std::endl;
 	if(src->sh.desorbType != DES_NONE ){
 		desorbed_b=false;
-		double des=calcDesorptionRate(src, hitbuffer);
+		double des=src->sh.desorption;
 		//std::cout <<"test\t" <<(src->sh.outgassing) <<des <<std::endl;
 		if(rnd()<des/(src->sh.outgassing+des) ){
 			desorbed_b=true;

@@ -57,13 +57,14 @@ std::tuple<double, double> calctotalDesorption(Databuff *hitbuffer){//Number of 
 	double desrate, totaldes=0.0;
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
-					double facetdes = calcDesorptionRate(&f, hitbuffer);
+					double facetdes = f.sh.desorption;
 					desrate+=facetdes/ (1.38E-23*f.sh.temperature);
 					totaldes+=sHandle->wp.latestMoment * facetdes / (1.38E-23*f.sh.temperature);;
 			}
 	}
 	return {std::make_tuple(desrate, totaldes)};
 }
+
 
 //Brauchen wir nicht, weil wir CaclTotalOutgassing haben.
 /*
@@ -147,8 +148,12 @@ double calcCoveringUpdate(SubprocessFacet *iFacet)
 }*/
 
 void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates sticking coefficient dependent on covering.
-	double s1 = 0.1;
+	//double s1 = 0.1;
 	double s2 = 0.2;
+	//Start Test
+	//Just for test reasons
+	double s1 =0.99;
+	//End of Test
 	double E_ad = 1E-21;
 	//double E_de = 1.5E-21;
 	double kb = 1.38E-23;

@@ -165,7 +165,7 @@ int main(int argc, char *argv[]) {
 
 //for loop to let the simulation run 'iterationnumber' times
 //will be replaced later by the time dependent mode to calculate the prediction of contamination
-	int iterationnumber = 1000;
+	int iterationnumber = 43200;
 	for(int it=0;it<iterationnumber;it++){ //TODO parameterübergabe, simulationszeit anpassen
 
 		if(rank == 0){

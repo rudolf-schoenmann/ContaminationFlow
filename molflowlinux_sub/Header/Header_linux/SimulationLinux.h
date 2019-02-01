@@ -53,6 +53,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 void UpdateMainHits(Databuff *databuffer,Databuff *subbuffer, int rank);
 
 void UpdateSticking(Databuff *hitbuffer);
+void UpdateDesorptionRate (Databuff *hitbuffer);
 
 void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
 //double calcDesorption(SubprocessFacet *iFacet);

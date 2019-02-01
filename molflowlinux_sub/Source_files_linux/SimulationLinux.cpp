@@ -42,6 +42,7 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 	//covhistory->read(name1); //TODO parameterübergabe in kommandezeile, nicht hardcoden!
 
 	UpdateSticking(hitbuffer);
+	UpdateDesorptionRate(hitbuffer);
 
 	// Start Simulation = create first particle
 	StartSimulation(hitbuffer);

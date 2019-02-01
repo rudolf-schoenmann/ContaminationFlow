@@ -55,6 +55,19 @@ void UpdateSticking(Databuff *hitbuffer){
 	std::cout <<std::endl;
 }
 
+void UpdateDesorptionRate (Databuff *hitbuffer){
+	int i = 0;
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			f.sh.desorption = calcDesorptionRate(&f, hitbuffer);
+			i+=1;
+		}
+	}
+
+}
+
+
+
 void UpdateSubHits(Databuff *databuffer, int rank) {
 	switch (sHandle->wp.sMode) {
 	case MC_MODE:
