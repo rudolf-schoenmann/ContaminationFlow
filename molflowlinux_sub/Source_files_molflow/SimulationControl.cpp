@@ -655,11 +655,6 @@ void RecordLeakPos() {
 }
 
 std::pair<bool,double> SimulationRun(double time, Databuff *hitbuffer) {
-	//TEST
-	BYTE *buffer;
-	std::cout << "Bricht das Programm in SimulationRun ab?" << std::endl<<std::endl;
-	buffer = hitbuffer->buff;
-	//TEST Ende
 
 	// 1s step
 	double t0, t1;

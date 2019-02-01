@@ -29,12 +29,12 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 extern Simulation *sHandle;
 
 void UpdateSticking(Databuff *hitbuffer){
-	std::cout <<"    Facet information:" <<std::endl;
+	//std::cout <<"    Facet information:" <<std::endl;
 	int i = 0;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			calcStickingnew(&f, hitbuffer);
-			if(i==1){
+			/*if(i==1){
 			std::cout <<"    (Just for Facet " << i << " to have less output in console.)" << std::endl;
 			std::cout <<"    Facet " <<i <<":" <<std::endl;
 			std::cout <<"\t Facet area [cm²]\t\t\t"<< f.sh.area << std::endl;
@@ -48,7 +48,7 @@ void UpdateSticking(Databuff *hitbuffer){
 			std::cout <<"\t Coverage [1 = Monolayer]\t\t" << calcCovering(&f) / (calcNmono(&f)/calcdNsurf())<< std::endl;
 			//std::cout <<"\t real covering\t\t\t\t" <<calcRealCovering(&f) <<std::endl; // Das macht hier gar keinen Sinn. Erst wenn alle Subprozesse ihre Counter
 			// zum Prozess 0 geschickt haben und alle Counter addiert wurden, wird Krealvirt berechnet. Dann kann man ein real Covering ausgeben.
-			}
+			}*/
 			i+=1;
 		}
 	}

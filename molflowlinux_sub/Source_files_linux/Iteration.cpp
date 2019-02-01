@@ -58,9 +58,11 @@ double estimateTmin_RudiTest(){ //not ready yet => finish
 	else
 		return tmin_particles_out
 	*/
+	/*
 	std::cout << "estimateTmin_RudiTest: tmin = " <<tmin<< "ms"<< std::endl;
 	//std::cout << "estimateTmin_RudiTest: tmin_particles_out = " <<tmin_particles_out<< "ms"<< std::endl;
 	std::cout << "_______________________________________________________________________________________________________"<< std::endl<<std::endl;
+	*/
 	return tmin;
 }
 
@@ -88,6 +90,7 @@ double estimateTmin(){
 	double hits= (double)sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;
 	double hits2= pow((double)sHandle->tmpGlobalResult.globalHits.hit.nbMCHit,2);
 	double particlenumber = (double)sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed;
+	/*
 	std::cout << "_______________________________________________________________________________________________________"<< std::endl;
 	std::cout <<"Current version of estimate Tmin"<< std::endl;
 	std::cout <<"dist total [m]\t\t" << dist_total << std::endl;
@@ -102,6 +105,7 @@ double estimateTmin(){
 	std::cout <<"Alternative 3 for Tmin\t(dist_total/hits^2)*1000*sum_1_v_ort [ms]\t" <<(dist_total/hits2)*1000*sum_1_v_ort <<std::endl;
 	std::cout << "Currently used: Alternative 3" << std::endl;
 	std::cout << "_______________________________________________________________________________________________________"<< std::endl;
+	*/
 	return (dist_total/hits2)*sum_1_v_ort*1000;
 }
 
@@ -118,12 +122,12 @@ CoveringHistory::CoveringHistory(Databuff *hitbuffer){
 	buffer = hitbuffer->buff;
 
 	llong covering;
-	std::cout <<"Reading covering values from buffer\t";
+	//std::cout <<"Reading covering values from buffer\t";
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
 				covering = facetHitBuffer->hit.covering;
-				std::cout <<covering <<"\t";
+				//std::cout <<covering <<"\t";
 				currentstep.push_back(covering);
 				f.tmpCounter[0].hit.covering=covering;
 			}

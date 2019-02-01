@@ -111,26 +111,6 @@ int main(int argc, char *argv[]) {
 			MPI_Finalize();
 			return 0;
 		}
-//Check for Size of integer and float types
-		/*
-		int a = 1;
-		long b = 1;
-		llong c = 1;
-		float d = 1;
-		double e = 1;
-		long double f = 1;
-		char g = 1;
-		long long h = 1;
-		std::cout<<"size of int a = "<< sizeof(a)<<std::endl;
-		std::cout<<"size of long b = "<< sizeof(b)<<std::endl;
-		std::cout<<"size of uint_64 c = "<< sizeof(c)<<std::endl;
-		std::cout<<"size of float d = "<< sizeof(d)<<std::endl;
-		std::cout<<"size of double e = "<< sizeof(e)<<std::endl;
-		std::cout<<"size of long double f = "<< sizeof(f)<<std::endl;
-		std::cout<<"size of char g = "<< sizeof(g)<<std::endl;
-		std::cout<<"size of long long h = "<< sizeof(h)<<std::endl;
-		*/
-
 
 		//Read in buffer file (exported by Windows-Molflow). File given as first argument to main().
 		importBuff(argv[1],&loadbuffer);
@@ -185,7 +165,7 @@ int main(int argc, char *argv[]) {
 
 //for loop to let the simulation run 'iterationnumber' times
 //will be replaced later by the time dependent mode to calculate the prediction of contamination
-	int iterationnumber = 1;
+	int iterationnumber = 1000;
 	for(int it=0;it<iterationnumber;it++){ //TODO parameterübergabe, simulationszeit anpassen
 
 		if(rank == 0){
@@ -257,7 +237,7 @@ int main(int argc, char *argv[]) {
 			MPI_Barrier(MPI_COMM_WORLD);
 
 			if (rank == 0) {
-				//Hier muss noch die Anwendung von Krealvirt hin
+				UpdateCovering(&hitbuffer, &hitbuffer_original);
 				memcpy(hitbuffer.buff,hitbuffer_original.buff,hitbuffer_original.size);
 				std::cout << "ending iteration " << it <<std::endl;
 				//________________________________________________________________________

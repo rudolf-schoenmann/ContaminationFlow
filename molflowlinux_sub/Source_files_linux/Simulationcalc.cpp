@@ -53,7 +53,7 @@ double calcdNsurf(){//Calculates the (carbon equivalent relative) mass factor
 	return sHandle->wp.gasMass/12.011;
 }
 
-std::tuple<double, double> calctotalDesorption(Databuff *hitbuffer){
+std::tuple<double, double> calctotalDesorption(Databuff *hitbuffer){//Number of particles/s as well as Number of particles
 	double desrate, totaldes=0.0;
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
@@ -120,8 +120,6 @@ double GetMoleculesPerTP(Databuff *hitbuffer) // Calculation of Krealvirt
 	//Constant flow
 	//Each test particle represents a certain real molecule influx per second
 	return (sHandle->wp.finalOutgassingRate+desrate) / sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed;
-
-
 	}
 /* //Wahrscheinlich brauchen wir das nicht.
 double calcRealCovering(SubprocessFacet *iFacet){ //TODO not sure yet
@@ -227,4 +225,42 @@ double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer) {//This 
 	double desorption = calcDesorption(iFacet, hitbuffer);
 	double desorptionRate = desorption * (calcNmono(iFacet) / calcdNsurf()) * 1.38E-23* iFacet->sh.temperature;
 	return desorptionRate;
+}
+
+void UpdateCovering(Databuff *hitbuffer, Databuff *hitbuffer_original){//Updates Covering after one Iteration using Krealvirt, resets other counters
+	//If one wants to read out pressure and particle density, this must be done before calling UpdateCovering.
+	double Krealvirt = GetMoleculesPerTP(hitbuffer);
+	llong covering;
+	llong covering_original;
+	BYTE *buffer;
+	buffer = hitbuffer->buff;
+	BYTE *buffer_original;
+	buffer_original = hitbuffer_original->buff;
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			if(f.hitted){
+				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
+				covering = facetHitBuffer->hit.covering;
+				FacetHitBuffer *facetHitBuffer_original = (FacetHitBuffer *)(buffer_original + f.sh.hitOffset);
+				covering_original = facetHitBuffer_original->hit.covering;
+				covering = covering_original + (covering - covering_original)*Krealvirt;
+				facetHitBuffer->hit.covering = covering;
+				//Reset of Hitbuffer for the next Iteration Step
+				facetHitBuffer->hit.nbAbsEquiv = 0;
+				facetHitBuffer->hit.nbDesorbed = 0;
+				facetHitBuffer->hit.nbMCHit = 0;
+				facetHitBuffer->hit.nbHitEquiv = 0;
+				facetHitBuffer->hit.sum_1_per_ort_velocity = 0;
+				facetHitBuffer->hit.sum_v_ort = 0;
+				facetHitBuffer->hit.sum_1_per_velocity = 0;
+				}
+			}
+	}
+	//Reset GlobalHitBuffer
+	GlobalHitBuffer *gHits;
+	gHits = (GlobalHitBuffer *)buffer;
+	gHits->globalHits.hit.nbMCHit = 0;
+	gHits->globalHits.hit.nbHitEquiv = 0;
+	gHits->globalHits.hit.nbAbsEquiv = 0;
+	gHits->globalHits.hit.nbDesorbed = 0;
 }

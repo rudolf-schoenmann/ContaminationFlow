@@ -178,7 +178,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					std::cout <<sizeof(FacetHitBuffer) <<std::endl;
 					std::cout <<facetHitSub->hit.covering <<std::endl;*/
 
-					if(f.globalId == 1){
+					/*if(f.globalId == 1){
 					std::cout <<"facet number\t\t\t"<< f.globalId <<std::endl;
 					std::cout <<"buffer before\t\t\t" <<std::endl;
 					std::cout <<"hit.nbAbsEquiv\t\t\t"<<facetHitBuffer->hit.nbAbsEquiv <<"\t (as nbMCHitEquiv)"<<std::endl;
@@ -190,7 +190,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					std::cout <<"hit.sum_1_per_velocity\t\t"<<facetHitBuffer->hit.sum_1_per_velocity <<std::endl;
 					std::cout <<"hit.covering\t\t\t"<<facetHitBuffer->hit.covering <<std::endl;
 					std::cout <<"hit.covering [Number of particles]\t" << facetHitBuffer->hit.covering * calcNmono(&f) << std::endl;
-					}
+					}*/
 
 					facetHitBuffer->hit.nbAbsEquiv += facetHitSub->hit.nbAbsEquiv;
 					facetHitBuffer->hit.nbDesorbed += facetHitSub->hit.nbDesorbed;
@@ -201,7 +201,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					facetHitBuffer->hit.sum_1_per_velocity += facetHitSub->hit.sum_1_per_velocity;
 					facetHitBuffer->hit.covering += facetHitSub->hit.covering;
 
-
+					/*
 					if(f.globalId == 1){
 					std::cout <<"buffer afterwards" <<std::endl;
 					std::cout <<"hit.nbAbsEquiv\t\t\t"<<facetHitBuffer->hit.nbAbsEquiv <<"\t (as nbMCHitEquiv)"<<std::endl;
@@ -213,7 +213,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					std::cout <<"hit.sum_1_per_velocity\t\t"<<facetHitBuffer->hit.sum_1_per_velocity <<std::endl;
 					std::cout <<"hit.covering\t\t\t"<<facetHitBuffer->hit.covering <<std::endl;
 					std::cout <<"hit.covering [Number of particles]\t" << facetHitBuffer->hit.covering * calcNmono(&f) << std::endl;
-					}
+					}*/
 				}
 
 				if (f.sh.isProfile) { //(MY) Add profiles

@@ -263,3 +263,5 @@ double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer);
 double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
 double calcCovering(SubprocessFacet *iFacet);
 void CalcTotalOutgassingWorker();
+double GetMoleculesPerTP(Databuff *hitbuffer);
+void UpdateCovering(Databuff *hitbuffer, Databuff *hitbuffer_original);
