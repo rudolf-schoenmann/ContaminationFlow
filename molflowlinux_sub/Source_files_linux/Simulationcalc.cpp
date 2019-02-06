@@ -237,6 +237,7 @@ void UpdateCovering(Databuff *hitbuffer, Databuff *hitbuffer_original){//Updates
 	double Krealvirt = GetMoleculesPerTP(hitbuffer);
 	llong covering;
 	llong covering_original;
+	double covering_check;
 	BYTE *buffer;
 	buffer = hitbuffer->buff;
 	BYTE *buffer_original;
@@ -248,19 +249,29 @@ void UpdateCovering(Databuff *hitbuffer, Databuff *hitbuffer_original){//Updates
 				covering = facetHitBuffer->hit.covering;
 				FacetHitBuffer *facetHitBuffer_original = (FacetHitBuffer *)(buffer_original + f.sh.hitOffset);
 				covering_original = facetHitBuffer_original->hit.covering;
-				covering = covering_original + (covering - covering_original)*Krealvirt;
-				facetHitBuffer->hit.covering = covering;
-				//Reset of Hitbuffer for the next Iteration Step
-				facetHitBuffer->hit.nbAbsEquiv = 0;
-				facetHitBuffer->hit.nbDesorbed = 0;
-				facetHitBuffer->hit.nbMCHit = 0;
-				facetHitBuffer->hit.nbHitEquiv = 0;
-				facetHitBuffer->hit.sum_1_per_ort_velocity = 0;
-				facetHitBuffer->hit.sum_v_ort = 0;
-				facetHitBuffer->hit.sum_1_per_velocity = 0;
+				covering_check = covering_original + (covering - covering_original)*Krealvirt; //Fehlt noch mal Delta_t (timestep)!
+				if(covering_check){
+					covering = covering_original + (covering - covering_original)*Krealvirt; //Fehlt noch mal Delta_t (timestep)!
+					facetHitBuffer->hit.covering = covering;
+					//Reset of Hitbuffer for the next Iteration Step
+					facetHitBuffer->hit.nbAbsEquiv = 0;
+					facetHitBuffer->hit.nbDesorbed = 0;
+					facetHitBuffer->hit.nbMCHit = 0;
+					facetHitBuffer->hit.nbHitEquiv = 0;
+					facetHitBuffer->hit.sum_1_per_ort_velocity = 0;
+					facetHitBuffer->hit.sum_v_ort = 0;
+					facetHitBuffer->hit.sum_1_per_velocity = 0;
+					}
+				else {
+					std::cout<<"Ups! Covering darf nicht negativ sein. Iteration wird nicht upgedated."<<std::endl;
+					//nichts updaten
+					//iteration neu starten mit weniger nbSteps
+					}
 				}
+
 			}
 	}
+	if(covering_check){
 	//Reset GlobalHitBuffer
 	GlobalHitBuffer *gHits;
 	gHits = (GlobalHitBuffer *)buffer;
@@ -268,4 +279,5 @@ void UpdateCovering(Databuff *hitbuffer, Databuff *hitbuffer_original){//Updates
 	gHits->globalHits.hit.nbHitEquiv = 0;
 	gHits->globalHits.hit.nbAbsEquiv = 0;
 	gHits->globalHits.hit.nbDesorbed = 0;
+	}
 }
