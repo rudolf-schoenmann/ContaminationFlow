@@ -27,7 +27,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 extern Simulation *sHandle; //delcared in molflowSub.cpp
 
-void UpdateMainHits(Databuff *databuffer,Databuff *subbuffer, int rank) {
+void UpdateMainHits(Databuff *databuffer,Databuff *subbuffer, int rank) {//Schreibt (=Summiert) die Daten aller Hitbuffer aus den Subprozessen in den Hitbuffer_original des Hauptprozesses.
 	switch (sHandle->wp.sMode) {
 	case MC_MODE:
 	{

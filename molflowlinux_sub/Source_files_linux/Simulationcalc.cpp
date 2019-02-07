@@ -58,6 +58,7 @@ std::tuple<double, double> calctotalDesorption(Databuff *hitbuffer){//Number of 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 					double facetdes = f.sh.desorption;
+					std::cout<< "f.sh.desorption = " << f.sh.desorption << std::endl;
 					desrate+=facetdes/ (1.38E-23*f.sh.temperature);
 					totaldes+=sHandle->wp.latestMoment * facetdes / (1.38E-23*f.sh.temperature);;
 			}
@@ -111,16 +112,24 @@ double calcKrealvirt(SubprocessFacet *iFacet, int moment){ //TODO not sure yet; 
 
 }
 */
-double GetMoleculesPerTP(Databuff *hitbuffer) // Calculation of Krealvirt
+double GetMoleculesPerTP(Databuff *hitbuffer_sum) // Calculation of Krealvirt
 //Returns how many physical molecules one test particle represents
-{
-	if (sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed == 0) return 0; //avoid division by 0
+{	BYTE *buffer;
+	buffer = hitbuffer_sum->buff;
+	GlobalHitBuffer *gHits;
+	gHits = (GlobalHitBuffer *)buffer;
+	if (gHits->globalHits.hit.nbDesorbed == 0) return 0; //avoid division by 0
 	double desrate, totaldes =0.0;
-	std::tie(desrate,  totaldes)=calctotalDesorption(hitbuffer);
+	std::tie(desrate,  totaldes)=calctotalDesorption(hitbuffer_sum);
 	CalcTotalOutgassingWorker();
 	//Constant flow
 	//Each test particle represents a certain real molecule influx per second
-	return (sHandle->wp.finalOutgassingRate+desrate) / sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed;
+	std::cout << "wp.finalOutgassingRate [Pa*m^3/s] = " << sHandle->wp.finalOutgassingRate << std::endl;
+	std::cout << "desrate [1/s] = " << desrate << std::endl;
+	std::cout << "wp.finalOutgassingRate + desrate [1/s] = " << sHandle->wp.finalOutgassingRate + desrate << std::endl;
+	std::cout << "gHits->globalHits.hit.nbDesorbed [1] = " << gHits->globalHits.hit.nbDesorbed << std::endl;
+	std::cout << "(wp.finalOutgassingRate + desrate)/gHits->globalHits.hit.nbDesorbed [1/s] = "<< (sHandle->wp.finalOutgassingRate + desrate)/gHits->globalHits.hit.nbDesorbed << std::endl;
+	return (sHandle->wp.finalOutgassingRate+desrate) / gHits->globalHits.hit.nbDesorbed;
 	}
 /* //Wahrscheinlich brauchen wir das nicht.
 double calcRealCovering(SubprocessFacet *iFacet){ //TODO not sure yet
@@ -232,52 +241,69 @@ double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer) {//This 
 	return desorptionRate;
 }
 
-void UpdateCovering(Databuff *hitbuffer, Databuff *hitbuffer_original){//Updates Covering after one Iteration using Krealvirt, resets other counters
+void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum){//Updates Covering after one Iteration using Krealvirt, resets other counters
 	//If one wants to read out pressure and particle density, this must be done before calling UpdateCovering.
-	double Krealvirt = GetMoleculesPerTP(hitbuffer);
-	llong covering;
-	llong covering_original;
+	//Calculates with the summed up counters of hitbuffer_sum how many test particles are equivalent to one physical particle.
+	//Then the physical values are stored in the hitbuffer.
+	double Krealvirt = GetMoleculesPerTP(hitbuffer_sum);
+	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
+	llong covering_phys;
+	llong covering_sum;
 	double covering_check;
-	BYTE *buffer;
-	buffer = hitbuffer->buff;
-	BYTE *buffer_original;
-	buffer_original = hitbuffer_original->buff;
+	BYTE *buffer_phys;
+	buffer_phys = hitbuffer_phys->buff;
+	BYTE *buffer_sum;
+	buffer_sum = hitbuffer_sum->buff;
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			if(f.hitted){
-				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
-				covering = facetHitBuffer->hit.covering;
-				FacetHitBuffer *facetHitBuffer_original = (FacetHitBuffer *)(buffer_original + f.sh.hitOffset);
-				covering_original = facetHitBuffer_original->hit.covering;
-				covering_check = covering_original + (covering - covering_original)*Krealvirt; //Fehlt noch mal Delta_t (timestep)!
-				if(covering_check){
-					covering = covering_original + (covering - covering_original)*Krealvirt; //Fehlt noch mal Delta_t (timestep)!
-					facetHitBuffer->hit.covering = covering;
-					//Reset of Hitbuffer for the next Iteration Step
-					facetHitBuffer->hit.nbAbsEquiv = 0;
-					facetHitBuffer->hit.nbDesorbed = 0;
-					facetHitBuffer->hit.nbMCHit = 0;
-					facetHitBuffer->hit.nbHitEquiv = 0;
-					facetHitBuffer->hit.sum_1_per_ort_velocity = 0;
-					facetHitBuffer->hit.sum_v_ort = 0;
-					facetHitBuffer->hit.sum_1_per_velocity = 0;
+				FacetHitBuffer *facetHitBuffer_phys = (FacetHitBuffer *)(buffer_phys + f.sh.hitOffset);
+				covering_phys = facetHitBuffer_phys->hit.covering;
+				FacetHitBuffer *facetHitBuffer_sum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
+				covering_sum = facetHitBuffer_sum->hit.covering;
+				std::cout << "covering_sum = " << covering_sum << std::endl;
+				covering_check = covering_phys + (covering_sum - covering_phys)*Krealvirt*1e+24; //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+				if(!(covering_check<0)){
+					covering_phys += (covering_sum - covering_phys)*Krealvirt*1e+24; //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+					std::cout<< "covering_phys = " << covering_phys << std::endl;
+					facetHitBuffer_phys->hit.covering = covering_phys;
+					//Reset of Hitbuffer_phys for the next Iteration Step
+					facetHitBuffer_phys->hit.nbAbsEquiv = 0;
+					facetHitBuffer_phys->hit.nbDesorbed = 0;
+					facetHitBuffer_phys->hit.nbMCHit = 0;
+					facetHitBuffer_phys->hit.nbHitEquiv = 0;
+					facetHitBuffer_phys->hit.sum_1_per_ort_velocity = 0;
+					facetHitBuffer_phys->hit.sum_v_ort = 0;
+					facetHitBuffer_phys->hit.sum_1_per_velocity = 0;
+					//Reset of Hitbuffer_sum for the next Iteration Step
+					facetHitBuffer_sum->hit.nbAbsEquiv = 0;
+					facetHitBuffer_sum->hit.nbDesorbed = 0;
+					facetHitBuffer_sum->hit.nbMCHit = 0;
+					facetHitBuffer_sum->hit.nbHitEquiv = 0;
+					facetHitBuffer_sum->hit.sum_1_per_ort_velocity = 0;
+					facetHitBuffer_sum->hit.sum_v_ort = 0;
+					facetHitBuffer_sum->hit.sum_1_per_velocity = 0;
 					}
 				else {
 					std::cout<<"Ups! Covering darf nicht negativ sein. Iteration wird nicht upgedated."<<std::endl;
+					std::cout << covering_check << std::endl;
 					//nichts updaten
-					//iteration neu starten mit weniger nbSteps
+					//iteration neu starten mit weniger nbSteps; Wie viel weniger? 1/10 der vorigen Anzahl?
 					}
-				}
-
 			}
 	}
 	if(covering_check){
 	//Reset GlobalHitBuffer
-	GlobalHitBuffer *gHits;
-	gHits = (GlobalHitBuffer *)buffer;
-	gHits->globalHits.hit.nbMCHit = 0;
-	gHits->globalHits.hit.nbHitEquiv = 0;
-	gHits->globalHits.hit.nbAbsEquiv = 0;
-	gHits->globalHits.hit.nbDesorbed = 0;
+	GlobalHitBuffer *gHits_phys;
+	gHits_phys = (GlobalHitBuffer *)buffer_phys;
+	gHits_phys->globalHits.hit.nbMCHit = 0;
+	gHits_phys->globalHits.hit.nbHitEquiv = 0;
+	gHits_phys->globalHits.hit.nbAbsEquiv = 0;
+	gHits_phys->globalHits.hit.nbDesorbed = 0;
+	GlobalHitBuffer *gHits_sum;
+	gHits_sum = (GlobalHitBuffer *)buffer_sum;
+	gHits_sum->globalHits.hit.nbMCHit = 0;
+	gHits_sum->globalHits.hit.nbHitEquiv = 0;
+	gHits_sum->globalHits.hit.nbAbsEquiv = 0;
+	gHits_sum->globalHits.hit.nbDesorbed = 0;
 	}
 }

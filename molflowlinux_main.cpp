@@ -71,14 +71,17 @@ bool parametercheck(int argc, char *argv[]) {
 //Main Function
 int main(int argc, char *argv[]) {
 
-	// Initialise buffer
-	Databuff hitbuffer;
+	// Initialise data buffers
+	Databuff hitbuffer; //Hitbuffer for the data of the subprocesses
 	hitbuffer.buff=NULL;
 
-	Databuff hitbuffer_original;
-	hitbuffer_original.buff=NULL;
+	Databuff hitbuffer_sum; //Hitbuffer to sum up all of the subprocesses' data
+	hitbuffer_sum.buff=NULL;
 
-	Databuff loadbuffer;
+	Databuff hitbuffer_phys; //Hitbuffer where 'covering' is converted from test particle number dependent to real physical values
+	hitbuffer_phys.buff=NULL;
+
+	Databuff loadbuffer; //Loadbuffer to read in data of geometry and physical parameters
 	loadbuffer.buff=NULL;
 
 	// Init simulation time and unit
@@ -116,15 +119,16 @@ int main(int argc, char *argv[]) {
 		importBuff(argv[1],&loadbuffer);
 		importBuff(argv[2],&hitbuffer);
 
-		//Save a copy of original loaded hitbuffer
-		//This copy will be used in process 0. The hitbuffers of all subprocesses will be add up and writen in the hitbuffer_original
-		hitbuffer_original.buff = new BYTE[hitbuffer.size];
-		memcpy(hitbuffer_original.buff,hitbuffer.buff,hitbuffer.size);
-		hitbuffer_original.size =hitbuffer.size;
 
-		//exportBuff(argv[3],&hitbuffer_original); //Kann weg, oder?
-
-
+		//Save copies of the original loaded hitbuffer
+		//These copise will be used in process 0. The hitbuffers of all subprocesses will be add up and written in the hitbuffer_sum
+		//and then converted in the hitbuffer_phys
+		hitbuffer_sum.buff = new BYTE[hitbuffer.size];
+		memcpy(hitbuffer_sum.buff,hitbuffer.buff,hitbuffer.size);
+		hitbuffer_sum.size =hitbuffer.size;
+		hitbuffer_phys.buff = new BYTE[hitbuffer.size];
+		memcpy(hitbuffer_phys.buff,hitbuffer.buff,hitbuffer.size);
+		hitbuffer_phys.size =hitbuffer.size;
 		/*
 		 * show informations about the loading
 		 * just interesting for debugging => build some conditional (if debug, then show)?
@@ -136,7 +140,6 @@ int main(int argc, char *argv[]) {
 
 		std::cout << "Buffers sent. Wait for a few seconds. " << std::endl<< std::endl;
 	}
-
 
 	// Send load-buffer to all other processes
 	// Send size of buffer
@@ -203,8 +206,85 @@ int main(int argc, char *argv[]) {
 					MPI_Finalize();
 					return 0;
 				}
+
+				//Reset some counters. Just in case they are not Null in the imported hibufferfile.
+				/*Generell könnte man überlegen, dass man der Übersichtlichkeit halber vor der Iterationsschleife alles für die Simulation
+				vorbereitet.
+				1)Hitbuffer einlesen (Prozess 0)
+				2)Loadbuffer einlesen (Prozess 0)
+				3)SimulationHandle kreieren (Prozess 0)
+				4)CounterResetfunktion für Hitbuffer anwenden (Prozess 0)
+				5)Hitbuffer kopieren: Hitbuffer_sum und Hitbuffer_phys (Prozess 0)
+				6)Hitbuffer und Loadbuffer an alle Subprozesse schicken
+				7)SimulationHandle in allen Subrozessen kreieren
+				8)Jetzt sind alle Subprozesse bereit zum Starten. Dann kann die Schleife durchlaufen werden oder später ein klügerer Algorithmus.
+				*/
+				//Folgenden Block könnte man der Schönheit halber in eine Funktion packen. => "ResetHitbuffercounters"
+				//_________________________________________________________________________________________________
+				BYTE *buffer;
+				buffer = hitbuffer.buff;
+				for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+						for (SubprocessFacet& f : sHandle->structures[j].facets) {
+							FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
+							facetHitBuffer->hit.nbAbsEquiv = 0;
+							facetHitBuffer->hit.nbDesorbed = 0;
+							facetHitBuffer->hit.nbMCHit = 0;
+							facetHitBuffer->hit.nbHitEquiv = 0;
+							facetHitBuffer->hit.sum_1_per_ort_velocity = 0;
+							facetHitBuffer->hit.sum_v_ort = 0;
+							facetHitBuffer->hit.sum_1_per_velocity = 0;
+							}
+				}
+				GlobalHitBuffer *gHits;
+				gHits = (GlobalHitBuffer *)buffer;
+				gHits->globalHits.hit.nbMCHit = 0;
+				gHits->globalHits.hit.nbHitEquiv = 0;
+				gHits->globalHits.hit.nbAbsEquiv = 0;
+				gHits->globalHits.hit.nbDesorbed = 0;
+				if(rank == 0){
+					BYTE *buffer_phys;
+					buffer_phys = hitbuffer_phys.buff;
+					BYTE *buffer_sum;
+					buffer_sum = hitbuffer_sum.buff;
+					for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+						for (SubprocessFacet& f : sHandle->structures[j].facets) {
+							FacetHitBuffer *facetHitBuffer_phys = (FacetHitBuffer *)(buffer_phys + f.sh.hitOffset);
+							FacetHitBuffer *facetHitBuffer_sum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
+							facetHitBuffer_phys->hit.nbAbsEquiv = 0;
+							facetHitBuffer_phys->hit.nbDesorbed = 0;
+							facetHitBuffer_phys->hit.nbMCHit = 0;
+							facetHitBuffer_phys->hit.nbHitEquiv = 0;
+							facetHitBuffer_phys->hit.sum_1_per_ort_velocity = 0;
+							facetHitBuffer_phys->hit.sum_v_ort = 0;
+							facetHitBuffer_phys->hit.sum_1_per_velocity = 0;
+							facetHitBuffer_sum->hit.nbAbsEquiv = 0;
+							facetHitBuffer_sum->hit.nbDesorbed = 0;
+							facetHitBuffer_sum->hit.nbMCHit = 0;
+							facetHitBuffer_sum->hit.nbHitEquiv = 0;
+							facetHitBuffer_sum->hit.sum_1_per_ort_velocity = 0;
+							facetHitBuffer_sum->hit.sum_v_ort = 0;
+							facetHitBuffer_sum->hit.sum_1_per_velocity = 0;
+							}
+						}
+					GlobalHitBuffer *gHits_phys;
+					gHits_phys = (GlobalHitBuffer *)buffer_phys;
+					gHits_phys->globalHits.hit.nbMCHit = 0;
+					gHits_phys->globalHits.hit.nbHitEquiv = 0;
+					gHits_phys->globalHits.hit.nbAbsEquiv = 0;
+					gHits_phys->globalHits.hit.nbDesorbed = 0;
+					GlobalHitBuffer *gHits_sum;
+					gHits_sum = (GlobalHitBuffer *)buffer_sum;
+					gHits_sum->globalHits.hit.nbMCHit = 0;
+					gHits_sum->globalHits.hit.nbHitEquiv = 0;
+					gHits_sum->globalHits.hit.nbAbsEquiv = 0;
+					gHits_sum->globalHits.hit.nbDesorbed = 0;
+				}
+				//Wahrscheinlich müssten hier auch noch alle Profiles und Textures resetet werden!
+				//_________________________________________________________________________________________________
+				//Block_Ende
 				MPI_Barrier(MPI_COMM_WORLD);
 			}
+
 			//Simulation on subprocesses
 			if (rank != 0) {
 				/* do work in any remaining processes */
@@ -229,7 +309,7 @@ int main(int argc, char *argv[]) {
 					//Process 0 receives hitbuffer from Process i
 					MPI_Recv(hitbuffer.buff, hitbuffer.size, MPI::BYTE, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 					//sleep(1);
-					UpdateMainHits(&hitbuffer_original, &hitbuffer, 0);
+					UpdateMainHits(&hitbuffer_sum, &hitbuffer, 0);
 					std::cout << "Updated hitbuffer with process " << i <<std::endl
 							<< std::endl;
 				}
@@ -237,8 +317,8 @@ int main(int argc, char *argv[]) {
 			MPI_Barrier(MPI_COMM_WORLD);
 
 			if (rank == 0) {
-				UpdateCovering(&hitbuffer, &hitbuffer_original);
-				memcpy(hitbuffer.buff,hitbuffer_original.buff,hitbuffer_original.size);
+				UpdateCovering(&hitbuffer_phys, &hitbuffer_sum);
+				memcpy(hitbuffer.buff,hitbuffer_phys.buff,hitbuffer_phys.size); //copying slows down code. Unfortunately we need to.
 				std::cout << "ending iteration " << it <<std::endl;
 				//________________________________________________________________________
 
@@ -252,7 +332,7 @@ int main(int argc, char *argv[]) {
 	if(rank==0){
 		//Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
 		std::cout << "Process 0 exporting final hitbuffer" << std::endl <<std::endl;
-		exportBuff(argv[3],&hitbuffer_original);
+		exportBuff(argv[3],&hitbuffer_sum);//ToDo: &hitbuffer_sum ersetzen durch &hitbuffer_phys
 	}
 
 	if (hitbuffer.buff != NULL) {
