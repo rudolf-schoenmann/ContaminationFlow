@@ -173,6 +173,7 @@ int main(int argc, char *argv[]) {
 
 		if(rank == 0){
 		std::cout <<std::endl <<"Starting iteration " <<it <<std::endl;
+		UpdateDesorptionRate(hitbuffer);//Just writing Desorptionrate into Facetproperties for Simulation Handle of process 0
 		}
 
 		// Send hitbuffer content to all subprocesses
