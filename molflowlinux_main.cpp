@@ -173,7 +173,6 @@ int main(int argc, char *argv[]) {
 
 		if(rank == 0){
 		std::cout <<std::endl <<"Starting iteration " <<it <<std::endl;
-		UpdateDesorptionRate(hitbuffer);//Just writing Desorptionrate into Facetproperties for Simulation Handle of process 0
 		}
 
 		// Send hitbuffer content to all subprocesses
@@ -207,6 +206,8 @@ int main(int argc, char *argv[]) {
 					MPI_Finalize();
 					return 0;
 				}
+				UpdateDesorptionRate(&hitbuffer);//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes
+
 
 				//Reset some counters. Just in case they are not Null in the imported hibufferfile.
 				/*Generell könnte man überlegen, dass man der Übersichtlichkeit halber vor der Iterationsschleife alles für die Simulation
@@ -279,7 +280,7 @@ int main(int argc, char *argv[]) {
 					gHits_sum->globalHits.hit.nbHitEquiv = 0;
 					gHits_sum->globalHits.hit.nbAbsEquiv = 0;
 					gHits_sum->globalHits.hit.nbDesorbed = 0;
-				}
+					}
 				//Wahrscheinlich müssten hier auch noch alle Profiles und Textures resetet werden!
 				//_________________________________________________________________________________________________
 				//Block_Ende
@@ -310,7 +311,8 @@ int main(int argc, char *argv[]) {
 					//Process 0 receives hitbuffer from Process i
 					MPI_Recv(hitbuffer.buff, hitbuffer.size, MPI::BYTE, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 					//sleep(1);
-					UpdateMainHits(&hitbuffer_sum, &hitbuffer, 0);
+
+					UpdateMainHits(&hitbuffer_sum, &hitbuffer, &hitbuffer_phys, 0);
 					std::cout << "Updated hitbuffer with process " << i <<std::endl
 							<< std::endl;
 				}
@@ -320,10 +322,14 @@ int main(int argc, char *argv[]) {
 			if (rank == 0) {
 				UpdateCovering(&hitbuffer_phys, &hitbuffer_sum);
 				memcpy(hitbuffer.buff,hitbuffer_phys.buff,hitbuffer_phys.size); //copying slows down code. Unfortunately we need to.
-				std::cout << "ending iteration " << it <<std::endl;
+				memcpy(hitbuffer_sum.buff,hitbuffer_phys.buff,hitbuffer_phys.size); //copying slows down code. Unfortunately we need to.
+				//std::cout << "ending iteration " << it <<std::endl;
 				//________________________________________________________________________
 
 			}
+			UpdateDesorptionRate(&hitbuffer);//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes
+			if (rank == 0) std::cout << "ending iteration " << it <<std::endl;
+
 		} else {
 			std::cout << "Simulation time = 0.0 seconds. Nothing to do."
 					<< std::endl;

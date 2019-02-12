@@ -183,7 +183,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 					facetHitBuffer->hit.sum_1_per_ort_velocity = f.tmpCounter[m].hit.sum_1_per_ort_velocity;
 					facetHitBuffer->hit.sum_v_ort = f.tmpCounter[m].hit.sum_v_ort;
 					facetHitBuffer->hit.sum_1_per_velocity = f.tmpCounter[m].hit.sum_1_per_velocity;
-					facetHitBuffer->hit.covering= f.tmpCounter[m].hit.covering-facetHitBuffer->hit.covering; //TODO correct?
+					facetHitBuffer->hit.covering= f.tmpCounter[m].hit.covering;
 					//facetHitBuffer->hit.covering= 0.0;
 				}
 

@@ -40,7 +40,7 @@ double estimateTmin_RudiTest(){ //not ready yet => finish
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				double v_avg_therm = 3*pow((3.14159265359/8),0.5)* pow((8.314472* f.sh.temperature/(sHandle->wp.gasMass*0.001)),0.5); //0.001 to convert MolarMass form g to kg
 				sum_v_avg += v_avg_therm * (f.sh.outgassing + f.sh.desorption);
-				normalization_factor_v += f.sh.outgassing + f.sh.desorption);
+				normalization_factor_v += f.sh.outgassing + f.sh.desorption;
 				if ((f.sh.outgassing + f.sh.desorption) > 0){ //avoid division by 0
 					if (!tmin_particles_out){
 						//tmin_particles_out = (covering/(f.sh.outgassing + f.sh.desorption));
@@ -48,10 +48,9 @@ double estimateTmin_RudiTest(){ //not ready yet => finish
 					//if (tmin_particles_out > (covering/(f.sh.outgassing +f.sh.desorption))
 					//tmin_particles_out = (covering/(f.sh.outgassing +f.sh.desorption));
 				}				
-			}
-		}	
+			 }
 	}
-	double v_avg = sum_v_ag/normalization_factor_v;
+	double v_avg = sum_v_avg/normalization_factor_v;
 	double av_path_length = sHandle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;
 	tmin = av_path_length /v_avg;
 

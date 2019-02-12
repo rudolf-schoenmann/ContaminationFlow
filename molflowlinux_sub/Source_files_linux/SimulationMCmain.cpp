@@ -27,12 +27,12 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 extern Simulation *sHandle; //delcared in molflowSub.cpp
 
-void UpdateMainHits(Databuff *databuffer,Databuff *subbuffer, int rank) {//Schreibt (=Summiert) die Daten aller Hitbuffer aus den Subprozessen in den Hitbuffer_original des Hauptprozesses.
+void UpdateMainHits(Databuff *databuffer,Databuff *subbuffer, Databuff *physbuffer, int rank) {//Schreibt (=Summiert) die Daten aller Hitbuffer aus den Subprozessen in den Hitbuffer_original des Hauptprozesses.
 	switch (sHandle->wp.sMode) {
 	case MC_MODE:
 	{
 		 // std::cout <<"shandle size " <<(double)sHandle->moments.size() << std::endl;
-		UpdateMCmainHits(databuffer, subbuffer, rank, (size_t)sHandle->moments.size());
+		UpdateMCmainHits(databuffer, subbuffer, physbuffer, rank, (size_t)sHandle->moments.size());
 		//if (dpLog) UpdateLog(dpLog, timeout);
 	}
 		break;
@@ -44,8 +44,8 @@ void UpdateMainHits(Databuff *databuffer,Databuff *subbuffer, int rank) {//Schre
 
 }
 
-void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t nbMoments) {
-	BYTE *buffer, *subbuff;
+void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer, Databuff *physbuffer,int rank, size_t nbMoments) {
+	BYTE *buffer, *subbuff, *buffer_phys;
 	GlobalHitBuffer *gHits, *subHits;
 	TEXTURE_MIN_MAX texture_limits_old[3];
 	int i, j, s, x, y;
@@ -61,6 +61,10 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 	//added subbuffer that contains simulation results from a subprocess, to be added to mainbuffer
 	subbuff=subbuffer->buff;
 	subHits=(GlobalHitBuffer *)subbuff;
+
+	//buffer_phys holds the physical values of covering before the iteration step
+	buffer_phys = physbuffer->buff;
+
 /*
 	std::cout <<gHits->globalHits.hit.nbMCHit  <<std::endl;
 	std::cout <<gHits->globalHits.hit.nbHitEquiv   <<std::endl;
@@ -85,7 +89,8 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 	gHits->globalHits.hit.nbDesorbed += subHits->globalHits.hit.nbDesorbed;
 	gHits->distTraveled_total += subHits->distTraveled_total;
 	gHits->distTraveledTotal_fullHitsOnly += subHits->distTraveledTotal_fullHitsOnly;
-/*
+
+	/*
 	std::cout <<gHits->globalHits.hit.nbMCHit  <<std::endl;
 	std::cout <<gHits->globalHits.hit.nbHitEquiv   <<std::endl;
 	std::cout <<gHits->globalHits.hit.nbAbsEquiv  <<std::endl;
@@ -172,6 +177,7 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) { // Add hits
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 					FacetHitBuffer *facetHitSub = (FacetHitBuffer *)(subbuff + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
+					FacetHitBuffer *facetHitphys = (FacetHitBuffer *)(buffer_phys +f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 /*
 					std::cout <<sizeof(GlobalHitBuffer) <<std::endl;
 					std::cout <<f.sh.hitOffset  <<std::endl;
@@ -199,7 +205,16 @@ void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t
 					facetHitBuffer->hit.sum_1_per_ort_velocity += facetHitSub->hit.sum_1_per_ort_velocity;
 					facetHitBuffer->hit.sum_v_ort += facetHitSub->hit.sum_v_ort;
 					facetHitBuffer->hit.sum_1_per_velocity += facetHitSub->hit.sum_1_per_velocity;
-					facetHitBuffer->hit.covering += facetHitSub->hit.covering;
+					//facetHitBuffer->hit.covering += facetHitSub->hit.covering; //We do that in another way.
+					if (facetHitSub->hit.covering > facetHitphys->hit.covering){
+					facetHitBuffer->hit.covering += (facetHitSub->hit.covering - facetHitphys->hit.covering);
+					}
+					else{
+						if(facetHitBuffer->hit.covering > (facetHitphys->hit.covering - facetHitSub->hit.covering)){
+							facetHitBuffer->hit.covering -= (facetHitphys->hit.covering - facetHitSub->hit.covering);
+							}
+						else facetHitBuffer->hit.covering = 0;//Counter cannot be negative! Maybe we could interrupt the iteration here?
+					}
 
 					/*
 					if(f.globalId == 1){

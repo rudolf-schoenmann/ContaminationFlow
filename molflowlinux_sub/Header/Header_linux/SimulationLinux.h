@@ -49,8 +49,8 @@ void UpdateSubHits(Databuff *databuffer, int rank);
 void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments);
 //void initbufftozero(size_t nbMoments, Databuff *buffer);
 
-void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer,int rank, size_t nbMoments);
-void UpdateMainHits(Databuff *databuffer,Databuff *subbuffer, int rank);
+void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer, Databuff *physbuffer,int rank, size_t nbMoments);
+void UpdateMainHits(Databuff *databuffer,Databuff *subbuffer, Databuff *physbuffer, int rank);
 
 void UpdateSticking(Databuff *hitbuffer);
 void UpdateDesorptionRate (Databuff *hitbuffer);

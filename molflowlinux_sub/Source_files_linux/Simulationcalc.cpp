@@ -54,12 +54,13 @@ double calcdNsurf(){//Calculates the (carbon equivalent relative) mass factor
 }
 
 std::tuple<double, double> calctotalDesorption(Databuff *hitbuffer){//Number of particles/s as well as Number of particles
-	double desrate, totaldes=0.0;
+	double desrate =0.0, totaldes=0.0;
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 					double facetdes = f.sh.desorption;
 					std::cout<< "f.sh.desorption = " << f.sh.desorption << std::endl;
 					desrate+=facetdes/ (1.38E-23*f.sh.temperature);
+					std::cout<< "desrate = " << desrate << std::endl;
 					totaldes+=sHandle->wp.latestMoment * facetdes / (1.38E-23*f.sh.temperature);;
 			}
 	}
@@ -254,42 +255,55 @@ void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum){//Updates
 	buffer_phys = hitbuffer_phys->buff;
 	BYTE *buffer_sum;
 	buffer_sum = hitbuffer_sum->buff;
+	double test_time_step = pow(10,-14);
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				FacetHitBuffer *facetHitBuffer_phys = (FacetHitBuffer *)(buffer_phys + f.sh.hitOffset);
 				covering_phys = facetHitBuffer_phys->hit.covering;
 				FacetHitBuffer *facetHitBuffer_sum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
 				covering_sum = facetHitBuffer_sum->hit.covering;
+				std::cout<<std::endl << "Facet " << &f << std::endl;
 				std::cout << "covering_sum = " << covering_sum << std::endl;
-				covering_check = covering_phys + (covering_sum - covering_phys)*Krealvirt*1e+24; //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
-				if(!(covering_check<0)){
-					covering_phys += (covering_sum - covering_phys)*Krealvirt*1e+24; //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
-					std::cout<< "covering_phys = " << covering_phys << std::endl;
-					facetHitBuffer_phys->hit.covering = covering_phys;
-					//Reset of Hitbuffer_phys for the next Iteration Step
-					facetHitBuffer_phys->hit.nbAbsEquiv = 0;
-					facetHitBuffer_phys->hit.nbDesorbed = 0;
-					facetHitBuffer_phys->hit.nbMCHit = 0;
-					facetHitBuffer_phys->hit.nbHitEquiv = 0;
-					facetHitBuffer_phys->hit.sum_1_per_ort_velocity = 0;
-					facetHitBuffer_phys->hit.sum_v_ort = 0;
-					facetHitBuffer_phys->hit.sum_1_per_velocity = 0;
-					//Reset of Hitbuffer_sum for the next Iteration Step
-					facetHitBuffer_sum->hit.nbAbsEquiv = 0;
-					facetHitBuffer_sum->hit.nbDesorbed = 0;
-					facetHitBuffer_sum->hit.nbMCHit = 0;
-					facetHitBuffer_sum->hit.nbHitEquiv = 0;
-					facetHitBuffer_sum->hit.sum_1_per_ort_velocity = 0;
-					facetHitBuffer_sum->hit.sum_v_ort = 0;
-					facetHitBuffer_sum->hit.sum_1_per_velocity = 0;
+				std::cout<< "covering_phys_before = " << covering_phys << std::endl;
+				if (covering_sum > covering_phys){
+					llong covering_delta = static_cast < llong > ((covering_sum - covering_phys)*Krealvirt*test_time_step); //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+					covering_phys += covering_delta;
+					std::cout << "covering rises"<< std::endl;
+				}
+				else{
+					covering_check = covering_phys + (covering_phys - covering_sum)*Krealvirt*(-1)*test_time_step; //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+					std::cout <<"covering_check = " << covering_check << std::endl;
+					if(!(covering_check<0)){
+						llong covering_delta = static_cast < llong > ((covering_phys - covering_sum)*Krealvirt*test_time_step); //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+						covering_phys -= covering_delta;
+						std::cout << "covering decreases but remains positive" << std::endl;
 					}
-				else {
-					std::cout<<"Ups! Covering darf nicht negativ sein. Iteration wird nicht upgedated."<<std::endl;
-					std::cout << covering_check << std::endl;
-					//nichts updaten
-					//iteration neu starten mit weniger nbSteps; Wie viel weniger? 1/10 der vorigen Anzahl?
+					else {
+						std::cout<<"Upps! Covering darf nicht negativ sein. Iteration wird nicht upgedated."<<std::endl;
+						//std::cout << covering_check << std::endl;
+						//nichts updaten
+						//iteration neu starten mit weniger nbSteps; Wie viel weniger? 1/10 der vorigen Anzahl?
 					}
-			}
+				}
+				std::cout<< "covering_phys_after = " << covering_phys << std::endl;
+				facetHitBuffer_phys->hit.covering = covering_phys;
+				//Reset of Hitbuffer_phys for the next Iteration Step
+				facetHitBuffer_phys->hit.nbAbsEquiv = 0;
+				facetHitBuffer_phys->hit.nbDesorbed = 0;
+				facetHitBuffer_phys->hit.nbMCHit = 0;
+				facetHitBuffer_phys->hit.nbHitEquiv = 0;
+				facetHitBuffer_phys->hit.sum_1_per_ort_velocity = 0;
+				facetHitBuffer_phys->hit.sum_v_ort = 0;
+				facetHitBuffer_phys->hit.sum_1_per_velocity = 0;
+				//Reset of Hitbuffer_sum for the next Iteration Step
+				facetHitBuffer_sum->hit.nbAbsEquiv = 0;
+				facetHitBuffer_sum->hit.nbDesorbed = 0;
+				facetHitBuffer_sum->hit.nbMCHit = 0;
+				facetHitBuffer_sum->hit.nbHitEquiv = 0;
+				facetHitBuffer_sum->hit.sum_1_per_ort_velocity = 0;
+				facetHitBuffer_sum->hit.sum_v_ort = 0;
+				facetHitBuffer_sum->hit.sum_1_per_velocity = 0;
+		}
 	}
 	if(covering_check){
 	//Reset GlobalHitBuffer
