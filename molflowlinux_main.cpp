@@ -320,7 +320,8 @@ int main(int argc, char *argv[]) {
 			MPI_Barrier(MPI_COMM_WORLD);
 
 			if (rank == 0) {
-				UpdateCovering(&hitbuffer_phys, &hitbuffer_sum);
+				double time_step = estimateTmin_RudiTest;
+				UpdateCovering(&hitbuffer_phys, &hitbuffer_sum, time_step);
 				memcpy(hitbuffer.buff,hitbuffer_phys.buff,hitbuffer_phys.size); //copying slows down code. Unfortunately we need to.
 				memcpy(hitbuffer_sum.buff,hitbuffer_phys.buff,hitbuffer_phys.size); //copying slows down code. Unfortunately we need to.
 				//std::cout << "ending iteration " << it <<std::endl;

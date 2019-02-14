@@ -244,7 +244,7 @@ double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer) {//This 
 	return desorptionRate;
 }
 
-void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum){//Updates Covering after one Iteration using Krealvirt, resets other counters
+void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum, double time_step){//Updates Covering after one Iteration using Krealvirt, resets other counters
 	//If one wants to read out pressure and particle density, this must be done before calling UpdateCovering.
 	//Calculates with the summed up counters of hitbuffer_sum how many test particles are equivalent to one physical particle.
 	//Then the physical values are stored in the hitbuffer.
@@ -257,7 +257,7 @@ void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum){//Updates
 	buffer_phys = hitbuffer_phys->buff;
 	BYTE *buffer_sum;
 	buffer_sum = hitbuffer_sum->buff;
-	double test_time_step = pow(10,-14);
+	//double test_time_step = pow(10,-14);
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				FacetHitBuffer *facetHitBuffer_phys = (FacetHitBuffer *)(buffer_phys + f.sh.hitOffset);
