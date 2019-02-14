@@ -65,5 +65,5 @@ double calcKrealvirt(SubprocessFacet *iFacet, int m);
 
 
 double estimateTmin();
-double estimateTmin_RudiTest();
+double estimateTmin_RudiTest(Databuff hitbuffer);
 

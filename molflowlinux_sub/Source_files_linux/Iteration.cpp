@@ -27,8 +27,9 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 extern Simulation *sHandle;
 
-double estimateTmin_RudiTest(){ //not ready yet => finish
-//double estimateTmin_RudiTest(Databuff hitbuffer){ //not ready yet => finish
+double estimateTmin_RudiTest(Databuff hitbuffer){ //not ready yet => finish
+BYTE *buffer;
+buffer = hitbuffer->buff;
 //Ich muss der Funktion noch einen Hitbuffer übergeben. Ich brauche ja 'covering'.
 	double tmin=0;
 	double sum_v_avg = 0;
@@ -38,15 +39,17 @@ double estimateTmin_RudiTest(){ //not ready yet => finish
 	double tmin_particles_out = 0;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
+				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
+				covering = facetHitBuffer->hit.covering;
 				double v_avg_therm = 3*pow((3.14159265359/8),0.5)* pow((8.314472* f.sh.temperature/(sHandle->wp.gasMass*0.001)),0.5); //0.001 to convert MolarMass form g to kg
 				sum_v_avg += v_avg_therm * (f.sh.outgassing + f.sh.desorption);
 				normalization_factor_v += f.sh.outgassing + f.sh.desorption;
 				if ((f.sh.outgassing + f.sh.desorption) > 0){ //avoid division by 0
 					if (!tmin_particles_out){
-						//tmin_particles_out = (covering/(f.sh.outgassing + f.sh.desorption));
+						tmin_particles_out = (covering/(f.sh.outgassing + f.sh.desorption)/ (1.38E-23*f.sh.temperature));
 					}
-					//if (tmin_particles_out > (covering/(f.sh.outgassing +f.sh.desorption))
-					//tmin_particles_out = (covering/(f.sh.outgassing +f.sh.desorption));
+					if (tmin_particles_out > (covering/(f.sh.outgassing +f.sh.desorption)/ (1.38E-23*f.sh.temperature));
+					tmin_particles_out = (covering/(f.sh.outgassing +f.sh.desorption)/ (1.38E-23*f.sh.temperature)); 
 				}				
 			 }
 	}
@@ -54,16 +57,16 @@ double estimateTmin_RudiTest(){ //not ready yet => finish
 	double av_path_length = sHandle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;
 	tmin = av_path_length /v_avg;
 
-	/*if (tmin < tmin_particles_out)
+	if (tmin < tmin_particles_out)
 	 	return tmin;
 	else
 		return tmin_particles_out
-	*/
-	/*
+	
+	
 	std::cout << "estimateTmin_RudiTest: tmin = " <<tmin<< "ms"<< std::endl;
 	//std::cout << "estimateTmin_RudiTest: tmin_particles_out = " <<tmin_particles_out<< "ms"<< std::endl;
 	std::cout << "_______________________________________________________________________________________________________"<< std::endl<<std::endl;
-	*/
+	
 	return tmin;
 }
 

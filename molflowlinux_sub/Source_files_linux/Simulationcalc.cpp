@@ -53,7 +53,9 @@ double calcdNsurf(){//Calculates the (carbon equivalent relative) mass factor
 	return sHandle->wp.gasMass/12.011;
 }
 
-std::tuple<double, double> calctotalDesorption(Databuff *hitbuffer){//Number of particles/s as well as Number of particles
+std::tuple<double, double> calctotalDesorption(){//Number of particles/s as well as Number of particles
+	//We don't need the hitbuffer => remove from function
+	
 	double desrate =0.0, totaldes=0.0;
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
