@@ -53,7 +53,7 @@ double calcdNsurf(){//Calculates the (carbon equivalent relative) mass factor
 	return sHandle->wp.gasMass/12.011;
 }
 
-std::tuple<double, double> calctotalDesorption(){//Number of particles/s as well as Number of particles
+std::tuple<double, double> calctotalDesorption(Databuff *hitbuffer){//Number of particles/s as well as Number of particles
 	//We don't need the hitbuffer => remove from function
 	
 	double desrate =0.0, totaldes=0.0;
@@ -257,7 +257,7 @@ void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum, double ti
 	buffer_phys = hitbuffer_phys->buff;
 	BYTE *buffer_sum;
 	buffer_sum = hitbuffer_sum->buff;
-	//double test_time_step = pow(10,-14);
+	double test_time_step = pow(10,-14);
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				FacetHitBuffer *facetHitBuffer_phys = (FacetHitBuffer *)(buffer_phys + f.sh.hitOffset);

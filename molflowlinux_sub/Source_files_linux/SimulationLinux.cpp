@@ -73,7 +73,7 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
 	//UpdateSticking();
 	estimateTmin();
-	estimateTmin_RudiTest();
+	estimateTmin_RudiTest(hitbuffer);
 
 
 	//Save history to new file
