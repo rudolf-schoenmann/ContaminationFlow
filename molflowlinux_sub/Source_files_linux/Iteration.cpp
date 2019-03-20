@@ -27,7 +27,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 extern Simulation *sHandle;
 
-double estimateTmin_RudiTest(Databuff *hitbuffer){ //not ready yet => finish
+double estimateTmin_RudiTest(Databuff *hitbuffer){ //not ready yet => finish //TODO
 BYTE *buffer;
 buffer = hitbuffer->buff;
 //Ich muss der Funktion noch einen Hitbuffer übergeben. Ich brauche ja 'covering'.
@@ -45,11 +45,12 @@ buffer = hitbuffer->buff;
 				sum_v_avg += v_avg_therm * (f.sh.outgassing + f.sh.desorption);
 				normalization_factor_v += f.sh.outgassing + f.sh.desorption;
 				if ((f.sh.outgassing + f.sh.desorption) > 0){ //avoid division by 0
+					double ttemp= covering/(f.sh.outgassing + f.sh.desorption)/ (1.38E-23*f.sh.temperature);
 					if (!tmin_particles_out){
-						tmin_particles_out = (covering/(f.sh.outgassing + f.sh.desorption)/ (1.38E-23*f.sh.temperature));
+						tmin_particles_out = (ttemp);
 					}
-					if (tmin_particles_out > (covering/(f.sh.outgassing +f.sh.desorption)/ (1.38E-23*f.sh.temperature))){
-						tmin_particles_out = (covering/(f.sh.outgassing +f.sh.desorption)/ (1.38E-23*f.sh.temperature));}
+					if (tmin_particles_out > ttemp){
+						tmin_particles_out = ttemp;}
 				}				
 			 }
 	}
@@ -67,7 +68,7 @@ buffer = hitbuffer->buff;
 	//std::cout << "estimateTmin_RudiTest: tmin_particles_out = " <<tmin_particles_out<< "ms"<< std::endl;
 	std::cout << "_______________________________________________________________________________________________________"<< std::endl<<std::endl;
 	
-	return tmin;
+	return tmin; //TODO *1000?
 }
 
 
@@ -114,13 +115,13 @@ double estimateTmin(){
 }
 
 CoveringHistory::CoveringHistory(){
-	pointintime_list=std::vector< std::pair<double,std::vector<double>> >();
+	pointintime_list=std::vector< std::pair<double,std::vector<llong>> >();
 }
 
 CoveringHistory::CoveringHistory(Databuff *hitbuffer){
-	pointintime_list=std::vector< std::pair<double,std::vector<double>> >();
-	std::vector<double> currentstep;
-	currentstep =std::vector<double> ();
+	pointintime_list=std::vector< std::pair<double,std::vector<llong>> >();
+	std::vector<llong> currentstep;
+	currentstep =std::vector<llong> ();
 
 	BYTE *buffer;
 	buffer = hitbuffer->buff;
@@ -129,8 +130,8 @@ CoveringHistory::CoveringHistory(Databuff *hitbuffer){
 	//std::cout <<"Reading covering values from buffer\t";
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
-				covering = facetHitBuffer->hit.covering;
+				//FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
+				covering = calcCovering(&f, hitbuffer);
 				//std::cout <<covering <<"\t";
 				currentstep.push_back(covering);
 				f.tmpCounter[0].hit.covering=covering;
@@ -140,18 +141,20 @@ CoveringHistory::CoveringHistory(Databuff *hitbuffer){
 	pointintime_list.push_back(std::make_pair(0.0,currentstep));
 }
 
-void CoveringHistory::appendList(double time){
+void CoveringHistory::appendList(Databuff *hitbuffer, double time){
 
-	std::vector<double> currentstep;
-	currentstep =std::vector<double> ();
+	std::vector<llong> currentstep;
+	currentstep =std::vector<llong> ();
+
+	if(time==-1.0) //TODO improve: here steps instead of time
+		time=pointintime_list.back().first+1.0;
 
 	double covering;
 
 	int i=0;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			//covering=calcRealCovering(&f);
-			covering=calcCovering(&f);
+			covering=calcCovering(&f, hitbuffer);
 			currentstep.push_back(covering);
 			i+=1;
 		}
@@ -213,10 +216,10 @@ void::CoveringHistory::read(std::string filename, Databuff *hitbuffer){//Rudi: N
 	std::ifstream input(filename,std::ifstream::in);
 	std::cout <<"Reading in covering history from " <<filename <<std::endl;
 	while(std::getline(input,line)){
-		std::vector<double> currentstep;
-		currentstep =std::vector<double> ();
+		std::vector<llong> currentstep;
+		currentstep =std::vector<llong> ();
 
-		double covering;
+		llong covering;
 		double time;
 		std::istringstream is( line );
 
@@ -245,4 +248,18 @@ void::CoveringHistory::read(std::string filename, Databuff *hitbuffer){//Rudi: N
 	}
 	std::cout <<std::endl;
 
+}
+
+llong::CoveringHistory::getCurrentCovering(int idx){
+	return pointintime_list.back().second[idx];
+}
+
+llong::CoveringHistory::getCurrentCovering(SubprocessFacet *iFacet){
+	int covidx = getFacetIndex(iFacet);
+	return pointintime_list.back().second[covidx];
+}
+
+void::CoveringHistory::setCurrentCovering(SubprocessFacet *iFacet, llong newCovering){
+	int covidx = getFacetIndex(iFacet);
+	pointintime_list.back().second[covidx]=newCovering;
 }

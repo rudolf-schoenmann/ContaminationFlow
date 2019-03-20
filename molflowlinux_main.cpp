@@ -78,11 +78,14 @@ int main(int argc, char *argv[]) {
 	Databuff hitbuffer_sum; //Hitbuffer to sum up all of the subprocesses' data
 	hitbuffer_sum.buff=NULL;
 
-	Databuff hitbuffer_phys; //Hitbuffer where 'covering' is converted from test particle number dependent to real physical values
-	hitbuffer_phys.buff=NULL;
+	//Databuff hitbuffer_phys; //Hitbuffer where 'covering' is converted from test particle number dependent to real physical values
+	//hitbuffer_phys.buff=NULL;
 
 	Databuff loadbuffer; //Loadbuffer to read in data of geometry and physical parameters
 	loadbuffer.buff=NULL;
+
+	CoveringHistory *histphys; //test: replacing hitbuffer_phys
+	llong nbDesorbed_old; //test: nbDesorbed of previous iteration, used so that hitbuffer_sum does not have to be reset -> true final hitbuffer
 
 	// Init simulation time and unit
 	double SimulationTime;
@@ -119,32 +122,19 @@ int main(int argc, char *argv[]) {
 		importBuff(argv[1],&loadbuffer);
 		importBuff(argv[2],&hitbuffer);
 
-
-		//Save copies of the original loaded hitbuffer
-		//These copise will be used in process 0. The hitbuffers of all subprocesses will be add up and written in the hitbuffer_sum
-		//and then converted in the hitbuffer_phys
-		hitbuffer_sum.buff = new BYTE[hitbuffer.size];
-		memcpy(hitbuffer_sum.buff,hitbuffer.buff,hitbuffer.size);
-		hitbuffer_sum.size =hitbuffer.size;
-		hitbuffer_phys.buff = new BYTE[hitbuffer.size];
-		memcpy(hitbuffer_phys.buff,hitbuffer.buff,hitbuffer.size);
-		hitbuffer_phys.size =hitbuffer.size;
 		/*
 		 * show informations about the loading
 		 * just interesting for debugging => build some conditional (if debug, then show)?
 		 * leave out or put in function?*/
-		std::cout << "size of " << argv[2] << " = " << hitbuffer.size
-				<< std::endl;
-		std::cout << "size of " << argv[1] << " = " << loadbuffer.size
-				<< std::endl;
+		std::cout << "size of " << argv[2] << " = " << hitbuffer.size << std::endl;
+		std::cout << "size of " << argv[1] << " = " << loadbuffer.size << std::endl;
 
 		std::cout << "Buffers sent. Wait for a few seconds. " << std::endl<< std::endl;
 	}
 
-	// Send load-buffer to all other processes
+// Send load-buffer to all other processes
 	// Send size of buffer
-	MPI_Bcast(&loadbuffer.size, sizeof(loadbuffer.size), MPI::BYTE, 0,
-			MPI_COMM_WORLD);
+	MPI_Bcast(&loadbuffer.size, sizeof(loadbuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
 	MPI_Barrier(MPI_COMM_WORLD);
 	// Allocate memory for buffer
 	if (rank != 0) { /* do work in any remaining processes */
@@ -155,59 +145,80 @@ int main(int argc, char *argv[]) {
 	MPI_Bcast(loadbuffer.buff, loadbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	//Send hit-buffer to all other processes.
+//Send hit-buffer size to all other processes.
 	// Send size of buffer
-	MPI_Bcast(&hitbuffer.size, sizeof(hitbuffer.size), MPI::BYTE, 0,
-			MPI_COMM_WORLD);
+	MPI_Bcast(&hitbuffer.size, sizeof(hitbuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
 	MPI_Barrier(MPI_COMM_WORLD);
 	// Allocate memory for buffer
 	if (rank != 0) { /* do work in any remaining processes */
 		hitbuffer.buff = new BYTE[hitbuffer.size];
 	}
 
+// Calculate Simulationtime
+	// extract Simulation time and unit
+	if (argc == 5)
+		unit = "s";
+	else
+		unit = argv[5];
+	SimulationTime = std::atof(argv[4]);
+
+	//compute simulation time in seconds
+	newsimutime = (int) (convertunit(SimulationTime, unit) + 0.5);
+	if (rank == 0)
+		std::cout << "Simulation time " << SimulationTime << unit << " converted to " << newsimutime << "ms" << std::endl;
+
+// create Simulation handle and preprocess hitbuffer
+	if (newsimutime != 0) {
+		//Creates sHandle instance for process 0 and all subprocesses (before the first iteration step starts)
+		InitSimulation();
+		// Load geometry from buffer to sHandle
+		if (!LoadSimulation(&loadbuffer)) {
+			std::cout << "Geometry not loaded." << std::endl;
+			std::cout << "MolflowLinux is terminated now." << std::endl;
+			MPI_Finalize();
+			return 0;
+		}
+		if(rank==0){ // hitbuffer_sum and histphys
+			//Save copies of the original loaded hitbuffer
+			//These copise will be used in process 0. The hitbuffers of all subprocesses will be add up and written in the hitbuffer_sum
+			//and then converted in the hitbuffer_phys
+			hitbuffer_sum.buff = new BYTE[hitbuffer.size];
+			memcpy(hitbuffer_sum.buff,hitbuffer.buff,hitbuffer.size);
+			hitbuffer_sum.size =hitbuffer.size;
+
+			//hitbuffer_phys.buff = new BYTE[hitbuffer.size];
+			//memcpy(hitbuffer_phys.buff,hitbuffer.buff,hitbuffer.size);
+			//hitbuffer_phys.size =hitbuffer.size;
+
+			histphys = new CoveringHistory (&hitbuffer);
+			nbDesorbed_old = getnbDesorbed(&hitbuffer_sum);
+
+			initcounterstozero(&hitbuffer);
+			initbufftozero(&hitbuffer);
+		}
+	}
 
 //for loop to let the simulation run 'iterationnumber' times
 //will be replaced later by the time dependent mode to calculate the prediction of contamination
 	int iterationnumber = 43200;
 	for(int it=0;it<iterationnumber;it++){ //TODO parameterübergabe, simulationszeit anpassen
 
-		if(rank == 0){
-		std::cout <<std::endl <<"Starting iteration " <<it <<std::endl;
-		}
 
-		// Send hitbuffer content to all subprocesses
-		MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
-
-		// extract Simulation time and unit
-		if(it==0){
-			if (argc == 5)
-				unit = "s";
-			else
-				unit = argv[5];
-			SimulationTime = std::atof(argv[4]);
-
-			//compute simulation time in seconds
-			newsimutime = (int) (convertunit(SimulationTime, unit) + 0.5);
-			if (rank == 0)
-				std::cout << "Simulation time " << SimulationTime << unit
-						<< " converted to " << newsimutime << "ms" << std::endl;
-		}
-		MPI_Barrier(MPI_COMM_WORLD);
 
 		// Start of Simulation
 		if (newsimutime != 0) {
-			if(it==0){
-				//Creates sHandle instance for process 0 and all subprocesses (before the first iteration step starts)
-				InitSimulation();
-				// Load geometry from buffer to sHandle
-				if (!LoadSimulation(&loadbuffer)) {
-					std::cout << "Geometry not loaded." << std::endl;
-					std::cout << "MolflowLinux is terminated now." << std::endl;
-					MPI_Finalize();
-					return 0;
-				}
-				UpdateDesorptionRate(&hitbuffer);//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes
 
+			if(rank == 0){
+			std::cout <<std::endl <<"Starting iteration " <<it <<std::endl;
+			}
+
+			// Send hitbuffer content to all subprocesses
+			MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
+			MPI_Barrier(MPI_COMM_WORLD);
+
+			UpdateDesorptionRate(&hitbuffer);//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes
+
+			//if(it==0){
 
 				//Reset some counters. Just in case they are not Null in the imported hibufferfile.
 				/*Generell könnte man überlegen, dass man der Übersichtlichkeit halber vor der Iterationsschleife alles für die Simulation
@@ -223,6 +234,7 @@ int main(int argc, char *argv[]) {
 				*/
 				//Folgenden Block könnte man der Schönheit halber in eine Funktion packen. => "ResetHitbuffercounters"
 				//_________________________________________________________________________________________________
+			/*
 				BYTE *buffer;
 				buffer = hitbuffer.buff;
 				for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
@@ -244,6 +256,7 @@ int main(int argc, char *argv[]) {
 				gHits->globalHits.hit.nbAbsEquiv = 0;
 				gHits->globalHits.hit.nbDesorbed = 0;
 				if(rank == 0){
+
 					BYTE *buffer_phys;
 					buffer_phys = hitbuffer_phys.buff;
 					BYTE *buffer_sum;
@@ -259,6 +272,7 @@ int main(int argc, char *argv[]) {
 							facetHitBuffer_phys->hit.sum_1_per_ort_velocity = 0;
 							facetHitBuffer_phys->hit.sum_v_ort = 0;
 							facetHitBuffer_phys->hit.sum_1_per_velocity = 0;
+
 							facetHitBuffer_sum->hit.nbAbsEquiv = 0;
 							facetHitBuffer_sum->hit.nbDesorbed = 0;
 							facetHitBuffer_sum->hit.nbMCHit = 0;
@@ -274,6 +288,7 @@ int main(int argc, char *argv[]) {
 					gHits_phys->globalHits.hit.nbHitEquiv = 0;
 					gHits_phys->globalHits.hit.nbAbsEquiv = 0;
 					gHits_phys->globalHits.hit.nbDesorbed = 0;
+
 					GlobalHitBuffer *gHits_sum;
 					gHits_sum = (GlobalHitBuffer *)buffer_sum;
 					gHits_sum->globalHits.hit.nbMCHit = 0;
@@ -284,8 +299,8 @@ int main(int argc, char *argv[]) {
 				//Wahrscheinlich müssten hier auch noch alle Profiles und Textures resetet werden!
 				//_________________________________________________________________________________________________
 				//Block_Ende
-				MPI_Barrier(MPI_COMM_WORLD);
-			}
+				MPI_Barrier(MPI_COMM_WORLD);*/
+			//}
 
 			//Simulation on subprocesses
 			if (rank != 0) {
@@ -313,40 +328,45 @@ int main(int argc, char *argv[]) {
 					MPI_Recv(hitbuffer.buff, hitbuffer.size, MPI::BYTE, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 					//sleep(1);
 
-					UpdateMainHits(&hitbuffer_sum, &hitbuffer, &hitbuffer_phys, 0);
-					std::cout << "Updated hitbuffer with process " << i <<std::endl
-							<< std::endl;
+					//UpdateMCMainHits(&hitbuffer_sum, &hitbuffer, &hitbuffer_phys, 0);
+					UpdateMCMainHits(&hitbuffer_sum, &hitbuffer, histphys ,0);
+					std::cout << "Updated hitbuffer with process " << i <<std::endl << std::endl;
 				}
 			}
 			MPI_Barrier(MPI_COMM_WORLD);
 
 			if (rank == 0) {
 				double time_step = estimateTmin_RudiTest(&hitbuffer);
-				UpdateCovering(&hitbuffer_phys, &hitbuffer_sum, time_step);
-				memcpy(hitbuffer.buff,hitbuffer_phys.buff,hitbuffer_phys.size); //copying slows down code. Unfortunately we need to.
-				memcpy(hitbuffer_sum.buff,hitbuffer_phys.buff,hitbuffer_phys.size); //copying slows down code. Unfortunately we need to.
+				UpdateCovering(histphys, &hitbuffer_sum, time_step, &nbDesorbed_old);
+				memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //TODO ist ths needed?
+				UpdateCoveringphys(histphys, &hitbuffer_sum, &hitbuffer);
+				//memcpy(hitbuffer.buff,hitbuffer_phys.buff,hitbuffer_phys.size); //copying slows down code. Unfortunately we need to.
+				//memcpy(hitbuffer_sum.buff,hitbuffer_phys.buff,hitbuffer_phys.size); //copying slows down code. Unfortunately we need to.
 				//std::cout << "ending iteration " << it <<std::endl;
 				//________________________________________________________________________
 
 			}
-			UpdateDesorptionRate(&hitbuffer);//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes
+			//UpdateDesorptionRate(&hitbuffer);//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes //already doing this at beginning of iteration
 			if (rank == 0) std::cout << "ending iteration " << it <<std::endl;
 
 		} else {
-			std::cout << "Simulation time = 0.0 seconds. Nothing to do."
-					<< std::endl;
+			std::cout << "Simulation time = 0.0 seconds. Nothing to do." << std::endl;
 		}
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
 	if(rank==0){
 		//Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
 		std::cout << "Process 0 exporting final hitbuffer" << std::endl <<std::endl;
-		exportBuff(argv[3],&hitbuffer_sum);//ToDo: &hitbuffer_sum ersetzen durch &hitbuffer_phys
+		exportBuff(argv[3],&hitbuffer_sum);//ToDo: &hitbuffer_sum ersetzen durch &hitbuffer_phys // Not really needed since memcpy is used anyways?
 	}
 
 	if (hitbuffer.buff != NULL) {
 		delete[] hitbuffer.buff;
 		hitbuffer.buff = NULL;
+	}
+	if (hitbuffer_sum.buff != NULL) {
+		delete[] hitbuffer_sum.buff;
+		hitbuffer_sum.buff = NULL;
 	}
 	if (loadbuffer.buff != NULL) {
 		delete[] loadbuffer.buff;

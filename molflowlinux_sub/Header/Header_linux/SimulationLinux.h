@@ -33,37 +33,46 @@ class CoveringHistory{
 public:
 	CoveringHistory();
 	CoveringHistory(Databuff *hitbuffer);
-	std::vector< std::pair<double,std::vector<double>> > pointintime_list;
+	std::vector< std::pair<double,std::vector<llong>> > pointintime_list;
 	//std::vector< std::pair<double,std::vector<double>> > pointintime_list_read;
 
-	void appendList(double time);
+	void appendList(Databuff *hitbuffer, double time=-1.0);
 	void print();
 	void write(std::string filename);
 	void read(std::string filename, Databuff *hitbuffer);
+
+	llong getCurrentCovering(int idx);
+	llong getCurrentCovering(SubprocessFacet *iFacet);
+	void setCurrentCovering(SubprocessFacet *iFacet, llong newCovering);
 };
 
 
 bool simulateSub(Databuff *hitbuffer, int rank, int simutime);
 double convertunit(double simutime, std::string unit);
-void UpdateSubHits(Databuff *databuffer, int rank);
-void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments);
-//void initbufftozero(size_t nbMoments, Databuff *buffer);
 
-void UpdateMCmainHits(Databuff *mainbuffer, Databuff *subbuffer, Databuff *physbuffer,int rank, size_t nbMoments);
-void UpdateMainHits(Databuff *databuffer,Databuff *subbuffer, Databuff *physbuffer, int rank);
+void initbufftozero(Databuff *databuffer);
+void initcounterstozero(Databuff *databuffer);
+
+void UpdateMCSubHits(Databuff *databuffer, int rank);
+void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, Databuff *physbuffer,int rank);
+void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, CoveringHistory *history,int rank);
+
+const double carbondiameter = 2 *76E-12;
+int getFacetIndex(SubprocessFacet *iFacet);
+llong getnbDesorbed(Databuff *hitbuffer_sum);
+void CalcTotalOutgassingWorker();
+
+llong calcCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
+void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
+double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
+
+double estimateTmin();
+double estimateTmin_RudiTest(Databuff *hitbuffer);
 
 void UpdateSticking(Databuff *hitbuffer);
 void UpdateDesorptionRate (Databuff *hitbuffer);
 
-void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
-//double calcDesorption(SubprocessFacet *iFacet);
-double calcNmono(SubprocessFacet *iFacet);
-const double carbondiameter = 2 *76E-12;
-double calcdNsurf();
-double calcRealCovering(SubprocessFacet *iFacet);
-double calcKrealvirt(SubprocessFacet *iFacet, int m);
-
-
-double estimateTmin();
-double estimateTmin_RudiTest(Databuff *hitbuffer);
+void UpdateCovering(Databuff *hitbuffer, Databuff *hitbuffer_original, double time_step);
+void UpdateCovering(CoveringHistory *history, Databuff *hitbuffer_sum, double time_step, llong *nbDesorbed_old);
+void UpdateCoveringphys(CoveringHistory *history, Databuff *hitbuffer_sum, Databuff *hitbuffer);
 

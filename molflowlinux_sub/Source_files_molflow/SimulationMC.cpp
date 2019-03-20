@@ -517,7 +517,7 @@ bool SimulationMCStep(size_t nbStep, Databuff *hitbuffer) {
 				sHandle->tmpGlobalResult.distTraveled_total += remainderFlightPath * sHandle->currentParticle.oriRatio;
 				RecordHit(HIT_LAST);
 				//sHandle->distTraveledSinceUpdate += sHandle->currentParticle.distanceTraveled;
-				if (!StartFromSource(hitbuffer))
+				if (!StartFromSource())
 					// desorptionLimit reached
 					return false;
 			}
@@ -539,7 +539,7 @@ bool SimulationMCStep(size_t nbStep, Databuff *hitbuffer) {
 							//Absorbed
 							RecordAbsorb(collidedFacet);
 							//sHandle->distTraveledSinceUpdate += sHandle->currentParticle.distanceTraveled;
-							if (!StartFromSource(hitbuffer))
+							if (!StartFromSource())
 								// desorptionLimit reached
 								return false;
 						}
@@ -561,7 +561,7 @@ bool SimulationMCStep(size_t nbStep, Databuff *hitbuffer) {
 							PerformBounce(collidedFacet);
 						}
 						else { //eliminate remainder and create new particle
-							if (!StartFromSource(hitbuffer))
+							if (!StartFromSource())
 								// desorptionLimit reached
 								return false;
 						}
@@ -573,7 +573,7 @@ bool SimulationMCStep(size_t nbStep, Databuff *hitbuffer) {
 			// No intersection found: Leak
 			sHandle->tmpGlobalResult.nbLeakTotal++;
 			RecordLeakPos();
-			if (!StartFromSource(hitbuffer))
+			if (!StartFromSource())
 				// desorptionLimit reached
 				return false;
 		}
@@ -591,7 +591,7 @@ void IncreaseDistanceCounters(double distanceIncrement) //distanceIncrement has 
 // Launch a ray from a source facet. The ray 
 // direction is chosen according to the desorption type.
 
-bool StartFromSource(Databuff *hitbuffer) {
+bool StartFromSource() {
 	bool found = false;
 	bool foundInMap = false;
 	bool reverse;

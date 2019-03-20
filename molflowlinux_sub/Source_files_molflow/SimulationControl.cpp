@@ -609,12 +609,12 @@ void ResetSimulation() {
 
 }
 
-bool StartSimulation(Databuff *hitbuffer) {
+bool StartSimulation() {
 	size_t sMode=0; //MC Mode by dafault
 	sHandle->wp.sMode = sMode;
 	switch (sMode) {
 	case MC_MODE:
-		if (!sHandle->currentParticle.lastHitFacet) StartFromSource(hitbuffer);
+		if (!sHandle->currentParticle.lastHitFacet) StartFromSource();
 		return (sHandle->currentParticle.lastHitFacet != NULL);
 	/*case AC_MODE: (my) no AC_MODE
 		if (sHandle->prgAC != 100) {

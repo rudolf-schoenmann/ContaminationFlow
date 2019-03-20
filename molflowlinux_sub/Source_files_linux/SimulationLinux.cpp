@@ -38,36 +38,32 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 	bool eos=false;
 
 	// Read covering list, saves list in covhistory
-	std::string name1 = "/home/van/simcovering.txt";
+	// std::string name1 = "/home/van/simcovering.txt";
 	//covhistory->read(name1); //TODO parameterübergabe in kommandezeile, nicht hardcoden!
 
 	UpdateSticking(hitbuffer);
 	UpdateDesorptionRate(hitbuffer);
 
 	// Start Simulation = create first particle
-	StartSimulation(hitbuffer);
+	StartSimulation();
 
 
 	// Run Simulation for simutime steps. One step ~ 1 seconds
 	for(double i=0; i<(double)(simutime) && !eos;i+=realtimestep){
 		if(i!=0||covhistory->pointintime_list.empty()){
-			covhistory->appendList(i); //append list with current time and covering //TODO offset if covering list does not end with timestep 0
+			covhistory->appendList(hitbuffer,i); //append list with current time and covering //TODO offset if covering list does not end with timestep 0
 			}
 
 		if(i+timestep>=(double)(simutime)){ //last timestep
 			std::tie(eos,realtimestep) = SimulationRun((double)simutime-i, hitbuffer); // Some additional simulation, as iteration step  does not run for exactly timestep ms
-			covhistory->appendList(i+realtimestep); // append list with last entry
+			covhistory->appendList(hitbuffer,i+realtimestep); // append list with last entry
 			break;
 			}
 		std::tie(eos, realtimestep) = SimulationRun(timestep, hitbuffer);      // Run during timestep ms, performs MC steps
-		//UpdateSticking(); // calculates new sticking
-
-		//calc new timestep?
-
 	}
 
 	// Save simulation results in hitbuffer
-	UpdateSubHits(hitbuffer, rank);
+	UpdateMCSubHits(hitbuffer, rank);
 
 	// Update quantaties for contamination
 
