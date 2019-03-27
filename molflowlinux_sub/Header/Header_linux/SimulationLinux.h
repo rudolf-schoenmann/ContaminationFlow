@@ -29,6 +29,10 @@ static const char *day[]={"day","Day","days","Days","d","D"};
 static const char *hour[]={"hour","Hour","hours","Hours","h","H","hr","Hr"};
 static const char *min[]={"Minutes","minutes","Minute","minute","min","Min","m","M"};
 
+const double carbondiameter = 2 *76E-12;
+const double kb = 1.38E-23;
+const double tau = 1E-13;
+
 class CoveringHistory{
 public:
 	CoveringHistory();
@@ -46,6 +50,23 @@ public:
 	void setCurrentCovering(SubprocessFacet *iFacet, llong newCovering);
 };
 
+class ProblemDef{
+public:
+	ProblemDef(int argc, char *argv[]);
+	void readInputfile(std::string filename);
+	void writeInputfile(std::string filename);
+	double simulationTime;
+	int simulationTimeMS;
+	std::string unit;
+
+	int iterationNumber;
+
+	std::string loadbufferPath;
+	std::string hitbufferPath;
+	std::string resultbufferPath;
+
+};
+
 
 bool simulateSub(Databuff *hitbuffer, int rank, int simutime);
 double convertunit(double simutime, std::string unit);
@@ -57,7 +78,6 @@ void UpdateMCSubHits(Databuff *databuffer, int rank);
 void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, Databuff *physbuffer,int rank);
 void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, CoveringHistory *history,int rank);
 
-const double carbondiameter = 2 *76E-12;
 int getFacetIndex(SubprocessFacet *iFacet);
 llong getnbDesorbed(Databuff *hitbuffer_sum);
 void CalcTotalOutgassingWorker();

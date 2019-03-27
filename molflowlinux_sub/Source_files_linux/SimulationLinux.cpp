@@ -24,6 +24,8 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 #include "SimulationLinux.h"
 #include <array>
+#include <fstream>
+#include <sstream>
 //extern Simulation *sHandle;
 extern CoveringHistory* covhistory;
 
@@ -98,4 +100,60 @@ double convertunit(double simutime, std::string unit){
 	return simutime*1000.0;
 
 }
+
+ProblemDef::ProblemDef(int argc, char *argv[]){
+	loadbufferPath= argc > 1 ? argv[1] :"";
+	hitbufferPath=argc > 2 ? argv[2]:"";
+	resultbufferPath=argc > 3 ? argv[3]:"";
+
+	iterationNumber = 43200;
+
+	simulationTime = argc > 4? std::atof(argv[4]): 10.0;
+	unit = argc > 5? argv[5]:"s";
+
+	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
+	std::cout << "Simulation time " << simulationTime << unit << " converted to " << simulationTimeMS << "ms" << std::endl;
+
+}
+
+void ProblemDef::readInputfile(std::string filename){
+	std::string line;
+	std::ifstream input(filename,std::ifstream::in);
+	std::cout <<"Test to read input arguments from " <<filename <<std::endl;
+
+	while(std::getline(input,line)){
+		std::string stringIn;
+		double doubleIn;
+		int intIn;
+		std::istringstream is( line );
+
+		is >> stringIn;
+
+		if(stringIn == "loadbufferPath") {is >> stringIn; loadbufferPath=stringIn;}
+		else if(stringIn == "hitbufferPath") {is >> stringIn; hitbufferPath=stringIn;}
+		else if(stringIn=="resultbufferPath"){is >> stringIn; resultbufferPath=stringIn;}
+		else if(stringIn =="iterationNumber"){is >> intIn; iterationNumber=intIn;}
+		else if(stringIn == "simulationTime") {is >>doubleIn; simulationTime = doubleIn;}
+		else if(stringIn == "unit"){is >> stringIn; unit=stringIn;}
+		else{std::cout <<stringIn <<" not a valid argument." <<std::endl;}
+
+	}
+	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
+	std::cout << "New Simulation time " << simulationTimeMS << "ms" << std::endl;
+}
+
+void ProblemDef::writeInputfile(std::string filename){
+	std::ofstream outfile(filename,std::ofstream::out|std::ios::trunc);
+	std::cout <<"Test to write input arguments to " <<filename <<std::endl;
+
+	outfile <<"loadbufferPath" <<'\t' <<loadbufferPath <<std::endl;
+	outfile <<"hitbufferPath" <<'\t' <<hitbufferPath <<std::endl;
+	outfile <<"resultbufferPath" <<'\t' <<resultbufferPath <<std::endl;
+	outfile <<"iterationNumber" <<'\t' <<iterationNumber<<std::endl;
+	outfile <<"simulationTime" <<'\t' <<simulationTime <<std::endl;
+	outfile <<"unit" <<'\t' <<unit <<std::endl;
+
+}
+
+
 

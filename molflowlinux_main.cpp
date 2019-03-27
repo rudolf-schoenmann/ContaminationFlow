@@ -88,9 +88,14 @@ int main(int argc, char *argv[]) {
 	llong nbDesorbed_old; //test: nbDesorbed of previous iteration, used so that hitbuffer_sum does not have to be reset -> true final hitbuffer
 
 	// Init simulation time and unit
-	double SimulationTime;
-	int newsimutime;
-	std::string unit;
+	//double simulationTime;
+	//int simulationTimeMS;
+	//std::string unit;
+
+	printf("argc: %d\n", argc);
+	ProblemDef p(argc, argv);
+	//p.readInputfile("/home/van/testInput2");
+	//p.writeInputfile("/home/van/testInput");
 
 	/* Create child processes, each of which has its own variables.
 	 * From this point on, every process executes a separate copy
@@ -119,15 +124,15 @@ int main(int argc, char *argv[]) {
 		}
 
 		//Read in buffer file (exported by Windows-Molflow). File given as first argument to main().
-		importBuff(argv[1],&loadbuffer);
-		importBuff(argv[2],&hitbuffer);
+		importBuff(p.loadbufferPath,&loadbuffer);
+		importBuff(p.hitbufferPath,&hitbuffer);
 
 		/*
 		 * show informations about the loading
 		 * just interesting for debugging => build some conditional (if debug, then show)?
 		 * leave out or put in function?*/
-		std::cout << "size of " << argv[2] << " = " << hitbuffer.size << std::endl;
-		std::cout << "size of " << argv[1] << " = " << loadbuffer.size << std::endl;
+		std::cout << "size of " << p.hitbufferPath << " = " << hitbuffer.size << std::endl;
+		std::cout << "size of " << p.loadbufferPath << " = " << loadbuffer.size << std::endl;
 
 		std::cout << "Buffers sent. Wait for a few seconds. " << std::endl<< std::endl;
 	}
@@ -154,21 +159,21 @@ int main(int argc, char *argv[]) {
 		hitbuffer.buff = new BYTE[hitbuffer.size];
 	}
 
-// Calculate Simulationtime
+// Calculate simulationTime
 	// extract Simulation time and unit
-	if (argc == 5)
+/*	if (argc == 5)
 		unit = "s";
 	else
 		unit = argv[5];
-	SimulationTime = std::atof(argv[4]);
+	simulationTime = std::atof(argv[4]);
 
 	//compute simulation time in seconds
-	newsimutime = (int) (convertunit(SimulationTime, unit) + 0.5);
+	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
 	if (rank == 0)
-		std::cout << "Simulation time " << SimulationTime << unit << " converted to " << newsimutime << "ms" << std::endl;
+		std::cout << "Simulation time " << simulationTime << unit << " converted to " << simulationTimeMS << "ms" << std::endl;*/
 
 // create Simulation handle and preprocess hitbuffer
-	if (newsimutime != 0) {
+	if (p.simulationTimeMS != 0) {
 		//Creates sHandle instance for process 0 and all subprocesses (before the first iteration step starts)
 		InitSimulation();
 		// Load geometry from buffer to sHandle
@@ -198,15 +203,15 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-//for loop to let the simulation run 'iterationnumber' times
+//for loop to let the simulation run 'iterationNumber' times
 //will be replaced later by the time dependent mode to calculate the prediction of contamination
-	int iterationnumber = 43200;
-	for(int it=0;it<iterationnumber;it++){ //TODO parameterübergabe, simulationszeit anpassen
+	//int iterationNumber = 43200;
+	for(int it=0;it<p.iterationNumber;it++){ //TODO parameterübergabe, simulationszeit anpassen
 
 
 
 		// Start of Simulation
-		if (newsimutime != 0) {
+		if (p.simulationTimeMS != 0) {
 
 			if(rank == 0){
 			std::cout <<std::endl <<"Starting iteration " <<it <<std::endl;
@@ -308,7 +313,7 @@ int main(int argc, char *argv[]) {
 				std::cout <<std::endl << "Process " << rank << " starting iteration "<< it <<" now."<< std::endl;
 
 				//Do the simulation
-				if (!simulateSub(&hitbuffer, rank, newsimutime)) {
+				if (!simulateSub(&hitbuffer, rank, p.simulationTimeMS)) {
 					std::cout << "Maximum desorption reached." << std::endl;
 				} else {
 					std::cout << "Simulation for process " << rank << " finished."<< std::endl;
@@ -357,7 +362,7 @@ int main(int argc, char *argv[]) {
 	if(rank==0){
 		//Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
 		std::cout << "Process 0 exporting final hitbuffer" << std::endl <<std::endl;
-		exportBuff(argv[3],&hitbuffer_sum);//ToDo: &hitbuffer_sum ersetzen durch &hitbuffer_phys // Not really needed since memcpy is used anyways?
+		exportBuff(p.resultbufferPath,&hitbuffer_sum);//ToDo: &hitbuffer_sum ersetzen durch &hitbuffer_phys // Not really needed since memcpy is used anyways?
 	}
 
 	if (hitbuffer.buff != NULL) {

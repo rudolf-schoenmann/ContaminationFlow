@@ -191,8 +191,7 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates
 	double s1 =0.99;
 	//End of Test
 	double E_ad = 1E-21;
-	//double E_de = 1.5E-21;
-	double kb = 1.38E-23;
+
 	double coverage;
 	double temperature;
 	//int facetidx = getFacetIndex(iFacet);
@@ -212,7 +211,7 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates
 
 	temperature=iFacet->sh.temperature;
 	coverage = calcCoverage(iFacet,hitbuffer);
-	if (coverage < 1) { //TODO change this to coverage? -> YES!
+	if (coverage < 1) {
 		iFacet->sh.sticking = (s1*(1.0 - coverage) + s2 * coverage)*(1.0 - exp(-E_ad / (kb*temperature)));
 	}
 	else
@@ -225,10 +224,9 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates
 }
 
 double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This returns ((d'coverage')/dt)de. So to speak desorption rate in units of [1/s]
-	double tau=1E-13;
 	double d=1;
 	double E_de= 1.5E-21;
-	double kb = 1.38E-23;
+
 	double coverage;
 	double temperature;
 
@@ -248,7 +246,7 @@ double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This retur
 
 	coverage = calcCoverage(iFacet,hitbuffer);
 	temperature=iFacet->sh.temperature;
-	desorption= 1.0/tau * pow(coverage,d) *exp(-E_de/(kb*temperature));
+	desorption= 1.0/tau * pow(coverage,d) *exp(-E_de/(kb*temperature)); //what if coverage ==0??
 
 	return desorption;
 }
@@ -385,26 +383,8 @@ void UpdateCovering(CoveringHistory *history, Databuff *hitbuffer_sum, double ti
 				}
 				std::cout<< "covering_phys_after = " << covering_phys << std::endl;
 				history->setCurrentCovering(&f, covering_phys);
-				//Reset of Hitbuffer_sum for the next Iteration Step
-				/*
-				facetHitBuffer_sum->hit.nbAbsEquiv = 0;
-				facetHitBuffer_sum->hit.nbDesorbed = 0;
-				facetHitBuffer_sum->hit.nbMCHit = 0;
-				facetHitBuffer_sum->hit.nbHitEquiv = 0;
-				facetHitBuffer_sum->hit.sum_1_per_ort_velocity = 0;
-				facetHitBuffer_sum->hit.sum_v_ort = 0;
-				facetHitBuffer_sum->hit.sum_1_per_velocity = 0;*/
 		}
-	}/*
-	if(covering_check){ //TODO always true?
-	//Reset GlobalHitBuffer
-	GlobalHitBuffer *gHits_sum;
-	gHits_sum = (GlobalHitBuffer *)buffer_sum;
-	gHits_sum->globalHits.hit.nbMCHit = 0;
-	gHits_sum->globalHits.hit.nbHitEquiv = 0;
-	gHits_sum->globalHits.hit.nbAbsEquiv = 0;
-	gHits_sum->globalHits.hit.nbDesorbed = 0;
-	}*/
+	}
 }
 
 void UpdateCoveringphys(CoveringHistory *history, Databuff *hitbuffer_sum, Databuff *hitbuffer){
