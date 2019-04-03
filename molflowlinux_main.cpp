@@ -85,6 +85,7 @@ int main(int argc, char *argv[]) {
 	loadbuffer.buff=NULL;
 
 	CoveringHistory *histphys; //test: replacing hitbuffer_phys
+	CoveringHistory *test;
 	llong nbDesorbed_old; //test: nbDesorbed of previous iteration, used so that hitbuffer_sum does not have to be reset -> true final hitbuffer
 
 	// Init simulation time and unit
@@ -114,7 +115,7 @@ int main(int argc, char *argv[]) {
 	int rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-
+	p.readInputfile("/home/van/testInput");
 
 	if (rank == 0) {
 		// Parameter check for MolflowLinux
@@ -196,6 +197,7 @@ int main(int argc, char *argv[]) {
 			//hitbuffer_phys.size =hitbuffer.size;
 
 			histphys = new CoveringHistory (&hitbuffer);
+			test=new CoveringHistory (&hitbuffer);
 			nbDesorbed_old = getnbDesorbed(&hitbuffer_sum);
 
 			initcounterstozero(&hitbuffer);
@@ -345,6 +347,8 @@ int main(int argc, char *argv[]) {
 				UpdateCovering(histphys, &hitbuffer_sum, time_step, &nbDesorbed_old);
 				memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //TODO ist ths needed?
 				UpdateCoveringphys(histphys, &hitbuffer_sum, &hitbuffer);
+				test->appendList(histphys->pointintime_list.back().second);
+
 				//memcpy(hitbuffer.buff,hitbuffer_phys.buff,hitbuffer_phys.size); //copying slows down code. Unfortunately we need to.
 				//memcpy(hitbuffer_sum.buff,hitbuffer_phys.buff,hitbuffer_phys.size); //copying slows down code. Unfortunately we need to.
 				//std::cout << "ending iteration " << it <<std::endl;
@@ -362,8 +366,10 @@ int main(int argc, char *argv[]) {
 	if(rank==0){
 		//Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
 		std::cout << "Process 0 exporting final hitbuffer" << std::endl <<std::endl;
+		test->print();
 		exportBuff(p.resultbufferPath,&hitbuffer_sum);//ToDo: &hitbuffer_sum ersetzen durch &hitbuffer_phys // Not really needed since memcpy is used anyways?
 	}
+	MPI_Barrier(MPI_COMM_WORLD);
 
 	if (hitbuffer.buff != NULL) {
 		delete[] hitbuffer.buff;

@@ -52,13 +52,14 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
 	// Run Simulation for simutime steps. One step ~ 1 seconds
 	for(double i=0; i<(double)(simutime) && !eos;i+=realtimestep){
-		if(i!=0||covhistory->pointintime_list.empty()){
+		//if(i!=0||covhistory->pointintime_list.empty()){
+		if(covhistory->pointintime_list.empty()){
 			covhistory->appendList(hitbuffer,i); //append list with current time and covering //TODO offset if covering list does not end with timestep 0
 			}
 
 		if(i+timestep>=(double)(simutime)){ //last timestep
 			std::tie(eos,realtimestep) = SimulationRun((double)simutime-i, hitbuffer); // Some additional simulation, as iteration step  does not run for exactly timestep ms
-			covhistory->appendList(hitbuffer,i+realtimestep); // append list with last entry
+			//covhistory->appendList(hitbuffer,i+realtimestep); // append list with last entry
 			break;
 			}
 		std::tie(eos, realtimestep) = SimulationRun(timestep, hitbuffer);      // Run during timestep ms, performs MC steps
@@ -75,9 +76,9 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
 
 	//Save history to new file
-	std::string name0 = "/home/van/history"+std::to_string(rank)+".txt";
+	//std::string name0 = "/home/van/history"+std::to_string(rank)+".txt";
 	covhistory->print();
-	covhistory->write(name0);
+	//covhistory->write(name0);
 
 	ResetTmpCounters(); //resets counter in sHandle
 	return !eos;

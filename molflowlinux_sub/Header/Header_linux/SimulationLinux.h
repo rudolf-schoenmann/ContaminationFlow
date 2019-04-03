@@ -41,6 +41,7 @@ public:
 	//std::vector< std::pair<double,std::vector<double>> > pointintime_list_read;
 
 	void appendList(Databuff *hitbuffer, double time=-1.0);
+	void appendList(std::vector<llong> List);
 	void print();
 	void write(std::string filename);
 	void read(std::string filename, Databuff *hitbuffer);
@@ -96,3 +97,4 @@ void UpdateCovering(Databuff *hitbuffer, Databuff *hitbuffer_original, double ti
 void UpdateCovering(CoveringHistory *history, Databuff *hitbuffer_sum, double time_step, llong *nbDesorbed_old);
 void UpdateCoveringphys(CoveringHistory *history, Databuff *hitbuffer_sum, Databuff *hitbuffer);
 
+void testprintcovering(Databuff *hitbuffer);

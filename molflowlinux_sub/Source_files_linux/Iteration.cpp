@@ -141,6 +141,13 @@ CoveringHistory::CoveringHistory(Databuff *hitbuffer){
 	pointintime_list.push_back(std::make_pair(0.0,currentstep));
 }
 
+void CoveringHistory::appendList(std::vector<llong> List){
+
+	double timenow=pointintime_list.back().first+1;
+	pointintime_list.push_back(std::make_pair(timenow,List));
+
+}
+
 void CoveringHistory::appendList(Databuff *hitbuffer, double time){
 
 	std::vector<llong> currentstep;
@@ -149,14 +156,14 @@ void CoveringHistory::appendList(Databuff *hitbuffer, double time){
 	if(time==-1.0) //TODO improve: here steps instead of time
 		time=pointintime_list.back().first+1.0;
 
-	double covering;
+	llong covering;
 
-	int i=0;
+	//int i=0;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			covering=calcCovering(&f, hitbuffer);
 			currentstep.push_back(covering);
-			i+=1;
+			//i+=1;
 		}
 	}
 	pointintime_list.push_back(std::make_pair(time,currentstep));

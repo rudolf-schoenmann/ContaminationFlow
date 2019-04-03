@@ -61,8 +61,16 @@ llong calcCovering(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns cov
 	buffer = hitbuffer->buff;
 	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
 
-	llong covering = facetHitBuffer->hit.covering;
-	return covering;
+	return facetHitBuffer->hit.covering;
+}
+
+void testprintcovering(Databuff *hitbuffer){
+		for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+				for (SubprocessFacet& f : sHandle->structures[j].facets) {
+					std::cout <<'\t' <<calcCovering(&f, hitbuffer);
+				}
+		}
+		std::cout <<std::endl;
 }
 
 double calcCoverage(SubprocessFacet *iFacet, Databuff *hitbuffer){ // calculates coverage depending on covering (number particles on facet)
@@ -343,7 +351,9 @@ void UpdateCovering(CoveringHistory *history, Databuff *hitbuffer_sum, double ti
 	//Calculates with the summed up counters of hitbuffer_sum how many test particles are equivalent to one physical particle.
 	//Then the physical values are stored in the hitbuffer.
 	double Krealvirt = GetMoleculesPerTP(hitbuffer_sum, *nbDesorbed_old);
+	std::cout <<"nbDesorbed before and after:\t" << *nbDesorbed_old <<'\t';
 	*nbDesorbed_old = getnbDesorbed(hitbuffer_sum);
+	std::cout << *nbDesorbed_old <<std::endl;
 	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
 	llong covering_phys;
 	llong covering_sum;
@@ -393,7 +403,7 @@ void UpdateCoveringphys(CoveringHistory *history, Databuff *hitbuffer_sum, Datab
 	buffer_sum = hitbuffer_sum->buff;
 
 	BYTE *buffer;
-	buffer = hitbuffer_sum->buff;
+	buffer = hitbuffer->buff;
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
