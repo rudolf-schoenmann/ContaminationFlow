@@ -46,26 +46,40 @@ public:
 	void write(std::string filename);
 	void read(std::string filename, Databuff *hitbuffer);
 
+	void setCurrentCovering(SubprocessFacet *iFacet, llong newCovering);
 	llong getCurrentCovering(int idx);
 	llong getCurrentCovering(SubprocessFacet *iFacet);
-	void setCurrentCovering(SubprocessFacet *iFacet, llong newCovering);
 };
 
 class ProblemDef{
 public:
 	ProblemDef(int argc, char *argv[]);
-	void readInputfile(std::string filename);
-	void writeInputfile(std::string filename);
-	double simulationTime;
-	int simulationTimeMS;
-	std::string unit;
+	ProblemDef();
 
-	int iterationNumber;
+	void readArg(int argc, char *argv[], int rank=1);
+	void readInputfile(std::string filename, int rank=1);
+	void writeInputfile(std::string filename, int rank=1);
 
+
+
+
+	// These can be given as parameters directly
 	std::string loadbufferPath;
 	std::string hitbufferPath;
 	std::string resultbufferPath;
+	double simulationTime;
+	std::string unit;
 
+	// These can be given through input file only
+	int iterationNumber; //number of iterations, all of length simulationTimeMS so far
+	double s1;
+	double s2;
+	double E_de;
+	double E_ad;
+	double d;
+
+	//These cannot be given, but are computed from other variables
+	int simulationTimeMS;
 };
 
 
@@ -83,7 +97,7 @@ int getFacetIndex(SubprocessFacet *iFacet);
 llong getnbDesorbed(Databuff *hitbuffer_sum);
 void CalcTotalOutgassingWorker();
 
-llong calcCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
+llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
 void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
 double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
 
@@ -96,5 +110,3 @@ void UpdateDesorptionRate (Databuff *hitbuffer);
 void UpdateCovering(Databuff *hitbuffer, Databuff *hitbuffer_original, double time_step);
 void UpdateCovering(CoveringHistory *history, Databuff *hitbuffer_sum, double time_step, llong *nbDesorbed_old);
 void UpdateCoveringphys(CoveringHistory *history, Databuff *hitbuffer_sum, Databuff *hitbuffer);
-
-void testprintcovering(Databuff *hitbuffer);

@@ -33,6 +33,17 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 //Import/export of buffer files with filename given as char* or std::string
 //-> no need for conversion
 
+bool checkReadable(std::string fileName){
+	std::filebuf fb;
+	if (fb.open(fileName, std::ios::in))
+	{
+		return true;
+	}
+	else{
+		return false;
+	}
+}
+
 void importBuff(char *fileName, Databuff *databuffer)
 {
 

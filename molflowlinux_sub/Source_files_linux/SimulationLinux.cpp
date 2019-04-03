@@ -108,6 +108,11 @@ ProblemDef::ProblemDef(int argc, char *argv[]){
 	resultbufferPath=argc > 3 ? argv[3]:"";
 
 	iterationNumber = 43200;
+	s1=0.99;
+	s2=0.2;
+	E_de=1E-21;
+	E_ad=1.5E-21;
+	d=1;
 
 	simulationTime = argc > 4? std::atof(argv[4]): 10.0;
 	unit = argc > 5? argv[5]:"s";
@@ -117,12 +122,45 @@ ProblemDef::ProblemDef(int argc, char *argv[]){
 
 }
 
-void ProblemDef::readInputfile(std::string filename){
+ProblemDef::ProblemDef(){
+	loadbufferPath= "/home/van/Buffer/loadbuffer_alle_RT";
+	hitbufferPath="/home/van/Buffer/hitbuffer_allee-6";
+	resultbufferPath="/home/van/resultbuffer";
+
+	iterationNumber = 43200;
+	s1=0.99;
+	s2=0.2;
+	E_de=1E-21;
+	E_ad=1.5E-21;
+	d=1;
+
+	simulationTime = 10.0;
+	unit = "s";
+
+	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
+
+}
+
+void ProblemDef::readArg(int argc, char *argv[], int rank){
+	loadbufferPath= argc > 1 ? argv[1] :loadbufferPath;
+	hitbufferPath=argc > 2 ? argv[2]:hitbufferPath;
+	resultbufferPath=argc > 3 ? argv[3]:resultbufferPath;
+
+	simulationTime = argc > 4? std::atof(argv[4]): simulationTime;
+	unit = argc > 5? argv[5]:unit;
+
+	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
+	if (rank==0) {std::cout << "Simulation time " << simulationTime << unit << " converted to " << simulationTimeMS << "ms" << std::endl;}
+
+}
+
+void ProblemDef::readInputfile(std::string filename, int rank){
 	std::string line;
 	std::ifstream input(filename,std::ifstream::in);
-	std::cout <<"Test to read input arguments from " <<filename <<std::endl;
+	if (rank==0) {std::cout <<"Test to read input arguments from " <<filename <<std::endl;}
 
 	while(std::getline(input,line)){
+		if(rank==0) {std::cout <<line <<std::endl;}
 		std::string stringIn;
 		double doubleIn;
 		int intIn;
@@ -130,29 +168,44 @@ void ProblemDef::readInputfile(std::string filename){
 
 		is >> stringIn;
 
-		if(stringIn == "loadbufferPath") {is >> stringIn; loadbufferPath=stringIn;}
+		if(stringIn == "loadbufferPath") {if(rank==0) {std::cout <<line <<std::endl;}is >> stringIn; loadbufferPath=stringIn;}
 		else if(stringIn == "hitbufferPath") {is >> stringIn; hitbufferPath=stringIn;}
 		else if(stringIn=="resultbufferPath"){is >> stringIn; resultbufferPath=stringIn;}
-		else if(stringIn =="iterationNumber"){is >> intIn; iterationNumber=intIn;}
 		else if(stringIn == "simulationTime") {is >>doubleIn; simulationTime = doubleIn;}
 		else if(stringIn == "unit"){is >> stringIn; unit=stringIn;}
+
+		else if(stringIn =="iterationNumber"){is >> intIn; iterationNumber=intIn;}
+		else if(stringIn =="s2"){is >> doubleIn; s2=doubleIn;}
+		else if(stringIn =="s1"){is >> doubleIn; s1=doubleIn;}
+		else if(stringIn =="d"){is >> doubleIn; d=doubleIn;}
+		else if(stringIn =="E_de"){is >> doubleIn; E_de=doubleIn;}
+		else if(stringIn =="E_ad"){is >> doubleIn; E_ad=doubleIn;}
+
 		else{std::cout <<stringIn <<" not a valid argument." <<std::endl;}
+
+
 
 	}
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
-	std::cout << "New Simulation time " << simulationTimeMS << "ms" << std::endl;
+	if (rank==0) {std::cout << "New Simulation time " << simulationTimeMS << "ms" << std::endl;}
 }
 
-void ProblemDef::writeInputfile(std::string filename){
+void ProblemDef::writeInputfile(std::string filename, int rank){
 	std::ofstream outfile(filename,std::ofstream::out|std::ios::trunc);
-	std::cout <<"Test to write input arguments to " <<filename <<std::endl;
+	if (rank==0) {std::cout <<"Test to write input arguments to " <<filename <<std::endl;}
 
 	outfile <<"loadbufferPath" <<'\t' <<loadbufferPath <<std::endl;
 	outfile <<"hitbufferPath" <<'\t' <<hitbufferPath <<std::endl;
 	outfile <<"resultbufferPath" <<'\t' <<resultbufferPath <<std::endl;
-	outfile <<"iterationNumber" <<'\t' <<iterationNumber<<std::endl;
 	outfile <<"simulationTime" <<'\t' <<simulationTime <<std::endl;
 	outfile <<"unit" <<'\t' <<unit <<std::endl;
+
+	outfile <<"iterationNumber" <<'\t' <<iterationNumber<<std::endl;
+	outfile <<"s1" <<'\t' <<s1<<std::endl;
+	outfile <<"s2" <<'\t' <<s2<<std::endl;
+	outfile <<"d" <<'\t' <<d<<std::endl;
+	outfile <<"E_de" <<'\t' <<E_de<<std::endl;
+	outfile <<"E_ad" <<'\t' <<E_ad<<std::endl;
 
 }
 

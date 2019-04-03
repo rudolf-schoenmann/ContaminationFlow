@@ -123,15 +123,12 @@ CoveringHistory::CoveringHistory(Databuff *hitbuffer){
 	std::vector<llong> currentstep;
 	currentstep =std::vector<llong> ();
 
-	BYTE *buffer;
-	buffer = hitbuffer->buff;
 
 	llong covering;
 	//std::cout <<"Reading covering values from buffer\t";
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				//FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
-				covering = calcCovering(&f, hitbuffer);
+				covering = getCovering(&f, hitbuffer);
 				//std::cout <<covering <<"\t";
 				currentstep.push_back(covering);
 				f.tmpCounter[0].hit.covering=covering;
@@ -161,7 +158,7 @@ void CoveringHistory::appendList(Databuff *hitbuffer, double time){
 	//int i=0;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			covering=calcCovering(&f, hitbuffer);
+			covering=getCovering(&f, hitbuffer);
 			currentstep.push_back(covering);
 			//i+=1;
 		}
@@ -173,7 +170,7 @@ void CoveringHistory::appendList(Databuff *hitbuffer, double time){
 void::CoveringHistory::print(){
 
 	std::cout <<"time\t";
-	for(int i=0;i<pointintime_list.size();i++)
+	for(uint i=0;i<pointintime_list.size();i++)
 	{
 		if(i==0){
 			for(int j=0; j<pointintime_list[i].second.size();j++)
@@ -184,7 +181,7 @@ void::CoveringHistory::print(){
 		std::cout<<std::endl;
 		std::cout <<pointintime_list[i].first;
 
-		for(int j=0; j<pointintime_list[i].second.size();j++)
+		for(uint j=0; j<pointintime_list[i].second.size();j++)
 		{
 			std::cout <<"\t\t" <<pointintime_list[i].second[j]<<"\t";
 			/*if(pointintime_list[i].second[j] == 0.0)
@@ -199,11 +196,11 @@ void::CoveringHistory::write(std::string filename){
 	//std::string write = "/home/van/history"+std::to_string(num)+".txt";
 	std::ofstream outfile(filename,std::ofstream::out|std::ios::trunc);
 
-	for(int i=0;i<pointintime_list.size();i++)
+	for(uint i=0;i<pointintime_list.size();i++)
 	{
 		outfile <<pointintime_list[i].first;
 
-		for(int j=0; j<pointintime_list[i].second.size();j++)
+		for(uint j=0; j<pointintime_list[i].second.size();j++)
 		{
 			outfile <<'\t' <<pointintime_list[i].second[j];
 		}
@@ -256,6 +253,10 @@ void::CoveringHistory::read(std::string filename, Databuff *hitbuffer){//Rudi: N
 	std::cout <<std::endl;
 
 }
+void::CoveringHistory::setCurrentCovering(SubprocessFacet *iFacet, llong newCovering){
+	int covidx = getFacetIndex(iFacet);
+	pointintime_list.back().second[covidx]=newCovering;
+}
 
 llong::CoveringHistory::getCurrentCovering(int idx){
 	return pointintime_list.back().second[idx];
@@ -266,7 +267,4 @@ llong::CoveringHistory::getCurrentCovering(SubprocessFacet *iFacet){
 	return pointintime_list.back().second[covidx];
 }
 
-void::CoveringHistory::setCurrentCovering(SubprocessFacet *iFacet, llong newCovering){
-	int covidx = getFacetIndex(iFacet);
-	pointintime_list.back().second[covidx]=newCovering;
-}
+

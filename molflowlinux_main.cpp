@@ -34,38 +34,45 @@ typedef void *HANDLE;
 // Global process variables
 Simulation* sHandle; //Global handle to simulation, one per subprocess
 CoveringHistory* covhistory;
+ProblemDef* p;
 
 //This function checks if the correct number of arguments has been passed
 //does not check their validity, e.g. right type such as double/string, correct filename, etc
-bool parametercheck(int argc, char *argv[]) {
+bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 	int i;
-	printf("argc: %d\n", argc);
-	for (i = 0; i < argc; i++) {
-		printf("argv[%d]: %s\n", i, argv[i]);
+	if(rank==0){
+		printf("argc: %d\n", argc);
+		for (i = 0; i < argc; i++) {
+			printf("argv[%d]: %s\n", i, argv[i]);
 	}
-	std::cout <<std::endl;
-	if (argc < 5 || argc > 6) {
-		std::cout
-				<< "MolflowLinux requires 4 mandatory arguments and 1 optional argument."
-				<< std::endl;
-		std::cout << "Please pass these arguments to MolflowLinux:"
-				<< std::endl;
-		std::cout << "1. Name of load-buffer file to read in (e.g. loadbuffer)."
-				<< std::endl;
-		std::cout << "2. Name of hit-buffer file to read in (e.g. hitbuffer)."
-				<< std::endl;
-		std::cout
-				<< "3. Choose a name for the buffer file to export the simulation results (e.g. resultbuffer)."
-				<< std::endl;
-		std::cout << "4. The total simulation time (e.g 2.5)." << std::endl;
-		std::cout
-				<< "5. [OPTIONAL] Simulation time unit (e.g. seconds, minutes, hours, days). Default set to seconds."
-				<< std::endl;
-		std::cout << "MolflowLinux is terminated now." << std::endl;
-		return false;
 	}
-	return true;
-}
+	if(argc>2){ // list of parameters given
+		std::cout <<std::endl;
+		if (argc < 5 || argc > 6) {
+			if(rank==0){
+				std::cout << "MolflowLinux requires 4 mandatory arguments and 1 optional argument."<< std::endl;
+				std::cout << "Please pass these arguments to MolflowLinux:"<< std::endl;
+				std::cout << "1. Name of load-buffer file to read in (e.g. loadbuffer)."<< std::endl;
+				std::cout << "2. Name of hit-buffer file to read in (e.g. hitbuffer)."<< std::endl;
+				std::cout << "3. Choose a name for the buffer file to export the simulation results (e.g. resultbuffer)."<< std::endl;
+				std::cout << "4. The total simulation time (e.g 2.5)." << std::endl;
+				std::cout << "5. [OPTIONAL] Simulation time unit (e.g. seconds, minutes, hours, days). Default set to seconds." << std::endl;
+				std::cout << "MolflowLinux is terminated now." << std::endl;}
+			return false;
+		}
+		else{
+			if(rank==0){std::cout<<"Read arguments" <<std::endl;}
+			if(checkReadable(argv[1])||checkReadable(argv[2])||checkReadable(argv[3])||std::atof(argv[4])<0.0) // check if parameters are feasible
+				{return false;}
+			p->readArg(argc, argv, rank);
+			return true;
+		}
+	}
+	else if(argc==2){ // input file given
+		if(checkReadable(argv[1])){ p->readInputfile(argv[1],rank); return true;}
+		}
+	return false;
+	}
 
 
 //Main Function
@@ -93,10 +100,6 @@ int main(int argc, char *argv[]) {
 	//int simulationTimeMS;
 	//std::string unit;
 
-	printf("argc: %d\n", argc);
-	ProblemDef p(argc, argv);
-	//p.readInputfile("/home/van/testInput2");
-	//p.writeInputfile("/home/van/testInput");
 
 	/* Create child processes, each of which has its own variables.
 	 * From this point on, every process executes a separate copy
@@ -115,25 +118,30 @@ int main(int argc, char *argv[]) {
 	int rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-	p.readInputfile("/home/van/testInput");
 
-	if (rank == 0) {
-		// Parameter check for MolflowLinux
-		if (!parametercheck(argc, argv)) {
+	p = new ProblemDef();
+
+	// Parameter check for MolflowLinux
+	if (!parametercheck(argc, argv,p,rank)) {
+		if (rank == 0){
 			MPI_Finalize();
 			return 0;
 		}
+	}
+
+	if (rank == 0) {
+		//p->writeInputfile("/home/van/InputFileCF.txt");
 
 		//Read in buffer file (exported by Windows-Molflow). File given as first argument to main().
-		importBuff(p.loadbufferPath,&loadbuffer);
-		importBuff(p.hitbufferPath,&hitbuffer);
+		importBuff(p->loadbufferPath,&loadbuffer);
+		importBuff(p->hitbufferPath,&hitbuffer);
 
 		/*
 		 * show informations about the loading
 		 * just interesting for debugging => build some conditional (if debug, then show)?
 		 * leave out or put in function?*/
-		std::cout << "size of " << p.hitbufferPath << " = " << hitbuffer.size << std::endl;
-		std::cout << "size of " << p.loadbufferPath << " = " << loadbuffer.size << std::endl;
+		std::cout << "size of " << p->hitbufferPath << " = " << hitbuffer.size << std::endl;
+		std::cout << "size of " << p->loadbufferPath << " = " << loadbuffer.size << std::endl;
 
 		std::cout << "Buffers sent. Wait for a few seconds. " << std::endl<< std::endl;
 	}
@@ -174,7 +182,7 @@ int main(int argc, char *argv[]) {
 		std::cout << "Simulation time " << simulationTime << unit << " converted to " << simulationTimeMS << "ms" << std::endl;*/
 
 // create Simulation handle and preprocess hitbuffer
-	if (p.simulationTimeMS != 0) {
+	if (p->simulationTimeMS != 0) {
 		//Creates sHandle instance for process 0 and all subprocesses (before the first iteration step starts)
 		InitSimulation();
 		// Load geometry from buffer to sHandle
@@ -208,12 +216,12 @@ int main(int argc, char *argv[]) {
 //for loop to let the simulation run 'iterationNumber' times
 //will be replaced later by the time dependent mode to calculate the prediction of contamination
 	//int iterationNumber = 43200;
-	for(int it=0;it<p.iterationNumber;it++){ //TODO parameterübergabe, simulationszeit anpassen
+	for(int it=0;it<p->iterationNumber;it++){ //TODO parameterübergabe, simulationszeit anpassen
 
 
 
 		// Start of Simulation
-		if (p.simulationTimeMS != 0) {
+		if (p->simulationTimeMS != 0) {
 
 			if(rank == 0){
 			std::cout <<std::endl <<"Starting iteration " <<it <<std::endl;
@@ -315,7 +323,7 @@ int main(int argc, char *argv[]) {
 				std::cout <<std::endl << "Process " << rank << " starting iteration "<< it <<" now."<< std::endl;
 
 				//Do the simulation
-				if (!simulateSub(&hitbuffer, rank, p.simulationTimeMS)) {
+				if (!simulateSub(&hitbuffer, rank, p->simulationTimeMS)) {
 					std::cout << "Maximum desorption reached." << std::endl;
 				} else {
 					std::cout << "Simulation for process " << rank << " finished."<< std::endl;
@@ -367,7 +375,7 @@ int main(int argc, char *argv[]) {
 		//Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
 		std::cout << "Process 0 exporting final hitbuffer" << std::endl <<std::endl;
 		test->print();
-		exportBuff(p.resultbufferPath,&hitbuffer_sum);//ToDo: &hitbuffer_sum ersetzen durch &hitbuffer_phys // Not really needed since memcpy is used anyways?
+		exportBuff(p->resultbufferPath,&hitbuffer_sum);//ToDo: &hitbuffer_sum ersetzen durch &hitbuffer_phys // Not really needed since memcpy is used anyways?
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
 

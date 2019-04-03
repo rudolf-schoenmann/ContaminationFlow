@@ -27,7 +27,8 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <math.h>
 #include <assert.h>
 // Global handles
-extern Simulation* sHandle; //Declared at molflowSub.cpp
+extern Simulation* sHandle; //Declared at molflowlinux_main.cpp
+extern ProblemDef* p;
 //extern CoveringHistory* covhistory;
 
 
@@ -56,28 +57,28 @@ double calcdNsurf(){//Calculates the (carbon equivalent relative) mass factor
 }
 
 
-llong calcCovering(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns covering from hitbuffer
+llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns covering from hitbuffer
 	BYTE *buffer;
 	buffer = hitbuffer->buff;
 	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
 
 	return facetHitBuffer->hit.covering;
 }
-
+/*
 void testprintcovering(Databuff *hitbuffer){
 		for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 				for (SubprocessFacet& f : sHandle->structures[j].facets) {
-					std::cout <<'\t' <<calcCovering(&f, hitbuffer);
+					std::cout <<'\t' <<getCovering(&f, hitbuffer);
 				}
 		}
 		std::cout <<std::endl;
-}
+}*/
 
 double calcCoverage(SubprocessFacet *iFacet, Databuff *hitbuffer){ // calculates coverage depending on covering (number particles on facet)
 	llong covering;
 	double coverage;
 
-	covering = calcCovering( iFacet, hitbuffer);
+	covering = getCovering( iFacet, hitbuffer);
 
 	coverage = covering /(calcNmono(iFacet)/calcdNsurf());
 	return coverage;
@@ -192,14 +193,6 @@ double calcCoveringUpdate(SubprocessFacet *iFacet)
 }*/
 
 void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates sticking coefficient dependent on covering.
-	//double s1 = 0.1;
-	double s2 = 0.2;
-	//Start Test
-	//Just for test reasons
-	double s1 =0.99;
-	//End of Test
-	double E_ad = 1E-21;
-
 	double coverage;
 	double temperature;
 	//int facetidx = getFacetIndex(iFacet);
@@ -220,11 +213,11 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates
 	temperature=iFacet->sh.temperature;
 	coverage = calcCoverage(iFacet,hitbuffer);
 	if (coverage < 1) {
-		iFacet->sh.sticking = (s1*(1.0 - coverage) + s2 * coverage)*(1.0 - exp(-E_ad / (kb*temperature)));
+		iFacet->sh.sticking = (p->s1*(1.0 - coverage) + p->s2 * coverage)*(1.0 - exp(-p->E_ad / (kb*temperature)));
 	}
 	else
 	{
-		iFacet->sh.sticking  = s2 * (1.0 - exp(-E_ad / (kb*temperature)));
+		iFacet->sh.sticking  = p->s2 * (1.0 - exp(-p->E_ad / (kb*temperature)));
 	}
 
 
@@ -232,9 +225,6 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates
 }
 
 double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This returns ((d'coverage')/dt)de. So to speak desorption rate in units of [1/s]
-	double d=1;
-	double E_de= 1.5E-21;
-
 	double coverage;
 	double temperature;
 
@@ -254,7 +244,7 @@ double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This retur
 
 	coverage = calcCoverage(iFacet,hitbuffer);
 	temperature=iFacet->sh.temperature;
-	desorption= 1.0/tau * pow(coverage,d) *exp(-E_de/(kb*temperature)); //what if coverage ==0??
+	desorption= 1.0/tau * pow(coverage,p->d) *exp(-p->E_de/(kb*temperature)); //what if coverage ==0??
 
 	return desorption;
 }
@@ -365,7 +355,7 @@ void UpdateCovering(CoveringHistory *history, Databuff *hitbuffer_sum, double ti
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				//FacetHitBuffer *facetHitBuffer_sum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
 				covering_phys = history->getCurrentCovering(&f);
-				covering_sum = calcCovering(&f, hitbuffer_sum);
+				covering_sum = getCovering(&f, hitbuffer_sum);
 
 				std::cout<<std::endl << "Facet " << &f << std::endl;
 				std::cout << "covering_sum = " << covering_sum << std::endl;
