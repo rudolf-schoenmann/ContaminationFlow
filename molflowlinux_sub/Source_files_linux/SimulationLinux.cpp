@@ -26,11 +26,11 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <array>
 #include <fstream>
 #include <sstream>
-//extern Simulation *sHandle;
+extern Simulation *sHandle;
 extern CoveringHistory* covhistory;
 
 
-bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
+std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
 	covhistory = new CoveringHistory (hitbuffer);
 	double timestep=1000; // desired length per iteration for simulation, here hardcoded to 1 second
@@ -38,6 +38,8 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
 	// Set end of simulation flag
 	bool eos=false;
+	std::vector<int> facetNum;
+	facetNum =std::vector<int> ();
 
 	// Read covering list, saves list in covhistory
 	// std::string name1 = "/home/van/simcovering.txt";
@@ -47,8 +49,8 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 	UpdateDesorptionRate(hitbuffer);
 
 	// Start Simulation = create first particle
-	StartSimulation();
-
+	if(!StartSimulation())
+		return {std::make_tuple(true,facetNum)};
 
 	// Run Simulation for simutime steps. One step ~ 1 seconds
 	for(double i=0; i<(double)(simutime) && !eos;i+=realtimestep){
@@ -58,11 +60,11 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 			}
 
 		if(i+timestep>=(double)(simutime)){ //last timestep
-			std::tie(eos,realtimestep) = SimulationRun((double)simutime-i, hitbuffer); // Some additional simulation, as iteration step  does not run for exactly timestep ms
+			std::tie(eos,realtimestep) = SimulationRun((double)simutime-i, hitbuffer, rank); // Some additional simulation, as iteration step  does not run for exactly timestep ms
 			//covhistory->appendList(hitbuffer,i+realtimestep); // append list with last entry
 			break;
 			}
-		std::tie(eos, realtimestep) = SimulationRun(timestep, hitbuffer);      // Run during timestep ms, performs MC steps
+		std::tie(eos, realtimestep) = SimulationRun(timestep, hitbuffer, rank);      // Run during timestep ms, performs MC steps
 	}
 
 	// Save simulation results in hitbuffer
@@ -77,11 +79,23 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
 	//Save history to new file
 	//std::string name0 = "/home/van/history"+std::to_string(rank)+".txt";
-	covhistory->print();
+	if(rank==1)
+		covhistory->print();
 	//covhistory->write(name0);
 
+
+
+	int num;
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+				for (SubprocessFacet& f : sHandle->structures[j].facets) {
+					num=getFacetIndex(&f);
+					if(f.tmpCounter[0].hit.covering==sHandle->coveringThreshold[num])
+						{facetNum.push_back(num);}
+				}
+		}
+
 	ResetTmpCounters(); //resets counter in sHandle
-	return !eos;
+	return {std::make_tuple(eos,facetNum)};
 }
 
 double convertunit(double simutime, std::string unit){

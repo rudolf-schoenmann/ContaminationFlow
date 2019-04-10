@@ -402,8 +402,7 @@ void initcounterstozero(Databuff *databuffer){
 }
 
 void initbufftozero(Databuff *databuffer){
-//now integrated in UpdateSubMcHits
-
+//Wahrscheinlich müssten hier auch noch alle Profiles und Textures resetet werden!
 	BYTE *buffer;
 	GlobalHitBuffer *gHits;
 

@@ -125,16 +125,13 @@ CoveringHistory::CoveringHistory(Databuff *hitbuffer){
 
 
 	llong covering;
-	//std::cout <<"Reading covering values from buffer\t";
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				covering = getCovering(&f, hitbuffer);
-				//std::cout <<covering <<"\t";
 				currentstep.push_back(covering);
 				f.tmpCounter[0].hit.covering=covering;
 			}
 	}
-	std::cout <<std::endl;
 	pointintime_list.push_back(std::make_pair(0.0,currentstep));
 }
 
@@ -183,9 +180,9 @@ void::CoveringHistory::print(){
 
 		for(uint j=0; j<pointintime_list[i].second.size();j++)
 		{
-			std::cout <<"\t\t" <<pointintime_list[i].second[j]<<"\t";
-			/*if(pointintime_list[i].second[j] == 0.0)
-				std::cout <<"\t";*/
+			std::cout <<"\t\t" <<pointintime_list[i].second[j];
+			if(pointintime_list[i].second[j] <10000)
+				std::cout <<"\t";
 		}
 
 	}
@@ -293,6 +290,7 @@ void initCoveringThresh(){
 		}
 }
 
+
 void setCoveringThreshold(Databuff *hitbuffer, int size, int rank){
 	BYTE *buffer;
 	buffer = hitbuffer->buff;
@@ -310,3 +308,17 @@ void setCoveringThreshold(Databuff *hitbuffer, int size, int rank){
 			}
 	}
 }
+
+void TestMinCovering(Databuff *hitbuffer){
+	BYTE *buffer;
+	buffer = hitbuffer->buff;
+
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
+				facetHitBuffer->hit.covering=100;
+				//f.tmpCounter[0].hit.covering=facetHitBuffer->hit.covering;
+			}
+	}
+}
+

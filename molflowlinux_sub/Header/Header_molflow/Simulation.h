@@ -229,7 +229,7 @@ bool LoadSimulation(Databuff *databuffer);
 //bool UpdateOntheflySimuParams(Dataport *loader); // (Rudi) I don't think, I need that.
 bool StartSimulation();
 void ResetSimulation();
-std::pair<bool,double> SimulationRun(double time=1000.0, Databuff *hitbuffer=nullptr);
+std::pair<bool,double> SimulationRun(double time=1000.0, Databuff *hitbuffer=nullptr, int rank=0);
 bool SimulationMCStep(size_t nbStep, Databuff *hitbuffer);
 void IncreaseDistanceCounters(double d);
 //bool SimulationACStep(int nbStep);

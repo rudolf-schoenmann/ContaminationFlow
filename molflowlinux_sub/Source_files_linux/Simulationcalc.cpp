@@ -195,20 +195,6 @@ double calcCoveringUpdate(SubprocessFacet *iFacet)
 void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates sticking coefficient dependent on covering.
 	double coverage;
 	double temperature;
-	//int facetidx = getFacetIndex(iFacet);
-	//std::cout <<facetidx <<std::endl<<std::endl;
-
-	/*
-	 * Ich würde das covering lieber aus dem Hitbuffer neu berechnen lassen.
-	 * covhistory können wir ja behalten. Vielleicht nur im Hauptprozess, da hat es am meisten Sinn...
-	 * Wie schaut covhistory aus, wenn wir eine Texture haben?
-	 *
-	assert(facetidx < covhistory->pointintime_list.back().second.size());
-	double covering = covhistory->pointintime_list.back().second[facetidx];
-	*/
-	//std::cout <<facetidx <<'\t' <<covering<<std::endl;
-	//double covering=calcCovering(iFacet); // double covering=calcRealCovering(iFacet);
-
 
 	temperature=iFacet->sh.temperature;
 	coverage = calcCoverage(iFacet,hitbuffer);
@@ -227,19 +213,6 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates
 double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This returns ((d'coverage')/dt)de. So to speak desorption rate in units of [1/s]
 	double coverage;
 	double temperature;
-
-	//int facetidx = getFacetIndex(iFacet);
-	//std::cout <<facetidx <<std::endl<<std::endl;
-	/*
-		 * Ich würde das covering lieber aus dem Hitbuffer neu berechnen lassen.
-		 * covhistory können wir ja behalten. Vielleicht nur im Hauptprozess, da hat es am meisten Sinn...
-		 * Wie schaut covhistory aus, wenn wir eine Texture haben?
-		 *
-	assert(facetidx < covhistory->pointintime_list.back().second.size());
-	double covering = covhistory->pointintime_list.back().second[facetidx];
-	//std::cout <<facetidx <<'\t' <<covering<<std::endl;
-	//double covering=calcCovering(iFacet); // double covering=calcRealCovering(iFacet);
-	*/
 	double desorption=0.0;
 
 	coverage = calcCoverage(iFacet,hitbuffer);
@@ -293,6 +266,7 @@ void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum, double ti
 					}
 					else {
 						std::cout<<"Upps! Covering darf nicht negativ sein. Iteration wird nicht upgedated."<<std::endl;
+						std::cout<<"test: "<<(double)(covering_phys/(covering_phys - covering_sum)*Krealvirt) <<std::endl;
 						//std::cout << covering_check << std::endl;
 						//nichts updaten
 						//iteration neu starten mit weniger nbSteps; Wie viel weniger? 1/10 der vorigen Anzahl?
@@ -336,6 +310,36 @@ void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum, double ti
 }
 
 //---------------------test--------------------------------------
+double preTestTimeStep(CoveringHistory *history, Databuff *hitbuffer_sum, double Krealvirt){
+	double test_time_step = pow(10,-14);
+	llong covering_phys;
+	llong covering_sum;
+	double covering_check;
+
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+					//FacetHitBuffer *facetHitBuffer_sum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
+					covering_phys = history->getCurrentCovering(&f);
+					covering_sum = getCovering(&f, hitbuffer_sum);
+
+
+					if (covering_sum < covering_phys){
+						covering_check = covering_phys + (covering_phys - covering_sum)*Krealvirt*(-1)*test_time_step; //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+						if(covering_check<0){
+							test_time_step=(double)(covering_phys/((covering_phys - covering_sum)*Krealvirt));
+							std::cout<<"Change of test_time_step: "<<test_time_step <<std::endl;
+							//std::cout << covering_check << std::endl;
+							//nichts updaten
+							//iteration neu starten mit weniger nbSteps; Wie viel weniger? 1/10 der vorigen Anzahl?
+						}
+					}
+			}
+		}
+
+	return test_time_step;
+
+}
+
 void UpdateCovering(CoveringHistory *history, Databuff *hitbuffer_sum, double time_step,llong *nbDesorbed_old){//Updates Covering after one Iteration using Krealvirt, resets other counters
 	//If one wants to read out pressure and particle density, this must be done before calling UpdateCovering.
 	//Calculates with the summed up counters of hitbuffer_sum how many test particles are equivalent to one physical particle.
@@ -351,7 +355,7 @@ void UpdateCovering(CoveringHistory *history, Databuff *hitbuffer_sum, double ti
 	double covering_check;
 	//BYTE *buffer_sum;
 	//buffer_sum = hitbuffer_sum->buff;
-	double test_time_step = pow(10,-14);
+	double test_time_step = preTestTimeStep(history, hitbuffer_sum,  Krealvirt);
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
@@ -366,7 +370,7 @@ void UpdateCovering(CoveringHistory *history, Databuff *hitbuffer_sum, double ti
 				if (covering_sum > covering_phys){
 					llong covering_delta = static_cast < llong > ((covering_sum - covering_phys)*Krealvirt*test_time_step); //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
 					covering_phys += covering_delta;
-					std::cout << "covering rises"<< std::endl;
+					std::cout << "covering rises by " <<covering_delta << std::endl;
 				}
 				else{
 					covering_check = covering_phys + (covering_phys - covering_sum)*Krealvirt*(-1)*test_time_step; //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
@@ -378,6 +382,7 @@ void UpdateCovering(CoveringHistory *history, Databuff *hitbuffer_sum, double ti
 					}
 					else {
 						std::cout<<"Upps! Covering darf nicht negativ sein. Iteration wird nicht upgedated."<<std::endl;
+						std::cout<<(covering_phys - covering_sum) <<std::endl;
 						//std::cout << covering_check << std::endl;
 						//nichts updaten
 						//iteration neu starten mit weniger nbSteps; Wie viel weniger? 1/10 der vorigen Anzahl?
@@ -408,5 +413,3 @@ void UpdateCoveringphys(CoveringHistory *history, Databuff *hitbuffer_sum, Datab
 			}
 	}
 }
-
-

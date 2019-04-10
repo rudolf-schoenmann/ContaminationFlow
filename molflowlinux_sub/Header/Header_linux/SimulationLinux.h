@@ -83,7 +83,7 @@ public:
 };
 
 
-bool simulateSub(Databuff *hitbuffer, int rank, int simutime);
+std::tuple<bool, std::vector<int> >  simulateSub(Databuff *hitbuffer, int rank, int simutime);
 double convertunit(double simutime, std::string unit);
 
 void initbufftozero(Databuff *databuffer);
@@ -113,3 +113,6 @@ void UpdateCoveringphys(CoveringHistory *history, Databuff *hitbuffer_sum, Datab
 void allocateCovering(Databuff *hitbuffer, int size, int rank);
 void setCoveringThreshold(Databuff *hitbuffer, int size, int rank);
 void initCoveringThresh();
+void TestMinCovering(Databuff *hitbuffer);
+
+void initCoveringSHandle(Databuff *hitbuffer);

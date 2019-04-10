@@ -603,21 +603,25 @@ bool StartFromSource() {
 	int nbTry = 0;
 
 	// Check end of simulation
-	if (sHandle->ontheflyParams.desorptionLimit > 0) {
+	if (sHandle->ontheflyParams.desorptionLimit > 0) { //TODO add totaldes to if clause?
 		if (sHandle->totalDesorbed >= sHandle->ontheflyParams.desorptionLimit / sHandle->ontheflyParams.nbProcess) {
 			sHandle->currentParticle.lastHitFacet = NULL;
 			return false;
 		}
 	}
+
 	double totaldes=0.0;
-	// Select source
+	if(!sHandle->posCovering){return false;}
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				totaldes+=sHandle->wp.latestMoment *f.sh.desorption/ (1.38E-23*f.sh.temperature);
 			}
-		}
+	}
+
+	// Select source
+
 	srcRnd = rnd() * (sHandle->wp.totalDesorbedMolecules+totaldes);
-	//std::cout <<srcRnd <<std::endl;
+	//std::cout <<srcRnd <<"\t" <<totaldes <<std::endl;
 
 	while (!found && j < (int)sHandle->sh.nbSuper) { //Go through superstructures
 		i = 0;
@@ -677,24 +681,24 @@ bool StartFromSource() {
 	}
 
 	src = &(sHandle->structures[j].facets[i]);
+
 	bool desorbed_b=true; //determines whether particle created from outgassing or desorption; true desorbed, false outgassed
-	//std::cout <<"test\t" <<(src->sh.desorbType)<<j <<i <<calcDesorption(src) <<std::endl;
-	if(src->sh.desorbType != DES_NONE ){
+	if(src->sh.desorbType != DES_NONE ){ //there is outgassing
 		desorbed_b=false;
 		double des=src->sh.desorption;
-		//std::cout <<"test\t" <<(src->sh.outgassing) <<des <<std::endl;
 		if(rnd()<des/(src->sh.outgassing+des) ){
 			desorbed_b=true;
 		}
 	}
 
 	//check if covering would get negative
-	size_t nbMoments = sHandle->moments.size();
-	for (size_t m = 0; m <= nbMoments; m++) {
-		if (m == 0 || abs((double)sHandle->currentParticle.flightTime - (double)sHandle->moments[m - 1]) < sHandle->wp.timeWindowSize / 2.0) {
-			if(src->tmpCounter[m].hit.covering<=sHandle->coveringThreshold[getFacetIndex(src)]) {std::cout <<"Covering gets negative!" <<std::endl; sHandle->posCovering=false; return false; }//end this simulation
-		}
-	}
+	//size_t nbMoments = sHandle->moments.size();
+	//for (size_t m = 0; m <= nbMoments; m++) {
+	//	if (m == 0 || abs((double)sHandle->currentParticle.flightTime - (double)sHandle->moments[m - 1]) < sHandle->wp.timeWindowSize / 2.0) {
+	//		if(src->tmpCounter[m].hit.covering<=sHandle->coveringThreshold[getFacetIndex(src)]) {std::cout <<"Covering "<<src->tmpCounter[m].hit.covering <<" gets smaller than " <<sHandle->coveringThreshold[getFacetIndex(src)] <<std::endl; sHandle->posCovering=false; return false; }//end this simulation
+	//	}
+	//	else {std::cout <<"Covering "<<src->tmpCounter[m].hit.covering <<std::endl; }
+	//}
 
 	sHandle->currentParticle.lastHitFacet = src;
 	//sHandle->currentParticle.distanceTraveled = 0.0;  //for mean free path calculations
@@ -1559,8 +1563,8 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 					std::cout<< "Covering counter bleibt" << std::endl;*/
 				}
 			if (desorbed){
-				if(f->tmpCounter[m].hit.covering>=sHandle->coveringThreshold[getFacetIndex(f)]){f->tmpCounter[m].hit.covering -= 1;}
-				else{std::cout <<"Covering gets negative!" <<std::endl; sHandle->posCovering=false;}
+				if(f->tmpCounter[m].hit.covering>sHandle->coveringThreshold[getFacetIndex(f)]){f->tmpCounter[m].hit.covering -= 1;}
+				else{sHandle->posCovering=false;}
 
 				}
 			//Für den Fall,
