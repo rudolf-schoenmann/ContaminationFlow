@@ -688,6 +688,14 @@ bool StartFromSource() {
 		}
 	}
 
+	//check if covering would get negative
+	size_t nbMoments = sHandle->moments.size();
+	for (size_t m = 0; m <= nbMoments; m++) {
+		if (m == 0 || abs((double)sHandle->currentParticle.flightTime - (double)sHandle->moments[m - 1]) < sHandle->wp.timeWindowSize / 2.0) {
+			if(src->tmpCounter[m].hit.covering<=sHandle->coveringThreshold[getFacetIndex(src)]) {std::cout <<"Covering gets negative!" <<std::endl; sHandle->posCovering=false; return false; }//end this simulation
+		}
+	}
+
 	sHandle->currentParticle.lastHitFacet = src;
 	//sHandle->currentParticle.distanceTraveled = 0.0;  //for mean free path calculations
 	//sHandle->currentParticle.flightTime = sHandle->desorptionStartTime + (sHandle->desorptionStopTime - sHandle->desorptionStartTime)*rnd();
@@ -1551,8 +1559,8 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 					std::cout<< "Covering counter bleibt" << std::endl;*/
 				}
 			if (desorbed){
-				if(f->tmpCounter[m].hit.covering!=0){f->tmpCounter[m].hit.covering -= 1;}
-				else{std::cout <<"Covering gets negative!" <<std::endl;}
+				if(f->tmpCounter[m].hit.covering>=sHandle->coveringThreshold[getFacetIndex(f)]){f->tmpCounter[m].hit.covering -= 1;}
+				else{std::cout <<"Covering gets negative!" <<std::endl; sHandle->posCovering=false;}
 
 				}
 			//Für den Fall,

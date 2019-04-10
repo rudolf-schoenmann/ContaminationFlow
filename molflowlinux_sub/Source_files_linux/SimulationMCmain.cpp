@@ -476,7 +476,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, CoveringHistory
 
 	size_t facetHitsSize = (1 + nbMoments) * sizeof(FacetHitBuffer);
 	// Facets
-	int num=0;
+	//int num=0;
 	for (s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {

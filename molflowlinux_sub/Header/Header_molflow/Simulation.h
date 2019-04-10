@@ -180,6 +180,9 @@ public:
 	bool lastHitUpdateOK;  // Last hit update timeout
 	bool lastLogUpdateOK; // Last log update timeout
 	bool hasVolatile;   // Contains volatile facet
+
+	bool posCovering;
+	std::vector<llong>  coveringThreshold;
 	//double calcACTime;  // AC matrix calculation time (my) in unused fcts LoadAc, ComputeACMatrix
 
 	// Particle coordinates (MC)
@@ -257,3 +260,5 @@ double GetStickingAt(SubprocessFacet *src, double time);
 double GetOpacityAt(SubprocessFacet *src, double time);
 void   IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t desorb, size_t absorb, double sum_1_per_v, double sum_v_ort, bool desorbed = false);
 void   TreatMovingFacet();
+
+int getFacetIndex(SubprocessFacet *iFacet);

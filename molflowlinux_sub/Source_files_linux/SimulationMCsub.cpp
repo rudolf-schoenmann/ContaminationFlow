@@ -376,7 +376,7 @@ void initcounterstozero(Databuff *databuffer){
 	gHits = (GlobalHitBuffer *)buffer;
 
 	size_t nbMoments=(size_t)sHandle->moments.size();
-	size_t facetHitsSize = (1 + nbMoments) * sizeof(FacetHitBuffer);
+	//size_t facetHitsSize = (1 + nbMoments) * sizeof(FacetHitBuffer);
 
 	gHits->globalHits.hit.nbMCHit = 0;
 	gHits->globalHits.hit.nbHitEquiv = 0.0;

@@ -93,7 +93,6 @@ void UpdateMCSubHits(Databuff *databuffer, int rank);
 void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, Databuff *physbuffer,int rank);
 void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, CoveringHistory *history,int rank);
 
-int getFacetIndex(SubprocessFacet *iFacet);
 llong getnbDesorbed(Databuff *hitbuffer_sum);
 void CalcTotalOutgassingWorker();
 
@@ -110,3 +109,7 @@ void UpdateDesorptionRate (Databuff *hitbuffer);
 void UpdateCovering(Databuff *hitbuffer, Databuff *hitbuffer_original, double time_step);
 void UpdateCovering(CoveringHistory *history, Databuff *hitbuffer_sum, double time_step, llong *nbDesorbed_old);
 void UpdateCoveringphys(CoveringHistory *history, Databuff *hitbuffer_sum, Databuff *hitbuffer);
+
+void allocateCovering(Databuff *hitbuffer, int size, int rank);
+void setCoveringThreshold(Databuff *hitbuffer, int size, int rank);
+void initCoveringThresh();

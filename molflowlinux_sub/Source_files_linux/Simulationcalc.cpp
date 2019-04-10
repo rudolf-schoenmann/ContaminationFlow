@@ -345,12 +345,14 @@ void UpdateCovering(CoveringHistory *history, Databuff *hitbuffer_sum, double ti
 	*nbDesorbed_old = getnbDesorbed(hitbuffer_sum);
 	std::cout << *nbDesorbed_old <<std::endl;
 	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
+
 	llong covering_phys;
 	llong covering_sum;
 	double covering_check;
-	BYTE *buffer_sum;
-	buffer_sum = hitbuffer_sum->buff;
+	//BYTE *buffer_sum;
+	//buffer_sum = hitbuffer_sum->buff;
 	double test_time_step = pow(10,-14);
+
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				//FacetHitBuffer *facetHitBuffer_sum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
@@ -382,6 +384,7 @@ void UpdateCovering(CoveringHistory *history, Databuff *hitbuffer_sum, double ti
 					}
 				}
 				std::cout<< "covering_phys_after = " << covering_phys << std::endl;
+				std::cout<< "coveringThreshhold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << std::endl;
 				history->setCurrentCovering(&f, covering_phys);
 		}
 	}
@@ -405,3 +408,5 @@ void UpdateCoveringphys(CoveringHistory *history, Databuff *hitbuffer_sum, Datab
 			}
 	}
 }
+
+

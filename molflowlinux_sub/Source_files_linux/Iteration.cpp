@@ -173,7 +173,7 @@ void::CoveringHistory::print(){
 	for(uint i=0;i<pointintime_list.size();i++)
 	{
 		if(i==0){
-			for(int j=0; j<pointintime_list[i].second.size();j++)
+			for(uint j=0; j<pointintime_list[i].second.size();j++)
 					{
 					std::cout <<"\tCovering for Facet " <<j;
 					}
@@ -268,3 +268,45 @@ llong::CoveringHistory::getCurrentCovering(SubprocessFacet *iFacet){
 }
 
 
+void allocateCovering(Databuff *hitbuffer, int size, int rank){
+	BYTE *buffer;
+	buffer = hitbuffer->buff;
+	llong temp=size+1;
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
+				if(rank==1)
+					{facetHitBuffer->hit.covering=facetHitBuffer->hit.covering/temp + facetHitBuffer->hit.covering%temp;}
+				else
+					{facetHitBuffer->hit.covering=facetHitBuffer->hit.covering/temp;}
+			}
+	}
+}
+
+
+void initCoveringThresh(){
+	sHandle->coveringThreshold=std::vector<llong> ();
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+				for (SubprocessFacet& f : sHandle->structures[j].facets) {
+					sHandle->coveringThreshold.push_back(0);
+				}
+		}
+}
+
+void setCoveringThreshold(Databuff *hitbuffer, int size, int rank){
+	BYTE *buffer;
+	buffer = hitbuffer->buff;
+	llong num_sim=size-1;
+	llong cov_sim; //number of particles that can be desorbed from facet
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
+				if(rank==1)
+					{cov_sim=facetHitBuffer->hit.covering/num_sim + facetHitBuffer->hit.covering%num_sim;}
+				else
+					{cov_sim=facetHitBuffer->hit.covering/num_sim;}
+
+				sHandle-> coveringThreshold[getFacetIndex(&f)]=facetHitBuffer->hit.covering-cov_sim;
+			}
+	}
+}

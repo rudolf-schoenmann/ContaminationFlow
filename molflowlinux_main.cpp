@@ -192,6 +192,8 @@ int main(int argc, char *argv[]) {
 			MPI_Finalize();
 			return 0;
 		}
+		initCoveringThresh();
+
 		if(rank==0){ // hitbuffer_sum and histphys
 			//Save copies of the original loaded hitbuffer
 			//These copise will be used in process 0. The hitbuffers of all subprocesses will be add up and written in the hitbuffer_sum
@@ -230,6 +232,11 @@ int main(int argc, char *argv[]) {
 			// Send hitbuffer content to all subprocesses
 			MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 			MPI_Barrier(MPI_COMM_WORLD);
+
+			//TODO: devide covering though (size-1) or keep covering and end simulation step at threshold (covering -covering/(size-1)) -> difference in desorption and sticking
+			// currently 2nd ideo implemented as otherwise covering check is negative (-> adapt coveringphys?)
+			setCoveringThreshold(&hitbuffer, world_size, rank);
+
 
 			UpdateDesorptionRate(&hitbuffer);//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes
 
@@ -321,12 +328,14 @@ int main(int argc, char *argv[]) {
 			if (rank != 0) {
 				/* do work in any remaining processes */
 				std::cout <<std::endl << "Process " << rank << " starting iteration "<< it <<" now."<< std::endl;
+				sHandle->posCovering=true;//assumption:negative covering has been resolved before, TODO: actually implement code to resolve
 
 				//Do the simulation
 				if (!simulateSub(&hitbuffer, rank, p->simulationTimeMS)) {
-					std::cout << "Maximum desorption reached." << std::endl;
+					if(sHandle->posCovering)
+						{std::cout << "Maximum desorption reached." << std::endl;} //else negative covering
 				} else {
-					std::cout << "Simulation for process " << rank << " finished."<< std::endl;
+					std::cout << "Simulation for process " << rank << " for step " << it << " finished."<< std::endl;
 				}
 			}
 			MPI_Barrier(MPI_COMM_WORLD);
