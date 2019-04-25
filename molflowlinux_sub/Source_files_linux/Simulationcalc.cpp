@@ -123,7 +123,7 @@ double GetMoleculesPerTP(Databuff *hitbuffer_sum) // Calculation of Krealvirt
 	gHits = (GlobalHitBuffer *)buffer;
 	if (gHits->globalHits.hit.nbDesorbed == 0) return 0; //avoid division by 0
 	double desrate, totaldes =0.0;
-	std::tie(desrate,  totaldes)=calctotalDesorption(hitbuffer_sum);
+	std::tie(desrate,  totaldes)=calctotalDesorption();
 	CalcTotalOutgassingWorker();
 	//Constant flow
 	//Each test particle represents a certain real molecule influx per second
@@ -268,15 +268,15 @@ void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum, double ti
 				std::cout << "covering_sum = " << covering_sum << std::endl;
 				std::cout<< "covering_phys_before = " << covering_phys << std::endl;
 				if (covering_sum > covering_phys){
-					llong covering_delta = static_cast < llong > ((covering_sum - covering_phys)*Krealvirt*test_time_step); //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+					llong covering_delta = static_cast < llong > ((covering_sum - covering_phys)*Krealvirt*time_step); //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
 					covering_phys += covering_delta;
 					std::cout << "covering rises"<< std::endl;
 				}
 				else{
-					covering_check = covering_phys + (covering_phys - covering_sum)*Krealvirt*(-1)*test_time_step; //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+					covering_check = covering_phys + (covering_phys - covering_sum)*Krealvirt*(-1)*time_step; //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
 					std::cout <<"covering_check = " << covering_check << std::endl;
 					if(!(covering_check<0)){
-						llong covering_delta = static_cast < llong > ((covering_phys - covering_sum)*Krealvirt*test_time_step); //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+						llong covering_delta = static_cast < llong > ((covering_phys - covering_sum)*Krealvirt*time_step); //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
 						covering_phys -= covering_delta;
 						std::cout << "covering decreases but remains positive" << std::endl;
 					}

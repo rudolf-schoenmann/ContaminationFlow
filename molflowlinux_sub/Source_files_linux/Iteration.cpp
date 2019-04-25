@@ -27,13 +27,14 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 extern Simulation *sHandle;
 
-double estimateTmin_RudiTest(Databuff hitbuffer){ //not ready yet => finish
-BYTE *buffer;
-buffer = hitbuffer->buff;
+double estimateTmin_RudiTest(Databuff *hitbuffer){ //not ready yet => finish
+  BYTE *buffer;
+  buffer = hitbuffer->buff;
 //Ich muss der Funktion noch einen Hitbuffer übergeben. Ich brauche ja 'covering'.
 	double tmin=0;
 	double sum_v_avg = 0;
 	double normalization_factor_v = 0;
+	llong covering;
 	//avarage of <v> (<v> is the average velocity on a single facet depending on temperature)
     // over all facets weighted with the rate of outgoing particles (outgassing + desorption) per facet
 	double tmin_particles_out = 0;
@@ -48,7 +49,7 @@ buffer = hitbuffer->buff;
 					if (!tmin_particles_out){
 						tmin_particles_out = (covering/(f.sh.outgassing + f.sh.desorption)/ (1.38E-23*f.sh.temperature));
 					}
-					if (tmin_particles_out > (covering/(f.sh.outgassing +f.sh.desorption)/ (1.38E-23*f.sh.temperature));
+					if (tmin_particles_out > (covering/(f.sh.outgassing +f.sh.desorption)/ (1.38E-23*f.sh.temperature)));
 					tmin_particles_out = (covering/(f.sh.outgassing +f.sh.desorption)/ (1.38E-23*f.sh.temperature)); 
 				}				
 			 }
@@ -60,7 +61,7 @@ buffer = hitbuffer->buff;
 	if (tmin < tmin_particles_out)
 	 	return tmin;
 	else
-		return tmin_particles_out
+		return tmin_particles_out;
 	
 	
 	std::cout << "estimateTmin_RudiTest: tmin = " <<tmin<< "ms"<< std::endl;
