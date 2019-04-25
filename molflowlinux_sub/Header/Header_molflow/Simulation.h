@@ -265,3 +265,4 @@ double calcCovering(SubprocessFacet *iFacet);
 void CalcTotalOutgassingWorker();
 double GetMoleculesPerTP(Databuff *hitbuffer);
 void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum, double time_step);
+

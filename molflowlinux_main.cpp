@@ -299,6 +299,7 @@ int main(int argc, char *argv[]) {
 					std::cout << "Simulation for process " << rank << " finished."<< std::endl;
 				}
 			}
+			MPI_Barrier(MPI_COMM_WORLD);
 
 			//iteratively add hitbuffer from subprocesses
 			for (int i = 1; i < world_size; i++) {
