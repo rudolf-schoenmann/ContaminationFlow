@@ -72,8 +72,8 @@ bool simulateSub(Databuff *hitbuffer, int rank, int simutime){
 	// Update quantaties for contamination
 
 	//UpdateSticking();
-	estimateTmin();
-	estimateTmin_RudiTest(hitbuffer);
+	//estimateTmin();
+	//estimateTmin_RudiTest(hitbuffer);
 
 
 	//Save history to new file

@@ -47,27 +47,37 @@ buffer = hitbuffer->buff;
 				normalization_factor_v += f.sh.outgassing + f.sh.desorption;
 				if ((f.sh.outgassing + f.sh.desorption) > 0){ //avoid division by 0
 					if (!tmin_particles_out){
-						tmin_particles_out = (covering/(f.sh.outgassing + f.sh.desorption)/ (1.38E-23*f.sh.temperature));
+						tmin_particles_out = covering/((f.sh.outgassing + f.sh.desorption)/ (1.38E-23*f.sh.temperature));
 					}
-					if (tmin_particles_out > (covering/(f.sh.outgassing +f.sh.desorption)/ (1.38E-23*f.sh.temperature))){
-						tmin_particles_out = (covering/(f.sh.outgassing +f.sh.desorption)/ (1.38E-23*f.sh.temperature));}
+					if (tmin_particles_out > covering/((f.sh.outgassing +f.sh.desorption)/ (1.38E-23*f.sh.temperature))){
+						tmin_particles_out = covering/((f.sh.outgassing +f.sh.desorption)/ (1.38E-23*f.sh.temperature));}
 				}				
 			 }
 	}
+	//if (normalization_factor_v == 0) std::cout << "divide by zero!" << std::endl;
 	double v_avg = sum_v_avg/normalization_factor_v;
-	double av_path_length = sHandle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;
+	//std::cout << "v_avg = sum_v_avg/normalization_factor_v = " << sum_v_avg << "/" << normalization_factor_v << std::endl;
+	double av_path_length = sHandle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;//Muss geändert werden, da diese Werte Null sind im Prozess Null.
+	//std::cout <<  "av_path_length = Handle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.hit.nbMCHit = " << sHandle->tmpGlobalResult.distTraveled_total << "/" << sHandle->tmpGlobalResult.globalHits.hit.nbMCHit << std::endl;
+	//std::cout << "tmin = av_path_length /v_avg = " << av_path_length << " / " << v_avg << std::endl;
 	tmin = av_path_length /v_avg;
 
-	if (tmin < tmin_particles_out)
-	 	return tmin;
-	else
-		return tmin_particles_out;
-	
-	
+	//Time step information for developing
+
+	std::cout << "Time step information for developing" << std::endl;
 	std::cout << "estimateTmin_RudiTest: tmin = " <<tmin<< "ms"<< std::endl;
-	//std::cout << "estimateTmin_RudiTest: tmin_particles_out = " <<tmin_particles_out<< "ms"<< std::endl;
-	std::cout << "_______________________________________________________________________________________________________"<< std::endl<<std::endl;
-	
+	std::cout << "estimateTmin_RudiTest: tmin_particles_out = " <<tmin_particles_out<< "ms"<< std::endl;
+	std::cout << "estimateTmin: tmin would be " << estimateTmin() << "ms" << std::endl;
+
+
+	if (tmin < tmin_particles_out){
+		std::cout << "estimateTmin_RudiTest: tmin = " <<tmin<< "ms is chosen."<< std::endl;
+	 	return tmin;
+		}
+	else{
+		std::cout << "estimateTmin_RudiTest: tmin_particles_out = " <<tmin_particles_out<< "ms is chosen."<< std::endl;
+		return tmin_particles_out;
+		}
 	return tmin;
 }
 
@@ -92,9 +102,10 @@ double estimateTmin(){
 		}
 	}
 	double dist_total=0.01*(double)sHandle->tmpGlobalResult.distTraveled_total; //factor 0.01 to convert distance from cm to m.
-	double hits= (double)sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;
-	double hits2= pow((double)sHandle->tmpGlobalResult.globalHits.hit.nbMCHit,2);
-	double particlenumber = (double)sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed;
+	//Muss geändert werden, da diese Werte Null sind im Prozess Null.
+	double hits= (double)sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;//Muss geändert werden, da diese Werte Null sind im Prozess Null.
+	double hits2= pow((double)sHandle->tmpGlobalResult.globalHits.hit.nbMCHit,2);//Muss geändert werden, da diese Werte Null sind im Prozess Null.
+	double particlenumber = (double)sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed;//Muss geändert werden, da diese Werte Null sind im Prozess Null.
 	/*
 	std::cout << "_______________________________________________________________________________________________________"<< std::endl;
 	std::cout <<"Current version of estimate Tmin"<< std::endl;
