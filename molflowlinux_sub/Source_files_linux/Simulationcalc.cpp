@@ -310,7 +310,7 @@ void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum, double ti
 }
 
 //---------------------test--------------------------------------
-double preTestTimeStep(CoveringHistory *history, Databuff *hitbuffer_sum, double Krealvirt){
+double preTestTimeStep(SimulationHistory *history, Databuff *hitbuffer_sum, double Krealvirt){
 	double test_time_step = pow(10,-14);
 	llong covering_phys;
 	llong covering_sum;
@@ -319,7 +319,7 @@ double preTestTimeStep(CoveringHistory *history, Databuff *hitbuffer_sum, double
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 					//FacetHitBuffer *facetHitBuffer_sum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
-					covering_phys = history->getCurrentCovering(&f);
+					covering_phys = history->coveringList.getCurrent(&f);
 					covering_sum = getCovering(&f, hitbuffer_sum);
 
 
@@ -340,7 +340,7 @@ double preTestTimeStep(CoveringHistory *history, Databuff *hitbuffer_sum, double
 
 }
 
-void UpdateCovering(CoveringHistory *history, Databuff *hitbuffer_sum, double time_step,llong *nbDesorbed_old){//Updates Covering after one Iteration using Krealvirt, resets other counters
+void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double time_step,llong *nbDesorbed_old){//Updates Covering after one Iteration using Krealvirt, resets other counters
 	//If one wants to read out pressure and particle density, this must be done before calling UpdateCovering.
 	//Calculates with the summed up counters of hitbuffer_sum how many test particles are equivalent to one physical particle.
 	//Then the physical values are stored in the hitbuffer.
@@ -360,7 +360,7 @@ void UpdateCovering(CoveringHistory *history, Databuff *hitbuffer_sum, double ti
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				//FacetHitBuffer *facetHitBuffer_sum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
-				covering_phys = history->getCurrentCovering(&f);
+				covering_phys = history->coveringList.getCurrent(&f);
 				covering_sum = getCovering(&f, hitbuffer_sum);
 
 				std::cout<<std::endl << "Facet " << &f << std::endl;
@@ -390,12 +390,12 @@ void UpdateCovering(CoveringHistory *history, Databuff *hitbuffer_sum, double ti
 				}
 				std::cout<< "covering_phys_after = " << covering_phys << std::endl;
 				std::cout<< "coveringThreshhold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << std::endl;
-				history->setCurrentCovering(&f, covering_phys);
+				history->coveringList.setCurrent(&f, covering_phys);
 		}
 	}
 }
 
-void UpdateCoveringphys(CoveringHistory *history, Databuff *hitbuffer_sum, Databuff *hitbuffer){
+void UpdateCoveringphys(SimulationHistory *history, Databuff *hitbuffer_sum, Databuff *hitbuffer){
 	llong covering_phys;
 	BYTE *buffer_sum;
 	buffer_sum = hitbuffer_sum->buff;
@@ -407,7 +407,7 @@ void UpdateCoveringphys(CoveringHistory *history, Databuff *hitbuffer_sum, Datab
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
 				FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
-				covering_phys = history->getCurrentCovering(&f);
+				covering_phys = history->coveringList.getCurrent(&f);
 				facetHitBuffer->hit.covering=covering_phys;
 				facetHitSum->hit.covering=covering_phys;
 			}

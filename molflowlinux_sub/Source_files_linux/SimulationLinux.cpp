@@ -26,13 +26,13 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <array>
 #include <fstream>
 #include <sstream>
-extern Simulation *sHandle;
-extern CoveringHistory* covhistory;
+
+extern SimulationHistory* simHistory;
 
 
 std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
-	covhistory = new CoveringHistory (hitbuffer);
+	simHistory = new SimulationHistory (hitbuffer);
 	double timestep=1000; // desired length per iteration for simulation, here hardcoded to 1 second
 	double realtimestep; // actual time elapsed for iteration step
 
@@ -55,8 +55,8 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 	// Run Simulation for simutime steps. One step ~ 1 seconds
 	for(double i=0; i<(double)(simutime) && !eos;i+=realtimestep){
 		//if(i!=0||covhistory->pointintime_list.empty()){
-		if(covhistory->pointintime_list.empty()){
-			covhistory->appendList(hitbuffer,i); //append list with current time and covering //TODO offset if covering list does not end with timestep 0
+		if(simHistory->coveringList.empty()){
+			simHistory->appendList(hitbuffer,i); //append list with current time and covering //TODO offset if covering list does not end with timestep 0
 			}
 
 		if(i+timestep>=(double)(simutime)){ //last timestep
@@ -80,7 +80,7 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 	//Save history to new file
 	//std::string name0 = "/home/van/history"+std::to_string(rank)+".txt";
 	if(rank==1)
-		covhistory->print();
+		simHistory->print();
 	//covhistory->write(name0);
 
 
@@ -95,6 +95,7 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 		}
 
 	ResetTmpCounters(); //resets counter in sHandle
+	delete[] simHistory;simHistory=NULL;
 	return {std::make_tuple(eos,facetNum)};
 }
 

@@ -25,9 +25,6 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 #include "SimulationLinux.h"
 
-
-extern Simulation *sHandle;
-
 void UpdateSticking(Databuff *hitbuffer){
 	//std::cout <<"    Facet information:" <<std::endl;
 	int i = 0;

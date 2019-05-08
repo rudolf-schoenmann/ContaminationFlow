@@ -33,7 +33,7 @@ typedef void *HANDLE;
 
 // Global process variables
 Simulation* sHandle; //Global handle to simulation, one per subprocess
-CoveringHistory* covhistory;
+SimulationHistory* simHistory;
 ProblemDef* p;
 
 //This function checks if the correct number of arguments has been passed
@@ -91,8 +91,8 @@ int main(int argc, char *argv[]) {
 	Databuff loadbuffer; //Loadbuffer to read in data of geometry and physical parameters
 	loadbuffer.buff=NULL;
 
-	CoveringHistory *histphys; //test: replacing hitbuffer_phys
-	CoveringHistory *test;
+	SimulationHistory *histphys; //test: replacing hitbuffer_phys
+	SimulationHistory *test;
 	llong nbDesorbed_old; //test: nbDesorbed of previous iteration, used so that hitbuffer_sum does not have to be reset -> true final hitbuffer
 
 
@@ -200,8 +200,8 @@ int main(int argc, char *argv[]) {
 			//memcpy(hitbuffer_phys.buff,hitbuffer.buff,hitbuffer.size);
 			//hitbuffer_phys.size =hitbuffer.size;
 
-			histphys = new CoveringHistory (&hitbuffer);
-			test=new CoveringHistory (&hitbuffer);
+			histphys = new SimulationHistory (&hitbuffer);
+			test=new SimulationHistory (&hitbuffer);
 			nbDesorbed_old = getnbDesorbed(&hitbuffer_sum);
 
 			initcounterstozero(&hitbuffer);
@@ -284,7 +284,7 @@ int main(int argc, char *argv[]) {
 				UpdateCovering(histphys, &hitbuffer_sum, time_step, &nbDesorbed_old);
 				memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //TODO ist ths needed?
 				UpdateCoveringphys(histphys, &hitbuffer_sum, &hitbuffer);
-				test->appendList(histphys->pointintime_list.back().second);
+				test->coveringList.appendList(histphys->coveringList.getCurrent());
 
 				//memcpy(hitbuffer.buff,hitbuffer_phys.buff,hitbuffer_phys.size); //copying slows down code. Unfortunately we need to.
 				//memcpy(hitbuffer_sum.buff,hitbuffer_phys.buff,hitbuffer_phys.size); //copying slows down code. Unfortunately we need to.
