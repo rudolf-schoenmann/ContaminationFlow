@@ -36,6 +36,7 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 	double timestep=1000; // desired length per iteration for simulation, here hardcoded to 1 second
 	double realtimestep; // actual time elapsed for iteration step
 
+
 	// Set end of simulation flag
 	bool eos=false;
 	std::vector<int> facetNum;
@@ -83,6 +84,8 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 		simHistory->print();
 	//covhistory->write(name0);
 
+	//std::cout <<simHistory->flightTime <<'\t' <<simHistory->nParticles <<std::endl;
+
 
 
 	int num;
@@ -95,7 +98,7 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 		}
 
 	ResetTmpCounters(); //resets counter in sHandle
-	delete[] simHistory;simHistory=NULL;
+	//delete[] simHistory;simHistory=NULL; // deleting causes some error somehow
 	return {std::make_tuple(eos,facetNum)};
 }
 

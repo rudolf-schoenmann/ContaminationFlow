@@ -1,5 +1,6 @@
 molflowlinux_sub/Source_files_molflow/SimulationMC.o: \
  ../molflowlinux_sub/Source_files_molflow/SimulationMC.cpp \
+ /home/van/MolflowLinux/molflowlinux_sub/Header/Header_linux/SimulationLinux.h \
  /home/van/MolflowLinux/molflowlinux_sub/Header/Header_molflow/Simulation.h \
  /home/van/MolflowLinux/molflowlinux_sub/Header/Header_molflow/MolflowTypes.h \
  /home/van/MolflowLinux/molflowlinux_sub/GLApp/GLTypes.h \
@@ -24,6 +25,8 @@ molflowlinux_sub/Source_files_molflow/SimulationMC.o: \
  /home/van/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources/Random.h \
  /home/van/MolflowLinux/molflowlinux_sub/TruncatedGaussian/rtnorm.hpp \
  /home/van/MolflowLinux/molflowlinux_sub/GLApp/MathTools.h
+
+/home/van/MolflowLinux/molflowlinux_sub/Header/Header_linux/SimulationLinux.h:
 
 /home/van/MolflowLinux/molflowlinux_sub/Header/Header_molflow/Simulation.h:
 

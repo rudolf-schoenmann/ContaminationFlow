@@ -25,7 +25,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 //#include <stdio.h>
 //#include <stdlib.h>
 #include <sstream>
-#include "Simulation.h"
+#include "SimulationLinux.h"
 #include "IntersectAABB_shared.h"
 #include "Random.h"
 #include "GLApp/MathTools.h"
@@ -33,6 +33,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 
 extern Simulation *sHandle; //delcared in molflowSub.cpp
+extern SimulationHistory* simHistory;
 
 // Compute area of all the desorption facet
 
@@ -699,6 +700,10 @@ bool StartFromSource() {
 	//	}
 	//	else {std::cout <<"Covering "<<src->tmpCounter[m].hit.covering <<std::endl; }
 	//}
+
+	//save values before starting new particle
+	simHistory->flightTime+=sHandle->currentParticle.flightTime;
+	simHistory->nParticles+=1;
 
 	sHandle->currentParticle.lastHitFacet = src;
 	//sHandle->currentParticle.distanceTraveled = 0.0;  //for mean free path calculations

@@ -25,6 +25,8 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "SimulationLinux.h"
 #include "levmar.h"
 
+extern SimulationHistory* simHistory;
+
 double estimateTmin_RudiTest(Databuff *hitbuffer){ //not ready yet => finish //TODO
 BYTE *buffer;
 buffer = hitbuffer->buff;
@@ -43,7 +45,7 @@ buffer = hitbuffer->buff;
 				sum_v_avg += v_avg_therm * (f.sh.outgassing + f.sh.desorption);
 				normalization_factor_v += f.sh.outgassing + f.sh.desorption;
 				if ((f.sh.outgassing + f.sh.desorption) > 0){ //avoid division by 0
-					double ttemp= covering/(f.sh.outgassing + f.sh.desorption)/ (1.38E-23*f.sh.temperature);
+					double ttemp= (double)(covering/((f.sh.outgassing + f.sh.desorption)/ (1.38E-23*f.sh.temperature)));
 					if (!tmin_particles_out){
 						tmin_particles_out = (ttemp);
 					}
@@ -74,6 +76,10 @@ buffer = hitbuffer->buff;
 #include <sstream>
 
 extern Simulation *sHandle;
+
+double estimateTminFlightTime(){
+	return simHistory->flightTime/simHistory->nParticles;
+}
 
 
 double estimateTmin(){
@@ -112,17 +118,18 @@ double estimateTmin(){
 	return (dist_total/hits2)*sum_1_v_ort*1000;
 }
 
-void TemporaryFunction ()
-{
-    HistoryList<llong> coveringList;
-}
-
 SimulationHistory::SimulationHistory(){
+	numFacet=0;
+	nParticles=-1;
+	flightTime=0.0;
 }
 
 SimulationHistory::SimulationHistory(Databuff *hitbuffer){
 	std::vector<llong> currentstep;
 	currentstep =std::vector<llong> ();
+	numFacet=0;
+	nParticles=-1;
+	flightTime=0.0;
 
 
 	llong covering;
@@ -131,9 +138,11 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer){
 				covering = getCovering(&f, hitbuffer);
 				currentstep.push_back(covering);
 				f.tmpCounter[0].hit.covering=covering;
+				numFacet+=1;
 			}
 	}
 	coveringList.appendList(currentstep, 0);
+	coveringList.initCurrent(numFacet);
 }
 
 

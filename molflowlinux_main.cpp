@@ -62,7 +62,8 @@ bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 		}
 		else{
 			if(rank==0){std::cout<<"Read arguments" <<std::endl;}
-			if(checkReadable(argv[1])||checkReadable(argv[2])||checkReadable(argv[3])||std::atof(argv[4])<0.0) // check if parameters are feasible
+
+			if(!checkReadable(argv[1])||!checkReadable(argv[2])||!checkReadable(argv[3])||std::atof(argv[4])<0.0) // check if parameters are feasible
 				{return false;}
 			p->readArg(argc, argv, rank);
 			return true;
@@ -91,8 +92,6 @@ int main(int argc, char *argv[]) {
 	Databuff loadbuffer; //Loadbuffer to read in data of geometry and physical parameters
 	loadbuffer.buff=NULL;
 
-	SimulationHistory *histphys; //test: replacing hitbuffer_phys
-	SimulationHistory *test;
 	llong nbDesorbed_old; //test: nbDesorbed of previous iteration, used so that hitbuffer_sum does not have to be reset -> true final hitbuffer
 
 
@@ -119,6 +118,8 @@ int main(int argc, char *argv[]) {
 	// Parameter check for MolflowLinux
 	if (!parametercheck(argc, argv,p,rank)) {
 		if (rank == 0){
+			std::cout <<"check parameters" <<std::endl;
+
 			MPI_Finalize();
 			return 0;
 		}
@@ -192,6 +193,7 @@ int main(int argc, char *argv[]) {
 			//These copise will be used in process 0. The hitbuffers of all subprocesses will be add up and written in the hitbuffer_sum
 			//and then converted in the hitbuffer_phys
 
+
 			hitbuffer_sum.buff = new BYTE[hitbuffer.size];
 			memcpy(hitbuffer_sum.buff,hitbuffer.buff,hitbuffer.size);
 			hitbuffer_sum.size =hitbuffer.size;
@@ -200,8 +202,7 @@ int main(int argc, char *argv[]) {
 			//memcpy(hitbuffer_phys.buff,hitbuffer.buff,hitbuffer.size);
 			//hitbuffer_phys.size =hitbuffer.size;
 
-			histphys = new SimulationHistory (&hitbuffer);
-			test=new SimulationHistory (&hitbuffer);
+			simHistory = new SimulationHistory (&hitbuffer);
 			nbDesorbed_old = getnbDesorbed(&hitbuffer_sum);
 
 			initcounterstozero(&hitbuffer);
@@ -267,24 +268,38 @@ int main(int argc, char *argv[]) {
 					//Process i sends hitbuffer to Process 0
 					MPI_Send(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, 0,MPI_COMM_WORLD);
 
+					MPI_Send(&simHistory->flightTime, 1, MPI::DOUBLE, 0, 0,MPI_COMM_WORLD);
+					MPI_Send(&simHistory->nParticles, 1, MPI::INT, 0, 0,MPI_COMM_WORLD);
+
 				} else if (rank == 0) {
 					//Process 0 receives hitbuffer from Process i
 					MPI_Recv(hitbuffer.buff, hitbuffer.size, MPI::BYTE, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 					//sleep(1);
 
 					//UpdateMCMainHits(&hitbuffer_sum, &hitbuffer, &hitbuffer_phys, 0);
-					UpdateMCMainHits(&hitbuffer_sum, &hitbuffer, histphys ,0);
+					UpdateMCMainHits(&hitbuffer_sum, &hitbuffer, simHistory ,0);
 					std::cout << "Updated hitbuffer with process " << i <<std::endl << std::endl;
+
+					double old_flightTime=simHistory->flightTime;
+					int old_nParticles = simHistory->nParticles;
+					MPI_Recv(&simHistory->flightTime, 1, MPI::DOUBLE, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+					MPI_Recv(&simHistory->nParticles, 1, MPI::INT, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+					simHistory->flightTime += old_flightTime;
+					simHistory->nParticles+=old_nParticles;
+					std::cout << "flightTime " << simHistory->flightTime << std::endl;
+					std::cout << "nParticles " << simHistory->nParticles << std::endl;
 				}
 			}
+
+
 			MPI_Barrier(MPI_COMM_WORLD);
 
 			if (rank == 0) {
 				double time_step = estimateTmin_RudiTest(&hitbuffer);
-				UpdateCovering(histphys, &hitbuffer_sum, time_step, &nbDesorbed_old);
+				UpdateCovering(simHistory, &hitbuffer_sum, time_step, &nbDesorbed_old);
 				memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //TODO ist ths needed?
-				UpdateCoveringphys(histphys, &hitbuffer_sum, &hitbuffer);
-				test->coveringList.appendList(histphys->coveringList.getCurrent());
+				UpdateCoveringphys(simHistory, &hitbuffer_sum, &hitbuffer);
+				simHistory->coveringList.print();
 
 				//memcpy(hitbuffer.buff,hitbuffer_phys.buff,hitbuffer_phys.size); //copying slows down code. Unfortunately we need to.
 				//memcpy(hitbuffer_sum.buff,hitbuffer_phys.buff,hitbuffer_phys.size); //copying slows down code. Unfortunately we need to.
@@ -303,7 +318,7 @@ int main(int argc, char *argv[]) {
 	if(rank==0){
 		//Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
 		std::cout << "Process 0 exporting final hitbuffer" << std::endl <<std::endl;
-		test->print();
+		simHistory->print();
 		exportBuff(p->resultbufferPath,&hitbuffer_sum);//ToDo: &hitbuffer_sum ersetzen durch &hitbuffer_phys // Not really needed since memcpy is used anyways?
 	}
 	MPI_Barrier(MPI_COMM_WORLD);

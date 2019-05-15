@@ -39,9 +39,9 @@ bool checkReadable(std::string fileName){
 	{
 		return true;
 	}
-	else{
-		return false;
-	}
+	std::cout <<fileName <<" not readable" <<std::endl;
+	return false;
+
 }
 
 void importBuff(char *fileName, Databuff *databuffer)

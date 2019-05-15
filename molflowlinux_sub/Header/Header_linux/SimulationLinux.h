@@ -39,10 +39,27 @@ const double tau = 1E-13;
 
 template <typename T> class HistoryList{
 public:
-	HistoryList(){pointintime_list = std::vector< std::pair<double,std::vector<T>> >();}
+	HistoryList(){
+		pointintime_list = std::vector< std::pair<double,std::vector<T>> >();
+		currentList=std::vector<T>();
+	}
 
 	std::vector< std::pair<double,std::vector<T>> > pointintime_list;
+	std::vector<T> currentList;
 
+	void initCurrent(unsigned int numFacet){
+		for(unsigned int i=0; i<numFacet; i++){
+			currentList.push_back(0.0);
+		}
+	}
+
+	void appendCurrent(double time=-1){
+
+			if(time==-1.0) //TODO improve: here steps instead of time
+					time=pointintime_list.back().first+1.0;
+			pointintime_list.push_back(std::make_pair(time,currentList));
+
+		}
 
 	void appendList(std::vector<T> List, double time=-1){
 
@@ -138,8 +155,20 @@ public:
 
 	bool empty(){return pointintime_list.empty();}
 
+	/*
+	void newLine(unsigned int numFacet, double time=-1){
+		if(time==-1){
+			time=pointintime_list.back().first+1.0;
+		}
+		std::vector<T> tempvec; tempvec = std::vector<T>();
+		for(unsigned int i=0; i<numFacet; i++){
+			tempvec.push_back(0.0);
+		}
+		pointintime_list.push_back(std::make_pair(time,tempvec));
 
-	void setCurrent(SubprocessFacet *iFacet, T newValue){int covidx = getFacetIndex(iFacet);	pointintime_list.back().second[covidx]=newValue;}
+	}*/
+	//void setCurrent(SubprocessFacet *iFacet, T newValue){int covidx = getFacetIndex(iFacet);	pointintime_list.back().second[covidx]=newValue;}
+	void setCurrentList(SubprocessFacet *iFacet, T newValue){int covidx = getFacetIndex(iFacet);	currentList[covidx]=newValue;}
 	T getCurrent(int idx){return pointintime_list.back().second[idx];}
 	T getCurrent(SubprocessFacet *iFacet){int covidx = getFacetIndex(iFacet);return pointintime_list.back().second[covidx];}
 	std::vector<T> getCurrent(){return pointintime_list.back().second;};
@@ -154,6 +183,9 @@ public:
 	//std::vector< std::pair<double,std::vector<double>> > pointintime_list_read;
 
 	HistoryList<llong> coveringList;
+	unsigned int numFacet;
+	double flightTime;
+	int nParticles;
 
 	void appendList(Databuff *hitbuffer, double time=-1.0);
 	void print();
@@ -211,6 +243,7 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
 double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
 
 double estimateTmin();
+double estimateTminFlightTime();
 double estimateTmin_RudiTest(Databuff *hitbuffer);
 
 void UpdateSticking(Databuff *hitbuffer);

@@ -217,6 +217,11 @@ double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This retur
 
 	coverage = calcCoverage(iFacet,hitbuffer);
 	temperature=iFacet->sh.temperature;
+
+	if(coverage==0){
+		return 0.0;
+	}
+
 	desorption= 1.0/tau * pow(coverage,p->d) *exp(-p->E_de/(kb*temperature)); //what if coverage ==0??
 
 	return desorption;
@@ -226,6 +231,17 @@ double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer) {//This 
 	double desorption = calcDesorption(iFacet, hitbuffer);
 	double desorptionRate = desorption * (calcNmono(iFacet) / calcdNsurf()) * 1.38E-23* iFacet->sh.temperature;
 	return desorptionRate;
+}
+
+double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f){
+	double scaleY = 1.0 / (f->sh.area  /*/(double)PROFILE_SIZE*/*1E-4); //0.01: Pa->mbar
+	//TODO is this correct?
+	return scaleY *GetMoleculesPerTP(hitbuffer_sum,0) * f->tmpCounter[0].hit.sum_1_per_ort_velocity;
+}
+
+double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f){
+	double scaleY = 1.0 / (f->sh.area  /*/(double)PROFILE_SIZE*/*1E-4)* sHandle->wp.gasMass / 1000 / 6E23 * 0.0100; //0.01: Pa->mbar;  //1E4 is conversion from m2 to cm2, 0.01: Pa->mbar
+	return f->tmpCounter[0].hit.sum_1_per_ort_velocity*scaleY * GetMoleculesPerTP(hitbuffer_sum,0);
 }
 
 void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum, double time_step){//Updates Covering after one Iteration using Krealvirt, resets other counters
@@ -357,6 +373,8 @@ void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double 
 	//buffer_sum = hitbuffer_sum->buff;
 	double test_time_step = preTestTimeStep(history, hitbuffer_sum,  Krealvirt);
 
+	std::cout <<"testing timestep: " <<test_time_step <<'\t' <<estimateTminFlightTime() <<std::endl;
+
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				//FacetHitBuffer *facetHitBuffer_sum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
@@ -390,9 +408,11 @@ void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double 
 				}
 				std::cout<< "covering_phys_after = " << covering_phys << std::endl;
 				std::cout<< "coveringThreshhold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << std::endl;
-				history->coveringList.setCurrent(&f, covering_phys);
+				history->coveringList.setCurrentList(&f, covering_phys);
 		}
 	}
+
+	history->coveringList.appendCurrent();
 }
 
 void UpdateCoveringphys(SimulationHistory *history, Databuff *hitbuffer_sum, Databuff *hitbuffer){
@@ -412,4 +432,7 @@ void UpdateCoveringphys(SimulationHistory *history, Databuff *hitbuffer_sum, Dat
 				facetHitSum->hit.covering=covering_phys;
 			}
 	}
+
+	history->flightTime=0.0;
+	history->nParticles=0;
 }
