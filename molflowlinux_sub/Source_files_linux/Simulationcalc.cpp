@@ -164,7 +164,7 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates
 	double s2 = 0.2;
 	//Start Test
 	//Just for test reasons
-	double s1 =0.99;
+	double s1 =1;
 	//End of Test
 	double E_ad = 1E-21;
 	//double E_de = 1.5E-21;
@@ -193,6 +193,8 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates
 
 	temperature=iFacet->sh.temperature;
 	coverage = covering /(calcNmono(iFacet)/calcdNsurf());
+	iFacet->sh.sticking = s1;
+	/*
 	if (covering < 1) {
 		iFacet->sh.sticking = (s1*(1.0 - coverage) + s2 * coverage)*(1.0 - exp(-E_ad / (kb*temperature)));
 	}
@@ -200,7 +202,7 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates
 	{
 		iFacet->sh.sticking  = s2 * (1.0 - exp(-E_ad / (kb*temperature)));
 	}
-
+	*/
 
 
 }
@@ -208,7 +210,7 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates
 double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This returns ((d'coverage')/dt)de. So to speak desorption rate in units of [1/s]
 	double tau=1E-13;
 	double d=1;
-	double E_de= 1.5E-21;
+	double E_de= 1E-21;
 	double kb = 1.38E-23;
 	llong covering;
 	double coverage;
