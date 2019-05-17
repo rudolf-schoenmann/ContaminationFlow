@@ -147,10 +147,10 @@ ProblemDef::ProblemDef(){
 	resultbufferPath="/home/van/resultbuffer";
 
 	iterationNumber = 43200;
-	s1=0.99;
+	s1=1;
 	s2=0.2;
 	E_de=1E-21;
-	E_ad=1.5E-21;
+	E_ad=1E-21;
 	d=1;
 
 	simulationTime = 10.0;

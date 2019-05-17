@@ -198,6 +198,8 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates
 
 	temperature=iFacet->sh.temperature;
 	coverage = calcCoverage(iFacet,hitbuffer);
+	iFacet->sh.sticking = p->s1;
+	/*
 	if (coverage < 1) {
 		iFacet->sh.sticking = (p->s1*(1.0 - coverage) + p->s2 * coverage)*(1.0 - exp(-p->E_ad / (kb*temperature)));
 	}
@@ -205,7 +207,7 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates
 	{
 		iFacet->sh.sticking  = p->s2 * (1.0 - exp(-p->E_ad / (kb*temperature)));
 	}
-
+	*/
 
 
 }
