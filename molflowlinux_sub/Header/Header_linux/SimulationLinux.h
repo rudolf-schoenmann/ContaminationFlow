@@ -84,7 +84,8 @@ public:
 
 			for(uint j=0; j<pointintime_list[i].second.size();j++)
 			{
-				std::cout <<"\t\t" <<pointintime_list[i].second[j];
+				//std::cout <<"\t\t" <<pointintime_list[i].second[j];
+				std::cout <<"\t\t" <<double(pointintime_list[i].second[j]); //for a better view in console
 				if(pointintime_list[i].second[j] <10000)
 					std::cout <<"\t";
 			}
