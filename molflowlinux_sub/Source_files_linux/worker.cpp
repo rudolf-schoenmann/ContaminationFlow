@@ -25,8 +25,6 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "worker.h"
 #include "Simulation.h"
 #include <vector>
-
-//MolFlow *mApp;
 extern Simulation *sHandle; //delcared in molflowSub.cpp
 
 std::vector<std::pair<double, double>> Generate_CDF(double gasTempKelvins, double gasMassGramsPerMol, size_t size){

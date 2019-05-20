@@ -35,6 +35,8 @@ Simulation::Simulation()
 {
 	totalDesorbed = 0;
 
+	posCovering=true;
+
 	loadOK = false;
 	wp.sMode = MC_MODE;
 	currentParticle.lastHitFacet = NULL;

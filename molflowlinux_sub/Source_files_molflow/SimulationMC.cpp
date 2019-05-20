@@ -25,7 +25,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 //#include <stdio.h>
 //#include <stdlib.h>
 #include <sstream>
-#include "Simulation.h"
+#include "SimulationLinux.h"
 #include "IntersectAABB_shared.h"
 #include "Random.h"
 #include "GLApp/MathTools.h"
@@ -33,6 +33,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 
 extern Simulation *sHandle; //delcared in molflowSub.cpp
+extern SimulationHistory* simHistory;
 
 // Compute area of all the desorption facet
 
@@ -517,7 +518,7 @@ bool SimulationMCStep(size_t nbStep, Databuff *hitbuffer) {
 				sHandle->tmpGlobalResult.distTraveled_total += remainderFlightPath * sHandle->currentParticle.oriRatio;
 				RecordHit(HIT_LAST);
 				//sHandle->distTraveledSinceUpdate += sHandle->currentParticle.distanceTraveled;
-				if (!StartFromSource(hitbuffer))
+				if (!StartFromSource())
 					// desorptionLimit reached
 					return false;
 			}
@@ -539,7 +540,7 @@ bool SimulationMCStep(size_t nbStep, Databuff *hitbuffer) {
 							//Absorbed
 							RecordAbsorb(collidedFacet);
 							//sHandle->distTraveledSinceUpdate += sHandle->currentParticle.distanceTraveled;
-							if (!StartFromSource(hitbuffer))
+							if (!StartFromSource())
 								// desorptionLimit reached
 								return false;
 						}
@@ -561,7 +562,7 @@ bool SimulationMCStep(size_t nbStep, Databuff *hitbuffer) {
 							PerformBounce(collidedFacet);
 						}
 						else { //eliminate remainder and create new particle
-							if (!StartFromSource(hitbuffer))
+							if (!StartFromSource())
 								// desorptionLimit reached
 								return false;
 						}
@@ -573,7 +574,7 @@ bool SimulationMCStep(size_t nbStep, Databuff *hitbuffer) {
 			// No intersection found: Leak
 			sHandle->tmpGlobalResult.nbLeakTotal++;
 			RecordLeakPos();
-			if (!StartFromSource(hitbuffer))
+			if (!StartFromSource())
 				// desorptionLimit reached
 				return false;
 		}
@@ -591,7 +592,7 @@ void IncreaseDistanceCounters(double distanceIncrement) //distanceIncrement has 
 // Launch a ray from a source facet. The ray 
 // direction is chosen according to the desorption type.
 
-bool StartFromSource(Databuff *hitbuffer) {
+bool StartFromSource() {
 	bool found = false;
 	bool foundInMap = false;
 	bool reverse;
@@ -603,21 +604,25 @@ bool StartFromSource(Databuff *hitbuffer) {
 	int nbTry = 0;
 
 	// Check end of simulation
-	if (sHandle->ontheflyParams.desorptionLimit > 0) {
+	if (sHandle->ontheflyParams.desorptionLimit > 0) { //TODO add totaldes to if clause?
 		if (sHandle->totalDesorbed >= sHandle->ontheflyParams.desorptionLimit / sHandle->ontheflyParams.nbProcess) {
 			sHandle->currentParticle.lastHitFacet = NULL;
 			return false;
 		}
 	}
+
 	double totaldes=0.0;
-	// Select source
+	if(!sHandle->posCovering){return false;}
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				totaldes+=sHandle->wp.latestMoment *f.sh.desorption/ (1.38E-23*f.sh.temperature);
 			}
-		}
+	}
+
+	// Select source
+
 	srcRnd = rnd() * (sHandle->wp.totalDesorbedMolecules+totaldes);
-	//std::cout <<srcRnd <<std::endl;
+	//std::cout <<srcRnd <<"\t" <<totaldes <<std::endl;
 
 	while (!found && j < (int)sHandle->sh.nbSuper) { //Go through superstructures
 		i = 0;
@@ -677,16 +682,28 @@ bool StartFromSource(Databuff *hitbuffer) {
 	}
 
 	src = &(sHandle->structures[j].facets[i]);
+
 	bool desorbed_b=true; //determines whether particle created from outgassing or desorption; true desorbed, false outgassed
-	//std::cout <<"test\t" <<(src->sh.desorbType)<<j <<i <<calcDesorption(src) <<std::endl;
-	if(src->sh.desorbType != DES_NONE ){
+	if(src->sh.desorbType != DES_NONE ){ //there is outgassing
 		desorbed_b=false;
 		double des=src->sh.desorption;
-		//std::cout <<"test\t" <<(src->sh.outgassing) <<des <<std::endl;
 		if(rnd()<des/(src->sh.outgassing+des) ){
 			desorbed_b=true;
 		}
 	}
+
+	//check if covering would get negative
+	//size_t nbMoments = sHandle->moments.size();
+	//for (size_t m = 0; m <= nbMoments; m++) {
+	//	if (m == 0 || abs((double)sHandle->currentParticle.flightTime - (double)sHandle->moments[m - 1]) < sHandle->wp.timeWindowSize / 2.0) {
+	//		if(src->tmpCounter[m].hit.covering<=sHandle->coveringThreshold[getFacetIndex(src)]) {std::cout <<"Covering "<<src->tmpCounter[m].hit.covering <<" gets smaller than " <<sHandle->coveringThreshold[getFacetIndex(src)] <<std::endl; sHandle->posCovering=false; return false; }//end this simulation
+	//	}
+	//	else {std::cout <<"Covering "<<src->tmpCounter[m].hit.covering <<std::endl; }
+	//}
+
+	//save values before starting new particle
+	simHistory->flightTime+=sHandle->currentParticle.flightTime;
+	simHistory->nParticles+=1;
 
 	sHandle->currentParticle.lastHitFacet = src;
 	//sHandle->currentParticle.distanceTraveled = 0.0;  //for mean free path calculations
@@ -1551,9 +1568,11 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 					std::cout<< "Covering counter bleibt" << std::endl;*/
 				}
 			if (desorbed){
-				f->tmpCounter[m].hit.covering -= 1;
+				if(f->tmpCounter[m].hit.covering>sHandle->coveringThreshold[getFacetIndex(f)]){f->tmpCounter[m].hit.covering -= 1;}
+				else{sHandle->posCovering=false;}
+
 				}
-			f->tmpCounter[m].hit.covering = f->tmpCounter[m].hit.covering < 0.0 ? 0 : f->tmpCounter[m].hit.covering;//Für den Fall,
+			//Für den Fall,
 			//dass covering kleiner Null würde. Das ist aber nicht die physikalisch richtige Lösung => überlegen.
 			//Für den Fall könnte die Simulation (nachdem das Teilchen beendet ist) abgebrochen werden, die Werte an den Hauptprozess geschickt, summiert,
 			//und ein neuer Schritt (nach ca. Tmin) gestartet werden (mit covering = Null auf der entsprechenden Facette).

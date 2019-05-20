@@ -609,12 +609,12 @@ void ResetSimulation() {
 
 }
 
-bool StartSimulation(Databuff *hitbuffer) {
+bool StartSimulation() {
 	size_t sMode=0; //MC Mode by dafault
 	sHandle->wp.sMode = sMode;
 	switch (sMode) {
 	case MC_MODE:
-		if (!sHandle->currentParticle.lastHitFacet) StartFromSource(hitbuffer);
+		if (!sHandle->currentParticle.lastHitFacet) return StartFromSource();
 		return (sHandle->currentParticle.lastHitFacet != NULL);
 	/*case AC_MODE: (my) no AC_MODE
 		if (sHandle->prgAC != 100) {
@@ -654,7 +654,7 @@ void RecordLeakPos() {
 	}
 }
 
-std::pair<bool,double> SimulationRun(double time, Databuff *hitbuffer) {
+std::pair<bool,double> SimulationRun(double time, Databuff *hitbuffer, int rank) {
 
 	// 1s step
 	double t0, t1;
@@ -688,7 +688,7 @@ std::pair<bool,double> SimulationRun(double time, Databuff *hitbuffer) {
 
 	t1 = GetTick();
 	sHandle->stepPerSec =1000.0* (double)(nbStep) / (t1 - t0);
-	std::cout <<"Elapsed time for calculation step (substep of one iteration step): " <<t1-t0 <<std::endl;
+	std::cout <<"Elapsed time for calculation step (substep of one iteration step) for process " <<rank <<": "  <<t1-t0 <<std::endl;
 #ifdef _DEBUG
 	printf("Running: stepPerSec = %f\n", sHandle->stepPerSec);
 #endif

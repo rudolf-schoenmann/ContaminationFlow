@@ -25,9 +25,9 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "SimulationLinux.h"
 #include "levmar.h"
 
-extern Simulation *sHandle;
+extern SimulationHistory* simHistory;
 
-double estimateTmin_RudiTest(Databuff *hitbuffer){ //not ready yet => finish
+double estimateTmin_RudiTest(Databuff *hitbuffer){ //not ready yet => finish //TODO
 BYTE *buffer;
 buffer = hitbuffer->buff;
 //Ich muss der Funktion noch einen Hitbuffer übergeben. Ich brauche ja 'covering'.
@@ -46,11 +46,12 @@ buffer = hitbuffer->buff;
 				sum_v_avg += v_avg_therm * (f.sh.outgassing + f.sh.desorption);
 				normalization_factor_v += f.sh.outgassing + f.sh.desorption;
 				if ((f.sh.outgassing + f.sh.desorption) > 0){ //avoid division by 0
+					double ttemp= (double)(covering/((f.sh.outgassing + f.sh.desorption)/ (1.38E-23*f.sh.temperature)));
 					if (!tmin_particles_out){
-						tmin_particles_out = covering/((f.sh.outgassing + f.sh.desorption)/ (1.38E-23*f.sh.temperature));
+						tmin_particles_out = (ttemp);
 					}
-					if (tmin_particles_out > covering/((f.sh.outgassing +f.sh.desorption)/ (1.38E-23*f.sh.temperature))){
-						tmin_particles_out = covering/((f.sh.outgassing +f.sh.desorption)/ (1.38E-23*f.sh.temperature));}
+					if (tmin_particles_out > ttemp){
+						tmin_particles_out = ttemp;}
 				}				
 			 }
 	}
@@ -86,6 +87,10 @@ buffer = hitbuffer->buff;
 #include <sstream>
 
 extern Simulation *sHandle;
+
+double estimateTminFlightTime(){
+	return simHistory->flightTime/simHistory->nParticles;
+}
 
 
 double estimateTmin(){
@@ -125,136 +130,115 @@ double estimateTmin(){
 	return (dist_total/hits2)*sum_1_v_ort*1000;
 }
 
-CoveringHistory::CoveringHistory(){
-	pointintime_list=std::vector< std::pair<double,std::vector<double>> >();
+SimulationHistory::SimulationHistory(){
+	numFacet=0;
+	nParticles=-1;
+	flightTime=0.0;
 }
 
-CoveringHistory::CoveringHistory(Databuff *hitbuffer){
-	pointintime_list=std::vector< std::pair<double,std::vector<double>> >();
-	std::vector<double> currentstep;
-	currentstep =std::vector<double> ();
+SimulationHistory::SimulationHistory(Databuff *hitbuffer){
+	std::vector<llong> currentstep;
+	currentstep =std::vector<llong> ();
+	numFacet=0;
+	nParticles=-1;
+	flightTime=0.0;
 
+
+	llong covering;
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+			for (SubprocessFacet& f : sHandle->structures[s].facets) {
+				covering = getCovering(&f, hitbuffer);
+				currentstep.push_back(covering);
+				f.tmpCounter[0].hit.covering=covering;
+				numFacet+=1;
+			}
+	}
+	coveringList.appendList(currentstep, 0);
+	coveringList.initCurrent(numFacet);
+}
+
+
+void SimulationHistory::appendList(Databuff *hitbuffer, double time){
+
+	std::vector<llong> currentstep;
+	currentstep =std::vector<llong> ();
+
+	if(time==-1.0) //TODO improve: here steps instead of time
+		time=coveringList.pointintime_list.back().first+1.0;
+
+	llong covering;
+
+	//int i=0;
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			covering=getCovering(&f, hitbuffer);
+			currentstep.push_back(covering);
+			//i+=1;
+		}
+	}
+	coveringList.appendList(currentstep, -1);
+
+}
+
+void SimulationHistory::print(){
+	coveringList.print();
+}
+
+
+void allocateCovering(Databuff *hitbuffer, int size, int rank){
+	BYTE *buffer;
+	buffer = hitbuffer->buff;
+	llong temp=size+1;
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
+				if(rank==1)
+					{facetHitBuffer->hit.covering=facetHitBuffer->hit.covering/temp + facetHitBuffer->hit.covering%temp;}
+				else
+					{facetHitBuffer->hit.covering=facetHitBuffer->hit.covering/temp;}
+			}
+	}
+}
+
+
+void initCoveringThresh(){
+	sHandle->coveringThreshold=std::vector<llong> ();
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+				for (SubprocessFacet& f : sHandle->structures[j].facets) {
+					sHandle->coveringThreshold.push_back(0);
+				}
+		}
+}
+
+
+void setCoveringThreshold(Databuff *hitbuffer, int size, int rank){
+	BYTE *buffer;
+	buffer = hitbuffer->buff;
+	llong num_sim=size-1;
+	llong cov_sim; //number of particles that can be desorbed from facet
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
+				if(rank==1)
+					{cov_sim=facetHitBuffer->hit.covering/num_sim + facetHitBuffer->hit.covering%num_sim;}
+				else
+					{cov_sim=facetHitBuffer->hit.covering/num_sim;}
+
+				sHandle-> coveringThreshold[getFacetIndex(&f)]=facetHitBuffer->hit.covering-cov_sim;
+			}
+	}
+}
+
+void TestMinCovering(Databuff *hitbuffer){
 	BYTE *buffer;
 	buffer = hitbuffer->buff;
 
-	llong covering;
-	//std::cout <<"Reading covering values from buffer\t";
-	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-			for (SubprocessFacet& f : sHandle->structures[s].facets) {
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
-				covering = facetHitBuffer->hit.covering;
-				//std::cout <<covering <<"\t";
-				currentstep.push_back(covering);
-				f.tmpCounter[0].hit.covering=covering;
+				facetHitBuffer->hit.covering=100;
+				//f.tmpCounter[0].hit.covering=facetHitBuffer->hit.covering;
 			}
 	}
-	std::cout <<std::endl;
-	pointintime_list.push_back(std::make_pair(0.0,currentstep));
 }
 
-void CoveringHistory::appendList(double time){
-
-	std::vector<double> currentstep;
-	currentstep =std::vector<double> ();
-
-	double covering;
-
-	int i=0;
-	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			//covering=calcRealCovering(&f);
-			covering=calcCovering(&f);
-			currentstep.push_back(covering);
-			i+=1;
-		}
-	}
-	pointintime_list.push_back(std::make_pair(time,currentstep));
-
-}
-
-void::CoveringHistory::print(){
-
-	std::cout <<"time\t";
-	for(int i=0;i<pointintime_list.size();i++)
-	{
-		if(i==0){
-			for(int j=0; j<pointintime_list[i].second.size();j++)
-					{
-					std::cout <<"\tCovering for Facet " <<j;
-					}
-		}
-		std::cout<<std::endl;
-		std::cout <<pointintime_list[i].first;
-
-		for(int j=0; j<pointintime_list[i].second.size();j++)
-		{
-			std::cout <<"\t\t" <<pointintime_list[i].second[j]<<"\t";
-			/*if(pointintime_list[i].second[j] == 0.0)
-				std::cout <<"\t";*/
-		}
-
-	}
-	std::cout<<std::endl<<std::endl;
-}
-
-void::CoveringHistory::write(std::string filename){
-	//std::string write = "/home/van/history"+std::to_string(num)+".txt";
-	std::ofstream outfile(filename,std::ofstream::out|std::ios::trunc);
-
-	for(int i=0;i<pointintime_list.size();i++)
-	{
-		outfile <<pointintime_list[i].first;
-
-		for(int j=0; j<pointintime_list[i].second.size();j++)
-		{
-			outfile <<'\t' <<pointintime_list[i].second[j];
-		}
-
-		outfile <<'\n';
-
-	}
-	outfile.close();
-}
-
-void::CoveringHistory::read(std::string filename, Databuff *hitbuffer){//Rudi: Not ready yet.
-	pointintime_list.clear();
-	//pointintime_list_read.clear();
-	//std::string read = "/home/van/history"+std::to_string(num)+".txt";
-	std::string line;
-
-	std::ifstream input(filename,std::ifstream::in);
-	std::cout <<"Reading in covering history from " <<filename <<std::endl;
-	while(std::getline(input,line)){
-		std::vector<double> currentstep;
-		currentstep =std::vector<double> ();
-
-		double covering;
-		double time;
-		std::istringstream is( line );
-
-		is >> time;
-		while(!is.eof()){
-			is >> covering;
-			currentstep.push_back(covering);
-
-		}
-		pointintime_list.push_back(std::make_pair(time,currentstep));
-	}
-	input.close();
-
-	int i=0;
-	double num_mol=0.0;
-	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				num_mol=pointintime_list.back().second[i]; //Rudi: Maybe wrong, since we changed covering and introduced coverage.
-				f.tmpCounter[0].hit.covering = pointintime_list.back().second[i];
-				//calcStickingnew(&f, hitbuffer); // calculate new sticking for new covering value
-				// 1) Update the hitbuffer with the last covering value
-				// 2) calcStickingnew(&f, hitbuffer);
-				std::cout <<"Facet "<<i <<"\t covering: " <<f.tmpCounter[0].hit.covering <<"\t Corresponding number of particles: " <<num_mol <<std::endl;
-				i+=1;
-		}
-	}
-	std::cout <<std::endl;
-
-}

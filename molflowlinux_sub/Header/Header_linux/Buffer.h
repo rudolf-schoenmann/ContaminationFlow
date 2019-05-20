@@ -54,6 +54,7 @@ typedef struct {
 	BYTE *buff;
 }Databuff;
 
+bool checkReadable(std::string fileName);
 
 void importBuff(char *fileName, Databuff *databuffer);
 void exportBuff(char *fileName, Databuff *databuffer);

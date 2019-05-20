@@ -180,6 +180,9 @@ public:
 	bool lastHitUpdateOK;  // Last hit update timeout
 	bool lastLogUpdateOK; // Last log update timeout
 	bool hasVolatile;   // Contains volatile facet
+
+	bool posCovering;
+	std::vector<llong>  coveringThreshold;
 	//double calcACTime;  // AC matrix calculation time (my) in unused fcts LoadAc, ComputeACMatrix
 
 	// Particle coordinates (MC)
@@ -224,15 +227,15 @@ void SetErrorSub(const char *msg);
 //void ClearACMatrix();
 bool LoadSimulation(Databuff *databuffer);
 //bool UpdateOntheflySimuParams(Dataport *loader); // (Rudi) I don't think, I need that.
-bool StartSimulation(Databuff *hitbuffer);
+bool StartSimulation();
 void ResetSimulation();
-std::pair<bool,double> SimulationRun(double time=1000.0, Databuff *hitbuffer=nullptr);
+std::pair<bool,double> SimulationRun(double time=1000.0, Databuff *hitbuffer=nullptr, int rank=0);
 bool SimulationMCStep(size_t nbStep, Databuff *hitbuffer);
 void IncreaseDistanceCounters(double d);
 //bool SimulationACStep(int nbStep);
 void RecordHit(const int& type);
 void RecordLeakPos();
-bool StartFromSource(Databuff *hitbuffer);
+bool StartFromSource();
 void PerformBounce(SubprocessFacet *iFacet);
 void RecordAbsorb(SubprocessFacet *iFacet);
 void RecordHistograms(SubprocessFacet * iFacet);
@@ -258,6 +261,8 @@ double GetOpacityAt(SubprocessFacet *src, double time);
 void   IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t desorb, size_t absorb, double sum_1_per_v, double sum_v_ort, bool desorbed = false);
 void   TreatMovingFacet();
 
+/*
+ * We should not need the following definitions.
 double calcCoveringUpdate(SubprocessFacet *iFacet);
 double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer);
 double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
@@ -265,4 +270,7 @@ double calcCovering(SubprocessFacet *iFacet);
 void CalcTotalOutgassingWorker();
 double GetMoleculesPerTP(Databuff *hitbuffer);
 void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum, double time_step);
+*/
+
+int getFacetIndex(SubprocessFacet *iFacet);
 

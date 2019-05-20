@@ -25,9 +25,6 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 #include "SimulationLinux.h"
 
-
-extern Simulation *sHandle;
-
 void UpdateSticking(Databuff *hitbuffer){
 	//std::cout <<"    Facet information:" <<std::endl;
 	int i = 0;
@@ -56,11 +53,11 @@ void UpdateSticking(Databuff *hitbuffer){
 }
 
 void UpdateDesorptionRate (Databuff *hitbuffer){
-	int i = 0;
+	//int i = 0;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			f.sh.desorption = calcDesorptionRate(&f, hitbuffer);
-			i+=1;
+			//i+=1;
 		}
 	}
 
@@ -68,22 +65,7 @@ void UpdateDesorptionRate (Databuff *hitbuffer){
 
 
 
-void UpdateSubHits(Databuff *databuffer, int rank) {
-	switch (sHandle->wp.sMode) {
-	case MC_MODE:
-	{
-		UpdateSubMCHits(databuffer, rank, (size_t)sHandle->moments.size());
-	}
-		break;
-	default:
-
-		std::cout <<"Unknown Mode" <<std::endl;
-		break;
-	}
-
-}
-
-void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
+void UpdateMCSubHits(Databuff *databuffer, int rank) {
 	BYTE *buffer;
 	GlobalHitBuffer *gHits;
 	//TEXTURE_MIN_MAX texture_limits_old[3];
@@ -102,14 +84,14 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	buffer = databuffer->buff;
 	gHits = (GlobalHitBuffer *)buffer;
 
-
+	size_t nbMoments=(size_t)sHandle->moments.size();
 
 	// Global hits and leaks: save local hits to shared memory
 	gHits->globalHits.hit.nbMCHit = sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;
 	gHits->globalHits.hit.nbHitEquiv = sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv;
 	gHits->globalHits.hit.nbAbsEquiv = sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv;
 	gHits->globalHits.hit.nbDesorbed = sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed;
-	gHits->globalHits.hit.covering=0.0;
+	//gHits->globalHits.hit.covering=0;
 	gHits->distTraveled_total = sHandle->tmpGlobalResult.distTraveled_total;
 	gHits->distTraveledTotal_fullHitsOnly = sHandle->tmpGlobalResult.distTraveledTotal_fullHitsOnly;
 
@@ -183,7 +165,7 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 					facetHitBuffer->hit.sum_1_per_ort_velocity = f.tmpCounter[m].hit.sum_1_per_ort_velocity;
 					facetHitBuffer->hit.sum_v_ort = f.tmpCounter[m].hit.sum_v_ort;
 					facetHitBuffer->hit.sum_1_per_velocity = f.tmpCounter[m].hit.sum_1_per_velocity;
-					facetHitBuffer->hit.covering= f.tmpCounter[m].hit.covering;
+					facetHitBuffer->hit.covering= f.tmpCounter[m].hit.covering; // -facetHitBuffer->hit.covering;
 					//facetHitBuffer->hit.covering= 0.0;
 				}
 
@@ -381,16 +363,115 @@ void UpdateSubMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 
 	return;
 }
-/*
-void initbufftozero(size_t nbMoments, Databuff *databuffer){
-//now integrated in UpdateSubMcHits
 
+void initcounterstozero(Databuff *databuffer){
 	BYTE *buffer;
 	GlobalHitBuffer *gHits;
 
 	buffer=NULL;
 	buffer = databuffer->buff;
 	gHits = (GlobalHitBuffer *)buffer;
+
+	size_t nbMoments=(size_t)sHandle->moments.size();
+	//size_t facetHitsSize = (1 + nbMoments) * sizeof(FacetHitBuffer);
+
+	gHits->globalHits.hit.nbMCHit = 0;
+	gHits->globalHits.hit.nbHitEquiv = 0.0;
+	gHits->globalHits.hit.nbAbsEquiv = 0.0;
+	gHits->globalHits.hit.nbDesorbed = 0;
+
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			for (unsigned int m = 0; m < (1 + nbMoments); m++) {
+				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
+				facetHitBuffer->hit.nbAbsEquiv = 0.0;
+				facetHitBuffer->hit.nbDesorbed = 0;
+				facetHitBuffer->hit.nbMCHit = 0;
+				facetHitBuffer->hit.nbHitEquiv = 0.0;
+				facetHitBuffer->hit.sum_1_per_ort_velocity = 0.0;
+				facetHitBuffer->hit.sum_v_ort = 0.0;
+				facetHitBuffer->hit.sum_1_per_velocity = 0.0;
+
+			}
+		}
+	}
+
+}
+
+void initbufftozero(Databuff *databuffer){
+//Wahrscheinlich müssten hier auch noch alle Profiles und Textures resetet werden!
+	BYTE *buffer;
+	GlobalHitBuffer *gHits;
+
+	buffer=NULL;
+	buffer = databuffer->buff;
+	gHits = (GlobalHitBuffer *)buffer;
+
+	// Global hits and leaks: save local hits to shared memory
+	gHits->globalHits.hit.nbMCHit = 0;
+	gHits->globalHits.hit.nbHitEquiv = 0.0;
+	gHits->globalHits.hit.nbAbsEquiv = 0.0;
+	gHits->globalHits.hit.nbDesorbed = 0;
+	//gHits->globalHits.hit.covering=0;
+	gHits->distTraveled_total = 0.0;
+	gHits->distTraveledTotal_fullHitsOnly = 0.0;
+
+	size_t nbMoments=(size_t)sHandle->moments.size();
+	//Memorize current limits, then do a min/max search //(My) not needed for subprocesses
+
+
+	// Leak saved
+	/*
+	for (size_t leakIndex = 0; leakIndex < sHandle->tmpGlobalResult.leakCacheSize; leakIndex++)//TODO which one correct?
+		gHits->leakCache[(leakIndex) % LEAKCACHESIZE] = sHandle->tmpGlobalResult.leakCache[leakIndex];
+		//gHits->leakCache[(leakIndex + gHits->lastLeakIndex) % LEAKCACHESIZE] = sHandle->tmpGlobalResult.leakCache[leakIndex];
+	gHits->nbLeakTotal = sHandle->tmpGlobalResult.nbLeakTotal;
+	gHits->lastLeakIndex = sHandle->tmpGlobalResult.leakCacheSize;
+	gHits->leakCacheSize = sHandle->tmpGlobalResult.leakCacheSize;*/
+
+
+	// HHit (Only prIdx 0) //Rudi: I think that's some Hit-History stuff. Not necessary to comment out (presumably).
+	//if (rank == 1) {// (MY) save hitcache
+	/*
+		for (size_t hitIndex = 0; hitIndex < sHandle->tmpGlobalResult.hitCacheSize; hitIndex++)//TODO which one correct?
+			gHits->hitCache[(hitIndex) % HITCACHESIZE] = sHandle->tmpGlobalResult.hitCache[hitIndex];
+			//gHits->hitCache[(hitIndex + gHits->lastHitIndex) % HITCACHESIZE] = sHandle->tmpGlobalResult.hitCache[hitIndex];
+
+		if (sHandle->tmpGlobalResult.hitCacheSize > 0) {
+			gHits->lastHitIndex = sHandle->tmpGlobalResult.hitCacheSize;
+			gHits->hitCache[gHits->lastHitIndex].type = HIT_LAST; //Penup (border between blocks of consecutive hits in the hit cache)
+			gHits->hitCacheSize = sHandle->tmpGlobalResult.hitCacheSize;
+		}*/
+	//}
+
+	//Global histograms saved
+
+		for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
+			BYTE *histCurrentMoment = buffer + sizeof(GlobalHitBuffer) + m * sHandle->wp.globalHistogramParams.GetDataSize();
+
+			double* nbHitsHistogram = (double*)histCurrentMoment;
+			double* distanceHistogram = (double*)(histCurrentMoment + sHandle->wp.globalHistogramParams.GetBouncesDataSize());
+			double* timeHistogram = (double*)(histCurrentMoment + sHandle->wp.globalHistogramParams.GetBouncesDataSize() + sHandle->wp.globalHistogramParams.GetDistanceDataSize());
+
+			if (sHandle->wp.globalHistogramParams.recordBounce) {
+				for (size_t i = 0; i < sHandle->wp.globalHistogramParams.GetBounceHistogramSize(); i++) {
+					nbHitsHistogram[i] = 0.0;
+				}
+			}
+
+			if (sHandle->wp.globalHistogramParams.recordDistance) {//(MY) removed +
+				for (size_t i = 0; i < (sHandle->wp.globalHistogramParams.GetDistanceHistogramSize()); i++) {
+					distanceHistogram[i] = 0.0;
+				}
+			}
+
+			if (sHandle->wp.globalHistogramParams.recordTime) {//(MY) removed +
+				for (size_t i = 0; i < (sHandle->wp.globalHistogramParams.GetTimeHistogramSize()); i++) {
+					timeHistogram[i] = 0.0;
+				}
+			}
+		}
+
 
 	//here: init values with zero
 	size_t facetHitsSize = (1 + nbMoments) * sizeof(FacetHitBuffer);
@@ -498,4 +579,4 @@ void initbufftozero(size_t nbMoments, Databuff *databuffer){
 		} // End nbSuper
 
 	return;
-}*/
+}
