@@ -29,10 +29,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 
 
-
-//Import/export of buffer files with filename given as char* or std::string
-//-> no need for conversion
-
+// check if files writeable/readable
 bool checkReadable(std::string fileName){
 	std::filebuf fb;
 	if (fb.open(fileName, std::ios::in))
@@ -43,6 +40,21 @@ bool checkReadable(std::string fileName){
 	return false;
 
 }
+
+bool checkWriteable(std::string fileName){
+	std::filebuf fb;
+	if (fb.open(fileName, std::ios::app))
+	{
+		return true;
+	}
+	std::cout <<fileName <<" not writable" <<std::endl;
+	return false;
+
+}
+
+//-----------------------------------------------------------
+//Import/export of buffer files with filename given as char* or std::string
+//-> no need for conversion
 
 void importBuff(char *fileName, Databuff *databuffer)
 {

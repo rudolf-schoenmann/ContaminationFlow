@@ -63,7 +63,7 @@ bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 		else{
 			if(rank==0){std::cout<<"Read arguments" <<std::endl;}
 
-			if(!checkReadable(argv[1])||!checkReadable(argv[2])||!checkReadable(argv[3])||std::atof(argv[4])<0.0) // check if parameters are feasible
+			if(!checkReadable(argv[1])||!checkReadable(argv[2])||!checkWriteable(argv[3])||std::atof(argv[4])<0.0) // check if parameters are feasible
 				{return false;}
 			p->readArg(argc, argv, rank);
 			return true;
@@ -75,7 +75,7 @@ bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 	return false;
 	}
 
-
+//-----------------------------------------------------------
 //Main Function
 int main(int argc, char *argv[]) {
 
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
 	Databuff loadbuffer; //Loadbuffer to read in data of geometry and physical parameters
 	loadbuffer.buff=NULL;
 
-	llong nbDesorbed_old; //test: nbDesorbed of previous iteration, used so that hitbuffer_sum does not have to be reset -> true final hitbuffer
+	//llong nbDesorbed_old; //test: nbDesorbed of previous iteration, used so that hitbuffer_sum does not have to be reset -> true final hitbuffer, added to simhistory
 
 
 	/* Create child processes, each of which has its own variables.
@@ -119,10 +119,10 @@ int main(int argc, char *argv[]) {
 	if (!parametercheck(argc, argv,p,rank)) {
 		if (rank == 0){
 			std::cout <<"check parameters" <<std::endl;
-
-			MPI_Finalize();
-			return 0;
 		}
+
+		MPI_Finalize();
+		return 0;
 	}
 
 	if (rank == 0) {
@@ -142,7 +142,7 @@ int main(int argc, char *argv[]) {
 		std::cout << "Buffers sent. Wait for a few seconds. " << std::endl;
 	}
 
-// Send load-buffer to all other processes
+//---- Send load-buffer to all other processes
 	// Send size of buffer
 	MPI_Bcast(&loadbuffer.size, sizeof(loadbuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -155,7 +155,7 @@ int main(int argc, char *argv[]) {
 	MPI_Bcast(loadbuffer.buff, loadbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 	MPI_Barrier(MPI_COMM_WORLD);
 
-//Send hit-buffer size to all other processes.
+//----Send hit-buffer size to all other processes.
 	// Send size of buffer
 	MPI_Bcast(&hitbuffer.size, sizeof(hitbuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -175,7 +175,7 @@ int main(int argc, char *argv[]) {
 	7)SimulationHandle in allen Subrozessen kreieren
 	8)Jetzt sind alle Subprozesse bereit zum Starten. Dann kann die Schleife durchlaufen werden oder später ein klügerer Algorithmus.
 	*/
-// create Simulation handle and preprocess hitbuffer
+//----create Simulation handle and preprocess hitbuffer
 	if (p->simulationTimeMS != 0) {
 		//Creates sHandle instance for process 0 and all subprocesses (before the first iteration step starts)
 		InitSimulation();
@@ -187,7 +187,6 @@ int main(int argc, char *argv[]) {
 			return 0;
 		}
 		initCoveringThresh();
-		//TestMinCovering(&hitbuffer);
 		if(rank==0){ // hitbuffer_sum and histphys
 			//Save copies of the original loaded hitbuffer
 			//These copise will be used in process 0. The hitbuffers of all subprocesses will be add up and written in the hitbuffer_sum
@@ -203,7 +202,8 @@ int main(int argc, char *argv[]) {
 			//hitbuffer_phys.size =hitbuffer.size;
 
 			simHistory = new SimulationHistory (&hitbuffer);
-			nbDesorbed_old = getnbDesorbed(&hitbuffer_sum);
+			//TODO: maybe add possibility of covering.txt file input
+			//simHistory->nbDesorbed_old = getnbDesorbed(&hitbuffer_sum); // added to constructor
 
 			initcounterstozero(&hitbuffer);
 			initbufftozero(&hitbuffer);
@@ -222,7 +222,7 @@ int main(int argc, char *argv[]) {
 			std::cout <<std::endl <<"Starting iteration " <<it <<std::endl;
 			}
 
-			// Send hitbuffer content to all subprocesses
+			//----Send hitbuffer content to all subprocesses
 			MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 			MPI_Barrier(MPI_COMM_WORLD);
 
@@ -232,11 +232,14 @@ int main(int argc, char *argv[]) {
 
 			UpdateDesorptionRate(&hitbuffer);//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes
 
-			//Simulation on subprocesses
+			//----Simulation on subprocesses
 			if (rank != 0) {
 				/* do work in any remaining processes */
+				// reset buffer TODO My 0522 was not there before, is this correct?
+				initcounterstozero(&hitbuffer);
+				initbufftozero(&hitbuffer);
+				// calc covering for threshold
 				setCoveringThreshold(&hitbuffer, world_size, rank);
-				//initCoveringSHandle(&hitbuffer);
 
 				sHandle->posCovering=true;//assumption:negative covering has been resolved before, TODO: actually implement code to resolve
 
@@ -261,7 +264,7 @@ int main(int argc, char *argv[]) {
 				MPI_Barrier(MPI_COMM_WORLD);
 			}
 
-			//iteratively add hitbuffer from subprocesses
+			//----iteratively add hitbuffer from subprocesses
 			for (int i = 1; i < world_size; i++) {
 				MPI_Barrier(MPI_COMM_WORLD);
 				if (rank == i) {
@@ -294,18 +297,16 @@ int main(int argc, char *argv[]) {
 
 			MPI_Barrier(MPI_COMM_WORLD);
 
+			//----Update covering
 			if (rank == 0) {
+
 				//double time_step = estimateTmin_RudiTest(&hitbuffer);
 				double time_step = estimateTminFlightTime();
 				UpdateCovering(simHistory, &hitbuffer_sum, time_step, &nbDesorbed_old);
-				memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //TODO ist ths needed?
+				//memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //TODO ist ths needed?
+
 				UpdateCoveringphys(simHistory, &hitbuffer_sum, &hitbuffer);
 				simHistory->coveringList.print();
-
-				//memcpy(hitbuffer.buff,hitbuffer_phys.buff,hitbuffer_phys.size); //copying slows down code. Unfortunately we need to.
-				//memcpy(hitbuffer_sum.buff,hitbuffer_phys.buff,hitbuffer_phys.size); //copying slows down code. Unfortunately we need to.
-				//std::cout << "ending iteration " << it <<std::endl;
-				//________________________________________________________________________
 
 			}
 			//UpdateDesorptionRate(&hitbuffer);//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes //already doing this at beginning of iteration
@@ -317,13 +318,14 @@ int main(int argc, char *argv[]) {
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
 	if(rank==0){
-		//Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
+		//----Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
 		std::cout << "Process 0 exporting final hitbuffer" << std::endl <<std::endl;
 		simHistory->print();
 		exportBuff(p->resultbufferPath,&hitbuffer_sum);//ToDo: &hitbuffer_sum ersetzen durch &hitbuffer_phys // Not really needed since memcpy is used anyways?
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
 
+	//--delete Buffer
 	if (hitbuffer.buff != NULL) {
 		delete[] hitbuffer.buff;
 		hitbuffer.buff = NULL;

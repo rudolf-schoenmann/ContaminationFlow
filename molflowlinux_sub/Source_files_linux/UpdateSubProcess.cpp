@@ -25,6 +25,9 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 #include "SimulationLinux.h"
 
+
+//Update values of subprocess
+//sticking
 void UpdateSticking(Databuff *hitbuffer){
 	//std::cout <<"    Facet information:" <<std::endl;
 	int i = 0;
@@ -51,7 +54,7 @@ void UpdateSticking(Databuff *hitbuffer){
 	}
 	std::cout <<std::endl;
 }
-
+//desorption
 void UpdateDesorptionRate (Databuff *hitbuffer){
 	//int i = 0;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
@@ -64,7 +67,8 @@ void UpdateDesorptionRate (Databuff *hitbuffer){
 }
 
 
-
+//-----------------------------------------------------------
+// copy sHandle values to buffer of sub process
 void UpdateMCSubHits(Databuff *databuffer, int rank) {
 	BYTE *buffer;
 	GlobalHitBuffer *gHits;
@@ -363,6 +367,9 @@ void UpdateMCSubHits(Databuff *databuffer, int rank) {
 
 	return;
 }
+
+//-----------------------------------------------------------
+//reset of counters/buffers
 
 void initcounterstozero(Databuff *databuffer){
 	BYTE *buffer;

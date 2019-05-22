@@ -72,7 +72,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="molflowlinux_sub/include2|molflowlinux_sub/include1|molflowlinux_sub/Header/GLApp/MathTools.cpp|molflowlinux_sub/10.0.17134.0|molflowlinux_project/Header|molflowlinux_project/PugiXML|molflowlinux_project/Source_Files_Linux|molflowlinux_project/Some_Win_Source_Files" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
+						<entry excluding="molflowlinux_sub/Source_files_linux/Simulationcalc.cpp|molflowlinux_sub/include2|molflowlinux_sub/include1|molflowlinux_sub/Header/GLApp/MathTools.cpp|molflowlinux_sub/10.0.17134.0|molflowlinux_project/Header|molflowlinux_project/PugiXML|molflowlinux_project/Source_Files_Linux|molflowlinux_project/Some_Win_Source_Files" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -120,7 +120,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="molflowlinux_sub/include2|molflowlinux_sub/include1|molflowlinux_sub/Header/GLApp/MathTools.cpp|molflowlinux_sub/10.0.17134.0|molflowlinux_project/Header|molflowlinux_project/PugiXML|molflowlinux_project/Source_Files_Linux|molflowlinux_project/Some_Win_Source_Files" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="molflowlinux_sub/Source_files_linux/Simulationcalc.cpp|molflowlinux_sub/include2|molflowlinux_sub/include1|molflowlinux_sub/Header/GLApp/MathTools.cpp|molflowlinux_sub/10.0.17134.0|molflowlinux_project/Header|molflowlinux_project/PugiXML|molflowlinux_project/Source_Files_Linux|molflowlinux_project/Some_Win_Source_Files" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
