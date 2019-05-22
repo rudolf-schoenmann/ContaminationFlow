@@ -59,10 +59,10 @@ buffer = hitbuffer->buff;
 	}
 	//if (normalization_factor_v == 0) std::cout << "divide by zero!" << std::endl;
 	double v_avg = sum_v_avg/normalization_factor_v;
-	//std::cout << "v_avg = sum_v_avg/normalization_factor_v = " << sum_v_avg << "/" << normalization_factor_v << std::endl;
-	double av_path_length = sHandle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;//Muss geändert werden, da diese Werte Null sind im Prozess Null.
-	//std::cout <<  "av_path_length = Handle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.hit.nbMCHit = " << sHandle->tmpGlobalResult.distTraveled_total << "/" << sHandle->tmpGlobalResult.globalHits.hit.nbMCHit << std::endl;
-	//std::cout << "tmin = av_path_length /v_avg = " << av_path_length << " / " << v_avg << std::endl;
+	std::cout << "v_avg = sum_v_avg/normalization_factor_v = " << sum_v_avg << "/" << normalization_factor_v << std::endl;
+	double av_path_length = sHandle->tmpGlobalResult.distTraveled_total*0.01/sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;// The 0.01 is because the distance should be saved in cm. ToDo: Check up, if that's right.
+	std::cout <<  "av_path_length = Handle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.hit.nbMCHit = " << sHandle->tmpGlobalResult.distTraveled_total << "/" << sHandle->tmpGlobalResult.globalHits.hit.nbMCHit << std::endl;
+	std::cout << "tmin = av_path_length /v_avg = " << av_path_length << " / " << v_avg << std::endl;
 	tmin = av_path_length /v_avg;
 
 	//Time step information for developing
@@ -72,7 +72,7 @@ buffer = hitbuffer->buff;
 	std::cout << "estimateTmin_RudiTest: tmin_particles_out = " <<tmin_particles_out<< "ms"<< std::endl;
 	std::cout << "estimateTmin: tmin would be " << estimateTmin() << "ms" << std::endl;
 
-
+	/*We don't need that anymore because we solved the problem of too much desorbed particles via a threshold value.
 	if (tmin < tmin_particles_out){
 		std::cout << "estimateTmin_RudiTest: tmin = " <<tmin<< "ms is chosen."<< std::endl;
 	 	return tmin;
@@ -81,6 +81,7 @@ buffer = hitbuffer->buff;
 		std::cout << "estimateTmin_RudiTest: tmin_particles_out = " <<tmin_particles_out<< "ms is chosen."<< std::endl;
 		return tmin_particles_out;
 		}
+	*/
 	return tmin;
 }
 

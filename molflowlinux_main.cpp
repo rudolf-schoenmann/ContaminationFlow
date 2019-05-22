@@ -299,8 +299,18 @@ int main(int argc, char *argv[]) {
 
 			//----Update covering
 			if (rank == 0) {
-
+				//@ My: sHandle->tmpGlobalResult.globalHits.hit.nbMCHit ist wieder Null, obwohl wir ihm in der Funktion UpdateMCMainHits Werte
+				//		zugeordnet haben, diese aber irgendwie nur innerhalb der Funktion gelten. D.h. wir müssen die Werte entweder hier nochmal extra
+				//		aus dem Buffer ziehen oder das Problem irgendwie anders lösen.
+				/* We could use the following block, if we want to use estimateTmin_RudiTest(&hitbuffer). But we prefer using estimateTminFlightTime().
+				BYTE *buffer;
+				GlobalHitBuffer *gHits;
+				buffer = hitbuffer.buff;
+				gHits = (GlobalHitBuffer *)buffer;
+				sHandle->tmpGlobalResult.globalHits.hit.nbMCHit=gHits->globalHits.hit.nbMCHit;
+				sHandle->tmpGlobalResult.distTraveled_total=gHits->distTraveled_total;
 				//double time_step = estimateTmin_RudiTest(&hitbuffer);
+				*/
 				double time_step = estimateTminFlightTime();
 				UpdateCovering(simHistory, &hitbuffer_sum, time_step);
 				//memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //TODO ist ths needed?
