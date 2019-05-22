@@ -25,8 +25,206 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "SimulationLinux.h"
 #include "GLApp/MathTools.h"
 
+// Function that adapts timestep if needed, to avoid negative covering
+double preTestTimeStep(SimulationHistory *history, Databuff *hitbuffer_sum, double Krealvirt){
+	double test_time_step = pow(10,-14);
+	llong covering_phys;
+	llong covering_sum;
+	double covering_check;
+
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+					//FacetHitBuffer *facetHitBuffer_sum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
+					covering_phys = history->coveringList.getCurrent(&f);
+					covering_sum = getCovering(&f, hitbuffer_sum);
 
 
+					if (covering_sum < covering_phys){
+						covering_check = covering_phys + (covering_phys - covering_sum)*Krealvirt*(-1)*test_time_step; //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+						if(covering_check<0){
+							test_time_step=(double)(covering_phys/((covering_phys - covering_sum)*Krealvirt));
+							std::cout<<"Change of test_time_step: "<<test_time_step <<std::endl;
+							//std::cout << covering_check << std::endl;
+							//nichts updaten
+							//iteration neu starten mit weniger nbSteps; Wie viel weniger? 1/10 der vorigen Anzahl?
+						}
+					}
+			}
+		}
+
+	return test_time_step;
+
+}
+//-----------------------------------------------------------
+//Update Covering
+//Buffer version
+void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum, double time_step){//Updates Covering after one Iteration using Krealvirt, resets other counters
+	//If one wants to read out pressure and particle density, this must be done before calling UpdateCovering.
+	//Calculates with the summed up counters of hitbuffer_sum how many test particles are equivalent to one physical particle.
+	//Then the physical values are stored in the hitbuffer.
+	double Krealvirt = GetMoleculesPerTP(hitbuffer_sum,0);
+	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
+	llong covering_phys;
+	llong covering_sum;
+	double covering_check;
+	BYTE *buffer_phys;
+	buffer_phys = hitbuffer_phys->buff;
+	BYTE *buffer_sum;
+	buffer_sum = hitbuffer_sum->buff;
+	double test_time_step = pow(10,-14);
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+				FacetHitBuffer *facetHitBuffer_phys = (FacetHitBuffer *)(buffer_phys + f.sh.hitOffset);
+				covering_phys = facetHitBuffer_phys->hit.covering;
+				FacetHitBuffer *facetHitBuffer_sum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
+				covering_sum = facetHitBuffer_sum->hit.covering;
+				std::cout<<std::endl << "Facet " << &f << std::endl;
+				std::cout << "covering_sum = " << covering_sum << std::endl;
+				std::cout<< "covering_phys_before = " << covering_phys << std::endl;
+				if (covering_sum > covering_phys){
+					llong covering_delta = static_cast < llong > ((covering_sum - covering_phys)*Krealvirt*time_step); //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+					covering_phys += covering_delta;
+					std::cout << "covering rises"<< std::endl;
+				}
+				else{
+					covering_check = covering_phys + (covering_phys - covering_sum)*Krealvirt*(-1)*time_step; //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+					std::cout <<"covering_check = " << covering_check << std::endl;
+					if(!(covering_check<0)){
+						llong covering_delta = static_cast < llong > ((covering_phys - covering_sum)*Krealvirt*time_step); //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+						covering_phys -= covering_delta;
+						std::cout << "covering decreases but remains positive" << std::endl;
+					}
+					else {
+						std::cout<<"Upps! Covering darf nicht negativ sein. Iteration wird nicht upgedated."<<std::endl;
+						std::cout<<"test: "<<(double)(covering_phys/(covering_phys - covering_sum)*Krealvirt) <<std::endl;
+						//std::cout << covering_check << std::endl;
+						//nichts updaten
+						//iteration neu starten mit weniger nbSteps; Wie viel weniger? 1/10 der vorigen Anzahl?
+					}
+				}
+				std::cout<< "covering_phys_after = " << covering_phys << std::endl;
+				facetHitBuffer_phys->hit.covering = covering_phys;
+				//Reset of Hitbuffer_phys for the next Iteration Step
+				facetHitBuffer_phys->hit.nbAbsEquiv = 0;
+				facetHitBuffer_phys->hit.nbDesorbed = 0;
+				facetHitBuffer_phys->hit.nbMCHit = 0;
+				facetHitBuffer_phys->hit.nbHitEquiv = 0;
+				facetHitBuffer_phys->hit.sum_1_per_ort_velocity = 0;
+				facetHitBuffer_phys->hit.sum_v_ort = 0;
+				facetHitBuffer_phys->hit.sum_1_per_velocity = 0;
+				//Reset of Hitbuffer_sum for the next Iteration Step
+				facetHitBuffer_sum->hit.nbAbsEquiv = 0;
+				facetHitBuffer_sum->hit.nbDesorbed = 0;
+				facetHitBuffer_sum->hit.nbMCHit = 0;
+				facetHitBuffer_sum->hit.nbHitEquiv = 0;
+				facetHitBuffer_sum->hit.sum_1_per_ort_velocity = 0;
+				facetHitBuffer_sum->hit.sum_v_ort = 0;
+				facetHitBuffer_sum->hit.sum_1_per_velocity = 0;
+		}
+	}
+	if(covering_check){ //TODO always true?
+	//Reset GlobalHitBuffer
+	GlobalHitBuffer *gHits_phys;
+	gHits_phys = (GlobalHitBuffer *)buffer_phys;
+	gHits_phys->globalHits.hit.nbMCHit = 0;
+	gHits_phys->globalHits.hit.nbHitEquiv = 0;
+	gHits_phys->globalHits.hit.nbAbsEquiv = 0;
+	gHits_phys->globalHits.hit.nbDesorbed = 0;
+	GlobalHitBuffer *gHits_sum;
+	gHits_sum = (GlobalHitBuffer *)buffer_sum;
+	gHits_sum->globalHits.hit.nbMCHit = 0;
+	gHits_sum->globalHits.hit.nbHitEquiv = 0;
+	gHits_sum->globalHits.hit.nbAbsEquiv = 0;
+	gHits_sum->globalHits.hit.nbDesorbed = 0;
+	}
+}
+
+//Simhistory version
+void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double time_step){//Updates Covering after one Iteration using Krealvirt, resets other counters
+	//If one wants to read out pressure and particle density, this must be done before calling UpdateCovering.
+	//Calculates with the summed up counters of hitbuffer_sum how many test particles are equivalent to one physical particle.
+	//Then the physical values are stored in the hitbuffer.
+	double Krealvirt = GetMoleculesPerTP(hitbuffer_sum, history->nbDesorbed_old);
+	std::cout <<"nbDesorbed before and after:\t" << history->nbDesorbed_old <<'\t';
+	history->nbDesorbed_old = getnbDesorbed(hitbuffer_sum);
+	std::cout << history->nbDesorbed_old <<std::endl;
+	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
+
+	llong covering_phys;
+	llong covering_sum;
+	double covering_check;
+	//BYTE *buffer_sum;
+	//buffer_sum = hitbuffer_sum->buff;
+	double test_time_step = preTestTimeStep(history, hitbuffer_sum,  Krealvirt);
+
+	std::cout <<"testing timestep: " <<test_time_step <<'\t' <<estimateTminFlightTime() <<std::endl;
+
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+				//FacetHitBuffer *facetHitBuffer_sum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
+				covering_phys = history->coveringList.getCurrent(&f);
+				covering_sum = getCovering(&f, hitbuffer_sum);
+
+				std::cout<<std::endl << "Facet " << &f << std::endl;
+				std::cout << "covering_sum = " << covering_sum << std::endl;
+				std::cout<< "covering_phys_before = " << covering_phys << std::endl;
+
+				if (covering_sum > covering_phys){
+					llong covering_delta = static_cast < llong > ((covering_sum - covering_phys)*Krealvirt*test_time_step); //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+					covering_phys += covering_delta;
+					std::cout << "covering rises by " <<covering_delta << std::endl;
+				}
+				else{
+					covering_check = covering_phys + (covering_phys - covering_sum)*Krealvirt*(-1)*test_time_step; //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+					std::cout <<"covering_check = " << covering_check << std::endl;
+					if(!(covering_check<0)){
+						llong covering_delta = static_cast < llong > ((covering_phys - covering_sum)*Krealvirt*test_time_step); //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+						covering_phys -= covering_delta;
+						std::cout << "covering decreases but remains positive" << std::endl;
+					}
+					else {
+						std::cout<<"Upps! Covering darf nicht negativ sein. Iteration wird nicht upgedated."<<std::endl;
+						std::cout<<(covering_phys - covering_sum) <<std::endl;
+						//std::cout << covering_check << std::endl;
+						//nichts updaten
+						//iteration neu starten mit weniger nbSteps; Wie viel weniger? 1/10 der vorigen Anzahl?
+					}
+				}
+				std::cout<< "covering_phys_after = " << covering_phys << std::endl;
+				std::cout<< "coveringThreshhold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << std::endl;
+				history->coveringList.setCurrentList(&f, covering_phys);
+		}
+	}
+
+	history->coveringList.appendCurrent();
+}
+
+// Copy covering to buffer
+void UpdateCoveringphys(SimulationHistory *history, Databuff *hitbuffer_sum, Databuff *hitbuffer){
+	llong covering_phys;
+	BYTE *buffer_sum;
+	buffer_sum = hitbuffer_sum->buff;
+
+	BYTE *buffer;
+	buffer = hitbuffer->buff;
+
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
+				FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
+				covering_phys = history->coveringList.getCurrent(&f);
+				facetHitBuffer->hit.covering=covering_phys;
+				facetHitSum->hit.covering=covering_phys;
+			}
+	}
+
+	history->flightTime=0.0;
+	history->nParticles=-1;
+}
+
+//-----------------------------------------------------------
+// Update Buffer of main process using buffer of sub process
+// Physbuffer version
 void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, Databuff *physbuffer,int rank) {
 	BYTE *buffer, *subbuff, *buffer_phys;
 	GlobalHitBuffer *gHits, *subHits;
@@ -351,7 +549,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, Databuff *physb
 
 }
 
-//----------------------------test------------------------------------------------------------------
+//Simhistory version
 
 void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHistory *history,int rank) {
 	BYTE *buffer, *subbuff;
@@ -391,12 +589,12 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 	std::cout <<subHits->distTraveledTotal_fullHitsOnly <<std::endl<<std::endl;*/
 
 	// Global hits and leaks: adding local hits to shared memory
-	gHits->globalHits.hit.nbMCHit += subHits->globalHits.hit.nbMCHit;
-	gHits->globalHits.hit.nbHitEquiv += subHits->globalHits.hit.nbHitEquiv;
-	gHits->globalHits.hit.nbAbsEquiv += subHits->globalHits.hit.nbAbsEquiv;
-	gHits->globalHits.hit.nbDesorbed += subHits->globalHits.hit.nbDesorbed;
-	gHits->distTraveled_total += subHits->distTraveled_total;
-	gHits->distTraveledTotal_fullHitsOnly += subHits->distTraveledTotal_fullHitsOnly;
+	sHandle->tmpGlobalResult.globalHits.hit.nbMCHit=gHits->globalHits.hit.nbMCHit += subHits->globalHits.hit.nbMCHit;
+	sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv=gHits->globalHits.hit.nbHitEquiv += subHits->globalHits.hit.nbHitEquiv;
+	sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv=gHits->globalHits.hit.nbAbsEquiv += subHits->globalHits.hit.nbAbsEquiv;
+	sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed=gHits->globalHits.hit.nbDesorbed += subHits->globalHits.hit.nbDesorbed;
+	sHandle->tmpGlobalResult.distTraveled_total=gHits->distTraveled_total += subHits->distTraveled_total;
+	sHandle->tmpGlobalResult.distTraveledTotal_fullHitsOnly=gHits->distTraveledTotal_fullHitsOnly += subHits->distTraveledTotal_fullHitsOnly;
 
 	/*
 	std::cout <<gHits->globalHits.hit.nbMCHit  <<std::endl;
@@ -420,23 +618,23 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 
 	// Leak
 	for (size_t leakIndex = 0; leakIndex < subHits->leakCacheSize; leakIndex++)
-		gHits->leakCache[(leakIndex + gHits->lastLeakIndex) % LEAKCACHESIZE] = subHits->leakCache[leakIndex];
-	gHits->nbLeakTotal += subHits->nbLeakTotal;
-	gHits->lastLeakIndex = (gHits->lastLeakIndex + subHits->leakCacheSize) % LEAKCACHESIZE;
-	gHits->leakCacheSize = Min(LEAKCACHESIZE, gHits->leakCacheSize + subHits->leakCacheSize);
+		sHandle->tmpGlobalResult.leakCache[leakIndex]=gHits->leakCache[(leakIndex + gHits->lastLeakIndex) % LEAKCACHESIZE] = subHits->leakCache[leakIndex];
+	sHandle->tmpGlobalResult.nbLeakTotal=gHits->nbLeakTotal += subHits->nbLeakTotal;
+	sHandle->tmpGlobalResult.lastLeakIndex=gHits->lastLeakIndex = (gHits->lastLeakIndex + subHits->leakCacheSize) % LEAKCACHESIZE;
+	sHandle->tmpGlobalResult.leakCacheSize=gHits->leakCacheSize = Min(LEAKCACHESIZE, gHits->leakCacheSize + subHits->leakCacheSize);
 
 
 	// HHit (Only prIdx 0) //Rudi: I think that's some Hit-History stuff. Not necessary to comment out (presumably).
 	if (rank == 0) {
-		for (size_t hitIndex = 0; hitIndex < subHits->hitCacheSize; hitIndex++)
-			gHits->hitCache[(hitIndex + gHits->lastHitIndex) % HITCACHESIZE] = subHits->hitCache[hitIndex];
+			for (size_t hitIndex = 0; hitIndex < subHits->hitCacheSize; hitIndex++)
+				sHandle->tmpGlobalResult.hitCache[hitIndex]=gHits->hitCache[(hitIndex + gHits->lastHitIndex) % HITCACHESIZE] = subHits->hitCache[hitIndex];
 
-		if (subHits->hitCacheSize > 0) {
-			gHits->lastHitIndex = (gHits->lastHitIndex + subHits->hitCacheSize) % HITCACHESIZE;
-			gHits->hitCache[gHits->lastHitIndex].type = HIT_LAST; //Penup (border between blocks of consecutive hits in the hit cache)
-			gHits->hitCacheSize = Min(HITCACHESIZE, gHits->hitCacheSize + subHits->hitCacheSize);
+			if (subHits->hitCacheSize > 0) {
+				sHandle->tmpGlobalResult.lastHitIndex = gHits->lastHitIndex = (gHits->lastHitIndex + subHits->hitCacheSize) % HITCACHESIZE;
+				sHandle->tmpGlobalResult.hitCache[gHits->lastHitIndex].type = gHits->hitCache[gHits->lastHitIndex].type = HIT_LAST; //Penup (border between blocks of consecutive hits in the hit cache)
+				sHandle->tmpGlobalResult.hitCacheSize = gHits->hitCacheSize = Min(HITCACHESIZE, gHits->hitCacheSize + subHits->hitCacheSize);
+			}
 		}
-	}
 	/*
 	std::cout <<gHits->hitCacheSize <<std::endl;
 	std::cout <<gHits->leakCacheSize <<std::endl;
@@ -444,34 +642,34 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 
 
 	//Global histograms
-
-		for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-			BYTE *histCurrentMoment = buffer + sizeof(GlobalHitBuffer) + m * sHandle->wp.globalHistogramParams.GetDataSize();
-			BYTE *subhist = subbuff + sizeof(GlobalHitBuffer) + m * sHandle->wp.globalHistogramParams.GetDataSize();
-			if (sHandle->wp.globalHistogramParams.recordBounce) {
-				double* nbHitsHistogram = (double*)histCurrentMoment;
-				double* nbHitsSub=(double*)subhist;
-				for (size_t i = 0; i < sHandle->wp.globalHistogramParams.GetBounceHistogramSize(); i++) {
-					nbHitsHistogram[i] += nbHitsSub[i];
-				}
+	for (unsigned int m = 0; m < (1 + nbMoments); m++) {
+		BYTE *histCurrentMoment = buffer + sizeof(GlobalHitBuffer) + m * sHandle->wp.globalHistogramParams.GetDataSize();
+		BYTE *subhist = subbuff + sizeof(GlobalHitBuffer) + m * sHandle->wp.globalHistogramParams.GetDataSize();
+		if (sHandle->wp.globalHistogramParams.recordBounce) {
+			double* nbHitsHistogram = (double*)histCurrentMoment;
+			double* nbHitsSub=(double*)subhist;
+			for (size_t i = 0; i < sHandle->wp.globalHistogramParams.GetBounceHistogramSize(); i++) {
+				sHandle->tmpGlobalHistograms[m].nbHitsHistogram[i] = nbHitsHistogram[i] += nbHitsSub[i];
 			}
-
-			if (sHandle->wp.globalHistogramParams.recordDistance) {
-				double* distanceHistogram = (double*)(histCurrentMoment + sHandle->wp.globalHistogramParams.GetBouncesDataSize());
-				double* distanceSub = (double*)(subhist + sHandle->wp.globalHistogramParams.GetBouncesDataSize());
-				for (size_t i = 0; i < (sHandle->wp.globalHistogramParams.GetDistanceHistogramSize()); i++) {
-					distanceHistogram[i] += distanceSub[i];
-				}
-			}
-			if (sHandle->wp.globalHistogramParams.recordTime) {
-				double* timeHistogram = (double*)(histCurrentMoment + sHandle->wp.globalHistogramParams.GetBouncesDataSize() + sHandle->wp.globalHistogramParams.GetDistanceDataSize());
-				double* timeSub = (double*)(subhist + sHandle->wp.globalHistogramParams.GetBouncesDataSize() + sHandle->wp.globalHistogramParams.GetDistanceDataSize());
-				for (size_t i = 0; i < (sHandle->wp.globalHistogramParams.GetTimeHistogramSize()); i++) {
-					timeHistogram[i] += timeSub[i];
-				}
-			}
-
 		}
+
+		if (sHandle->wp.globalHistogramParams.recordDistance) {
+			double* distanceHistogram = (double*)(histCurrentMoment + sHandle->wp.globalHistogramParams.GetBouncesDataSize());
+			double* distanceSub = (double*)(subhist + sHandle->wp.globalHistogramParams.GetBouncesDataSize());
+			for (size_t i = 0; i < (sHandle->wp.globalHistogramParams.GetDistanceHistogramSize()); i++) {
+				sHandle->tmpGlobalHistograms[m].distanceHistogram[i] = distanceHistogram[i] += distanceSub[i];
+			}
+		}
+		if (sHandle->wp.globalHistogramParams.recordTime) {
+			double* timeHistogram = (double*)(histCurrentMoment + sHandle->wp.globalHistogramParams.GetBouncesDataSize() + sHandle->wp.globalHistogramParams.GetDistanceDataSize());
+			double* timeSub = (double*)(subhist + sHandle->wp.globalHistogramParams.GetBouncesDataSize() + sHandle->wp.globalHistogramParams.GetDistanceDataSize());
+			for (size_t i = 0; i < (sHandle->wp.globalHistogramParams.GetTimeHistogramSize()); i++) {
+				sHandle->tmpGlobalHistograms[m].timeHistogram[i] = timeHistogram[i] += timeSub[i];
+			}
+		}
+
+	}
+
 
 
 	size_t facetHitsSize = (1 + nbMoments) * sizeof(FacetHitBuffer);
@@ -507,13 +705,13 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 					std::cout <<"hit.covering [Number of particles]\t" << facetHitBuffer->hit.covering * calcNmono(&f) << std::endl;
 					}*/
 
-					facetHitBuffer->hit.nbAbsEquiv += facetHitSub->hit.nbAbsEquiv;
-					facetHitBuffer->hit.nbDesorbed += facetHitSub->hit.nbDesorbed;
-					facetHitBuffer->hit.nbMCHit += facetHitSub->hit.nbMCHit;
-					facetHitBuffer->hit.nbHitEquiv += facetHitSub->hit.nbHitEquiv;;
-					facetHitBuffer->hit.sum_1_per_ort_velocity += facetHitSub->hit.sum_1_per_ort_velocity;
-					facetHitBuffer->hit.sum_v_ort += facetHitSub->hit.sum_v_ort;
-					facetHitBuffer->hit.sum_1_per_velocity += facetHitSub->hit.sum_1_per_velocity;
+					f.tmpCounter[m].hit.nbAbsEquiv = facetHitBuffer->hit.nbAbsEquiv += facetHitSub->hit.nbAbsEquiv;
+					f.tmpCounter[m].hit.nbDesorbed = facetHitBuffer->hit.nbDesorbed += facetHitSub->hit.nbDesorbed;
+					f.tmpCounter[m].hit.nbMCHit = facetHitBuffer->hit.nbMCHit += facetHitSub->hit.nbMCHit;
+					f.tmpCounter[m].hit.nbHitEquiv = facetHitBuffer->hit.nbHitEquiv += facetHitSub->hit.nbHitEquiv;;
+					f.tmpCounter[m].hit.sum_1_per_ort_velocity = facetHitBuffer->hit.sum_1_per_ort_velocity += facetHitSub->hit.sum_1_per_ort_velocity;
+					f.tmpCounter[m].hit.sum_v_ort = facetHitBuffer->hit.sum_v_ort += facetHitSub->hit.sum_v_ort;
+					f.tmpCounter[m].hit.sum_1_per_velocity = facetHitBuffer->hit.sum_1_per_velocity += facetHitSub->hit.sum_1_per_velocity;
 					//facetHitBuffer->hit.covering += facetHitSub->hit.covering; //We do that in another way.
 
 					if (facetHitSub->hit.covering > covering_phys){
@@ -525,6 +723,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 							}
 						else facetHitBuffer->hit.covering = 0;//Counter cannot be negative! Maybe we could interrupt the iteration here?
 					}
+					f.tmpCounter[m].hit.covering = facetHitBuffer->hit.covering;
 
 					/*
 					if(f.globalId == 1){
@@ -546,7 +745,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 						ProfileSlice *shProfile = (ProfileSlice *)(buffer + f.sh.hitOffset + facetHitsSize + m * f.profileSize);
 						ProfileSlice *shProfileSub = (ProfileSlice *)(subbuff + f.sh.hitOffset + facetHitsSize + m * f.profileSize);
 						for (j = 0; j < (int)PROFILE_SIZE; j++) {
-							shProfile[j] += shProfileSub[j];
+							f.profile[m][j] = shProfile[j] += shProfileSub[j];
 						}
 					}
 				}
@@ -565,7 +764,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 								size_t add = x + y * f.sh.texWidth;
 
 								//Add temporary hit counts
-								shTexture[add] += shTextureSub[add];
+								f.texture[m][add] = shTexture[add] += shTextureSub[add];
 
 								double val[3];  //pre-calculated autoscaling values (Pressure, imp.rate, density)
 
@@ -602,11 +801,11 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 						for (y = 0; y < (int)f.sh.texHeight; y++) {
 							for (x = 0; x < (int)f.sh.texWidth; x++) {
 								size_t add = x + y * f.sh.texWidth;
-								shDir[add].dir.x += shDirSub[add].dir.x;
-								shDir[add].dir.y += shDirSub[add].dir.y;
-								shDir[add].dir.z += shDirSub[add].dir.z;
+								f.direction[m][add].dir.x = shDir[add].dir.x += shDirSub[add].dir.x;
+								f.direction[m][add].dir.y = shDir[add].dir.y += shDirSub[add].dir.y;
+								f.direction[m][add].dir.z = shDir[add].dir.z += shDirSub[add].dir.z;
 								//shDir[add].sumSpeed += f.direction[m][add].sumSpeed;
-								shDir[add].count += shDirSub[add].count;
+								f.direction[m][add].count = shDir[add].count += shDirSub[add].count;
 							}
 						}
 					}
@@ -618,38 +817,38 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 					for (y = 0; y < (int)(f.sh.anglemapParams.thetaLowerRes + f.sh.anglemapParams.thetaHigherRes); y++) {
 						for (x = 0; x < (int)f.sh.anglemapParams.phiWidth; x++) {
 							size_t add = x + y * f.sh.anglemapParams.phiWidth;
-							shAngleMap[add] += shAngleMapSub[add];
+							f.angleMap.pdf[add] = shAngleMap[add] += shAngleMapSub[add];
 						}
 					}
 				}
 
 				//Facet histograms
 
-					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-						BYTE *histCurrentMoment = buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments) + f.sh.anglemapParams.GetRecordedDataSize() + m * f.sh.facetHistogramParams.GetDataSize();
-						BYTE *histSub = subbuff + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments) + f.sh.anglemapParams.GetRecordedDataSize() + m * f.sh.facetHistogramParams.GetDataSize();
-						if (f.sh.facetHistogramParams.recordBounce) {
-							double* nbHitsHistogram = (double*)histCurrentMoment;
-							double* nbHitsSub = (double*)histSub;
-							for (size_t i = 0; i < f.sh.facetHistogramParams.GetBounceHistogramSize(); i++) {
-								nbHitsHistogram[i] += nbHitsSub[i];
-							}
-						}
-						if (f.sh.facetHistogramParams.recordDistance) {
-							double* distanceHistogram = (double*)(histCurrentMoment + f.sh.facetHistogramParams.GetBouncesDataSize());
-							double* distanceSub = (double*)(histSub + f.sh.facetHistogramParams.GetBouncesDataSize());
-							for (size_t i = 0; i < (f.sh.facetHistogramParams.GetDistanceHistogramSize()); i++) {
-								distanceHistogram[i] += distanceSub[i];
-							}
-						}
-						if (f.sh.facetHistogramParams.recordTime) {
-							double* timeHistogram = (double*)(histCurrentMoment + f.sh.facetHistogramParams.GetBouncesDataSize() + f.sh.facetHistogramParams.GetDistanceDataSize());
-							double* timeSub = (double*)(histSub + f.sh.facetHistogramParams.GetBouncesDataSize() + f.sh.facetHistogramParams.GetDistanceDataSize());
-							for (size_t i = 0; i < (f.sh.facetHistogramParams.GetTimeHistogramSize()); i++) {
-								timeHistogram[i] += timeSub[i];
-							}
+				for (unsigned int m = 0; m < (1 + nbMoments); m++) {
+					BYTE *histCurrentMoment = buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments) + f.sh.anglemapParams.GetRecordedDataSize() + m * f.sh.facetHistogramParams.GetDataSize();
+					BYTE *histSub = subbuff + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments) + f.sh.anglemapParams.GetRecordedDataSize() + m * f.sh.facetHistogramParams.GetDataSize();
+					if (f.sh.facetHistogramParams.recordBounce) {
+						double* nbHitsHistogram = (double*)histCurrentMoment;
+						double* nbHitsSub = (double*)histSub;
+						for (size_t i = 0; i < f.sh.facetHistogramParams.GetBounceHistogramSize(); i++) {
+							f.tmpHistograms[m].nbHitsHistogram[i] = nbHitsHistogram[i] += nbHitsSub[i];
 						}
 					}
+					if (f.sh.facetHistogramParams.recordDistance) {
+						double* distanceHistogram = (double*)(histCurrentMoment + f.sh.facetHistogramParams.GetBouncesDataSize());
+						double* distanceSub = (double*)(histSub + f.sh.facetHistogramParams.GetBouncesDataSize());
+						for (size_t i = 0; i < (f.sh.facetHistogramParams.GetDistanceHistogramSize()); i++) {
+							f.tmpHistograms[m].distanceHistogram[i] = distanceHistogram[i] += distanceSub[i];
+						}
+					}
+					if (f.sh.facetHistogramParams.recordTime) {
+						double* timeHistogram = (double*)(histCurrentMoment + f.sh.facetHistogramParams.GetBouncesDataSize() + f.sh.facetHistogramParams.GetDistanceDataSize());
+						double* timeSub = (double*)(histSub + f.sh.facetHistogramParams.GetBouncesDataSize() + f.sh.facetHistogramParams.GetDistanceDataSize());
+						for (size_t i = 0; i < (f.sh.facetHistogramParams.GetTimeHistogramSize()); i++) {
+							f.tmpHistograms[m].timeHistogram[i] = timeHistogram[i] += timeSub[i];
+						}
+					}
+				}
 
 			//} // End if(hitted)
 		} // End nbFacet
@@ -661,6 +860,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 		if (gHits->texture_limits[v].min.moments_only == HITMAX) gHits->texture_limits[v].min.moments_only = texture_limits_old[v].min.moments_only;
 		if (gHits->texture_limits[v].max.all == 0.0) gHits->texture_limits[v].max.all = texture_limits_old[v].max.all;
 		if (gHits->texture_limits[v].max.moments_only == 0.0) gHits->texture_limits[v].max.moments_only = texture_limits_old[v].max.moments_only;
+		sHandle->tmpGlobalResult.texture_limits[v]=gHits->texture_limits[v];
 	}
 
 

@@ -27,6 +27,8 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 extern SimulationHistory* simHistory;
 
+//Estimation of Tmin
+
 double estimateTmin_RudiTest(Databuff *hitbuffer){ //not ready yet => finish //TODO
 BYTE *buffer;
 buffer = hitbuffer->buff;
@@ -83,10 +85,7 @@ buffer = hitbuffer->buff;
 }
 
 
-#include <fstream>
-#include <sstream>
 
-extern Simulation *sHandle;
 
 double estimateTminFlightTime(){
 	return simHistory->flightTime/simHistory->nParticles;
@@ -130,60 +129,8 @@ double estimateTmin(){
 	return (dist_total/hits2)*sum_1_v_ort*1000;
 }
 
-SimulationHistory::SimulationHistory(){
-	numFacet=0;
-	nParticles=-1;
-	flightTime=0.0;
-}
-
-SimulationHistory::SimulationHistory(Databuff *hitbuffer){
-	std::vector<llong> currentstep;
-	currentstep =std::vector<llong> ();
-	numFacet=0;
-	nParticles=-1;
-	flightTime=0.0;
-
-
-	llong covering;
-	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-			for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				covering = getCovering(&f, hitbuffer);
-				currentstep.push_back(covering);
-				f.tmpCounter[0].hit.covering=covering;
-				numFacet+=1;
-			}
-	}
-	coveringList.appendList(currentstep, 0);
-	coveringList.initCurrent(numFacet);
-}
-
-
-void SimulationHistory::appendList(Databuff *hitbuffer, double time){
-
-	std::vector<llong> currentstep;
-	currentstep =std::vector<llong> ();
-
-	if(time==-1.0) //TODO improve: here steps instead of time
-		time=coveringList.pointintime_list.back().first+1.0;
-
-	llong covering;
-
-	//int i=0;
-	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			covering=getCovering(&f, hitbuffer);
-			currentstep.push_back(covering);
-			//i+=1;
-		}
-	}
-	coveringList.appendList(currentstep, -1);
-
-}
-
-void SimulationHistory::print(){
-	coveringList.print();
-}
-
+//-----------------------------------------------------------
+//Functions for covering threshold
 
 void allocateCovering(Databuff *hitbuffer, int size, int rank){
 	BYTE *buffer;
@@ -225,19 +172,6 @@ void setCoveringThreshold(Databuff *hitbuffer, int size, int rank){
 					{cov_sim=facetHitBuffer->hit.covering/num_sim;}
 
 				sHandle-> coveringThreshold[getFacetIndex(&f)]=facetHitBuffer->hit.covering-cov_sim;
-			}
-	}
-}
-
-void TestMinCovering(Databuff *hitbuffer){
-	BYTE *buffer;
-	buffer = hitbuffer->buff;
-
-	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-			for (SubprocessFacet& f : sHandle->structures[j].facets) {
-				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
-				facetHitBuffer->hit.covering=100;
-				//f.tmpCounter[0].hit.covering=facetHitBuffer->hit.covering;
 			}
 	}
 }

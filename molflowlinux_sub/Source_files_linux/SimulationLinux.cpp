@@ -29,23 +29,25 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 extern SimulationHistory* simHistory;
 
-
+// Simulation on subprocess
 std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
+	//TODO possiblility to overwrite instead of new
 	simHistory = new SimulationHistory (hitbuffer);
+
+	//timesteps
 	double timestep=1000; // desired length per iteration for simulation, here hardcoded to 1 second
 	double realtimestep; // actual time elapsed for iteration step
 
 
 	// Set end of simulation flag
 	bool eos=false;
+
+	// Facets that have reached the covering threshold
 	std::vector<int> facetNum;
 	facetNum =std::vector<int> ();
 
-	// Read covering list, saves list in covhistory
-	// std::string name1 = "/home/van/simcovering.txt";
-	//covhistory->read(name1); //TODO parameterübergabe in kommandezeile, nicht hardcoden!
-
+	//Update values of subprocess using hitbuffer
 	UpdateSticking(hitbuffer);
 	UpdateDesorptionRate(hitbuffer);
 
@@ -53,16 +55,14 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 	if(!StartSimulation())
 		return {std::make_tuple(true,facetNum)};
 
-	// Run Simulation for simutime steps. One step ~ 1 seconds
+	// Run Simulation for timestep milliseconds
 	for(double i=0; i<(double)(simutime) && !eos;i+=realtimestep){
-		//if(i!=0||covhistory->pointintime_list.empty()){
 		if(simHistory->coveringList.empty()){
-			simHistory->appendList(hitbuffer,i); //append list with current time and covering //TODO offset if covering list does not end with timestep 0
+			simHistory->appendList(hitbuffer,i); //append list with initial covering //TODO offset if covering list does not end with timestep 0
 			}
 
 		if(i+timestep>=(double)(simutime)){ //last timestep
 			std::tie(eos,realtimestep) = SimulationRun((double)simutime-i, hitbuffer, rank); // Some additional simulation, as iteration step  does not run for exactly timestep ms
-			//covhistory->appendList(hitbuffer,i+realtimestep); // append list with last entry
 			break;
 			}
 		std::tie(eos, realtimestep) = SimulationRun(timestep, hitbuffer, rank);      // Run during timestep ms, performs MC steps
@@ -72,22 +72,19 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 	UpdateMCSubHits(hitbuffer, rank);
 
 	// Update quantaties for contamination
-
 	//UpdateSticking();
 	//estimateTmin();
 	//estimateTmin_RudiTest(hitbuffer);
 
 
-	//Save history to new file
-	//std::string name0 = "/home/van/history"+std::to_string(rank)+".txt";
+	//Print simHistory example
 	if(rank==1)
 		simHistory->print();
-	//covhistory->write(name0);
 
 	//std::cout <<simHistory->flightTime <<'\t' <<simHistory->nParticles <<std::endl;
 
 
-
+	// Find Facets that have reached the covering threshold
 	int num;
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 				for (SubprocessFacet& f : sHandle->structures[j].facets) {
@@ -98,10 +95,10 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 		}
 
 	ResetTmpCounters(); //resets counter in sHandle
-	//delete[] simHistory;simHistory=NULL; // deleting causes some error somehow
 	return {std::make_tuple(eos,facetNum)};
 }
-
+//-----------------------------------------------------------
+//helpful functions
 double convertunit(double simutime, std::string unit){
 	for(int i=0; i<6;i++){
 		// day to seconds
@@ -119,8 +116,8 @@ double convertunit(double simutime, std::string unit){
 	return simutime*1000.0;
 
 }
-
-
+//-----------------------------------------------------------
+//ProblemDef class
 ProblemDef::ProblemDef(int argc, char *argv[]){
 	loadbufferPath= argc > 1 ? argv[1] :"";
 	hitbufferPath=argc > 2 ? argv[2]:"";
@@ -130,7 +127,7 @@ ProblemDef::ProblemDef(int argc, char *argv[]){
 	s1=0.99;
 	s2=0.2;
 	E_de=1E-21;
-	E_ad=1.5E-21;
+	E_ad=1E-21;
 	d=1;
 
 	simulationTime = argc > 4? std::atof(argv[4]): 10.0;
@@ -226,6 +223,66 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 	outfile <<"E_de" <<'\t' <<E_de<<std::endl;
 	outfile <<"E_ad" <<'\t' <<E_ad<<std::endl;
 
+}
+
+//-----------------------------------------------------------
+//SimulationHistory
+
+SimulationHistory::SimulationHistory(){
+	numFacet=0;
+	nParticles=-1;
+	flightTime=0.0;
+	nbDesorbed_old=0;
+}
+
+SimulationHistory::SimulationHistory(Databuff *hitbuffer){
+	std::vector<llong> currentstep;
+	currentstep =std::vector<llong> ();
+	numFacet=0;
+	nParticles=-1;
+	flightTime=0.0;
+
+	nbDesorbed_old= getnbDesorbed(hitbuffer);
+
+
+	llong covering;
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+			for (SubprocessFacet& f : sHandle->structures[s].facets) {
+				covering = getCovering(&f, hitbuffer);
+				currentstep.push_back(covering);
+				f.tmpCounter[0].hit.covering=covering;
+				numFacet+=1;
+			}
+	}
+	coveringList.appendList(currentstep, 0);
+	coveringList.initCurrent(numFacet);
+}
+
+
+void SimulationHistory::appendList(Databuff *hitbuffer, double time){
+
+	std::vector<llong> currentstep;
+	currentstep =std::vector<llong> ();
+
+	if(time==-1.0) //TODO improve: here steps instead of time
+		time=coveringList.pointintime_list.back().first+1.0;
+
+	llong covering;
+
+	//int i=0;
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			covering=getCovering(&f, hitbuffer);
+			currentstep.push_back(covering);
+			//i+=1;
+		}
+	}
+	coveringList.appendList(currentstep, -1);
+
+}
+
+void SimulationHistory::print(){
+	coveringList.print();
 }
 
 

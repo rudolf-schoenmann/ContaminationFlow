@@ -185,6 +185,7 @@ public:
 
 	HistoryList<llong> coveringList;
 	unsigned int numFacet;
+	llong nbDesorbed_old;
 	double flightTime;
 	int nParticles;
 
@@ -225,38 +226,55 @@ public:
 	int simulationTimeMS;
 };
 
-
+//-----------------------------------------------------------
+//SimulationLinux.cpp
 std::tuple<bool, std::vector<int> >  simulateSub(Databuff *hitbuffer, int rank, int simutime);
-double convertunit(double simutime, std::string unit);
 
-void initbufftozero(Databuff *databuffer);
-void initcounterstozero(Databuff *databuffer);
+//ProblemDef
+//SimulationHistory
 
-void UpdateMCSubHits(Databuff *databuffer, int rank);
-void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, Databuff *physbuffer,int rank);
-void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHistory *history,int rank);
-
-llong getnbDesorbed(Databuff *hitbuffer_sum);
-void CalcTotalOutgassingWorker();
-
-llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
-void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
-double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
-
-double estimateTmin();
-double estimateTminFlightTime();
-double estimateTmin_RudiTest(Databuff *hitbuffer);
+//-----------------------------------------------------------
+//UpdateSubProcess.cpp
 
 void UpdateSticking(Databuff *hitbuffer);
 void UpdateDesorptionRate (Databuff *hitbuffer);
 
-void UpdateCovering(Databuff *hitbuffer, Databuff *hitbuffer_original, double time_step);
-void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double time_step, llong *nbDesorbed_old);
-void UpdateCoveringphys(SimulationHistory *history, Databuff *hitbuffer_sum, Databuff *hitbuffer);
+void UpdateMCSubHits(Databuff *databuffer, int rank);
 
-void allocateCovering(Databuff *hitbuffer, int size, int rank);
+void initbufftozero(Databuff *databuffer);
+void initcounterstozero(Databuff *databuffer);
+
+
+//-----------------------------------------------------------
+//UpdateMainProcess.cpp
+
+void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, Databuff *physbuffer,int rank);
+void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHistory *history,int rank);
+
+void UpdateCovering(Databuff *hitbuffer, Databuff *hitbuffer_original, double time_step);
+void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double time_step);
+void UpdateCoveringphys(SimulationHistory *history, Databuff *hitbuffer_sum, Databuff *hitbuffer);
+//-----------------------------------------------------------
+//SimulationCalc.cpp
+
+llong getnbDesorbed(Databuff *hitbuffer_sum);
+llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
+
+double GetMoleculesPerTP(Databuff *hitbuffer_sum, llong nbDesorbed_old);
+void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
+double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
+
+
+//-----------------------------------------------------------
+//Iteration.cpp
+double estimateTmin();
+double estimateTminFlightTime();
+double estimateTmin_RudiTest(Databuff *hitbuffer);
+
+//void allocateCovering(Databuff *hitbuffer, int size, int rank);
 void setCoveringThreshold(Databuff *hitbuffer, int size, int rank);
 void initCoveringThresh();
-void TestMinCovering(Databuff *hitbuffer);
 
-void initCoveringSHandle(Databuff *hitbuffer);
+//-----------------------------------------------------------
+//worker.cpp
+void CalcTotalOutgassingWorker();
