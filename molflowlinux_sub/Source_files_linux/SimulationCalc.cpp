@@ -88,9 +88,9 @@ std::tuple<double, double> calctotalDesorption(){// desorptionrate as well as to
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 					double facetdes = f.sh.desorption;
-					std::cout<< "f.sh.desorption = " << f.sh.desorption << std::endl;
+					//std::cout<< "f.sh.desorption = " << f.sh.desorption << std::endl;
 					desrate+=facetdes/ (1.38E-23*f.sh.temperature);
-					std::cout<< "desrate = " << desrate << std::endl;
+					//std::cout<< "desrate = " << desrate << std::endl;
 					totaldes+=sHandle->wp.latestMoment * facetdes / (1.38E-23*f.sh.temperature);;
 			}
 	}
@@ -158,11 +158,13 @@ double GetMoleculesPerTP(Databuff *hitbuffer_sum, llong nbDesorbed_old) // Calcu
 	CalcTotalOutgassingWorker();
 	//Constant flow
 	//Each test particle represents a certain real molecule influx per second
+	/*
 	std::cout << "wp.finalOutgassingRate [Pa*m^3/s] = " << sHandle->wp.finalOutgassingRate << std::endl;
 	std::cout << "desrate [1/s] = " << desrate << std::endl;
 	std::cout << "wp.finalOutgassingRate + desrate [1/s] = " << sHandle->wp.finalOutgassingRate + desrate << std::endl;
 	std::cout << "gHits->globalHits.hit.nbDesorbed [1] = " << nbDesorbed<< std::endl;
 	std::cout << "(wp.finalOutgassingRate + desrate)/gHits->globalHits.hit.nbDesorbed [1/s] = "<< (sHandle->wp.finalOutgassingRate + desrate)/nbDesorbed << std::endl;
+	*/
 	return (sHandle->wp.finalOutgassingRate+desrate) / nbDesorbed;
 	}
 /* //Wahrscheinlich brauchen wir das nicht.
@@ -196,7 +198,6 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates
 	/*
 	if (coverage < 1) {
 		iFacet->sh.sticking = (p->s1*(1.0 - coverage) + p->s2 * coverage)*(1.0 - exp(-p->E_ad / (kb*temperature)));
->>>>>>> 05b844a67d9c3fdfec88a22098339d0d088cb137
 	}
 	else
 	{

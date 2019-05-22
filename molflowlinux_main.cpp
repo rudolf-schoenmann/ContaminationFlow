@@ -302,7 +302,7 @@ int main(int argc, char *argv[]) {
 
 				//double time_step = estimateTmin_RudiTest(&hitbuffer);
 				double time_step = estimateTminFlightTime();
-				UpdateCovering(simHistory, &hitbuffer_sum, time_step, &nbDesorbed_old);
+				UpdateCovering(simHistory, &hitbuffer_sum, time_step);
 				//memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //TODO ist ths needed?
 
 				UpdateCoveringphys(simHistory, &hitbuffer_sum, &hitbuffer);

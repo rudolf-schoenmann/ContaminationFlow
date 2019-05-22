@@ -40,7 +40,7 @@ double preTestTimeStep(SimulationHistory *history, Databuff *hitbuffer_sum, doub
 
 
 					if (covering_sum < covering_phys){
-						covering_check = covering_phys + (covering_phys - covering_sum)*Krealvirt*(-1)*test_time_step; //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+						covering_check = covering_phys + (covering_phys - covering_sum)*Krealvirt*(-1)*test_time_step;
 						if(covering_check<0){
 							test_time_step=(double)(covering_phys/((covering_phys - covering_sum)*Krealvirt));
 							std::cout<<"Change of test_time_step: "<<test_time_step <<std::endl;
@@ -82,15 +82,15 @@ void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum, double ti
 				std::cout << "covering_sum = " << covering_sum << std::endl;
 				std::cout<< "covering_phys_before = " << covering_phys << std::endl;
 				if (covering_sum > covering_phys){
-					llong covering_delta = static_cast < llong > ((covering_sum - covering_phys)*Krealvirt*time_step); //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+					llong covering_delta = static_cast < llong > ((covering_sum - covering_phys)*Krealvirt*time_step);
 					covering_phys += covering_delta;
 					std::cout << "covering rises"<< std::endl;
 				}
 				else{
-					covering_check = covering_phys + (covering_phys - covering_sum)*Krealvirt*(-1)*time_step; //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+					covering_check = covering_phys + (covering_phys - covering_sum)*Krealvirt*(-1)*time_step;
 					std::cout <<"covering_check = " << covering_check << std::endl;
 					if(!(covering_check<0)){
-						llong covering_delta = static_cast < llong > ((covering_phys - covering_sum)*Krealvirt*time_step); //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+						llong covering_delta = static_cast < llong > ((covering_phys - covering_sum)*Krealvirt*time_step);
 						covering_phys -= covering_delta;
 						std::cout << "covering decreases but remains positive" << std::endl;
 					}
@@ -144,11 +144,14 @@ void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double 
 	//If one wants to read out pressure and particle density, this must be done before calling UpdateCovering.
 	//Calculates with the summed up counters of hitbuffer_sum how many test particles are equivalent to one physical particle.
 	//Then the physical values are stored in the hitbuffer.
+	std::cout << "Updating covering with a time step of " << time_step << " s."<< std::endl;
 	double Krealvirt = GetMoleculesPerTP(hitbuffer_sum, history->nbDesorbed_old);
 	std::cout <<"nbDesorbed before and after:\t" << history->nbDesorbed_old <<'\t';
 	history->nbDesorbed_old = getnbDesorbed(hitbuffer_sum);
 	std::cout << history->nbDesorbed_old <<std::endl;
 	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
+	std::cout << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*time_step << std::endl;
+
 
 	llong covering_phys;
 	llong covering_sum;
@@ -157,7 +160,7 @@ void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double 
 	//buffer_sum = hitbuffer_sum->buff;
 	double test_time_step = preTestTimeStep(history, hitbuffer_sum,  Krealvirt);
 
-	std::cout <<"testing timestep: " <<test_time_step <<'\t' <<estimateTminFlightTime() <<std::endl;
+	//std::cout <<"testing timestep: " <<test_time_step <<'\t' <<estimateTminFlightTime() <<std::endl;
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
@@ -165,20 +168,20 @@ void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double 
 				covering_phys = history->coveringList.getCurrent(&f);
 				covering_sum = getCovering(&f, hitbuffer_sum);
 
-				std::cout<<std::endl << "Facet " << &f << std::endl;
-				std::cout << "covering_sum = " << covering_sum << std::endl;
-				std::cout<< "covering_phys_before = " << covering_phys << std::endl;
+				std::cout<<std::endl << "Facet " << f.globalId << std::endl;
+				std::cout << "covering_sum = " << double(covering_sum) << std::endl;
+				std::cout<< "covering_phys_before = " << double(covering_phys) << std::endl;
 
 				if (covering_sum > covering_phys){
-					llong covering_delta = static_cast < llong > ((covering_sum - covering_phys)*Krealvirt*test_time_step); //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+					llong covering_delta = static_cast < llong > ((covering_sum - covering_phys)*Krealvirt*test_time_step);
 					covering_phys += covering_delta;
-					std::cout << "covering rises by " <<covering_delta << std::endl;
+					std::cout << "covering rises by " <<double(covering_delta) << std::endl;
 				}
 				else{
-					covering_check = covering_phys + (covering_phys - covering_sum)*Krealvirt*(-1)*test_time_step; //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+					covering_check = covering_phys + (covering_phys - covering_sum)*Krealvirt*(-1)*test_time_step;
 					std::cout <<"covering_check = " << covering_check << std::endl;
 					if(!(covering_check<0)){
-						llong covering_delta = static_cast < llong > ((covering_phys - covering_sum)*Krealvirt*test_time_step); //Fehlt noch mal Delta_t (timestep)! [...] (Sekunden) als Test!
+						llong covering_delta = static_cast < llong > ((covering_phys - covering_sum)*Krealvirt*test_time_step);
 						covering_phys -= covering_delta;
 						std::cout << "covering decreases but remains positive" << std::endl;
 					}
@@ -190,8 +193,8 @@ void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double 
 						//iteration neu starten mit weniger nbSteps; Wie viel weniger? 1/10 der vorigen Anzahl?
 					}
 				}
-				std::cout<< "covering_phys_after = " << covering_phys << std::endl;
-				std::cout<< "coveringThreshhold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << std::endl;
+				std::cout<< "covering_phys_after = " << double(covering_phys) << std::endl;
+				std::cout<< "coveringThreshhold = " << double(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
 				history->coveringList.setCurrentList(&f, covering_phys);
 		}
 	}
