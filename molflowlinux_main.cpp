@@ -295,7 +295,8 @@ int main(int argc, char *argv[]) {
 			MPI_Barrier(MPI_COMM_WORLD);
 
 			if (rank == 0) {
-				double time_step = estimateTmin_RudiTest(&hitbuffer);
+				//double time_step = estimateTmin_RudiTest(&hitbuffer);
+				double time_step = estimateTminFlightTime();
 				UpdateCovering(simHistory, &hitbuffer_sum, time_step, &nbDesorbed_old);
 				memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //TODO ist ths needed?
 				UpdateCoveringphys(simHistory, &hitbuffer_sum, &hitbuffer);
