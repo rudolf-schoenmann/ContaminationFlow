@@ -27,7 +27,8 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 // Function that adapts timestep if needed, to avoid negative covering
 double preTestTimeStep(SimulationHistory *history, Databuff *hitbuffer_sum, double Krealvirt){
-	double test_time_step = pow(10,-14);
+	//double test_time_step = pow(10,-14);
+	double test_time_step = estimateTminFlightTime();
 	llong covering_phys;
 	llong covering_sum;
 	double covering_check;
@@ -42,8 +43,9 @@ double preTestTimeStep(SimulationHistory *history, Databuff *hitbuffer_sum, doub
 					if (covering_sum < covering_phys){
 						covering_check = covering_phys + (covering_phys - covering_sum)*Krealvirt*(-1)*test_time_step;
 						if(covering_check<0){
-							test_time_step=(double)(covering_phys/((covering_phys - covering_sum)*Krealvirt));
-							std::cout<<"Change of test_time_step: "<<test_time_step <<std::endl;
+							test_time_step=0.05*(double)(covering_phys/((covering_phys - covering_sum)*Krealvirt));
+							//0.05 is a trade off between fast convergence and small oscillations
+							std::cout<<"Change of Tmin: "<<test_time_step <<std::endl;
 							//std::cout << covering_check << std::endl;
 							//nichts updaten
 							//iteration neu starten mit weniger nbSteps; Wie viel weniger? 1/10 der vorigen Anzahl?
@@ -51,7 +53,6 @@ double preTestTimeStep(SimulationHistory *history, Databuff *hitbuffer_sum, doub
 					}
 			}
 		}
-
 	return test_time_step;
 
 }
@@ -144,23 +145,20 @@ void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double 
 	//If one wants to read out pressure and particle density, this must be done before calling UpdateCovering.
 	//Calculates with the summed up counters of hitbuffer_sum how many test particles are equivalent to one physical particle.
 	//Then the physical values are stored in the hitbuffer.
-	std::cout << "Updating covering with a time step of " << time_step << " s."<< std::endl;
 	double Krealvirt = GetMoleculesPerTP(hitbuffer_sum, history->nbDesorbed_old);
-	std::cout <<"nbDesorbed before and after:\t" << history->nbDesorbed_old <<'\t';
+	//std::cout <<"nbDesorbed before and after:\t" << history->nbDesorbed_old <<'\t';
 	history->nbDesorbed_old = getnbDesorbed(hitbuffer_sum);
-	std::cout << history->nbDesorbed_old <<std::endl;
-	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
-	std::cout << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*time_step << std::endl;
-
+	//std::cout << history->nbDesorbed_old <<std::endl;
 
 	llong covering_phys;
 	llong covering_sum;
 	double covering_check;
 	//BYTE *buffer_sum;
 	//buffer_sum = hitbuffer_sum->buff;
+	std::cout << "Tmin (flight time) = " << time_step << " s."<< std::endl;
 	double test_time_step = preTestTimeStep(history, hitbuffer_sum,  Krealvirt);
-
-	//std::cout <<"testing timestep: " <<test_time_step <<'\t' <<estimateTminFlightTime() <<std::endl;
+	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
+	std::cout << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*test_time_step << std::endl;
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
@@ -178,20 +176,10 @@ void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double 
 					std::cout << "covering rises by " <<double(covering_delta) << std::endl;
 				}
 				else{
-					covering_check = covering_phys + (covering_phys - covering_sum)*Krealvirt*(-1)*test_time_step;
-					std::cout <<"covering_check = " << covering_check << std::endl;
-					if(!(covering_check<0)){
-						llong covering_delta = static_cast < llong > ((covering_phys - covering_sum)*Krealvirt*test_time_step);
-						covering_phys -= covering_delta;
-						std::cout << "covering decreases but remains positive" << std::endl;
-					}
-					else {
-						std::cout<<"Upps! Covering darf nicht negativ sein. Iteration wird nicht upgedated."<<std::endl;
-						std::cout<<(covering_phys - covering_sum) <<std::endl;
-						//std::cout << covering_check << std::endl;
-						//nichts updaten
-						//iteration neu starten mit weniger nbSteps; Wie viel weniger? 1/10 der vorigen Anzahl?
-					}
+					llong covering_delta = static_cast < llong > ((covering_phys - covering_sum)*Krealvirt*test_time_step);
+					covering_phys -= covering_delta;
+					std::cout << "covering decreases by "<< double(covering_delta) << std::endl;
+
 				}
 				std::cout<< "covering_phys_after = " << double(covering_phys) << std::endl;
 				std::cout<< "coveringThreshhold = " << double(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
