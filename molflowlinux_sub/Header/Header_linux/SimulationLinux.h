@@ -27,8 +27,6 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <fstream>
 #include <sstream>
 
-extern Simulation *sHandle;
-
 static const char *day[]={"day","Day","days","Days","d","D"};
 static const char *hour[]={"hour","Hour","hours","Hours","h","H","hr","Hr"};
 static const char *min[]={"Minutes","minutes","Minute","minute","min","Min","m","M"};
@@ -80,7 +78,7 @@ public:
 						}
 			}
 			std::cout<<std::endl;
-			std::cout <<pointintime_list[i].first;
+			std::cout <<(llong)pointintime_list[i].first;
 
 			for(uint j=0; j<pointintime_list[i].second.size();j++)
 			{
@@ -111,7 +109,7 @@ public:
 		}
 		outfile.close();
 	}
-	void read(std::string filename, Databuff *hitbuffer){//Rudi: Not ready yet.
+	void read(std::string filename, Databuff *hitbuffer, Simulation *sHandle){//Rudi: Not ready yet.
 		pointintime_list.clear();
 		//pointintime_list_read.clear();
 		//std::string read = "/home/van/history"+std::to_string(num)+".txt";
@@ -188,6 +186,7 @@ public:
 	llong nbDesorbed_old;
 	double flightTime;
 	int nParticles;
+	double lastTime;
 
 	void appendList(Databuff *hitbuffer, double time=-1.0);
 	void print();
@@ -252,7 +251,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, Databuff *physb
 void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHistory *history,int rank);
 
 void UpdateCovering(Databuff *hitbuffer, Databuff *hitbuffer_original, double time_step);
-void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double time_step);
+void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double time_step, double simTime); //simTime in ms
 void UpdateCoveringphys(SimulationHistory *history, Databuff *hitbuffer_sum, Databuff *hitbuffer);
 //-----------------------------------------------------------
 //SimulationCalc.cpp
@@ -268,7 +267,7 @@ double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
 //-----------------------------------------------------------
 //Iteration.cpp
 double estimateTmin();
-double estimateTminFlightTime();
+double estimateAverageFlightTime();
 double estimateTmin_RudiTest(Databuff *hitbuffer);
 
 //void allocateCovering(Databuff *hitbuffer, int size, int rank);

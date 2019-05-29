@@ -29,6 +29,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 // Global handles
 extern Simulation* sHandle; //Declared at molflowlinux_main.cpp
 extern ProblemDef* p;
+extern Simulation *sHandle;
 
 //get values from buffer/handle
 int getFacetIndex(SubprocessFacet *iFacet){ // finds index of facet. index used for CoveringHistory class

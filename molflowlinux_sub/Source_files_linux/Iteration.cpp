@@ -26,6 +26,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "levmar.h"
 
 extern SimulationHistory* simHistory;
+extern Simulation *sHandle;
 
 //Estimation of Tmin
 
@@ -60,6 +61,8 @@ buffer = hitbuffer->buff;
 	//if (normalization_factor_v == 0) std::cout << "divide by zero!" << std::endl;
 	double v_avg = sum_v_avg/normalization_factor_v;
 	//std::cout << "v_avg = sum_v_avg/normalization_factor_v = " << sum_v_avg << "/" << normalization_factor_v << std::endl;
+
+	std::cout <<"test sHandle \t" <<sHandle->tmpGlobalResult.distTraveled_total <<'\t' <<sHandle->tmpGlobalResult.globalHits.hit.nbMCHit <<std::endl;
 	double av_path_length = sHandle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;//Muss geändert werden, da diese Werte Null sind im Prozess Null.
 	//std::cout <<  "av_path_length = Handle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.hit.nbMCHit = " << sHandle->tmpGlobalResult.distTraveled_total << "/" << sHandle->tmpGlobalResult.globalHits.hit.nbMCHit << std::endl;
 	//std::cout << "tmin = av_path_length /v_avg = " << av_path_length << " / " << v_avg << std::endl;
@@ -87,7 +90,7 @@ buffer = hitbuffer->buff;
 
 
 
-double estimateTminFlightTime(){
+double estimateAverageFlightTime(){
 	return simHistory->flightTime/simHistory->nParticles;
 }
 
