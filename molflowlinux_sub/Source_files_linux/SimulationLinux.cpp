@@ -146,8 +146,8 @@ ProblemDef::ProblemDef(){
 	iterationNumber = 43200;
 	s1=1;
 	s2=0.2;
-	E_de=1E-21;
-	E_ad=1E-21;
+	E_de=1.6E-19;
+	E_ad=1.6E-19;
 	d=1;
 
 	simulationTime = 10.0;

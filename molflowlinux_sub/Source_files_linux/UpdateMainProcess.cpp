@@ -167,22 +167,22 @@ void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double 
 				covering_sum = getCovering(&f, hitbuffer_sum);
 
 				std::cout<<std::endl << "Facet " << f.globalId << std::endl;
-				std::cout << "covering_sum = " << double(covering_sum) << std::endl;
-				std::cout<< "covering_phys_before = " << double(covering_phys) << std::endl;
+				std::cout << "covering_sum = " << covering_sum  << " = "<< double(covering_sum) << std::endl;
+				std::cout<< "covering_phys_before = " << covering_phys << " = "<< double(covering_phys) << std::endl;
 
 				if (covering_sum > covering_phys){
 					llong covering_delta = static_cast < llong > ((covering_sum - covering_phys)*Krealvirt*test_time_step);
 					covering_phys += covering_delta;
-					std::cout << "covering rises by " <<double(covering_delta) << std::endl;
+					std::cout << "covering rises by " <<covering_delta << " = "<<double(covering_delta) << std::endl;
 				}
 				else{
 					llong covering_delta = static_cast < llong > ((covering_phys - covering_sum)*Krealvirt*test_time_step);
 					covering_phys -= covering_delta;
-					std::cout << "covering decreases by "<< double(covering_delta) << std::endl;
+					std::cout << "covering decreases by "<<covering_delta << " = " << double(covering_delta) << std::endl;
 
 				}
-				std::cout<< "covering_phys_after = " << double(covering_phys) << std::endl;
-				std::cout<< "coveringThreshhold = " << double(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
+				std::cout<< "covering_phys_after = " << covering_phys << " = " << double(covering_phys) << std::endl;
+				std::cout<< "coveringThreshhold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << " = " << double(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
 				history->coveringList.setCurrentList(&f, covering_phys);
 		}
 	}
@@ -855,7 +855,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 	}
 
 
-	ResetTmpCounters();
+	//ResetTmpCounters();
 	//extern char* GetSimuStatus();
 	//SetState(NULL, GetSimuStatus(), false, true); // (Rudi) Don't need that.
 
