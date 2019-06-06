@@ -29,35 +29,101 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 double preTestTimeStep(SimulationHistory *history, Databuff *hitbuffer_sum, double Krealvirt){
 	//double test_time_step = pow(10,-14);
 	double test_time_step = estimateTminFlightTime();
+	double minimum_time_step_increase = 0;
 	llong covering_phys;
 	llong covering_sum;
 	double covering_check;
-
-	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+	double	covering_diff, covering_diff_min = 0;
+	llong facet_count_1, facet_count_2 = 0;
+	bool decreased_time_step, increased_test_step;
+	decreased_time_step = increased_test_step = false;
+	
+	
+	/*
+	//Man könnte sich auch den 'increase time step check' pro Facet sparen, indem man den time step sofort erhöht, wenn man sieht, dass ein virtuelles Testteilchen weniger als einem realen Teilchen entspricht:
+	if (test_time_step*Krealvirt < 1){
+		test_time_step = test_time_step * (1/(test_time_step*Krealvirt));
+	}
+	//Damit hat man aber den time step stärker nach unten hin begrenzt, als mit dem 'increase time step check' pro Facet. Mit dem 'increase time step check' pro Facet kann es auch ein Verhältnis von realen zu Testteilchen
+	//kleiner eins geben. Damit hat man eine besserer Statistik.
+	*/
+	
+	//Check, if the time step is too short for more than 2 facets. We avoid changing the covering counter by a value of +- 0 (for more than N-2 facets) by increasing the time step.
+	if (test_time_step*Krealvirt < 1){
+		for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
-					//FacetHitBuffer *facetHitBuffer_sum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
 					covering_phys = history->coveringList.getCurrent(&f);
 					covering_sum = getCovering(&f, hitbuffer_sum);
 
-
 					if (covering_sum < covering_phys){
-						covering_check = covering_phys + (covering_phys - covering_sum)*Krealvirt*(-1)*test_time_step;
-						if(covering_check<0){
-							test_time_step=0.05*(double)(covering_phys/((covering_phys - covering_sum)*Krealvirt));
-							//0.05 is a trade off between fast convergence and small oscillations
-							std::cout<<"Change of Tmin: "<<test_time_step <<std::endl;
-							//std::cout << covering_check << std::endl;
-							//nichts updaten
-							//iteration neu starten mit weniger nbSteps; Wie viel weniger? 1/10 der vorigen Anzahl?
+						covering_diff = (covering_phys - covering_sum)*Krealvirt*test_time_step;
+						if (covering_diff_min == 0 || covering_diff_min > covering_diff){
+							covering_diff_min = covering_diff;
 						}
+					}
+					if (covering_sum > covering_phys){
+						covering_diff = (covering_sum - covering_phys)*Krealvirt*test_time_step;
+						if (covering_diff_min == 0 || covering_diff_min > covering_diff){
+							covering_diff_min = covering_diff;
+						}
+					}
+					if (covering_sum == covering_phys){
+						facet_count_2 += 1;
+					}					
+					if ((llong)covering_diff == 0){
+							facet_count_1 += 1;
 					}
 			}
 		}
+		if (sHandle->sh.nbFacet - facet_count_1 < 2){
+			if (covering_diff_min == 0){
+				if (sHandle->sh.nbFacet == facet_count_2){
+					std::out << "Covering does not change in this iteration step!";
+				}
+				else{			
+					std::out << "Error: Overflow of double value 'covering_diff'!" << std::endl;
+				}
+			}
+			else{
+				minimum_time_step_increase = (1/covering_diff_min) * test_time_step;
+				test_time_step = 20 * (1/covering_diff_min) * test_time_step; //20 is the inverse of 0.05 (which is the decreasing multiplier); May be change 20 to some other more appropriate value...
+				increased_test_step = true;
+			}
+		}
+	}
+	
+	//Check, if the time step is too long. We avoid the covering counter going negative (=overflow of llong) by decreasing the time step.
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+					covering_phys = history->coveringList.getCurrent(&f);
+					covering_sum = getCovering(&f, hitbuffer_sum);
+
+					if (covering_sum < covering_phys){
+						covering_check = covering_phys - (covering_phys - covering_sum)*Krealvirt*test_time_step;
+						if(covering_check<0){
+							test_time_step=0.05*(double)(covering_phys/((covering_phys - covering_sum)*Krealvirt));//0.05 (decreasing multiplier) is a trade off between fast convergence and small oscillations
+							decreased_time_step = true;
+							std::cout<<"Decreased Tmin: "<<test_time_step <<std::endl;
+							//std::cout << covering_check << std::endl;
+						}	
+					}
+					
+			}
+	}
+
+	
+	if (increased_test_step && decreased_time_step){
+		if (test_time_step < minimum_time_step_increase){
+			std::cout << "Note: Some particles might be lost due to choice of time step." << std::endl;
+		}
+	}	
+	
 	return test_time_step;
 
 }
 //-----------------------------------------------------------
 //Update Covering
+/*
 //Buffer version
 void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum, double time_step){//Updates Covering after one Iteration using Krealvirt, resets other counters
 	//If one wants to read out pressure and particle density, this must be done before calling UpdateCovering.
@@ -139,7 +205,7 @@ void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum, double ti
 	gHits_sum->globalHits.hit.nbDesorbed = 0;
 	}
 }
-
+*/
 //Simhistory version
 void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double time_step){//Updates Covering after one Iteration using Krealvirt, resets other counters
 	//If one wants to read out pressure and particle density, this must be done before calling UpdateCovering.
