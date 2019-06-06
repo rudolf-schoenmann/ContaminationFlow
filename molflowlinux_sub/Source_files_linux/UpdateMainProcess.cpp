@@ -34,20 +34,21 @@ double preTestTimeStep(SimulationHistory *history, Databuff *hitbuffer_sum, doub
 	llong covering_sum;
 	double covering_check;
 	double	covering_diff, covering_diff_min = 0;
-	llong facet_count_1, facet_count_2 = 0;
+	llong facet_count_1 = 0;
+	llong facet_count_2 = 0;
 	bool decreased_time_step, increased_test_step;
 	decreased_time_step = increased_test_step = false;
 	
 	
-	/*
+
 	//Man könnte sich auch den 'increase time step check' pro Facet sparen, indem man den time step sofort erhöht, wenn man sieht, dass ein virtuelles Testteilchen weniger als einem realen Teilchen entspricht:
 	if (test_time_step*Krealvirt < 1){
-		test_time_step = test_time_step * (1/(test_time_step*Krealvirt));
+		test_time_step = test_time_step * (1/(test_time_step*Krealvirt)) *1; // 1 is just a chosen random value to increase the output per iteration
 	}
 	//Damit hat man aber den time step stärker nach unten hin begrenzt, als mit dem 'increase time step check' pro Facet. Mit dem 'increase time step check' pro Facet kann es auch ein Verhältnis von realen zu Testteilchen
 	//kleiner eins geben. Damit hat man eine besserer Statistik.
-	*/
 	
+	/*
 	//Check, if the time step is too short for more than 2 facets. We avoid changing the covering counter by a value of +- 0 (for more than N-2 facets) by increasing the time step.
 	if (test_time_step*Krealvirt < 1){
 		for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
@@ -78,19 +79,22 @@ double preTestTimeStep(SimulationHistory *history, Databuff *hitbuffer_sum, doub
 		if (sHandle->sh.nbFacet - facet_count_1 < 2){
 			if (covering_diff_min == 0){
 				if (sHandle->sh.nbFacet == facet_count_2){
-					std::out << "Covering does not change in this iteration step!";
+					std::cout << "Covering does not change in this iteration step!";
 				}
 				else{			
-					std::out << "Error: Overflow of double value 'covering_diff'!" << std::endl;
+					std::cout << "Error: Overflow of double value 'covering_diff'!" << std::endl;
 				}
 			}
 			else{
 				minimum_time_step_increase = (1/covering_diff_min) * test_time_step;
-				test_time_step = 20 * (1/covering_diff_min) * test_time_step; //20 is the inverse of 0.05 (which is the decreasing multiplier); May be change 20 to some other more appropriate value...
+				test_time_step = 1000 * (1/covering_diff_min) * test_time_step; // 1000 is just a chosen random value to increase the output per iteration
 				increased_test_step = true;
+				std::cout << "Increased time step."<< std::endl;
+				std::cout << "Time step is now "<<test_time_step<< " s."<< std::endl;
 			}
 		}
 	}
+	*/
 	
 	//Check, if the time step is too long. We avoid the covering counter going negative (=overflow of llong) by decreasing the time step.
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
