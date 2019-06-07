@@ -28,6 +28,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <sstream>
 
 extern SimulationHistory* simHistory;
+extern Simulation *sHandle;
 
 // Simulation on subprocess
 std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, int simutime){
@@ -233,6 +234,7 @@ SimulationHistory::SimulationHistory(){
 	nParticles=-1;
 	flightTime=0.0;
 	nbDesorbed_old=0;
+	lastTime=0.0;
 }
 
 SimulationHistory::SimulationHistory(Databuff *hitbuffer){
@@ -241,6 +243,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer){
 	numFacet=0;
 	nParticles=-1;
 	flightTime=0.0;
+	lastTime=0.0;
 
 	nbDesorbed_old= getnbDesorbed(hitbuffer);
 
@@ -277,7 +280,7 @@ void SimulationHistory::appendList(Databuff *hitbuffer, double time){
 			//i+=1;
 		}
 	}
-	coveringList.appendList(currentstep, -1);
+	coveringList.appendList(currentstep, time);
 
 }
 

@@ -25,10 +25,12 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "SimulationLinux.h"
 #include "GLApp/MathTools.h"
 
+extern Simulation *sHandle;
+
 // Function that adapts timestep if needed, to avoid negative covering
 double preTestTimeStep(SimulationHistory *history, Databuff *hitbuffer_sum, double Krealvirt){
 	//double test_time_step = pow(10,-14);
-	double test_time_step = estimateTminFlightTime();
+	double test_time_step = estimateAverageFlightTime();
 	double minimum_time_step_increase = 0;
 	llong covering_phys;
 	llong covering_sum;
@@ -211,10 +213,11 @@ void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum, double ti
 }
 */
 //Simhistory version
-void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double time_step){//Updates Covering after one Iteration using Krealvirt, resets other counters
+void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double time_step, double simTime){//Updates Covering after one Iteration using Krealvirt, resets other counters
 	//If one wants to read out pressure and particle density, this must be done before calling UpdateCovering.
 	//Calculates with the summed up counters of hitbuffer_sum how many test particles are equivalent to one physical particle.
 	//Then the physical values are stored in the hitbuffer.
+	//simTime in ms
 	double Krealvirt = GetMoleculesPerTP(hitbuffer_sum, history->nbDesorbed_old);
 	//std::cout <<"nbDesorbed before and after:\t" << history->nbDesorbed_old <<'\t';
 	history->nbDesorbed_old = getnbDesorbed(hitbuffer_sum);
@@ -229,6 +232,7 @@ void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double 
 	double test_time_step = preTestTimeStep(history, hitbuffer_sum,  Krealvirt);
 	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
 	std::cout << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*test_time_step << std::endl;
+	std::cout <<"testing timestep: " <<test_time_step <<'\t' <<estimateAverageFlightTime() <<std::endl;
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
@@ -256,8 +260,8 @@ void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double 
 				history->coveringList.setCurrentList(&f, covering_phys);
 		}
 	}
-
-	history->coveringList.appendCurrent();
+	history->coveringList.appendCurrent(history->lastTime+simTime);
+	history->lastTime+=simTime;
 }
 
 // Copy covering to buffer
@@ -650,7 +654,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 	std::cout <<subHits->distTraveledTotal_fullHitsOnly <<std::endl<<std::endl;*/
 
 	// Global hits and leaks: adding local hits to shared memory
-	sHandle->tmpGlobalResult.globalHits.hit.nbMCHit=gHits->globalHits.hit.nbMCHit += subHits->globalHits.hit.nbMCHit;
+	sHandle->tmpGlobalResult.globalHits.hit.nbMCHit= gHits->globalHits.hit.nbMCHit += subHits->globalHits.hit.nbMCHit;
 	sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv=gHits->globalHits.hit.nbHitEquiv += subHits->globalHits.hit.nbHitEquiv;
 	sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv=gHits->globalHits.hit.nbAbsEquiv += subHits->globalHits.hit.nbAbsEquiv;
 	sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed=gHits->globalHits.hit.nbDesorbed += subHits->globalHits.hit.nbDesorbed;
@@ -924,8 +928,8 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 		sHandle->tmpGlobalResult.texture_limits[v]=gHits->texture_limits[v];
 	}
 
+	//ResetTmpCounters(); //This will reset counters -> but needed for Tmin
 
-	//ResetTmpCounters();
 	//extern char* GetSimuStatus();
 	//SetState(NULL, GetSimuStatus(), false, true); // (Rudi) Don't need that.
 

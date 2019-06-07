@@ -99,6 +99,8 @@ int main(int argc, char *argv[]) {
 	Databuff loadbuffer; //Loadbuffer to read in data of geometry and physical parameters
 	loadbuffer.buff=NULL;
 
+	double t0,t1;
+
 	//llong nbDesorbed_old; //test: nbDesorbed of previous iteration, used so that hitbuffer_sum does not have to be reset -> true final hitbuffer, added to simhistory
 
 
@@ -268,7 +270,10 @@ int main(int argc, char *argv[]) {
 			}
 			else{
 				std::cout <<"Wait for "<< p->simulationTime <<p->unit << std::endl;
+				//record time needed for simulation step
+				t0 = GetTick();
 				MPI_Barrier(MPI_COMM_WORLD);
+				t1 = GetTick();
 			}
 
 			//----iteratively add hitbuffer from subprocesses
@@ -306,21 +311,10 @@ int main(int argc, char *argv[]) {
 
 			//----Update covering
 			if (rank == 0) {
-				//@ My: sHandle->tmpGlobalResult.globalHits.hit.nbMCHit ist wieder Null, obwohl wir ihm in der Funktion UpdateMCMainHits Werte
-				//		zugeordnet haben, diese aber irgendwie nur innerhalb der Funktion gelten. D.h. wir müssen die Werte entweder hier nochmal extra
-				//		aus dem Buffer ziehen oder das Problem irgendwie anders lösen.
-				/* We could use the following block, if we want to use estimateTmin_RudiTest(&hitbuffer). But we prefer using estimateTminFlightTime().
-				BYTE *buffer;
-				GlobalHitBuffer *gHits;
-				buffer = hitbuffer.buff;
-				gHits = (GlobalHitBuffer *)buffer;
-				sHandle->tmpGlobalResult.globalHits.hit.nbMCHit=gHits->globalHits.hit.nbMCHit;
-				sHandle->tmpGlobalResult.distTraveled_total=gHits->distTraveled_total;
-				//double time_step = estimateTmin_RudiTest(&hitbuffer);
-				*/
-				double time_step = estimateTminFlightTime();
-				UpdateCovering(simHistory, &hitbuffer_sum, time_step);
-				//memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //TODO ist ths needed?
+
+double time_step = estimateTmin_RudiTest(&hitbuffer);
+				UpdateCovering(simHistory, &hitbuffer_sum, time_step, (t1-t0));
+				//memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //TODO ist ths needed? -> my: Probably not
 
 				UpdateCoveringphys(simHistory, &hitbuffer_sum, &hitbuffer);
 				simHistory->coveringList.print();
