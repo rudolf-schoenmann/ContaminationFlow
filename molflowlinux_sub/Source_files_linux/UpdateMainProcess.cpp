@@ -43,7 +43,7 @@ double preTestTimeStep(SimulationHistory *history, Databuff *hitbuffer_sum, doub
 
 	//Man könnte sich auch den 'increase time step check' pro Facet sparen, indem man den time step sofort erhöht, wenn man sieht, dass ein virtuelles Testteilchen weniger als einem realen Teilchen entspricht:
 	if (test_time_step*Krealvirt < 1){
-		test_time_step = test_time_step * (1/(test_time_step*Krealvirt)) *1; // 1 is just a chosen random value to increase the output per iteration
+		test_time_step = test_time_step * (1/(test_time_step*Krealvirt)) *10; // 10 is just a chosen random value to increase the output per iteration
 	}
 	//Damit hat man aber den time step stärker nach unten hin begrenzt, als mit dem 'increase time step check' pro Facet. Mit dem 'increase time step check' pro Facet kann es auch ein Verhältnis von realen zu Testteilchen
 	//kleiner eins geben. Damit hat man eine besserer Statistik.

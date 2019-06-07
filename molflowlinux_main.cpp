@@ -79,6 +79,13 @@ bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 //Main Function
 int main(int argc, char *argv[]) {
 
+	/*
+	double a;
+	long double b;
+	std::cout << "sizeof a double is  " << sizeof(a) << std::endl;
+	std::cout << "sizeof a long double is  " << sizeof(b) << std::endl;
+	*/
+
 	// Initialise data buffers
 	Databuff hitbuffer; //Hitbuffer for the data of the subprocesses
 	hitbuffer.buff=NULL;
