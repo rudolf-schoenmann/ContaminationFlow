@@ -228,11 +228,11 @@ void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double 
 	double covering_check;
 	//BYTE *buffer_sum;
 	//buffer_sum = hitbuffer_sum->buff;
-	std::cout << "Tmin (flight time) = " << time_step << " s."<< std::endl;
-	double test_time_step = preTestTimeStep(history, hitbuffer_sum,  Krealvirt);
+	std::cout << "Tmin = " << estimateAverageFlightTime() << " s."<< std::endl;
+	time_step = preTestTimeStep(history, hitbuffer_sum,  Krealvirt);
 	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
-	std::cout << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*test_time_step << std::endl;
-	std::cout <<"testing timestep: " <<test_time_step <<'\t' <<estimateAverageFlightTime() <<std::endl;
+	std::cout << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*time_step << std::endl;
+	//std::cout <<"testing timestep: " <<time_step <<'\t' <<estimateAverageFlightTime() <<std::endl;
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
@@ -245,12 +245,12 @@ void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double 
 				std::cout<< "covering_phys_before = " << covering_phys << " = "<< double(covering_phys) << std::endl;
 
 				if (covering_sum > covering_phys){
-					llong covering_delta = static_cast < llong > ((covering_sum - covering_phys)*Krealvirt*test_time_step);
+					llong covering_delta = static_cast < llong > ((covering_sum - covering_phys)*Krealvirt*time_step);
 					covering_phys += covering_delta;
 					std::cout << "covering rises by " <<covering_delta << " = "<<double(covering_delta) << std::endl;
 				}
 				else{
-					llong covering_delta = static_cast < llong > ((covering_phys - covering_sum)*Krealvirt*test_time_step);
+					llong covering_delta = static_cast < llong > ((covering_phys - covering_sum)*Krealvirt*time_step);
 					covering_phys -= covering_delta;
 					std::cout << "covering decreases by "<<covering_delta << " = " << double(covering_delta) << std::endl;
 

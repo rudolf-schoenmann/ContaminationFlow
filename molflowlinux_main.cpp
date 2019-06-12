@@ -312,7 +312,8 @@ int main(int argc, char *argv[]) {
 			//----Update covering
 			if (rank == 0) {
 
-double time_step = estimateTmin_RudiTest(&hitbuffer);
+				double time_step = 0; // just some random value. We don't need the time step here. => adapt UpdateCovering function!
+				//double time_step = estimateTmin_RudiTest(&hitbuffer);
 				UpdateCovering(simHistory, &hitbuffer_sum, time_step, (t1-t0));
 				//memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //TODO ist ths needed? -> my: Probably not
 
