@@ -79,7 +79,7 @@ public:
 						}
 			}
 			std::cout<<std::endl;
-			std::cout <<(llong)pointintime_list[i].first;
+			std::cout <<pointintime_list[i].first;
 
 			for(uint j=0; j<pointintime_list[i].second.size();j++)
 			{
@@ -106,7 +106,7 @@ public:
 						}
 			}
 			outfile <<std::endl;
-			outfile <<std::setw(12)<<std::right <<(llong)pointintime_list[i].first ;
+			outfile <<std::setw(12)<<std::right <<pointintime_list[i].first ;
 
 			for(uint j=0; j<pointintime_list[i].second.size();j++)
 			{

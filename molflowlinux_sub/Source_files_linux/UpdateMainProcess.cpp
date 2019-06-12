@@ -46,6 +46,7 @@ double preTestTimeStep(SimulationHistory *history, Databuff *hitbuffer_sum, doub
 	//Man könnte sich auch den 'increase time step check' pro Facet sparen, indem man den time step sofort erhöht, wenn man sieht, dass ein virtuelles Testteilchen weniger als einem realen Teilchen entspricht:
 	if (test_time_step*Krealvirt < 1){
 		test_time_step = test_time_step * (1/(test_time_step*Krealvirt)) *10; // 10 is just a chosen random value to increase the output per iteration
+		std::cout << "increased time step to " << test_time_step << " s." << std::endl;
 	}
 	//Damit hat man aber den time step stärker nach unten hin begrenzt, als mit dem 'increase time step check' pro Facet. Mit dem 'increase time step check' pro Facet kann es auch ein Verhältnis von realen zu Testteilchen
 	//kleiner eins geben. Damit hat man eine besserer Statistik.
@@ -260,8 +261,8 @@ void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double 
 				history->coveringList.setCurrentList(&f, covering_phys);
 		}
 	}
-	history->coveringList.appendCurrent(history->lastTime+test_time_step);
-	history->lastTime+=test_time_step;
+	history->coveringList.appendCurrent(history->lastTime+time_step);
+	history->lastTime+=time_step;
 }
 
 // Copy covering to buffer
