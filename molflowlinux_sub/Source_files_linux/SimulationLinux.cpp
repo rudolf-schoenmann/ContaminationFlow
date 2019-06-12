@@ -26,6 +26,10 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <array>
 #include <fstream>
 #include <sstream>
+#include <unistd.h>
+#include <libgen.h>
+#include <time.h>
+#include <sys/stat.h>
 
 extern SimulationHistory* simHistory;
 extern Simulation *sHandle;
@@ -119,6 +123,17 @@ double convertunit(double simutime, std::string unit){
 }
 //-----------------------------------------------------------
 //ProblemDef class
+
+std::string get_path( )
+{
+        char arg1[20];
+        char exepath[256] = {0};
+
+        sprintf( arg1, "/proc/%d/exe", getpid() );
+        readlink( arg1, exepath, sizeof(exepath) );
+        return std::string( exepath );
+}
+
 ProblemDef::ProblemDef(int argc, char *argv[]){
 	loadbufferPath= argc > 1 ? argv[1] :"";
 	hitbufferPath=argc > 2 ? argv[2]:"";
@@ -140,9 +155,16 @@ ProblemDef::ProblemDef(int argc, char *argv[]){
 }
 
 ProblemDef::ProblemDef(){
+	std::string path=get_path();
+	std::cout <<path <<std::endl;
+	char *test=&path[0u];
+	std::string test2(dirname(dirname(test)));
+	resultpath=test2+"/results/"+std::to_string(time(0));
+	mkdir(resultpath.c_str(),S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
 	loadbufferPath= "/home/van/Buffer/loadbuffer_alle_RT";
 	hitbufferPath="/home/van/Buffer/hitbuffer_allee-6";
-	resultbufferPath="/home/van/resultbuffer";
+	resultbufferPath=resultpath+"/resultbuffer";
 
 	iterationNumber = 43200;
 	s1=1;
@@ -155,7 +177,6 @@ ProblemDef::ProblemDef(){
 	unit = "s";
 
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
-
 }
 
 void ProblemDef::readArg(int argc, char *argv[], int rank){
@@ -168,16 +189,17 @@ void ProblemDef::readArg(int argc, char *argv[], int rank){
 
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
 	if (rank==0) {std::cout << "Simulation time " << simulationTime << unit << " converted to " << simulationTimeMS << "ms" << std::endl;}
+	writeInputfile(resultpath+"/InputFile.txt",rank);
 
 }
 
 void ProblemDef::readInputfile(std::string filename, int rank){
 	std::string line;
 	std::ifstream input(filename,std::ifstream::in);
-	if (rank==0) {std::cout <<"Test to read input arguments from " <<filename <<std::endl;}
+	//if (rank==0) {std::cout <<"Test to read input arguments from " <<filename <<std::endl;}
 
 	while(std::getline(input,line)){
-		if(rank==0) {std::cout <<line <<std::endl;}
+		//if(rank==0) {std::cout <<line <<std::endl;}
 		std::string stringIn;
 		double doubleIn;
 		int intIn;
@@ -187,7 +209,7 @@ void ProblemDef::readInputfile(std::string filename, int rank){
 
 		if(stringIn == "loadbufferPath") {if(rank==0) {std::cout <<line <<std::endl;}is >> stringIn; loadbufferPath=stringIn;}
 		else if(stringIn == "hitbufferPath") {is >> stringIn; hitbufferPath=stringIn;}
-		else if(stringIn=="resultbufferPath"){is >> stringIn; resultbufferPath=stringIn;}
+		//else if(stringIn=="resultbufferPath"){is >> stringIn; resultbufferPath=stringIn;}
 		else if(stringIn == "simulationTime") {is >>doubleIn; simulationTime = doubleIn;}
 		else if(stringIn == "unit"){is >> stringIn; unit=stringIn;}
 
@@ -205,6 +227,8 @@ void ProblemDef::readInputfile(std::string filename, int rank){
 	}
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
 	if (rank==0) {std::cout << "New Simulation time " << simulationTimeMS << "ms" << std::endl;}
+
+	writeInputfile(resultpath+"/InputFile.txt",rank);
 }
 
 void ProblemDef::writeInputfile(std::string filename, int rank){
@@ -223,6 +247,26 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 	outfile <<"d" <<'\t' <<d<<std::endl;
 	outfile <<"E_de" <<'\t' <<E_de<<std::endl;
 	outfile <<"E_ad" <<'\t' <<E_ad<<std::endl;
+
+}
+
+void ProblemDef::printInputfile(){
+
+	std::cout <<std::endl<<"Print input arguments"<<std::endl;
+
+	std::cout  <<"resultPath" <<'\t' <<resultpath <<std::endl;
+	std::cout  <<"loadbufferPath" <<'\t' <<loadbufferPath <<std::endl;
+	std::cout  <<"hitbufferPath" <<'\t' <<hitbufferPath <<std::endl;
+	std::cout  <<"resultbufferPath" <<'\t' <<resultbufferPath <<std::endl;
+	std::cout  <<"simulationTime" <<'\t' <<simulationTime <<std::endl;
+	std::cout  <<"unit" <<'\t' <<unit <<std::endl;
+
+	std::cout  <<"iterationNumber" <<'\t' <<iterationNumber<<std::endl;
+	std::cout  <<"s1" <<'\t' <<s1<<std::endl;
+	std::cout  <<"s2" <<'\t' <<s2<<std::endl;
+	std::cout  <<"d" <<'\t' <<d<<std::endl;
+	std::cout  <<"E_de" <<'\t' <<E_de<<std::endl;
+	std::cout  <<"E_ad" <<'\t' <<E_ad<<std::endl<<std::endl;
 
 }
 
@@ -288,5 +332,8 @@ void SimulationHistory::print(){
 	coveringList.print();
 }
 
+void SimulationHistory::write(std::string path){
+	coveringList.write(path+"/covering.txt");
+}
 
 

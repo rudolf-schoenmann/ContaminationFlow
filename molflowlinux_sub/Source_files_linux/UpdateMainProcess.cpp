@@ -260,8 +260,8 @@ void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double 
 				history->coveringList.setCurrentList(&f, covering_phys);
 		}
 	}
-	history->coveringList.appendCurrent(history->lastTime+simTime);
-	history->lastTime+=simTime;
+	history->coveringList.appendCurrent(history->lastTime+test_time_step);
+	history->lastTime+=test_time_step;
 }
 
 // Copy covering to buffer

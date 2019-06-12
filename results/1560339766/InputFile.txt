@@ -1,0 +1,11 @@
+loadbufferPath	/home/van/Buffer/loadbuffer_alle_RT
+hitbufferPath	/home/van/Buffer/hitbuffer_allee-6
+resultbufferPath	/home/van/MolflowLinux/results/1560339766/resultbuffer
+simulationTime	10
+unit	s
+iterationNumber	3
+s1	0.99
+s2	0.2
+d	1
+E_de	1.6e-19
+E_ad	1.6e-19

@@ -26,6 +26,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 
 static const char *day[]={"day","Day","days","Days","d","D"};
 static const char *hour[]={"hour","Hour","hours","Hours","h","H","hr","Hr"};
@@ -95,19 +96,28 @@ public:
 		//std::string write = "/home/van/history"+std::to_string(num)+".txt";
 		std::ofstream outfile(filename,std::ofstream::out|std::ios::trunc);
 
+		outfile <<std::setw(12)<<std::right<<"time";
 		for(uint i=0;i<pointintime_list.size();i++)
 		{
-			outfile <<pointintime_list[i].first;
+			if(i==0){
+				for(uint j=0; j<pointintime_list[i].second.size();j++)
+						{
+						outfile <<"\t" <<std::setw(6)<<std::right <<"Facet " <<std::setw(6)<<std::right <<j;
+						}
+			}
+			outfile <<std::endl;
+			outfile <<std::setw(12)<<std::right <<(llong)pointintime_list[i].first ;
 
 			for(uint j=0; j<pointintime_list[i].second.size();j++)
 			{
-				outfile <<'\t' <<pointintime_list[i].second[j];
+				outfile <<"\t" <<std::setw(12)<<std::right <<pointintime_list[i].second[j];
 			}
 
 			outfile <<'\n';
 
 		}
 		outfile.close();
+		std::cout <<"Results saved to " <<filename <<std::endl;
 	}
 	void read(std::string filename, Databuff *hitbuffer, Simulation *sHandle){//Rudi: Not ready yet.
 		pointintime_list.clear();
@@ -190,6 +200,7 @@ public:
 
 	void appendList(Databuff *hitbuffer, double time=-1.0);
 	void print();
+	void write(std::string path);
 
 
 };
@@ -202,9 +213,10 @@ public:
 	void readArg(int argc, char *argv[], int rank=1);
 	void readInputfile(std::string filename, int rank=1);
 	void writeInputfile(std::string filename, int rank=1);
+	void printInputfile();
 
 
-
+	std::string resultpath;
 
 	// These can be given as parameters directly
 	std::string loadbufferPath;
