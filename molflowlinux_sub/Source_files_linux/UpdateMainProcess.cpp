@@ -213,7 +213,7 @@ void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum, double ti
 }
 */
 //Simhistory version
-void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double time_step, double simTime){//Updates Covering after one Iteration using Krealvirt, resets other counters
+void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum){//Updates Covering after one Iteration using Krealvirt, resets other counters
 	//If one wants to read out pressure and particle density, this must be done before calling UpdateCovering.
 	//Calculates with the summed up counters of hitbuffer_sum how many test particles are equivalent to one physical particle.
 	//Then the physical values are stored in the hitbuffer.
@@ -229,7 +229,7 @@ void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double 
 	//BYTE *buffer_sum;
 	//buffer_sum = hitbuffer_sum->buff;
 	std::cout << "Tmin = " << estimateAverageFlightTime() << " s."<< std::endl;
-	time_step = preTestTimeStep(history, hitbuffer_sum,  Krealvirt);
+	double time_step = preTestTimeStep(history, hitbuffer_sum,  Krealvirt);
 	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
 	std::cout << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*time_step << std::endl;
 	//std::cout <<"testing timestep: " <<time_step <<'\t' <<estimateAverageFlightTime() <<std::endl;
@@ -260,8 +260,8 @@ void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double 
 				history->coveringList.setCurrentList(&f, covering_phys);
 		}
 	}
-	history->coveringList.appendCurrent(history->lastTime+test_time_step);
-	history->lastTime+=test_time_step;
+	history->coveringList.appendCurrent(history->lastTime+time_step);
+	history->lastTime+=time_step;
 }
 
 // Copy covering to buffer

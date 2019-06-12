@@ -28,6 +28,8 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <sstream>
 #include <iomanip>
 
+static const char *year[]={"Years","years","Year","year","Yr","yr","Y","y"};
+static const char *month[]={"Months","months","Month","month","Mth","mth","mo","Mo"};
 static const char *day[]={"day","Day","days","Days","d","D"};
 static const char *hour[]={"hour","Hour","hours","Hours","h","H","hr","Hr"};
 static const char *min[]={"Minutes","minutes","Minute","minute","min","Min","m","M"};
@@ -69,24 +71,22 @@ public:
 	}
 	void print(){
 
-		std::cout <<"time\t";
+		std::cout <<std::setw(12)<<std::right<<"time[s]";
 		for(uint i=0;i<pointintime_list.size();i++)
 		{
 			if(i==0){
 				for(uint j=0; j<pointintime_list[i].second.size();j++)
 						{
-						std::cout <<"\tCovering for Facet " <<j;
+						std::cout <<"\t" <<std::setw(6)<<std::right <<"Facet " <<std::setw(6)<<std::right <<j;
 						}
 			}
 			std::cout<<std::endl;
-			std::cout <<(llong)pointintime_list[i].first;
+			std::cout <<std::setw(12)<<std::right <<(llong)pointintime_list[i].first ;
 
 			for(uint j=0; j<pointintime_list[i].second.size();j++)
 			{
 				//std::cout <<"\t\t" <<pointintime_list[i].second[j];
-				std::cout <<"\t\t" <<double(pointintime_list[i].second[j]); //for a better view in console
-				if(pointintime_list[i].second[j] <10000)
-					std::cout <<"\t";
+				std::cout <<"\t" <<std::setw(12)<<std::right <<pointintime_list[i].second[j];
 			}
 
 		}
@@ -96,7 +96,7 @@ public:
 		//std::string write = "/home/van/history"+std::to_string(num)+".txt";
 		std::ofstream outfile(filename,std::ofstream::out|std::ios::trunc);
 
-		outfile <<std::setw(12)<<std::right<<"time";
+		outfile <<std::setw(12)<<std::right<<"time[s]";
 		for(uint i=0;i<pointintime_list.size();i++)
 		{
 			if(i==0){
@@ -227,6 +227,9 @@ public:
 
 	// These can be given through input file only
 	int iterationNumber; //number of iterations, all of length simulationTimeMS so far
+	double maxTime;
+	std::string maxUnit;
+
 	double s1;
 	double s2;
 	double E_de;
@@ -235,12 +238,13 @@ public:
 
 	//These cannot be given, but are computed from other variables
 	int simulationTimeMS;
+	int maxTimeS;
 };
 
 //-----------------------------------------------------------
 //SimulationLinux.cpp
 std::tuple<bool, std::vector<int> >  simulateSub(Databuff *hitbuffer, int rank, int simutime);
-
+double convertunit(double simutime, std::string unit);
 //ProblemDef
 //SimulationHistory
 
@@ -263,7 +267,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, Databuff *physb
 void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHistory *history,int rank);
 
 void UpdateCovering(Databuff *hitbuffer, Databuff *hitbuffer_original, double time_step);
-void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum, double time_step, double simTime); //simTime in ms
+void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum);
 void UpdateCoveringphys(SimulationHistory *history, Databuff *hitbuffer_sum, Databuff *hitbuffer);
 //-----------------------------------------------------------
 //SimulationCalc.cpp

@@ -321,20 +321,26 @@ int main(int argc, char *argv[]) {
 			//----Update covering
 			if (rank == 0) {
 
-				double time_step = 0; // just some random value. We don't need the time step here. => adapt UpdateCovering function!
 				//double time_step = estimateTmin_RudiTest(&hitbuffer);
-				UpdateCovering(simHistory, &hitbuffer_sum, time_step, (t1-t0));
+				UpdateCovering(simHistory, &hitbuffer_sum);
 				//memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //TODO ist ths needed? -> my: Probably not
 
 				UpdateCoveringphys(simHistory, &hitbuffer_sum, &hitbuffer);
 				simHistory->coveringList.print();
 
 			}
+
 			//UpdateDesorptionRate(&hitbuffer);//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes //already doing this at beginning of iteration
 			if (rank == 0) std::cout << "ending iteration " << it <<std::endl;
 
+			if(simHistory->lastTime > p->maxTimeS){
+				std::cout <<"maximum simulation time reached" <<std::endl;
+				break;
+			}
+
 		} else {
 			std::cout << "Simulation time = 0.0 seconds. Nothing to do." << std::endl;
+			break;
 		}
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
