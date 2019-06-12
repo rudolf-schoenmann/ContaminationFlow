@@ -38,13 +38,19 @@ ProblemDef* p;
 
 //This function checks if the correct number of arguments has been passed
 //does not check their validity, e.g. right type such as double/string, correct filename, etc
+
+
+
+
+
+
 bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 	int i;
 	if(rank==0){
 		printf("argc: %d\n", argc);
 		for (i = 0; i < argc; i++) {
 			printf("argv[%d]: %s\n", i, argv[i]);
-	}
+		}
 	}
 	if(argc>2){ // list of parameters given
 		std::cout <<std::endl;
@@ -132,6 +138,9 @@ int main(int argc, char *argv[]) {
 
 		MPI_Finalize();
 		return 0;
+	}
+	else{
+		if (rank == 0){p->printInputfile();}
 	}
 
 	if (rank == 0) {
@@ -332,8 +341,9 @@ int main(int argc, char *argv[]) {
 	if(rank==0){
 		//----Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
 		std::cout << "Process 0 exporting final hitbuffer" << std::endl <<std::endl;
-		simHistory->print();
 		exportBuff(p->resultbufferPath,&hitbuffer_sum);//ToDo: &hitbuffer_sum ersetzen durch &hitbuffer_phys // Not really needed since memcpy is used anyways?
+		simHistory->print();
+		simHistory->write(p->resultpath);
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
 
