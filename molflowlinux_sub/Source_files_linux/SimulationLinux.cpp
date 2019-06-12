@@ -105,19 +105,27 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 //-----------------------------------------------------------
 //helpful functions
 double convertunit(double simutime, std::string unit){
+	for(int i=0; i<8;i++){
+		// year to seconds to MS
+			if(unit==year[i]) return (simutime*365.25*24.0*3600.0*1000.0);
+		}
+	for(int i=0; i<8;i++){
+		// month to seconds to MS
+			if(unit==month[i]) return (simutime*30.4375*24.0*3600.0*1000.0);
+		}
 	for(int i=0; i<6;i++){
-		// day to seconds
+		// day to seconds to MS
 		if(unit==day[i]) return (simutime*3600.0*24.0*1000.0);
 	}
 	for(int i=0; i<8;i++){
-		// hour to seconds
+		// hour to seconds to MS
 			if(unit==hour[i]) return (simutime*3600.0*1000.0);
 		}
 	for(int i=0; i<8;i++){
-		// minute to seconds
+		// minute to seconds to MS
 			if(unit==min[i]) return (simutime*60.0*1000.0);
 		}
-	//default: seconds
+	//default: seconds to MS
 	return simutime*1000.0;
 
 }
@@ -149,8 +157,12 @@ ProblemDef::ProblemDef(int argc, char *argv[]){
 	simulationTime = argc > 4? std::atof(argv[4]): 10.0;
 	unit = argc > 5? argv[5]:"s";
 
+	maxTime=10.0;
+	maxUnit="y";
+
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
-	std::cout << "Simulation time " << simulationTime << unit << " converted to " << simulationTimeMS << "ms" << std::endl;
+
+	maxTimeS=(int) (convertunit(maxTime, maxUnit)/1000.0 + 0.5);
 
 }
 
@@ -173,9 +185,12 @@ ProblemDef::ProblemDef(){
 	E_ad=1E-21;
 	d=1;
 
+	maxTime=10.0;
+	maxUnit="y";
+	maxTimeS=(int) (convertunit(maxTime, maxUnit)/1000.0 + 0.5);
+
 	simulationTime = 10.0;
 	unit = "s";
-
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
 }
 
@@ -188,7 +203,7 @@ void ProblemDef::readArg(int argc, char *argv[], int rank){
 	unit = argc > 5? argv[5]:unit;
 
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
-	if (rank==0) {std::cout << "Simulation time " << simulationTime << unit << " converted to " << simulationTimeMS << "ms" << std::endl;}
+
 	writeInputfile(resultpath+"/InputFile.txt",rank);
 
 }
@@ -214,6 +229,9 @@ void ProblemDef::readInputfile(std::string filename, int rank){
 		else if(stringIn == "unit"){is >> stringIn; unit=stringIn;}
 
 		else if(stringIn =="iterationNumber"){is >> intIn; iterationNumber=intIn;}
+		else if(stringIn == "maxTime") {is >>doubleIn; maxTime = doubleIn;}
+		else if(stringIn == "maxUnit"){is >> stringIn; maxUnit=stringIn;}
+
 		else if(stringIn =="s2"){is >> doubleIn; s2=doubleIn;}
 		else if(stringIn =="s1"){is >> doubleIn; s1=doubleIn;}
 		else if(stringIn =="d"){is >> doubleIn; d=doubleIn;}
@@ -226,7 +244,7 @@ void ProblemDef::readInputfile(std::string filename, int rank){
 
 	}
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
-	if (rank==0) {std::cout << "New Simulation time " << simulationTimeMS << "ms" << std::endl;}
+	maxTimeS=(int) (convertunit(maxTime, maxUnit)/1000.0 + 0.5);
 
 	writeInputfile(resultpath+"/InputFile.txt",rank);
 }
@@ -242,6 +260,9 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 	outfile <<"unit" <<'\t' <<unit <<std::endl;
 
 	outfile <<"iterationNumber" <<'\t' <<iterationNumber<<std::endl;
+	outfile <<"maxTime" <<'\t' <<maxTime <<std::endl;
+	outfile <<"maxUnit" <<'\t' <<maxUnit <<std::endl;
+
 	outfile <<"s1" <<'\t' <<s1<<std::endl;
 	outfile <<"s2" <<'\t' <<s2<<std::endl;
 	outfile <<"d" <<'\t' <<d<<std::endl;
@@ -257,16 +278,23 @@ void ProblemDef::printInputfile(){
 	std::cout  <<"resultPath" <<'\t' <<resultpath <<std::endl;
 	std::cout  <<"loadbufferPath" <<'\t' <<loadbufferPath <<std::endl;
 	std::cout  <<"hitbufferPath" <<'\t' <<hitbufferPath <<std::endl;
-	std::cout  <<"resultbufferPath" <<'\t' <<resultbufferPath <<std::endl;
+	std::cout  <<"resultbufferPath" <<'\t' <<resultbufferPath <<std::endl<<std::endl;
+
 	std::cout  <<"simulationTime" <<'\t' <<simulationTime <<std::endl;
 	std::cout  <<"unit" <<'\t' <<unit <<std::endl;
 
 	std::cout  <<"iterationNumber" <<'\t' <<iterationNumber<<std::endl;
+	std::cout  <<"maxTime" <<'\t' <<maxTime <<std::endl;
+	std::cout  <<"maxUnit" <<'\t' <<maxUnit <<std::endl<<std::endl;
+
 	std::cout  <<"s1" <<'\t' <<s1<<std::endl;
 	std::cout  <<"s2" <<'\t' <<s2<<std::endl;
 	std::cout  <<"d" <<'\t' <<d<<std::endl;
 	std::cout  <<"E_de" <<'\t' <<E_de<<std::endl;
 	std::cout  <<"E_ad" <<'\t' <<E_ad<<std::endl<<std::endl;
+
+	std::cout << "Simulation time " << simulationTime << unit << " converted to " << simulationTimeMS << "ms" << std::endl;
+	std::cout << "Maximum simulation time " << maxTime << maxUnit << " converted to " << maxTimeS << "s" << std::endl<<std::endl;
 
 }
 
