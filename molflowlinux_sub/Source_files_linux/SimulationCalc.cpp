@@ -223,11 +223,7 @@ double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This retur
 
 
 	desorption= 1.0/tau * pow(coverage,p->d) *exp(-p->E_de/(kb*temperature));
-	//std::cout<< "exp (" << -p->E_de << " /(kB*"<< temperature<< ")) = " <<  exp(-p->E_de/(kb*temperature)) << std::endl;//if (Desorption Energy/Temperature) >~ 1.02E-20J/K, desorption will be zero
-	/*if (desorption == 0){
-		std::cout << "Particles will stay forever here on this facet" << std::endl;
-	}*/
-
+	//if (Desorption Energy/Temperature) >~ 1.02E-20J/K, desorption will be zero
 	return desorption;
 }
 

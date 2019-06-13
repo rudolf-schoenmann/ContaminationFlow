@@ -70,6 +70,7 @@ void UpdateDesorptionRate (Databuff *hitbuffer){
 //-----------------------------------------------------------
 // copy sHandle values to buffer of sub process
 void UpdateMCSubHits(Databuff *databuffer, int rank) {
+	std::cout << "UpdateMCSubHits wurde aufgerufen." << std::endl;
 	BYTE *buffer;
 	GlobalHitBuffer *gHits;
 	//TEXTURE_MIN_MAX texture_limits_old[3];
@@ -170,6 +171,9 @@ void UpdateMCSubHits(Databuff *databuffer, int rank) {
 					facetHitBuffer->hit.sum_v_ort = f.tmpCounter[m].hit.sum_v_ort;
 					facetHitBuffer->hit.sum_1_per_velocity = f.tmpCounter[m].hit.sum_1_per_velocity;
 					facetHitBuffer->hit.covering= f.tmpCounter[m].hit.covering; // -facetHitBuffer->hit.covering;
+					if (f.globalId == 2){
+						std::cout << "Writing Hits in Subbuffer: Facet 2: hit.covering = " << facetHitBuffer->hit.covering << std::endl;
+					}
 					//facetHitBuffer->hit.covering= 0.0;
 				}
 
@@ -257,6 +261,7 @@ void UpdateMCSubHits(Databuff *databuffer, int rank) {
 					}
 
 			} // End if(hitted)
+			/*
 			else // if not hitted, initialize to zero
 			{
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) {//hits
@@ -268,7 +273,7 @@ void UpdateMCSubHits(Databuff *databuffer, int rank) {
 					facetHitBuffer->hit.sum_1_per_ort_velocity = 0.0;
 					facetHitBuffer->hit.sum_v_ort = 0.0;
 					facetHitBuffer->hit.sum_1_per_velocity = 0.0;
-					facetHitBuffer->hit.covering= 0.0;
+					//facetHitBuffer->hit.covering= 0.0; //If a facet is not hit, its covering stays the same instead ob being zero!
 				}
 
 				if (f.sh.isProfile) {//profile
@@ -351,7 +356,7 @@ void UpdateMCSubHits(Databuff *databuffer, int rank) {
 
 					}
 			}//end else
-
+			*/
 		} // End nbFacet
 	} // End nbSuper
 

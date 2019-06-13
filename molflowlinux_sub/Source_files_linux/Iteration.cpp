@@ -173,7 +173,7 @@ void setCoveringThreshold(Databuff *hitbuffer, int size, int rank){
 				else
 					{cov_sim=facetHitBuffer->hit.covering/num_sim;}
 
-				sHandle-> coveringThreshold[getFacetIndex(&f)]=facetHitBuffer->hit.covering-cov_sim;
+				sHandle->coveringThreshold[getFacetIndex(&f)]=facetHitBuffer->hit.covering-cov_sim;
 			}
 	}
 }

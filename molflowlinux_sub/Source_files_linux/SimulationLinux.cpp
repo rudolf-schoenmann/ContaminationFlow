@@ -76,6 +76,7 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 	// Save simulation results in hitbuffer
 	UpdateMCSubHits(hitbuffer, rank);
 
+
 	// Update quantaties for contamination
 	//UpdateSticking();
 	//estimateTmin();
