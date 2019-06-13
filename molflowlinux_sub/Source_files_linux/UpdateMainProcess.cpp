@@ -41,15 +41,10 @@ double preTestTimeStep(SimulationHistory *history, Databuff *hitbuffer_sum, doub
 	bool decreased_time_step, increased_test_step;
 	decreased_time_step = increased_test_step = false;
 	
-	//Debugging
-	test_time_step = test_time_step*1E3;
-
-
 	
-
 	//Man könnte sich auch den 'increase time step check' pro Facet sparen, indem man den time step sofort erhöht, wenn man sieht, dass ein virtuelles Testteilchen weniger als einem realen Teilchen entspricht:
 	if (test_time_step*Krealvirt < 1){
-		test_time_step = test_time_step * (1/(test_time_step*Krealvirt)) *1E3; // 10 is just a chosen random value to increase the output per iteration
+		test_time_step = test_time_step * (1/(test_time_step*Krealvirt)) *1E3; // 1E3 is just a chosen random value to increase the output per iteration
 		std::cout << "increased time step to " << test_time_step << " s." << std::endl;
 	}
 	//Damit hat man aber den time step stärker nach unten hin begrenzt, als mit dem 'increase time step check' pro Facet. Mit dem 'increase time step check' pro Facet kann es auch ein Verhältnis von realen zu Testteilchen
@@ -784,11 +779,6 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 					f.tmpCounter[m].hit.sum_1_per_velocity = facetHitBuffer->hit.sum_1_per_velocity += facetHitSub->hit.sum_1_per_velocity;
 					//facetHitBuffer->hit.covering += facetHitSub->hit.covering; //We do that in another way.
 
-					if(f.globalId == 2){
-						std::cout << "Facet 2: covering_phys before = " << covering_phys << std::endl;
-						std::cout << "Facet 2: covering after simulation (before scaling with Krealvirt) = " << covering_sum << std::endl;
-					}
-
 					if (facetHitSub->hit.covering > covering_phys){
 					facetHitBuffer->hit.covering += (covering_sum - covering_phys);
 					}
@@ -797,10 +787,6 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 							facetHitBuffer->hit.covering -= (covering_phys- covering_sum);
 							}
 						else{
-							std::cout << "Jetzt ist covering =< 0 für Facet " << f.globalId << std::endl;
-							std::cout << "Ist covering wirklich genau Null?" << std::endl;
-							std::cout << "covering = " << facetHitBuffer->hit.covering - (covering_phys- covering_sum) << std::endl;
-							std::cout << "covering wird 0 gesetzt." << std::endl;
 							facetHitBuffer->hit.covering = 0;//Counter cannot be negative! Maybe we could interrupt the iteration here?
 						}
 					}

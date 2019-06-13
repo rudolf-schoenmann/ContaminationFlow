@@ -70,7 +70,6 @@ void UpdateDesorptionRate (Databuff *hitbuffer){
 //-----------------------------------------------------------
 // copy sHandle values to buffer of sub process
 void UpdateMCSubHits(Databuff *databuffer, int rank) {
-	std::cout << "UpdateMCSubHits wurde aufgerufen." << std::endl;
 	BYTE *buffer;
 	GlobalHitBuffer *gHits;
 	//TEXTURE_MIN_MAX texture_limits_old[3];
@@ -170,11 +169,7 @@ void UpdateMCSubHits(Databuff *databuffer, int rank) {
 					facetHitBuffer->hit.sum_1_per_ort_velocity = f.tmpCounter[m].hit.sum_1_per_ort_velocity;
 					facetHitBuffer->hit.sum_v_ort = f.tmpCounter[m].hit.sum_v_ort;
 					facetHitBuffer->hit.sum_1_per_velocity = f.tmpCounter[m].hit.sum_1_per_velocity;
-					facetHitBuffer->hit.covering= f.tmpCounter[m].hit.covering; // -facetHitBuffer->hit.covering;
-					if (f.globalId == 2){
-						std::cout << "Writing Hits in Subbuffer: Facet 2: hit.covering = " << facetHitBuffer->hit.covering << std::endl;
-					}
-					//facetHitBuffer->hit.covering= 0.0;
+					facetHitBuffer->hit.covering= f.tmpCounter[m].hit.covering;
 				}
 
 				if (f.sh.isProfile) {//(MY) save profile
