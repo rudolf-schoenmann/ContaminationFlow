@@ -48,6 +48,11 @@ public:
 	std::vector< std::pair<double,std::vector<T>> > pointintime_list;
 	std::vector<T> currentList;
 
+	void reset(){
+		pointintime_list.clear();
+		currentList.clear();
+	}
+
 	void initCurrent(unsigned int numFacet){
 		for(unsigned int i=0; i<numFacet; i++){
 			currentList.push_back(0.0);
@@ -203,6 +208,7 @@ public:
 	void appendList(Databuff *hitbuffer, double time=-1.0);
 	void print();
 	void write(std::string path);
+	void updateHistory(Databuff *hitbuffer);
 
 
 };
@@ -259,8 +265,6 @@ void UpdateDesorptionRate (Databuff *hitbuffer);
 void UpdateMCSubHits(Databuff *databuffer, int rank);
 
 void initbufftozero(Databuff *databuffer);
-void initcounterstozero(Databuff *databuffer);
-
 
 //-----------------------------------------------------------
 //UpdateMainProcess.cpp

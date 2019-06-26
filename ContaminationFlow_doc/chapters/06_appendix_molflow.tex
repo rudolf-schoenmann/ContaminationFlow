@@ -14,11 +14,13 @@
 
 \subsubsection*{Number of carbon equivalent particles of one monolayer}
 \begin{equation}
+	\label{eq:nmono}
 	N_{mono}=\frac{\text{Area of Facet [m$^2$]}}{carbondiameter^2}
 \end{equation}
 
 \subsubsection*{Carbon equivalent relative mass factor}
 \begin{equation}
+	\label{eq:nsurf}
 	\begin{split}
 	\Delta N_{surf}&=\frac{\text{carbon equivalent gas mass}}{12.011}\\
 	N_{surf}&=\sum\limits_{\substack{\text{adsorbed}\\\text{particles}}}\ \Delta N_{surf}\\
@@ -27,6 +29,7 @@
 
 \subsubsection*{Coverage $\theta$}
 \begin{equation}
+	\label{eq:cov}
 	\begin{split}
 		\theta&=\frac{N_{surf}}{N_{mono}}
 	\end{split}
@@ -34,6 +37,7 @@
 
 \subsubsection*{Sticking factor $sc$}
 \begin{equation}
+	\label{eq:sc}
 	sc(\theta)=
 	\begin{cases}
 		\begin{split}
@@ -45,18 +49,240 @@
 
 \subsubsection*{Desorption rate $des$}
 \begin{equation}
+	\label{eq:des}
 	des=\frac{1}{\tau}\ \theta^d\ \exp({-\frac{E_{de}}{K_b T}})\cdot \frac{N_{mono}}{\Delta N_{surf}} \cdot K_b T
 \end{equation}
 
 \subsubsection*{Outgassing rate $out$}
 \begin{equation}
-	des=\frac{\text{Facet outgassing}}{K_b T}
+	\label{eq:out}
+	out=\frac{\text{Facet outgassing}}{K_b T}
 \end{equation}
 
 \subsubsection*{$\text{K}_{\text{real}/\text{virtual}}$}
 \begin{equation}
-\text{K}_{\text{real}/\text{virtual}}=\frac{\sum\limits_{\text{facets}}(out + des)}{\text{number of total desorbed molecules}}
+	\label{eq:krealvirt}
+	\text{K}_{\text{real}/\text{virtual}}=\frac{\sum\limits_{\text{facets}}(out + des)}{\text{number of total desorbed molecules}}
 \end{equation}
 
+\chapter{Overview of new Classes and Functions}
+\section{New Classes}
 
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}SimulationHistory}\\
+\hline
+\rule{0pt}{3ex} coveringList& of class HistoryList, stores covering history\\
+\rule{0pt}{3ex} numFacet& number of Facets\\
+\rule{0pt}{3ex} \multirow{2}{*}{nbDesorbed\_old}& number of total desorbed molecules of previous iteration\\
+&\qquad$\Rightarrow$ To calculate difference between consecutive iterations\\
+\rule{0pt}{3ex} flightTime& number of Facets\\
+\rule{0pt}{3ex} nParticles& Simulated flight time, to calculate average flight time\\
+\rule{0pt}{3ex} numFacet& Simulated particles, to calculate average flight time\\
+\rule{0pt}{3ex} lastTime& Total simulated time\\
+\hline
+\rule{0pt}{3ex} updateHistory()& Reset and update from hitbuffer\\
+\rule{0pt}{3ex} appendList()& Updates coveringList from hitbuffer\\
+\rule{0pt}{3ex} print()& Print to terminal\\
+\rule{0pt}{3ex} write()& Write to file\\
+\hline
+\multicolumn{2}{l}{}\\[1ex]
+\hline
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}HistoryList}\\
+\hline
+\rule{0pt}{3ex} pointintime\_list& list containing history of time steps and respective facet values\\
+\rule{0pt}{3ex} currentList& list containing facet values at current step\\
+\hline
+\rule{0pt}{3ex} reset()& Resets lists\\
+\rule{0pt}{3ex} initCurrent()& Initializes size of lists\\
+\rule{0pt}{3ex} print()& Print to terminal\\
+\rule{0pt}{3ex} write()& Write to file\\
+\rule{0pt}{3ex} read()& Read from file\\
+\rule{0pt}{3ex} empty()& Checks if pointintime\_list is empty\\
+\rule{0pt}{3ex} setCurrentList()& Set value of desired facet in currentList\\
+\rule{0pt}{3ex} \multirow{2}{*}{getCurrent()}& Get value of desired facet from currentList, or\\
+& Get all facet values from last entry in pointintime\_list\\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}ProblemDef}\\
+\hline
+\rule{0pt}{3ex} resultpath& Path of result folder\\
+\rule{0pt}{3ex} loadbufferPath& Path of loadbuffer file\\
+\rule{0pt}{3ex} hitbufferPath& Path of hitbuffer file\\
+\rule{0pt}{3ex} simulationTime, unit& \multirow{2}{*}{Computation time of each iteration in milliseconds}\\
+\quad$\Rightarrow$simulationTimeMS&\\
+\rule{0pt}{3ex} maxTime, maxUnit& \multirow{2}{*}{Maximal total simulated time in seconds}\\
+\quad$\Rightarrow$maxTimeS&\\
+\rule{0pt}{3ex} iterationNumber& Number of iterations\\
+\rule{0pt}{3ex} s1, s2, E\_de, E\_ad, d& Parameters for simulation, see equation \ref{eq:sc} and \ref{eq:des}\\
+\hline
+\rule{0pt}{3ex} readArg()& Initialization from command line arguments\\
+\rule{0pt}{3ex} readInputfile()& Initialization from input file\\
+\rule{0pt}{3ex} printInputfile()& Print to terminal\\
+\rule{0pt}{3ex} writeInputfile()& Write to file\\
+\hline
+\end{tabular}
+\end{center}
+
+\section{New Functions}
+\subsection{molflowlinux\_main.cpp}
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}Preprocessing}\\
+\hline
+\rule{0pt}{3ex} \multirow{2}{*}{parametercheck()}& Checks input parameters from\\&command line or input file\\
+\rule{0pt}{3ex} importBuff()& Import load- and hitbuffer to main process\\
+\rule{0pt}{3ex} MPI\_Bcast()& Send loadbuffer to sub processes\\
+\rule{0pt}{3ex} LoadSimulation()& Load geometry from loadbuffer\\
+\rule{0pt}{3ex} initCoveringThresh()& Initialize covering threshold\\
+\rule{0pt}{3ex} simHistory=SimulationHistory()& Initialize simulation history\\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}Simulation Loop}\\
+\hline
+\rule{0pt}{3ex} initbufftozero()& Reset hitbuffer except covering\\
+\rule{0pt}{3ex} MPI\_Bcast()& Send hitbuffer to sub processes\\
+\rule{0pt}{3ex} setCoveringThreshold()& Sets covering threshold for each facet\\
+\rule{0pt}{3ex} simulateSub()& Simulation on sub processes\\
+\rule{0pt}{3ex} \multirow{2}{*}{MPI\_Send(), MPI\_Recv}& Send sub hitbuffer, simHistory$\rightarrow$flighttime and\\
+&simHistory$\rightarrow$nbParticles to main process\\
+\rule{0pt}{3ex} \multirow{2}{*}{UpdateMCMainHits()}& Add simulation results from sub hitbuffer\\&to main hitbuffer\\
+\rule{0pt}{3ex} UpdateCovering()& Calculate and save new covering to simHistory\\
+\rule{0pt}{3ex} UpdateCoveringphys()& Saves current covering to hitbuffer\\
+\hline
+\multicolumn{2}{|c|}{\rule{0pt}{2.5ex}End simulation if maximum iteration number or simulation time is reached}\\
+\hline
+\multicolumn{2}{l}{}\\[1ex]
+\hline
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}Postprocessing}\\
+\hline
+\rule{0pt}{3ex} exportBuff()& Export final hitbuffer\\
+\rule{0pt}{3ex} simHistory$\rightarrow$write()& Export simulation history\\
+\hline
+\end{tabular}
+\end{center}
+\subsection{SimulationLinux.cpp}
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}simulateSub()}\\
+\hline
+\rule{0pt}{3ex} Input& hitbuffer, rank, simutime\\
+\rule{0pt}{3ex} \multirow{2}{*}{Output}& eos: indicates whether the simulation was ended early\\
+&facetNum: facets that have reached their covering threshold\\
+\hline
+\rule{0pt}{3ex} \multirow{4}{*}{Pipeline}& Update sticking and desorption rate from hitbuffer\\
+&Simulate until simutime or covering threshold reached\\
+&\qquad$\Rightarrow$ Avoid covering getting negative\\
+&Update hitbuffer from simulation\\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Calculations in SimulationCalc.cpp etc.}
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}SimulationCalc.cpp}\\
+\hline
+\rule{0pt}{3ex} getCovering()& Get covering from hitbuffer\\
+\rule{0pt}{3ex} \multirow{2}{*}{getnbDesorbed()}& Get number of total desorbed\\
+&molecules from hitbuffer\\
+\rule{0pt}{3ex} calcNmono()& see equation \ref{eq:nmono} \\
+\rule{0pt}{3ex} calcdNsurf()& see equation \ref{eq:nsurf} \\
+\rule{0pt}{3ex} calcCoverage()& see equation \ref{eq:cov} \\
+\rule{0pt}{3ex} calcStickingnew()& see equation \ref{eq:sc} \\
+\rule{0pt}{3ex} calcDesorption(), calcDesorptionRate()& see equation \ref{eq:des} \\
+\rule{0pt}{3ex} GetMoleculesPerTP()& see equation \ref{eq:krealvirt} \\
+\rule{0pt}{3ex} \multirow{2}{*}{calctotalDesorption}& calculates desorption for\\
+&\codew{startFromSource()} \\
+\rule{0pt}{3ex} calcPressure(), calcParticleDensity()& has to be verified \\
+\hline
+\multicolumn{2}{l}{}\\[1ex]
+\hline
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}worker.cpp}\\
+\hline
+\rule{0pt}{3ex}\multirow{2}{*}{ CalcTotalOutgassingWorker()}& see equation \ref{eq:out}, calculates desorption\\
+&for \codew{startFromSource()} \\
+\hline
+\multicolumn{2}{l}{}\\[1ex]
+\hline
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}SimulationLinux.cpp}\\
+\hline
+\rule{0pt}{3ex} covertunit()& Converts simutime*unit to milliseconds\\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{UpdateSubProcess.cpp}
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}Update sHandle paramters from hitbuffer}\\
+\hline
+\rule{0pt}{3ex} UpdateSticking()& Updates sticking\\
+\rule{0pt}{3ex} UpdateDesorptionRate()& Updates desorption rate \\
+\hline
+\multicolumn{2}{l}{}\\[1ex]
+\hline
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}Update hitbuffer}\\
+\hline
+\rule{0pt}{3ex} initbufftozero()& Sets hitbuffer except covering to zero\\
+\rule{0pt}{3ex} UpdateMCSubHits()& Saves simulation results from sHandle into hitbuffer\\
+\hline
+\end{tabular}
+\end{center}
+\newpage
+\subsection{UpdateMainProcess.cpp}
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}Update Covering}\\
+\hline
+\rule{0pt}{3ex} preTestTimeStep()& Adapts time\_step if covering would get negative\\
+\rule{0pt}{3ex} \multirow{2}{*}{UpdateCovering()}& Uses time\_step and Krealvirt to calculate new covering\\
+& Saved to simHistory$\rightarrow$coveringList\\
+\rule{0pt}{3ex} UpdateCoveringphys()& Saves current covering to hitbuffer\\
+\hline
+\multicolumn{2}{l}{}\\[1ex]
+\hline
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}Update hitbuffer}\\
+\hline
+\rule{0pt}{3ex} UpdateMCMainHits()& Add simulation results from sub hitbuffer to main hitbuffer\\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Iteration.cpp}
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}Calculation of time\_step}\\
+\hline
+\rule{0pt}{3ex} estimateAverageFlightTime()& simHistory$\rightarrow$flightTime/simHistory$\rightarrow$nParticles\\
+\rule{0pt}{3ex} estimateTmin\_RudiTest()&average path length/average velocity\\
+\hline
+\multicolumn{2}{l}{}\\[1ex]
+\hline
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}Set Covering Threshold to avoid negative covering}\\
+\hline
+\rule{0pt}{3ex} initCoveringThresh()& Initializes size of covering threshold vector\\
+\rule{0pt}{3ex} setCoveringThreshold()& Sets covering threshold for each facet\\
+\hline
+\end{tabular}
+\end{center}
 

@@ -370,7 +370,7 @@ void UpdateMCSubHits(Databuff *databuffer, int rank) {
 
 //-----------------------------------------------------------
 //reset of counters/buffers
-
+/*
 void initcounterstozero(Databuff *databuffer){
 	BYTE *buffer;
 	GlobalHitBuffer *gHits;
@@ -403,7 +403,7 @@ void initcounterstozero(Databuff *databuffer){
 		}
 	}
 
-}
+}*/
 
 void initbufftozero(Databuff *databuffer){
 //Wahrscheinlich müssten hier auch noch alle Profiles und Textures resetet werden!

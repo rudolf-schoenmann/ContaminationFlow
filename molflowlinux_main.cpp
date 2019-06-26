@@ -222,9 +222,10 @@ int main(int argc, char *argv[]) {
 			simHistory = new SimulationHistory (&hitbuffer);
 			//TODO: maybe add possibility of covering.txt file input
 			//simHistory->nbDesorbed_old = getnbDesorbed(&hitbuffer_sum); // added to constructor
-
-			initcounterstozero(&hitbuffer);
 			initbufftozero(&hitbuffer);
+		}
+		else{
+			simHistory = new SimulationHistory();
 		}
 	}
 
@@ -241,6 +242,9 @@ int main(int argc, char *argv[]) {
 			}
 
 			//----Send hitbuffer content to all subprocesses
+			// reset buffer TODO My 0522 was not there before, is this correct?
+			initbufftozero(&hitbuffer);
+
 			MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 			MPI_Barrier(MPI_COMM_WORLD);
 
@@ -253,9 +257,6 @@ int main(int argc, char *argv[]) {
 			//----Simulation on subprocesses
 			if (rank != 0) {
 				/* do work in any remaining processes */
-				// reset buffer TODO My 0522 was not there before, is this correct?
-				initcounterstozero(&hitbuffer);
-				initbufftozero(&hitbuffer);
 				// calc covering for threshold
 				setCoveringThreshold(&hitbuffer, world_size, rank);
 
@@ -305,7 +306,7 @@ int main(int argc, char *argv[]) {
 					std::cout << "Updated hitbuffer with process " << i <<std::endl << std::endl;
 
 					double old_flightTime=simHistory->flightTime;
-					int old_nParticles = simHistory->nParticles;
+					int old_nParticles = simHistory->nParticles; //TODO: RESET
 					MPI_Recv(&simHistory->flightTime, 1, MPI::DOUBLE, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 					MPI_Recv(&simHistory->nParticles, 1, MPI::INT, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 					simHistory->flightTime += old_flightTime;

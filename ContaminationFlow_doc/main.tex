@@ -24,6 +24,11 @@
 \usetikzlibrary{positioning,shapes,arrows,calc}
 
 \usepackage{amsmath}
+\usepackage{multirow}
+\hypersetup{backref=true,       
+                    pagebackref=true,               
+                    hyperindex=true,                
+                    colorlinks=true}
 
 %\usepackage[noframe]{showframe}
 
@@ -66,7 +71,7 @@
 %\input{pages/acknowledgements}
 %\input{pages/abstract}
 \microtypesetup{protrusion=false}
-\tableofcontents{}
+{\hypersetup{linkcolor=black}\tableofcontents{}}
 \microtypesetup{protrusion=true}
 
 \mainmatter{}

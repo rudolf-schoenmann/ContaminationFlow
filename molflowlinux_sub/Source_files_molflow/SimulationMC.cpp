@@ -701,10 +701,6 @@ bool StartFromSource() {
 	//	else {std::cout <<"Covering "<<src->tmpCounter[m].hit.covering <<std::endl; }
 	//}
 
-	//save values before starting new particle
-	simHistory->flightTime+=sHandle->currentParticle.flightTime;
-	simHistory->nParticles+=1;
-
 	sHandle->currentParticle.lastHitFacet = src;
 	//sHandle->currentParticle.distanceTraveled = 0.0;  //for mean free path calculations
 	//sHandle->currentParticle.flightTime = sHandle->desorptionStartTime + (sHandle->desorptionStopTime - sHandle->desorptionStartTime)*rnd();
@@ -1312,6 +1308,10 @@ void RecordAbsorb(SubprocessFacet *iFacet) {
 	//otherwise orthvelocity zero
 	double ortVelocity = sHandle->currentParticle.velocity*abs(Dot(sHandle->currentParticle.direction, iFacet->sh.N));
 	//double ortVelocity = sHandle->currentParticle.velocity*abs(Dot(sHandle->currentParticle.direction, iFacet->sh.N));
+
+	//save values after absorb
+	simHistory->flightTime+=sHandle->currentParticle.flightTime;
+	simHistory->nParticles+=1;
 
 	IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 1, 0, 1, 2.0 / ortVelocity, (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity);
 	LogHit(iFacet);

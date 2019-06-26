@@ -284,7 +284,7 @@ void UpdateCoveringphys(SimulationHistory *history, Databuff *hitbuffer_sum, Dat
 	}
 
 	history->flightTime=0.0;
-	history->nParticles=-1;
+	history->nParticles=0;
 }
 
 //-----------------------------------------------------------
@@ -603,7 +603,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, Databuff *physb
 	}
 
 
-	ResetTmpCounters();
+	//ResetTmpCounters();
 	//extern char* GetSimuStatus();
 	//SetState(NULL, GetSimuStatus(), false, true); // (Rudi) Don't need that.
 

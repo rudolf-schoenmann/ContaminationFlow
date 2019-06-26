@@ -37,8 +37,8 @@ extern Simulation *sHandle;
 // Simulation on subprocess
 std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
-	//TODO possiblility to overwrite instead of new
-	simHistory = new SimulationHistory (hitbuffer);
+	//Replaced consrtuctor with update function
+	simHistory->updateHistory(hitbuffer);
 
 	//timesteps
 	double timestep=1000; // desired length per iteration for simulation, here hardcoded to 1 second
@@ -304,7 +304,7 @@ void ProblemDef::printInputfile(){
 
 SimulationHistory::SimulationHistory(){
 	numFacet=0;
-	nParticles=-1;
+	nParticles=0;
 	flightTime=0.0;
 	nbDesorbed_old=0;
 	lastTime=0.0;
@@ -314,7 +314,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer){
 	std::vector<llong> currentstep;
 	currentstep =std::vector<llong> ();
 	numFacet=0;
-	nParticles=-1;
+	nParticles=0;
 	flightTime=0.0;
 	lastTime=0.0;
 
@@ -330,6 +330,32 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer){
 				numFacet+=1;
 			}
 	}
+
+	coveringList.appendList(currentstep, 0);
+	coveringList.initCurrent(numFacet);
+}
+
+void SimulationHistory::updateHistory(Databuff *hitbuffer){
+	std::vector<llong> currentstep;
+	currentstep =std::vector<llong> ();
+	numFacet=0;
+	nParticles=0;
+	flightTime=0.0;
+	lastTime=0.0;
+
+	nbDesorbed_old= getnbDesorbed(hitbuffer);
+
+
+	llong covering;
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+			for (SubprocessFacet& f : sHandle->structures[s].facets) {
+				covering = getCovering(&f, hitbuffer);
+				currentstep.push_back(covering);
+				f.tmpCounter[0].hit.covering=covering;
+				numFacet+=1;
+			}
+	}
+	coveringList.reset();
 	coveringList.appendList(currentstep, 0);
 	coveringList.initCurrent(numFacet);
 }

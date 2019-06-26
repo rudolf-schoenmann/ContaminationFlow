@@ -62,7 +62,7 @@ buffer = hitbuffer->buff;
 	double v_avg = sum_v_avg/normalization_factor_v;
 	std::cout << "v_avg = sum_v_avg/normalization_factor_v = " << sum_v_avg << "/" << normalization_factor_v << std::endl;
 	double av_path_length = sHandle->tmpGlobalResult.distTraveled_total*0.01/sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;// The 0.01 is because the distance should be saved in cm. ToDo: Check up, if that's right.
-	std::cout <<  "av_path_length = Handle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.hit.nbMCHit = " << sHandle->tmpGlobalResult.distTraveled_total << "/" << sHandle->tmpGlobalResult.globalHits.hit.nbMCHit << std::endl;
+	std::cout <<  "av_path_length = sHandle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.hit.nbMCHit = " << sHandle->tmpGlobalResult.distTraveled_total << "/" << sHandle->tmpGlobalResult.globalHits.hit.nbMCHit << std::endl;
 	std::cout << "tmin = av_path_length /v_avg = " << av_path_length << " / " << v_avg << std::endl;
 	tmin = av_path_length /v_avg;
 
