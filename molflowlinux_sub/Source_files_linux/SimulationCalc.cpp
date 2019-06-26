@@ -220,7 +220,7 @@ double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This retur
 	if(coverage==0){
 		return 0.0;
 	}
-
+	double tau=h/(kb*temperature);
 
 	desorption= 1.0/tau * pow(coverage,p->d) *exp(-p->E_de/(kb*temperature));
 	//if (Desorption Energy/Temperature) >~ 1.02E-20J/K, desorption will be zero
@@ -229,7 +229,7 @@ double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This retur
 
 double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer) {//This returns ((d'coverage')/dt)de * (Nmono/dNSurf) * kb*T. So to speak desorption rate in units of [Pa m³/s]
 	double desorption = calcDesorption(iFacet, hitbuffer);
-	double desorptionRate = desorption * (calcNmono(iFacet) / calcdNsurf()) * 1.38E-23* iFacet->sh.temperature;
+	double desorptionRate = desorption * (calcNmono(iFacet) / calcdNsurf()) * kb* iFacet->sh.temperature;
 	return desorptionRate;
 }
 

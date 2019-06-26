@@ -36,7 +36,8 @@ static const char *min[]={"Minutes","minutes","Minute","minute","min","Min","m",
 
 const double carbondiameter = 2 *76E-12;
 const double kb = 1.38E-23;
-const double tau = 1E-13;
+//const double tau = 1E-13;
+const double h= 6.626E-34;
 
 template <typename T> class HistoryList{
 public:

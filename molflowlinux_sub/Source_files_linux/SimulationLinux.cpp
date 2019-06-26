@@ -41,7 +41,7 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 	simHistory->updateHistory(hitbuffer);
 
 	//timesteps
-	double timestep=1000; // desired length per iteration for simulation, here hardcoded to 1 second
+	double timestep=500; // desired length per iteration for simulation, here hardcoded to 1 second
 	double realtimestep; // actual time elapsed for iteration step
 
 
@@ -62,15 +62,17 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 
 	// Run Simulation for timestep milliseconds
 	for(double i=0; i<(double)(simutime) && !eos;i+=realtimestep){
+		if(i>=(double(simutime)*0.99)){break;}
 		if(simHistory->coveringList.empty()){
 			simHistory->appendList(hitbuffer,i); //append list with initial covering //TODO offset if covering list does not end with timestep 0
 			}
 
 		if(i+timestep>=(double)(simutime)){ //last timestep
 			std::tie(eos,realtimestep) = SimulationRun((double)simutime-i, hitbuffer, rank); // Some additional simulation, as iteration step  does not run for exactly timestep ms
-			break;
 			}
-		std::tie(eos, realtimestep) = SimulationRun(timestep, hitbuffer, rank);      // Run during timestep ms, performs MC steps
+		else{
+			std::tie(eos, realtimestep) = SimulationRun(timestep, hitbuffer, rank);      // Run during timestep ms, performs MC steps
+		}
 	}
 
 	// Save simulation results in hitbuffer
