@@ -11,7 +11,7 @@
 	{
 		\textbf{ContaminationFlow Windows}
 		\nodepart{second}
-			\begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Main process \item GUI \item Create Geometry \item Set parameters \item View profiles \end{itemize}
+			\begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item GUI \item Create Geometry \item Set parameters \item View profiles \end{itemize}
 	};
 
 	\node (Loadbuffer)[textboxsmall, rectangle split, rectangle split parts=2] at (5.5,4)
@@ -30,7 +30,7 @@
 	{
 		\textbf{ContaminationFlow Linux}
 		\nodepart{second}
-			\begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Worker processes \item Command line \item Parallel simulation \item Update of hitbuffer \end{itemize}	
+			\begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Command line \item Parallel simulation \item Update of hitbuffer \end{itemize}	
 	};
 
 	%\draw[->, line width=0.04cm] (2.15,3.2) -- (3.85,3.2);
@@ -67,10 +67,10 @@
 General structure for ContaminationFlow simulation
 \begin{itemize}[noitemsep,topsep=2pt]
 \item Code adapted from Molflow
-\item ContaminationFlow Windows used to create Geometry 
-\item ContaminationFlow Linux used for simulation and calculation of counters, profiles, etc.
+\item ContaminationFlow Windows primary used to create Geometry and to view simulation results through the GUI
+\item ContaminationFlow Linux primary used for simulation and calculation of counters, profiles, etc.
 \item Loadbuffer contains information of geometry
 \item Hitbuffer contains information such as hit counters, profiles, etc.
-\item Import and export of buffer files for communication between Molflow Windows and Molflow Linux
-\item Import and export of covering history for both linux and windows
+\item Import and export of buffer files for communication between ContaminationFlow Windows and ContaminationFlow Linux
+\item Export of simulationHistory for ContaminationFlow Linux
 \end{itemize}

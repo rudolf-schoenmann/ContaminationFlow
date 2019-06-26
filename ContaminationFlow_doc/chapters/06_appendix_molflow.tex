@@ -3,13 +3,31 @@
 
 \chapter{Formulas for new Quantities}\label{chapter:Formulas}
 
-
-\subsubsection*{Covering $\theta$}
+\subsubsection*{Constants}
 \begin{equation}
 	\begin{split}
-		\Delta N_{surf}&=\frac{m}{12.011}\\
-		N_{surf}&=\sum\limits_{\substack{\text{adsorbed}\\\text{particles}}}\ \Delta N_{surf}\\
-		N_{mono}&=\frac{\text{Area of Facet[m$^2$]}}{(76 \cdot 10^{-12}\text{m})^2}\\
+	carbondiameter&=2 \cdot 76\text{E}-12\\
+	K_b&=1.38\text{E}-23\\
+	\tau&=1.0\text{E}-13\\
+	\end{split}
+\end{equation}
+
+\subsubsection*{Number of carbon equivalent particles of one monolayer}
+\begin{equation}
+	N_{mono}=\frac{\text{Area of Facet [m$^2$]}}{carbondiameter^2}
+\end{equation}
+
+\subsubsection*{Carbon equivalent relative mass factor}
+\begin{equation}
+	\begin{split}
+	\Delta N_{surf}&=\frac{\text{carbon equivalent gas mass}}{12.011}\\
+	N_{surf}&=\sum\limits_{\substack{\text{adsorbed}\\\text{particles}}}\ \Delta N_{surf}\\
+	\end{split}
+\end{equation}
+
+\subsubsection*{Coverage $\theta$}
+\begin{equation}
+	\begin{split}
 		\theta&=\frac{N_{surf}}{N_{mono}}
 	\end{split}
 \end{equation}
@@ -18,14 +36,26 @@
 \begin{equation}
 	sc(\theta)=
 	\begin{cases}
-		(s_1 (1-\theta) + s_2 \theta) \cdot (1 -  \exp({-\frac{E_{ad}}{K_b T}})), & \text{if}\ \theta < 1\\
-		s_2 (1 -  \exp({-\frac{E_{ad}}{K_b T}})), & \text{otherwise}.
+		\begin{split}
+		(s_1 (1-\theta) + s_2 \theta) \cdot (1 -  \exp({-\frac{E_{ad}}{K_b T}}))&, \text{\quad if}\ \theta < 1\\
+		s_2  \cdot (1 -  \exp({-\frac{E_{ad}}{K_b T}}))&,  \text{\quad otherwise}.
+		\end{split}
 	\end{cases}
 \end{equation}
 
 \subsubsection*{Desorption rate $des$}
 \begin{equation}
-	des=\frac{1}{\tau}\ \theta^d\ \exp({-\frac{E_{de}}{K_b T}})\cdot \frac{N_{mono}}{\Delta N_{surf}}.
+	des=\frac{1}{\tau}\ \theta^d\ \exp({-\frac{E_{de}}{K_b T}})\cdot \frac{N_{mono}}{\Delta N_{surf}} \cdot K_b T
+\end{equation}
+
+\subsubsection*{Outgassing rate $out$}
+\begin{equation}
+	des=\frac{\text{Facet outgassing}}{K_b T}
+\end{equation}
+
+\subsubsection*{$\text{K}_{\text{real}/\text{virtual}}$}
+\begin{equation}
+\text{K}_{\text{real}/\text{virtual}}=\frac{\sum\limits_{\text{facets}}(out + des)}{\text{number of total desorbed molecules}}
 \end{equation}
 
 

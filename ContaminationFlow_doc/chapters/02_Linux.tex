@@ -4,76 +4,117 @@
 \chapter{ContaminationFlow Linux}\label{chapter:Linux}
 %\AddToShipoutPicture*{\ShowFramePicture}
 \begin{itemize}[noitemsep,topsep=0pt]
-\item Parallel simulation on several worker processes
+\item Parallel simulation on several sub processes
+\item Processing and control of data in main process
 \item Update and accumulation of hit counters and other information such as profiles
+\item SimulationHistory, final hitbuffer and used parameters exported to results folder
 \end{itemize}
 \smallskip
 
 \begin{center}
 \begin{tikzpicture}[node distance=2cm]
 %\draw [help lines] (0,0) grid (4,4);
-	\node (p0buffer)[textboxmed, rectangle split, rectangle split parts=2] at (0,8)
+	\node (p0buffer)[textboxmed, rectangle split, rectangle split parts=2] at (0,10.5)
 	{
-		\textbf{Worker Process 0}
-		\nodepart{second} hitbuffer, loadbuffer
+		\textbf{Main Process 0}
+		\nodepart{second} loadbuffer, hitbuffer
 	};
 
-	\node (p1geo)[textboxmed, rectangle split, rectangle split parts=2] at (5,6.6)
+	\node (p0loadbuffer)[textboxmed, rectangle split, rectangle split parts=2] at (0,8)
 	{
-		\textbf{Worker Process 1}
+		\textbf{Main Process 0}
+		\nodepart{second} Broadcast loadbuffer
+	};
+
+	\node (p0hitbuffer)[textboxmed, rectangle split, rectangle split parts=2] at (0,5.5)
+	{
+		\textbf{Main Process 0}
+		\nodepart{second} Broadcast hitbuffer
+	};
+
+	\node (p1geo)[textboxmed, rectangle split, rectangle split parts=2] at (5,6)
+	{
+		\textbf{Sub Process 1}
 		\nodepart{second} Load geometry
 	};
 
-	\node (p1sim)[textboxmed, rectangle split, rectangle split parts=2] at (5,4.87)
+	\node (p1upd)[textboxmed, rectangle split, rectangle split parts=2] at (5,4)
 	{
-		\textbf{Worker Process 1}
+		\textbf{Sub Process 1}
+		\nodepart{second} Update Quantities from hitbuffer
+	};
+
+	\node (p1sim)[textboxmed, rectangle split, rectangle split parts=2] at (5,1.7)
+	{
+		\textbf{Sub Process 1}
 		\nodepart{second} Simulation
 	};
 
-	\node (p1hit)[textboxmed, rectangle split, rectangle split parts=2] at (5,3.3)
+	\node (p1hit)[textboxmed, rectangle split, rectangle split parts=2] at (5,0)
 	{
-		\textbf{Worker Process 1}
+		\textbf{Sub Process 1}
 		\nodepart{second} Save information in hitbuffer\_1
 	};
 
-	\node (p0p1hit)[textboxmed, rectangle split, rectangle split parts=2] at (0,3.3)
+	\node (p0p1hit)[textboxmed, rectangle split, rectangle split parts=2] at (0,0)
 	{
-		\textbf{Worker Process 0}
-		\nodepart{second} hitbuffer += hitbuffer\_1
+		\textbf{Main Process 0}
+		\nodepart{second} hitbuffer +=\\ hitbuffer\_1
 	};
 
 
-	\node (pNgeo)[textboxmed, rectangle split, rectangle split parts=2] at (10.6,6.6)
+	\node (pNgeo)[textboxmed, rectangle split, rectangle split parts=2] at (10.6,6)
 	{
-		\textbf{Worker Process K}
+		\textbf{Sub Process K}
 		\nodepart{second} Load geometry
 	};
 
-	\node (pNsim)[textboxmed, rectangle split, rectangle split parts=2] at (10.6,4.87)
+	\node (pNupd)[textboxmed, rectangle split, rectangle split parts=2] at (10.6,4)
 	{
-		\textbf{Worker Process K}
+		\textbf{Sub Process 1}
+		\nodepart{second} Update Quantities from hitbuffer
+	};
+
+	\node (pNsim)[textboxmed, rectangle split, rectangle split parts=2] at (10.6,1.7)
+	{
+		\textbf{Sub Process K}
 		\nodepart{second} Simulation
 	};
 
-	\node (pNhit)[textboxmed, rectangle split, rectangle split parts=2] at (10.6,3.3)
+	\node (pNhit)[textboxmed, rectangle split, rectangle split parts=2] at (10.6,0)
 	{
-		\textbf{Worker Process K}
+		\textbf{Sub Process K}
 		\nodepart{second} Save information in hitbuffer\_N-1
 	};
 
-	\node (p0pNhit)[textboxmed, rectangle split, rectangle split parts=2] at (0,-0.2)
+	\node (p0pNhit)[textboxmed, rectangle split, rectangle split parts=2] at (0,-3.5)
 	{
-		\textbf{Worker Process 0}
+		\textbf{Main Process 0}
 		\nodepart{second} hitbuffer += hitbuffer\_N-1
+	};
+
+	\node (p0upd)[textboxmed, rectangle split, rectangle split parts=2] at (0,-6)
+	{
+		\textbf{Main Process 0}
+		\nodepart{second} Update real covering in hitbuffer
 	};
 
 	\draw let \p1=(p0buffer.second west) in [->, line width=0.04cm] (\x1-1.5cm,\y1) -- (\p1);
 	\path let \p1=(p0buffer.second west) in node [above] at (\x1-0.75cm,\y1) {Import};
+
+	\draw[->, line width=0.04cm] (p0buffer.south)--(p0loadbuffer.north);
+
 	%\draw[->, line width=0.04cm] (1.9,7) -- (11.5,7)--(11.5,6.6);
-	\draw let \p1=(p0buffer.second east), \p2=(pNgeo.north) in [->, line width=0.04cm] (\p1) -- (\x2,\y1)-- (\p2);
+	\draw let \p1=(p0loadbuffer.second east), \p2=(pNgeo.north) in [->, line width=0.04cm] (\p1) -- (\x2,\y1)-- (\p2);
 	%\draw[->, line width=0.04cm] (5,7)--(5,6.6);
-	\draw let \p1=(p0buffer.second east), \p2=(p1geo.north) in [->, line width=0.04cm] (\p1) -- (\x2,\y1)-- (\p2);
-	\path let \p1=(p0buffer.second east), \p2=(p1geo.west) in node [above] at (0.5*\x1+0.5*\x2,\y1) {MPI};
+	\draw let \p1=(p0loadbuffer.second east), \p2=(p1geo.north) in [->, line width=0.04cm] (\p1) -- (\x2,\y1)-- (\p2);
+	\draw[fill] let \p1=(p0loadbuffer.second east), \p2=(p1geo.north) in (\x2,\y1) circle [radius=0.05];
+	\path let \p1=(p0loadbuffer.second east), \p2=(p1geo.west) in node [above] at (0.5*\x1+0.5*\x2,\y1) {MPI};
+
+	\draw let \p1=(p0hitbuffer.second east), \p2=(pNupd.north) in [->, line width=0.04cm] (\p1) -- (\x2-0.5cm,\y1)-- (\x2-0.5cm,\y2);
+	\draw let \p1=(p0hitbuffer.second east), \p2=(p1upd.north) in [->, line width=0.04cm] (\p1) -- (\x2-0.5cm,\y1)-- (\x2-0.5cm,\y2);
+	\draw[fill] let \p1=(p0hitbuffer.second east), \p2=(p1upd.north) in (\x2-0.5cm,\y1) circle [radius=0.05];
+	\path let \p1=(p0hitbuffer.second east), \p2=(p1upd.west) in node [above] at (0.5*\x1+0.5*\x2,\y1) {MPI};
 
 	%\draw[fill] (8,6) circle [radius=0.06];
 	%\draw[fill] (8.25,6) circle [radius=0.06];
@@ -82,16 +123,19 @@
 		\draw[fill] let \p1=(p1geo.east), \p2=(pNgeo.west) in (0.5*\x1+0.5*\x2+0.25cm*\i,\y1) circle [radius=0.06];
 
 	%\draw[->, line width=0.04cm] (11.5,5.3)--(11.5,4.86);
-	\draw[->, line width=0.04cm] (pNgeo.south)--(pNsim.north);
+	\draw[->, line width=0.04cm] (pNgeo.south)--(pNupd.north);
+	\draw[->, line width=0.04cm] (pNupd.south)--(pNsim.north);
 	%\draw[->, line width=0.04cm] (5,5.3)--(5,4.86);
-	\draw[->, line width=0.04cm] (p1geo.south)--(p1sim.north);
+	\draw[->, line width=0.04cm] (p1geo.south)--(p1upd.north);
+	\draw[->, line width=0.04cm] (p1upd.south)--(p1sim.north);
 	%\draw[->, line width=0.04cm] (11.5,3.66)--(11.5,3.3);
 	\draw[->, line width=0.04cm] (pNsim.south)--(pNhit.north);
 	%\draw[->, line width=0.04cm] (5,3.66)--(5,3.3);
 	\draw[->, line width=0.04cm] (p1sim.south)--(p1hit.north);
 
 	%\draw[->, line width=0.04cm] (0,6.7)--(0,3.3);
-	\draw[->, line width=0.04cm] (p0buffer.south)--(p0p1hit.north);
+	\draw[->, line width=0.04cm] (p0loadbuffer.south)--(p0hitbuffer.north);
+	\draw[->, line width=0.04cm] (p0hitbuffer.south)--(p0p1hit.north);
 	%\draw[<-, line width=0.04cm] (1.9,-1.1) -- (11.5,-1.1)--(11.5,1.53);
 	\draw let \p1=(p0pNhit.second east), \p2=(pNhit.south) in [<-, line width=0.04cm] (\p1) -- (\x2,\y1)-- (\p2);
 	%\draw[<-, line width=0.04cm] (1.9,2.3) -- (3.1,2.3);
@@ -101,8 +145,8 @@
 	\path let \p1=(p0pNhit.second east), \p2=(p1hit.second west) in node [above] at (0.5*\x1+0.5*\x2,\y1) {MPI};
 	\path let \p1=(p0p1hit.second east), \p2=(p1hit.second west) in node [above] at (0.5*\x1+0.5*\x2,\y1) {MPI};
 
-	\draw let \p1=(p0pNhit.second west) in [<-, line width=0.04cm] (\x1-1.5cm,\y1) -- (\p1);
-	\path let \p1=(p0pNhit.second west) in node [above] at (\x1-0.75cm,\y1) {Export};
+	\draw let \p1=(p0upd.second west) in [<-, line width=0.04cm] (\x1-1.5cm,\y1-0.2cm) -- (\x1,\y1-0.2cm);
+	\path let \p1=(p0upd.second west) in node [below] at (\x1-0.75cm,\y1-0.2cm) {Export};
 
 	%\draw[fill] (0,0.66) circle [radius=0.06];
 	%\draw[fill] (0,0.41) circle [radius=0.06];
@@ -111,17 +155,20 @@
 		\draw[fill] let \p1=(p0p1hit.south), \p2=(p0pNhit.north) in (\x1,0.5*\y1+0.5*\y2+0.25cm*\i) circle [radius=0.06];
 
 	%\draw[->, line width=0.04cm] (0,1.53)--(0,1.10);
-	\draw let \p1=(p0p1hit.south), \p2=(p0pNhit.north) in [->, line width=0.04cm] (\p1)--(\x1,0.75*\y1+0.75*\y2+0.0625cm);
+	\draw let \p1=(p0p1hit.south), \p2=(p0pNhit.north) in [->, line width=0.04cm] (\p1)--(\x1, 0.5*\y1+0.5*\y2+0.5cm);
 	%\draw[->, line width=0.04cm] (0,0.2)--(0,-0.2);
-	\draw let \p1=(p0p1hit.south), \p2=(p0pNhit.north) in [<-, line width=0.04cm] (\p2)--(\x1,0.25*\y1+0.25*\y2-0.0625cm);
+	\draw let \p1=(p0p1hit.south), \p2=(p0pNhit.north) in [<-, line width=0.04cm] (\p2)--(\x1, 0.5*\y1+0.5*\y2-0.5cm);
+
+	\draw let \p1=(p0pNhit.south), \p2=(p0upd.north) in [->, line width=0.04cm] (\p1)--(\p2);
+	\draw let \p1=(p0upd.second west), \p2=(p0hitbuffer.second west) in [->, line width=0.04cm] (\x1,\y1+0.2cm)--(\x1-1.5cm, \y1+0.2cm) -- (\x1-1.5cm,\y2) --(\p2);
 
 	
 \end{tikzpicture}
 \end{center}
 
 \section{Call of Application from Command line}
-
-Commands to call the Molflow Linux application in the command line:
+\subsection{Application with standard parameters}
+Call Molflow Linux application with standard parameters in the command line:
 
 \code{
 \$ module load mpi\\
@@ -129,118 +176,207 @@ Commands to call the Molflow Linux application in the command line:
 \smallskip
 with the following parameters:
 \begin{itemize}[noitemsep,topsep=0pt]
-\item N: desired number of worker processes; simulation on K=N-1 worker processes
+\item n: desired number of worker processes; simulation on K=N-1 worker processes
 \item MolflowLinux: path to application, e.g.\ \codew{\textasciitilde/MolflowLinux/Debug/MolflowLinux}
 \item loadbuffer: path to loadbuffer file, that contains geometry, e.g.\ \codew{\textasciitilde/loadbuffer}
 \item hitbuffer: path to hitbuffer file, that contains counters, etc., e.g.\ \codew{\textasciitilde/hitbuffer}
 \item resultbuffer: path to resultbuffer file, where the final hitbuffer is exported to,\\ e.g.\ \codew{\textasciitilde/resultbuffer}
-\item simulationtime: floatingpoint number, simulation time, e.g.\ \codew{2.5}
+\item simulationtime: simulation time, e.g.\ \codew{2.5}
 \item unit (optional): simulation time unit, e.g.\ \codew{min}; default: \codew{s}
+\end{itemize}
+
+\subsection{Application with custom parameters}
+Call Molflow Linux application with custom parameters in the command line:
+\code{
+\$ module load mpi\\
+\$ mpirun -n N MolflowLinux inputfile}
+\smallskip
+with the input file defining the following parameters:
+\begin{itemize}[noitemsep,topsep=0pt]
+\item n: desired number of worker processes; simulation on K=N-1 worker processes
+\item MolflowLinux: path to application, e.g.\ \codew{\textasciitilde/MolflowLinux/Debug/MolflowLinux}
+\item loadbufferPath: path to loadbuffer file, that contains geometry, e.g.\ \codew{\textasciitilde/loadbuffer}
+\item hitbufferPath: path to hitbuffer file, that contains counters, etc., e.g.\ \codew{\textasciitilde/hitbuffer}
+\item resultbufferPath: path to resultbuffer file, where the final hitbuffer is exported to,\\ e.g.\ \codew{\textasciitilde/resultbuffer}
+\item simulationTime (optional): simulation time per iteration step; default: \codew{10.0}
+\item unit (optional): simulation time unit; default: \codew{s}
+\item maxTime (optional): maximum simulation time; default: \codew{10.0}
+\item maxUnit (optional): maximum simulation time unit; default: \codew{y}
+\item iterationNumber(optional): number of iteration with legth of simulationTime * unit; default: 43200
+\item \codew{$s_1$}, coefficient used for calculation of sticking coefficient; default:\codew{1}
+\item \codew{$s_2$}, coefficient used for calculation of sticking coefficient; default:\codew{0.2}
+\item \codew{$E_{ad}$}, energy used for calculation of sticking coefficient; default:\codew{1\text{E}-21}
+\item \codew{$E_{de}$}, energy used for calculation of desorption; default:\codew{1\text{E}-21}
+\item\codew{$d$}, power for base of coverage used for calculation of desorption; default:\codew{1}
 \end{itemize}
 
 \section{Application}
 \subsection{General Changes}
 
-\textbf{Replacement/removal of Windows libraries/functions}
+\subsubsection{Replacement/removal of Windows libraries/functions}
 \begin{itemize}[noitemsep,topsep=0pt]
-\item E.g.\ Databuff struct with import/export instead of using Dataports
-\item E.g.\ replace \codew{\#include <time.h>} with \codew{\#include <sys/time.h>}
+\item Databuff struct with import/export instead of using Dataports
+\item Replacements of libraries, e.g.\ \codew{\#include <time.h>} with \codew{\#include <sys/time.h>}
 \end{itemize}
-\bigskip
-\textbf{Removal of functions used in} \codew{AC\_MODE}
+
+\subsubsection{Removal of functions used in \codew{AC\_MODE}}
 \begin{itemize}[noitemsep,topsep=0pt]
 \item Only \codew{MC\_MODE} used
 \item Removal of \codew{AC\_MODE} cases and functions
 \end{itemize}
 
+\subsubsection{New class ProblemDef}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Defines parameters used for simulation
+\item Possible adaptation of paramaters through input file or command line arguments
+\item Conducts some intern conversions
+\item Creates result folder for each simulation
+\end{itemize}
+
 \subsection{Communication}
-\textbf{Import and export of buffer files}
+\subsubsection{Import and export of buffer files}
 \begin{itemize}[noitemsep,topsep=0pt]
 \item New Databuff struct \code{typedef unsigned char BYTE;\\typedef struct \{\\
 	\hphantom{\quad}signed int size;\\
 	\hphantom{\quad}BYTE *buff;\\
 \} Databuff;}
 \item New functions \codew{importBuff($\cdot$)} and \codew{exportBuff($\cdot$)} for import of buffer files and export of Databuff struct
+\item New functions \codew{checkReadable($\cdot$)} and \codew{checkWriteable($\cdot$)} to check if file is readable or writeable
 \end{itemize}
-\bigskip
-\textbf{Communication between worker processes via MPI}
+
+\subsubsection{Communication between worker processes via MPI}
 \begin{itemize}[noitemsep,topsep=0pt]
-\item Process 0 sends load Databuff struct and hit Databuff struct to other processes using \codew{MPI\_Bcast($\cdot$)}
-\item All processes send updated hit Databuff struct to process 0 using \codew{MPI\_Send($\cdot$)} and \codew{MPI\_Recv($\cdot$)}
+\item Main process 0 sends Databuff struct containing loadbuffer and Databuff struct containing hitbuffer to sub processes using \codew{MPI\_Bcast($\cdot$)}
+\item Sub processes send updated Databuff struct containing hitbuffer to main process 0 using \codew{MPI\_Send($\cdot$)} and \codew{MPI\_Recv($\cdot$)}
 \end{itemize}
 
 \subsection{New Quantities}
-\textbf{New counter \codew{covering}}
+\subsubsection{New counter \codew{covering}}
 \begin{itemize}[noitemsep,topsep=0pt]
-\item Covering computed in \codew{Simulationcalc.cpp} file in \codew{calcCoveringUpdate($\cdot$)}
-\item Covering increases with adsorption, decreases with desorption
+\item Number of carbon equivalent particles on facet
 \item Added covering counter to hitbuffer
-\end{itemize}
-\bigskip
-\textbf{Sticking factor}
-\begin{itemize}[noitemsep,topsep=0pt]
-\item Dependent on covering and temperature
-\item Sticking factor computed in \codew{Simulationcalc.cpp} file in \codew{calcStickingnew($\cdot$)}
-\item Updated after/before each interation
-\end{itemize}
-\bigskip
-\textbf{Desorption}
-\begin{itemize}[noitemsep,topsep=0pt]
-\item Dependent on covering and temperature
-\item Desorption computed in \codew{Simulationcalc.cpp} file in \codew{calcDesorption($\cdot$)}
-\item Used to determine starting point for new particle
-\end{itemize}
-\bigskip
-\textbf{\codew{Worker} class for Worker processes}
-\begin{itemize}[noitemsep,topsep=0pt]
-\item Reduced \codew{Worker} class
-\item Only use of functions \codew{GetCDFId($\cdot$)}, \codew{GenerateNewCDF($\cdot$)}, \codew{Generate\_CDF($\cdot$)}, \codew{CalcTotalOutgassing()}
+\item Extracted from hitbuffer from \codew{Simulationcalc.cpp} file in \codew{getCovering($\cdot$)}
+\item Covering increases with adsorption, decreases with desorption
 \end{itemize}
 
+\subsubsection{Coverage}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Number of carbon equivalent particles per monolayer on facet
+\item Calculated from covering, gas mass and facet area
+\item Coverage computed from \codew{Simulationcalc.cpp} file in \codew{calcCoverage($\cdot$)}
+\end{itemize}
+
+\subsubsection{Sticking factor}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Calculated from coverage (and temperature)
+\item Sticking factor computed from \codew{Simulationcalc.cpp} file in \codew{calcStickingnew($\cdot$)}
+\item Updated and fixed before each interation
+\end{itemize}
+
+\subsubsection{Desorption $[1/\text{s}]$}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Calculated from covering and temperature
+\item Desorption computed from \codew{Simulationcalc.cpp} file in \codew{calcDesorption($\cdot$)}
+\end{itemize}
+
+\subsubsection{Desorption Rate $[\text{Pa m}^3/\text{s}]$}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Calculated from desorption, gas mass and facet area
+\item Desorption rate computed from \codew{Simulationcalc.cpp} file in \codew{calcDesorptionRate($\cdot$)}
+\item Used to determine starting point for new particle
+\item Updated and fixed before each interation
+\end{itemize}
+
+%\subsubsection{\codew{Worker} class for Worker processes}
+%\begin{itemize}[noitemsep,topsep=0pt]
+%\item Reduced \codew{Worker} class
+%\item Only use of functions \codew{GetCDFId($\cdot$)}, \codew{GenerateNewCDF($\cdot$)}, \codew{Generate\_CDF($\cdot$)}, \codew{CalcTotalOutgassing()}
+%\end{itemize}
+\subsubsection{Outgassing Rate}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Calculated from sHandle values: facet outgassing and temerature
+\item Outgassing rate computed from \codew{Worker.cpp} file in \codew{CalcTotalOutgassingWorker()}
+\end{itemize}
+
+\subsubsection{$\text{K}_{\text{real}/\text{virtual}}$}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Number of real particles represented by test particles
+\item Calculated from desorption rate, outgassing rate and number of desorbed molecules
+\item $\text{K}_{\text{real}/\text{virtual}}$ computed from \codew{Simulationcalc.cpp} file in \codew{GetMoleculesPerTP($\cdot$)}
+\end{itemize}
+
+
 \subsection{Iterative algorithm}
-\textbf{Serialization of Simulation on worker processes}
+\subsubsection{General Pipeline}
 \begin{itemize}[noitemsep,topsep=0pt]
-\item \codew{InitSimulation()} to create simulation handle
-\item \codew{LoadSimulation()} to load geometry in simulation handle
-\item \codew{StartSimulation()} to create first particle for simulation
-\item  \codew{StartFronSource()} for initial values for new particle, adapted to include desorption rate
-\item \codew{SimulationRun()} repeatedly for desired time step (default: $1s$) until desired simulation time reached, simulates particle at a time until it desorbs or adsorbs, saves information of hits in simulation handle 
+\item Initialize MPI to have desired number of processes (minimum 2)
+\item Send loadbuffer from main process 0 to sub processes using MPI and create sHandle and load geometry using \codew{InitSimulation()} and \codew{LoadSimulation()} in all processes
+\item Start iteration: iterationNumber steps of length simulationTime * unit:
+	\begin{itemize}[noitemsep,topsep=0pt]
+	\item[$\bullet$] Send hitbuffer from main process to subprocess using MPI
+	\item[$\bullet$] Update sticking factor and desorption rate in sub processes using \codew{UpdateSticking($\cdot$)} and \codew{UpdateDesorptionRate($\cdot$)} from \codew{UpdateSubProcess.cpp}
+	\item[$\bullet$] Simulate for SimulationTime * unit using \codew{SimulationRun()}
+	\item[$\bullet$] Update hitbuffer of sub processes from sHandle using \codew{UpdateSubHits($\cdot$)} from \codew{UpdateSubProcess.cpp}
+	\item[$\bullet$] Update Main process:
+		\begin{itemize}[noitemsep,topsep=0pt]
+		\item[$\bullet$] Send hitbuffer from sub process to main process using MPI
+		\item[$\bullet$] Update hitbuffer of main process from sub process in \codew{UpdateMainHits($\cdot$)} from \codew{UpdateMainProcess.cpp}
+		\end{itemize}
+	\item[$\bullet$] Calculate real covering in main process using $\text{K}_{\text{real}/\text{virtual}}$ and simulated time step in \codew{UpdateCovering($\cdot$)} from \codew{UpdateMainProcess.cpp}, save in SimulationHistory
+	\item[$\bullet$] Update real covering in hitbuffer of main process in \codew{UpdateCoveringphys($\cdot$)} from \codew{UpdateMainProcess.cpp}
+	\end{itemize}
+\item Export final results (hitbuffer and simulationHistory) to results folder
 \end{itemize}
-\bigskip
-\textbf{Update of hitbuffer after simulation finished}
+
+\subsubsection{New class to store Simulation History}
 \begin{itemize}[noitemsep,topsep=0pt]
-\item \codew{UpdateSubHits($\cdot$)} and \codew{UpdateSubMCHits($\cdot$)} to save information from simulation handle into hit Databuff struct (no accumulation here)
-\item Process 0 adds hit Databuffs struct from subprocesses to original hit Databuff struct using \codew{UpdateMainHits($\cdot$)} and \codew{UpdateMCmainHits($\cdot$)}
+\item SimulationHistory class \code{class SimulationHistory \{\\
+	public:\\
+	\hphantom{\quad}SimulationHistory();\\
+	\hphantom{\quad}SimulationHistory(Databuff *hitbuffer);\\
+	\hphantom{\quad}HistoryList<llong> coveringList;\\
+	\hphantom{\quad}double flightTime;\\
+	\hphantom{\quad}int nParticles;\\
+	\\
+	\hphantom{\quad}void appendList(Databuff *hitbuffer, double time);\\
+	\hphantom{\quad}void print();\\
+	\hphantom{\quad}void write(std::string path);\\
+\};}
+\code{template <typename T> class HistoryList \{\\
+	public:\\
+	\hphantom{\quad}HistoryList();\\
+	\hphantom{\quad}std::vector<std::pair<double,std::vector<T> > > pointintime\_list;\\
+	\hphantom{\quad}std::vector<T> currentList;\\
+\};}
+\item In \codew{SimulationLinux.h} and \codew{SimulationLinux.cpp} file
+\item SimulationHistory updated after each iterarion in \codew{UpdateCovering($\cdot$)} from \codew{UpdateMainProcess.cpp} file
+\item Currently recorded quantities: covering for all facets
+\item Time given in simulated time (accumulated time steps) rather than computed time 
 \end{itemize}
-\bigskip
-\textbf{Estimation of \codew{$T_{min}$}}
+
+\subsubsection{Set covering threshold}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Set lower threshhold for covering for each facet to prevent covering getting negative
+\item Stop simulation once threshold is reached
+\item Threshold set in \codew{setCoveringThreshold($\cdot$)}  from \codew{Iteration.cpp} file
+\end{itemize}
+
+\subsubsection{Estimation of time step \codew{$T_{min}$}}
 \begin{itemize}[noitemsep,topsep=0pt]
 \item Determines minimum timestep for simulation, average time between outgassing/desorption and adsorption
-\item $T_{min}$ computed in \codew{Iteration.cpp} file in \codew{EstimateTmin()}
+\item $T_{min}$ computed in \codew{Iteration.cpp} file in \codew{estimateAverageFlightTime()} using simulationHistory: $\text{flightTime}/\text{nParticles}$ 
 \end{itemize}
-\bigskip
-\textbf{New class to store covering for all facets at any time}
+
+\subsubsection{Pretesting of time step \codew{$T_{min}$}}
 \begin{itemize}[noitemsep,topsep=0pt]
-\item TimeTest class \code{class TimeTest \{\\
-	public:\\
-	\hphantom{\quad}TimeTest();\\
-	\hphantom{\quad}std::vector< std::pair< double,std::vector<double> > > pointintime\_list;\\
-	\\
-	\hphantom{\quad}void appendList(double time);\\
-	\hphantom{\quad}void print();\\
-	\hphantom{\quad}void write(std::string filename);\\
-	\hphantom{\quad}void read(std::string filename);\\
-\};}
-\item In \codew{SimulationLinux.h} and \codew{Iteration.cpp} file
-\item After each simulation step, list is appended with point in time and covering for all facets
-\item Used for extrapolation in future
+\item Checks whether current time step would cause covering to get negative
+\item Adapts time step if needed
+\item Pretesting in \codew{UpdateMainProcess.cpp} file in \codew{preTestTimeSteo($\cdot$)}
 \end{itemize}
-\bigskip
-%\textbf{Thats changed}
+%\subsubsection{Thats changed}
 %\begin{itemize}[noitemsep,topsep=0pt]
 %\item use this for 
 %\item list
 %\end{itemize}
-%\bigskip
 
 
