@@ -62,7 +62,7 @@ public:
 
 	void appendCurrent(double time=-1){
 
-			if(time==-1.0) //TODO improve: here steps instead of time
+			if(time==-1.0) //one step
 					time=pointintime_list.back().first+1.0;
 			pointintime_list.push_back(std::make_pair(time,currentList));
 
@@ -70,7 +70,7 @@ public:
 
 	void appendList(std::vector<T> List, double time=-1){
 
-		if(time==-1.0) //TODO improve: here steps instead of time
+		if(time==-1.0) //One step
 				time=pointintime_list.back().first+1.0;
 		pointintime_list.push_back(std::make_pair(time,List));
 
@@ -205,6 +205,7 @@ public:
 	double flightTime;
 	int nParticles;
 	double lastTime;
+	int currentStep;
 
 	void appendList(Databuff *hitbuffer, double time=-1.0);
 	void print();
@@ -274,8 +275,8 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, Databuff *physb
 void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHistory *history,int rank);
 
 void UpdateCovering(Databuff *hitbuffer, Databuff *hitbuffer_original, double time_step);
-void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum);
-void UpdateCoveringphys(SimulationHistory *history, Databuff *hitbuffer_sum, Databuff *hitbuffer);
+void UpdateCovering(Databuff *hitbuffer_sum);
+void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer);
 //-----------------------------------------------------------
 //SimulationCalc.cpp
 
@@ -284,7 +285,7 @@ llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
 
 double GetMoleculesPerTP(Databuff *hitbuffer_sum, llong nbDesorbed_old);
 void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
-double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
+long double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
 
 
 //-----------------------------------------------------------

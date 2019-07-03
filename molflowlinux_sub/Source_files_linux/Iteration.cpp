@@ -24,12 +24,10 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 #include "SimulationLinux.h"
 #include "levmar.h"
-
 extern SimulationHistory* simHistory;
 extern Simulation *sHandle;
 
 //Estimation of Tmin
-
 double estimateTmin_RudiTest(Databuff *hitbuffer){ //not ready yet => finish //TODO
 BYTE *buffer;
 buffer = hitbuffer->buff;
@@ -85,8 +83,6 @@ buffer = hitbuffer->buff;
 	*/
 	return tmin;
 }
-
-
 
 
 double estimateAverageFlightTime(){

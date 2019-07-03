@@ -232,7 +232,7 @@ int main(int argc, char *argv[]) {
 //for loop to let the simulation run 'iterationNumber' times
 //will be replaced later by the time dependent mode to calculate the prediction of contamination
 	//int iterationNumber = 43200;
-	for(int it=0;it<p->iterationNumber;it++){ //TODO parameterübergabe, simulationszeit anpassen
+	for(int it=0;it<p->iterationNumber;it++){
 
 		// Start of Simulation
 		if (p->simulationTimeMS != 0) {
@@ -242,13 +242,14 @@ int main(int argc, char *argv[]) {
 			}
 
 			//----Send hitbuffer content to all subprocesses
-			// reset buffer TODO My 0522 was not there before, is this correct?
+			// reset buffer (except covering) before sending to sub processes
 			initbufftozero(&hitbuffer);
 
 			MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 			MPI_Barrier(MPI_COMM_WORLD);
 
-			//TODO: devide covering though (size-1) or keep covering and end simulation step at threshold (covering -covering/(size-1)) -> difference in desorption and sticking
+			//Options: devide covering though (size-1) or keep covering and end simulation step at threshold (covering -covering/(size-1))
+			//-> difference in desorption and sticking
 			// currently 2nd ideo implemented as otherwise covering check is negative (-> adapt coveringphys?)
 			setCoveringThreshold(&hitbuffer, world_size, rank);
 
@@ -260,7 +261,7 @@ int main(int argc, char *argv[]) {
 				// calc covering for threshold
 				setCoveringThreshold(&hitbuffer, world_size, rank);
 
-				sHandle->posCovering=true;//assumption:negative covering has been resolved before, TODO: actually implement code to resolve
+				sHandle->posCovering=true;//assumption that negative covering has been resolved before: implemented though covering threshold in sub processes and manageTimeStep()
 
 				//Do the simulation
 				bool eos; std::vector<int> facetNum;
@@ -306,7 +307,7 @@ int main(int argc, char *argv[]) {
 					std::cout << "Updated hitbuffer with process " << i <<std::endl << std::endl;
 
 					double old_flightTime=simHistory->flightTime;
-					int old_nParticles = simHistory->nParticles; //TODO: RESET
+					int old_nParticles = simHistory->nParticles; //reset in UpdateCoveringPhys
 					MPI_Recv(&simHistory->flightTime, 1, MPI::DOUBLE, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 					MPI_Recv(&simHistory->nParticles, 1, MPI::INT, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 					simHistory->flightTime += old_flightTime;
@@ -323,10 +324,10 @@ int main(int argc, char *argv[]) {
 			if (rank == 0) {
 
 				//double time_step = estimateTmin_RudiTest(&hitbuffer);
-				UpdateCovering(simHistory, &hitbuffer_sum);
-				//memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //TODO ist ths needed? -> my: Probably not
+				UpdateCovering(&hitbuffer_sum);
+				//memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //Not needed, only covering copied in UpdateCoveringPhys
 
-				UpdateCoveringphys(simHistory, &hitbuffer_sum, &hitbuffer);
+				UpdateCoveringphys(&hitbuffer_sum, &hitbuffer);
 				simHistory->coveringList.print();
 
 			}
@@ -348,7 +349,7 @@ int main(int argc, char *argv[]) {
 	if(rank==0){
 		//----Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
 		std::cout << "Process 0 exporting final hitbuffer" << std::endl <<std::endl;
-		exportBuff(p->resultbufferPath,&hitbuffer_sum);//ToDo: &hitbuffer_sum ersetzen durch &hitbuffer_phys // Not really needed since memcpy is used anyways?
+		exportBuff(p->resultbufferPath,&hitbuffer_sum);//export hitbuffer_sum
 		simHistory->print();
 		simHistory->write(p->resultpath);
 	}

@@ -29,7 +29,6 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 // Global handles
 extern Simulation* sHandle; //Declared at molflowlinux_main.cpp
 extern ProblemDef* p;
-extern Simulation *sHandle;
 
 //get values from buffer/handle
 int getFacetIndex(SubprocessFacet *iFacet){ // finds index of facet. index used for CoveringHistory class
@@ -74,13 +73,13 @@ double calcdNsurf(){//Calculates the (carbon equivalent relative) mass factor
 	return sHandle->wp.gasMass/12.011;
 }
 
-double calcCoverage(SubprocessFacet *iFacet, Databuff *hitbuffer){ // calculates coverage depending on covering (number particles on facet)
+long double calcCoverage(SubprocessFacet *iFacet, Databuff *hitbuffer){ // calculates coverage depending on covering (number particles on facet)
 	llong covering;
-	double coverage;
+	long double coverage;
 
 	covering = getCovering( iFacet, hitbuffer);
 
-	coverage = covering /(calcNmono(iFacet)/calcdNsurf());
+	coverage = (long double)covering /(long double)(calcNmono(iFacet)/calcdNsurf());
 	return coverage;
 }
 
@@ -169,7 +168,7 @@ double GetMoleculesPerTP(Databuff *hitbuffer_sum, llong nbDesorbed_old) // Calcu
 	return (sHandle->wp.finalOutgassingRate+desrate) / nbDesorbed;
 	}
 /* //Wahrscheinlich brauchen wir das nicht.
-double calcRealCovering(SubprocessFacet *iFacet){ //TODO not sure yet
+double calcRealCovering(SubprocessFacet *iFacet){
 
 	double covering= ((double)iFacet->tmpCounter[0].hit.covering)*GetMoleculesPerTP(0); // only one moment used; one moment means stationary simulation, first moment is moment 0
 	return covering;
@@ -190,12 +189,19 @@ double calcCoveringUpdate(SubprocessFacet *iFacet)
 
 void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates sticking coefficient dependent on covering.
 
-	double coverage;
-	double temperature;
+	//long double coverage;
+	//double temperature;
 
-	temperature=iFacet->sh.temperature;
-	coverage = calcCoverage(iFacet,hitbuffer);
-	iFacet->sh.sticking = p->s1;
+	//temperature=iFacet->sh.temperature;
+	//coverage = calcCoverage(iFacet,hitbuffer);
+
+	llong covering=getCovering(iFacet,hitbuffer);
+
+	if (covering>=100){
+		iFacet->sh.sticking = p->s1;}
+	else{
+		iFacet->sh.sticking = 0.0;
+	}
 	/*
 	if (coverage < 1) {
 		iFacet->sh.sticking = (p->s1*(1.0 - coverage) + p->s2 * coverage)*(1.0 - exp(-p->E_ad / (kb*temperature)));
@@ -209,27 +215,29 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates
 
 }
 
-double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This returns ((d'coverage')/dt)de. So to speak desorption rate in units of [1/s]
-	double coverage;
+long double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This returns ((d'coverage')/dt)de. So to speak desorption rate in units of [1/s]
+	long double coverage;
 	double temperature;
-	double desorption=0.0;
+	long double desorption=0.0;
 
 	coverage = calcCoverage(iFacet,hitbuffer);
+	llong covering=getCovering(iFacet,hitbuffer);
+
 	temperature=iFacet->sh.temperature;
 
-	if(coverage==0){
+	if(coverage==0||covering<100){
 		return 0.0;
 	}
-	double tau=h/(kb*temperature);
+	long double tau=(long double)(h/(kb*temperature));
 
-	desorption= 1.0/tau * pow(coverage,p->d) *exp(-p->E_de/(kb*temperature));
+	desorption= (long double)(1.0/tau) * powl(coverage,(long double)p->d) *expl(-(long double)p->E_de/(long double)(kb*temperature));
 	//if (Desorption Energy/Temperature) >~ 1.02E-20J/K, desorption will be zero
 	return desorption;
 }
 
-double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer) {//This returns ((d'coverage')/dt)de * (Nmono/dNSurf) * kb*T. So to speak desorption rate in units of [Pa m³/s]
-	double desorption = calcDesorption(iFacet, hitbuffer);
-	double desorptionRate = desorption * (calcNmono(iFacet) / calcdNsurf()) * kb* iFacet->sh.temperature;
+long double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer) {//This returns ((d'coverage')/dt)de * (Nmono/dNSurf) * kb*T. So to speak desorption rate in units of [Pa m³/s]
+	long double desorption = calcDesorption(iFacet, hitbuffer);
+	long double desorptionRate = desorption * (long double)(calcNmono(iFacet) /calcdNsurf()) * (long double)(kb* iFacet->sh.temperature);
 	return desorptionRate;
 }
 

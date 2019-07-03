@@ -24,22 +24,34 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 #include "SimulationLinux.h"
 #include "GLApp/MathTools.h"
+#include <math.h>
 
 extern Simulation *sHandle;
+extern ProblemDef* p;
+extern SimulationHistory* simHistory;
+
+// Step size for intervals
+double getStepSize(){
+	return exp((double)simHistory->currentStep*(log(p->maxTimeS)/(double)p->iterationNumber));
+}
 
 // Function that adapts timestep if needed, to avoid negative covering
-double preTestTimeStep(SimulationHistory *history, Databuff *hitbuffer_sum, double Krealvirt){
+double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
 	//double test_time_step = pow(10,-14);
 	double test_time_step = estimateAverageFlightTime();
-	double minimum_time_step_increase = 0;
+	double stepSize=getStepSize();
+	bool incrCurrentStep=false;
+
 	llong covering_phys;
 	llong covering_sum;
-	double covering_check;
-	double	covering_diff, covering_diff_min = 0;
-	llong facet_count_1 = 0;
-	llong facet_count_2 = 0;
-	bool decreased_time_step, increased_test_step;
-	decreased_time_step = increased_test_step = false;
+	long double covering_check;
+
+	//double	covering_diff, covering_diff_min = 0;
+	//llong facet_count_1 = 0;
+	//llong facet_count_2 = 0;
+	//bool decreased_time_step, increased_test_step;
+	//decreased_time_step = increased_test_step = false;
+	//double minimum_time_step_increase = 0;
 	
 	
 	//Man könnte sich auch den 'increase time step check' pro Facet sparen, indem man den time step sofort erhöht, wenn man sieht, dass ein virtuelles Testteilchen weniger als einem realen Teilchen entspricht:
@@ -98,31 +110,44 @@ double preTestTimeStep(SimulationHistory *history, Databuff *hitbuffer_sum, doub
 	}
 	*/
 
+	// Select larger value between test_time_step and stepSize
+	if(stepSize>test_time_step){
+		test_time_step=stepSize;
+		std::cout<<"Replace test_time_step with stepSize: "<<stepSize <<std::endl;
+		incrCurrentStep=true;
+	}
+
 	//Check, if the time step is too long. We avoid the covering counter going negative (=overflow of llong) by decreasing the time step.
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
-					covering_phys = history->coveringList.getCurrent(&f);
+					covering_phys = simHistory->coveringList.getCurrent(&f);
 					covering_sum = getCovering(&f, hitbuffer_sum);
 
 					if (covering_sum < covering_phys){
-						covering_check = covering_phys - (covering_phys - covering_sum)*Krealvirt*test_time_step;
-						if(covering_check<0){
-							test_time_step=0.05*(double)(covering_phys/((covering_phys - covering_sum)*Krealvirt));//0.05 (decreasing multiplier) is a trade off between fast convergence and small oscillations
-							decreased_time_step = true;
+						covering_check = (long double)(covering_phys - (covering_phys - covering_sum))*(long double)(Krealvirt*test_time_step);
+						if(covering_check<0.0){
+							test_time_step=0.05*(double)((long double)(covering_phys/((covering_phys - covering_sum))*(long double)Krealvirt));//0.05 (decreasing multiplier) is a trade off between fast convergence and small oscillations
+							//decreased_time_step = true;
 							std::cout<<"Decreased Tmin: "<<test_time_step <<std::endl;
+							incrCurrentStep=false;
 							//std::cout << covering_check << std::endl;
 						}	
 					}
 					
 			}
 	}
-
+	//increment currentStep if stepSize chosen and not decreased
+	if(incrCurrentStep){
+		simHistory->currentStep+=1;
+		std::cout<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
+	}
 	
+	/*
 	if (increased_test_step && decreased_time_step){
 		if (test_time_step < minimum_time_step_increase){
 			std::cout << "Note: Some particles might be lost due to choice of time step." << std::endl;
 		}
-	}	
+	}*/
 	
 	return test_time_step;
 
@@ -213,23 +238,24 @@ void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum, double ti
 }
 */
 //Simhistory version
-void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum){//Updates Covering after one Iteration using Krealvirt, resets other counters
+void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iteration using Krealvirt, resets other counters
 	//If one wants to read out pressure and particle density, this must be done before calling UpdateCovering.
 	//Calculates with the summed up counters of hitbuffer_sum how many test particles are equivalent to one physical particle.
 	//Then the physical values are stored in the hitbuffer.
 	//simTime in ms
-	double Krealvirt = GetMoleculesPerTP(hitbuffer_sum, history->nbDesorbed_old);
+	double Krealvirt = GetMoleculesPerTP(hitbuffer_sum, simHistory->nbDesorbed_old);
 	//std::cout <<"nbDesorbed before and after:\t" << history->nbDesorbed_old <<'\t';
-	history->nbDesorbed_old = getnbDesorbed(hitbuffer_sum);
+	simHistory->nbDesorbed_old = getnbDesorbed(hitbuffer_sum);
 	//std::cout << history->nbDesorbed_old <<std::endl;
 
 	llong covering_phys;
 	llong covering_sum;
-	double covering_check;
+	//double covering_check;
 	//BYTE *buffer_sum;
 	//buffer_sum = hitbuffer_sum->buff;
+
 	std::cout << "Tmin = " << estimateAverageFlightTime() << " s."<< std::endl;
-	double time_step = preTestTimeStep(history, hitbuffer_sum,  Krealvirt);
+	double time_step = manageTimeStep(hitbuffer_sum,  Krealvirt);
 	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
 	std::cout << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*time_step << std::endl;
 	//std::cout <<"testing timestep: " <<time_step <<'\t' <<estimateAverageFlightTime() <<std::endl;
@@ -237,35 +263,35 @@ void UpdateCovering(SimulationHistory *history, Databuff *hitbuffer_sum){//Updat
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				//FacetHitBuffer *facetHitBuffer_sum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
-				covering_phys = history->coveringList.getCurrent(&f);
+				covering_phys = simHistory->coveringList.getCurrent(&f);
 				covering_sum = getCovering(&f, hitbuffer_sum);
 
 				std::cout<<std::endl << "Facet " << f.globalId << std::endl;
-				std::cout << "covering_sum = " << covering_sum  << " = "<< double(covering_sum) << std::endl;
-				std::cout<< "covering_phys_before = " << covering_phys << " = "<< double(covering_phys) << std::endl;
+				std::cout << "covering_sum = " << covering_sum  << " = "<< (long double)(covering_sum) << std::endl;
+				std::cout<< "covering_phys_before = " << covering_phys << " = "<< (long double)(covering_phys) << std::endl;
 
 				if (covering_sum > covering_phys){
 					llong covering_delta = static_cast < llong > ((covering_sum - covering_phys)*Krealvirt*time_step);
 					covering_phys += covering_delta;
-					std::cout << "covering rises by " <<covering_delta << " = "<<double(covering_delta) << std::endl;
+					std::cout << "covering rises by " <<covering_delta << " = "<<(long double)(covering_delta) << std::endl;
 				}
 				else{
 					llong covering_delta = static_cast < llong > ((covering_phys - covering_sum)*Krealvirt*time_step);
 					covering_phys -= covering_delta;
-					std::cout << "covering decreases by "<<covering_delta << " = " << double(covering_delta) << std::endl;
+					std::cout << "covering decreases by "<<covering_delta << " = " << (long double)(covering_delta) << std::endl;
 
 				}
-				std::cout<< "covering_phys_after = " << covering_phys << " = " << double(covering_phys) << std::endl;
-				std::cout<< "coveringThreshhold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << " = " << double(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
-				history->coveringList.setCurrentList(&f, covering_phys);
+				std::cout<< "covering_phys_after = " << covering_phys << " = " << (long double)(covering_phys) << std::endl;
+				std::cout<< "coveringThreshhold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << " = " << (long double)(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
+				simHistory->coveringList.setCurrentList(&f, covering_phys);
 		}
 	}
-	history->coveringList.appendCurrent(history->lastTime+time_step);
-	history->lastTime+=time_step;
+	simHistory->coveringList.appendCurrent(simHistory->lastTime+time_step);
+	simHistory->lastTime+=time_step;
 }
 
 // Copy covering to buffer
-void UpdateCoveringphys(SimulationHistory *history, Databuff *hitbuffer_sum, Databuff *hitbuffer){
+void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
 	llong covering_phys;
 	BYTE *buffer_sum;
 	buffer_sum = hitbuffer_sum->buff;
@@ -277,14 +303,14 @@ void UpdateCoveringphys(SimulationHistory *history, Databuff *hitbuffer_sum, Dat
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
 				FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
-				covering_phys = history->coveringList.getCurrent(&f);
+				covering_phys = simHistory->coveringList.getCurrent(&f);
 				facetHitBuffer->hit.covering=covering_phys;
 				facetHitSum->hit.covering=covering_phys;
 			}
 	}
 
-	history->flightTime=0.0;
-	history->nParticles=0;
+	simHistory->flightTime=0.0;
+	simHistory->nParticles=0;
 }
 
 //-----------------------------------------------------------

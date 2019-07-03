@@ -64,7 +64,7 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 	for(double i=0; i<(double)(simutime) && !eos;i+=realtimestep){
 		if(i>=(double(simutime)*0.99)){break;}
 		if(simHistory->coveringList.empty()){
-			simHistory->appendList(hitbuffer,i); //append list with initial covering //TODO offset if covering list does not end with timestep 0
+			simHistory->appendList(hitbuffer,i); //append list with initial covering
 			}
 
 		if(i+timestep>=(double)(simutime)){ //last timestep
@@ -310,6 +310,7 @@ SimulationHistory::SimulationHistory(){
 	flightTime=0.0;
 	nbDesorbed_old=0;
 	lastTime=0.0;
+	currentStep=0;
 }
 
 SimulationHistory::SimulationHistory(Databuff *hitbuffer){
@@ -335,6 +336,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer){
 
 	coveringList.appendList(currentstep, 0);
 	coveringList.initCurrent(numFacet);
+	currentStep=0;
 }
 
 void SimulationHistory::updateHistory(Databuff *hitbuffer){
@@ -368,7 +370,7 @@ void SimulationHistory::appendList(Databuff *hitbuffer, double time){
 	std::vector<llong> currentstep;
 	currentstep =std::vector<llong> ();
 
-	if(time==-1.0) //TODO improve: here steps instead of time
+	if(time==-1.0) //One step
 		time=coveringList.pointintime_list.back().first+1.0;
 
 	llong covering;

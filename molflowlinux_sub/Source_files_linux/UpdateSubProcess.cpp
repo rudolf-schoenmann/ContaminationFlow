@@ -59,7 +59,7 @@ void UpdateDesorptionRate (Databuff *hitbuffer){
 	//int i = 0;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			f.sh.desorption = calcDesorptionRate(&f, hitbuffer);
+			f.sh.desorption = (double)calcDesorptionRate(&f, hitbuffer); // TODO long double -> double here. Change f.sh.desorption to long double? bit need to adapt in Windows and new buffers
 			//i+=1;
 		}
 	}
