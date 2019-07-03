@@ -112,7 +112,7 @@ double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
 
 	// Select larger value between test_time_step and stepSize
 	if(stepSize>test_time_step){
-		test_time_step=stepSize;
+		//test_time_step=stepSize;
 		std::cout<<"Replace test_time_step with stepSize: "<<stepSize <<std::endl;
 		incrCurrentStep=true;
 	}
@@ -124,9 +124,11 @@ double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
 					covering_sum = getCovering(&f, hitbuffer_sum);
 
 					if (covering_sum < covering_phys){
-						covering_check = (long double)(covering_phys - (covering_phys - covering_sum))*(long double)(Krealvirt*test_time_step);
+
+						covering_check = (long double)(covering_phys - (covering_phys - covering_sum)*(long double)(Krealvirt*test_time_step));
+						std::cout<<"Decrease "<<covering_check <<std::endl;
 						if(covering_check<0.0){
-							test_time_step=0.05*(double)((long double)(covering_phys/((covering_phys - covering_sum))*(long double)Krealvirt));//0.05 (decreasing multiplier) is a trade off between fast convergence and small oscillations
+							test_time_step=0.05*(double)((long double)(covering_phys/((covering_phys - covering_sum)*(long double)Krealvirt)));//0.05 (decreasing multiplier) is a trade off between fast convergence and small oscillations
 							//decreased_time_step = true;
 							std::cout<<"Decreased Tmin: "<<test_time_step <<std::endl;
 							incrCurrentStep=false;
