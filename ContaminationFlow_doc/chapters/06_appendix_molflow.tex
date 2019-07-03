@@ -8,7 +8,7 @@
 	\begin{split}
 	carbondiameter&=2 \cdot 76\text{E}-12\\
 	K_b&=1.38\text{E}-23\\
-	\tau&=1.0\text{E}-13\\
+	h&=6.626\text{E}-34\\
 	\end{split}
 \end{equation}
 
@@ -23,7 +23,14 @@
 	\label{eq:nsurf}
 	\begin{split}
 	\Delta N_{surf}&=\frac{\text{carbon equivalent gas mass}}{12.011}\\
-	N_{surf}&=\sum\limits_{\substack{\text{adsorbed}\\\text{particles}}}\ \Delta N_{surf}\\
+	%N_{surf}&=\sum\limits_{\substack{\text{adsorbed}\\\text{particles}}}\ \Delta N_{surf}\\
+	\end{split}
+\end{equation}
+
+\subsubsection*{Covering $\theta^*$}
+\begin{equation}
+	\begin{split}
+		\theta^*&=N_{\text{particles on facet}}
 	\end{split}
 \end{equation}
 
@@ -31,7 +38,7 @@
 \begin{equation}
 	\label{eq:cov}
 	\begin{split}
-		\theta&=\frac{N_{surf}}{N_{mono}}
+		\theta&=\frac{\theta^*}{N_{mono}/\Delta N_{surf}}
 	\end{split}
 \end{equation}
 
@@ -41,8 +48,10 @@
 	sc(\theta)=
 	\begin{cases}
 		\begin{split}
-		(s_1 (1-\theta) + s_2 \theta) \cdot (1 -  \exp({-\frac{E_{ad}}{K_b T}}))&, \text{\quad if}\ \theta < 1\\
-		s_2  \cdot (1 -  \exp({-\frac{E_{ad}}{K_b T}}))&,  \text{\quad otherwise}.
+		1&, \text{\quad if}\ \theta^* \geq 100\\
+		0&,  \text{\quad otherwise}
+		%(s_1 (1-\theta) + s_2 \theta) \cdot (1 -  \exp({-\frac{E_{ad}}{K_b T}}))&, \text{\quad if}\ \theta < 1\\
+		%s_2  \cdot (1 -  \exp({-\frac{E_{ad}}{K_b T}}))&,  \text{\quad otherwise}.
 		\end{split}
 	\end{cases}
 \end{equation}
@@ -50,7 +59,17 @@
 \subsubsection*{Desorption rate $des$}
 \begin{equation}
 	\label{eq:des}
-	des=\frac{1}{\tau}\ \theta^d\ \exp({-\frac{E_{de}}{K_b T}})\cdot \frac{N_{mono}}{\Delta N_{surf}} \cdot K_b T
+	\begin{split}
+	\tau&=\frac{h}{K_b T}\\
+	&\\
+	des&=
+	\begin{cases}
+		\begin{split}
+		\frac{1}{\tau}\ \theta^d\ \exp({-\frac{E_{de}}{K_b T}})\cdot \frac{N_{mono}}{\Delta N_{surf}}\cdot K_b T&, \text{\quad if}\ \theta^* \geq 100\\
+		0&,  \text{\quad otherwise}
+		\end{split}
+	\end{cases}
+	\end{split}
 \end{equation}
 
 \subsubsection*{Outgassing rate $out$}
@@ -62,7 +81,31 @@
 \subsubsection*{$\text{K}_{\text{real}/\text{virtual}}$}
 \begin{equation}
 	\label{eq:krealvirt}
-	\text{K}_{\text{real}/\text{virtual}}=\frac{\sum\limits_{\text{facets}}(out + des)}{\text{number of total desorbed molecules}}
+	\text{K}_{\text{real}/\text{virtual}}=\frac{\sum\limits_{\text{facets}}(out + \frac{des}{K_b T})}{\text{number of total desorbed molecules}}
+\end{equation}
+
+\subsubsection*{Average Flight Time $T_{avg}$}
+\begin{equation}
+	\label{eq:tavg}
+	T_{avg}=\frac{\text{Total flight time}}{\text{Total number of particles}}
+\end{equation}
+
+\subsubsection*{Step Size $T_{step}$}
+\begin{equation}
+	\label{eq:tstep}
+	T_{step}=\exp\Big(\text{current Step}\cdot \ln(\text{max. simulation time})/\text{max. \# of steps})\Big)
+\end{equation}
+
+\subsubsection*{Simulated Time step $\text{time}\_\text{step}$}
+\begin{equation}
+	\label{eq:timestep}
+	\text{time}\_\text{step}=
+	\begin{cases}
+		\begin{split}
+		T_{avg}&, \text{\quad if}\ T_{avg} \geq T_{step}\\
+		T_{step}&,  \text{\quad otherwise}
+		\end{split}
+	\end{cases}
 \end{equation}
 
 \chapter{Overview of new Classes and Functions}
@@ -81,6 +124,7 @@
 \rule{0pt}{3ex} nParticles& Simulated flight time, to calculate average flight time\\
 \rule{0pt}{3ex} numFacet& Simulated particles, to calculate average flight time\\
 \rule{0pt}{3ex} lastTime& Total simulated time\\
+\rule{0pt}{3ex} currentStep& step of logarithmic time step calculation in \codew{getStepSize()}\\
 \hline
 \rule{0pt}{3ex} updateHistory()& Reset and update from hitbuffer\\
 \rule{0pt}{3ex} appendList()& Updates coveringList from hitbuffer\\
@@ -251,18 +295,19 @@
 \begin{center}
 \begin{tabular}{|l|l|}
 \hline
-\multicolumn{2}{|c|}{\rule{0pt}{3ex}Update Covering}\\
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}Update main hitbuffer from sub hitbuffer}\\
 \hline
-\rule{0pt}{3ex} preTestTimeStep()& Adapts time\_step if covering would get negative\\
-\rule{0pt}{3ex} \multirow{2}{*}{UpdateCovering()}& Uses time\_step and Krealvirt to calculate new covering\\
-& Saved to simHistory$\rightarrow$coveringList\\
-\rule{0pt}{3ex} UpdateCoveringphys()& Saves current covering to hitbuffer\\
+\rule{0pt}{3ex}  \multirow{2}{*}{UpdateMCMainHits()}& Add simulation results from sub hitbuffer\\& to main hitbuffer\\
 \hline
 \multicolumn{2}{l}{}\\[1ex]
 \hline
-\multicolumn{2}{|c|}{\rule{0pt}{3ex}Update hitbuffer}\\
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}Update real covering in hitbuffer}\\
 \hline
-\rule{0pt}{3ex} UpdateMCMainHits()& Add simulation results from sub hitbuffer to main hitbuffer\\
+\rule{0pt}{3ex} getStepSize()& Calculates step size for current step, see equation \ref{eq:tstep}\\
+\rule{0pt}{3ex} \multirow{2}{*}{manageTimeStep()}&Chooses time\_step, see equation \ref{eq:timestep}\\&  Adapts time\_step if covering would get negative\\
+\rule{0pt}{3ex} \multirow{3}{*}{UpdateCovering()}& Uses time\_step and Krealvirt to calculate new covering\\
+& Saved to simHistory$\rightarrow$coveringList\\
+\rule{0pt}{3ex} UpdateCoveringphys()& Saves current real covering to hitbuffer\\
 \hline
 \end{tabular}
 \end{center}
@@ -273,8 +318,8 @@
 \hline
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}Calculation of time\_step}\\
 \hline
-\rule{0pt}{3ex} estimateAverageFlightTime()& simHistory$\rightarrow$flightTime/simHistory$\rightarrow$nParticles\\
-\rule{0pt}{3ex} estimateTmin\_RudiTest()&average path length/average velocity\\
+\rule{0pt}{3ex} estimateAverageFlightTime()& Average flight time, see equation \ref{eq:tavg}\\
+\rule{0pt}{3ex} estimateTmin\_RudiTest()& Average path length/average velocity\\
 \hline
 \multicolumn{2}{l}{}\\[1ex]
 \hline

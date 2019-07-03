@@ -337,6 +337,7 @@ with the input file defining the following parameters:
 	\hphantom{\quad}HistoryList<llong> coveringList;\\
 	\hphantom{\quad}double flightTime;\\
 	\hphantom{\quad}int nParticles;\\
+	\hphantom{\quad}int currentStep;\\
 	\\
 	\hphantom{\quad}void appendList(Databuff *hitbuffer, double time);\\
 	\hphantom{\quad}void print();\\
@@ -367,11 +368,18 @@ with the input file defining the following parameters:
 \item $T_{min}$ computed in \codew{Iteration.cpp} file in \codew{estimateAverageFlightTime()} using simulationHistory: $\text{flightTime}/\text{nParticles}$ 
 \end{itemize}
 
-\subsubsection{Pretesting of time step \codew{$T_{min}$}}
+\subsubsection{Calculate Step Size}
 \begin{itemize}[noitemsep,topsep=0pt]
+\item Uses \codew{SimulationHistory::currentStep} to calculate logarithmic step size
+\end{itemize}
+
+\subsubsection{Managing of time step \codew{$T_{min}$}}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Chooses larger value between \codew{estimateAverageFlightTime()} and \codew{getStepSize()}
 \item Checks whether current time step would cause covering to get negative
 \item Adapts time step if needed
-\item Pretesting in \codew{UpdateMainProcess.cpp} file in \codew{preTestTimeSteo($\cdot$)}
+\item Increments \codew{SimulationHistory::currentStep} if \codew{getStepSize()} chosen and not decreased
+\item Management in \codew{UpdateMainProcess.cpp} file in \codew{manageTimeStep($\cdot$)}
 \end{itemize}
 %\subsubsection{Thats changed}
 %\begin{itemize}[noitemsep,topsep=0pt]
