@@ -89,12 +89,12 @@ public:
 			std::cout<<std::endl;
 
 			//std::cout <<std::setw(12)<<std::right <<(llong)pointintime_list[i].first ;
-			std::cout <<std::setw(12)<<std::right <<pointintime_list[i].first ;
+			std::cout <<std::setw(12)<<std::right <<(double)pointintime_list[i].first ;
 
 			for(uint j=0; j<pointintime_list[i].second.size();j++)
 			{
 				//std::cout <<"\t\t" <<pointintime_list[i].second[j];
-				std::cout <<"\t" <<std::setw(12)<<std::right <<pointintime_list[i].second[j];
+				std::cout <<"\t" <<std::setw(12)<<std::right <<(double)pointintime_list[i].second[j];
 			}
 
 		}

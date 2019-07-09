@@ -56,7 +56,7 @@ double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
 	
 	//Man könnte sich auch den 'increase time step check' pro Facet sparen, indem man den time step sofort erhöht, wenn man sieht, dass ein virtuelles Testteilchen weniger als einem realen Teilchen entspricht:
 	if (test_time_step*Krealvirt < 1){
-		test_time_step = test_time_step * (1/(test_time_step*Krealvirt)) *1E3; // 1E3 is just a chosen random value to increase the output per iteration
+		test_time_step = test_time_step * (1/(test_time_step*Krealvirt)) *20; // 20 is just a chosen random value to increase the output per iteration
 		std::cout << "increased time step to " << test_time_step << " s." << std::endl;
 	}
 	//Damit hat man aber den time step stärker nach unten hin begrenzt, als mit dem 'increase time step check' pro Facet. Mit dem 'increase time step check' pro Facet kann es auch ein Verhältnis von realen zu Testteilchen
@@ -116,6 +116,9 @@ double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
 		std::cout<<"Replace test_time_step with stepSize: "<<stepSize <<std::endl;
 		incrCurrentStep=true;
 	}
+	else{
+		simHistory->currentStep+=1;
+	}
 
 	//Check, if the time step is too long. We avoid the covering counter going negative (=overflow of llong) by decreasing the time step.
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
@@ -126,7 +129,7 @@ double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
 					if (covering_sum < covering_phys){
 
 						covering_check = (long double)(covering_phys - (covering_phys - covering_sum)*(long double)(Krealvirt*test_time_step));
-						std::cout<<"Decrease "<<covering_check <<std::endl;
+						//std::cout<<"Decrease "<<covering_check <<std::endl;
 						if(covering_check<0.0){
 							test_time_step=0.05*(double)((long double)(covering_phys/((covering_phys - covering_sum)*(long double)Krealvirt)));//0.05 (decreasing multiplier) is a trade off between fast convergence and small oscillations
 							//decreased_time_step = true;
@@ -140,6 +143,7 @@ double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
 	}
 	//increment currentStep if stepSize chosen and not decreased
 	if(incrCurrentStep){
+		test_time_step = stepSize;
 		simHistory->currentStep+=1;
 		std::cout<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
 	}
