@@ -112,7 +112,7 @@ double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
 
 	// Select larger value between test_time_step and stepSize
 	if(stepSize>test_time_step){
-		//test_time_step=stepSize;
+		test_time_step=stepSize;
 		std::cout<<"Replace test_time_step with stepSize: "<<stepSize <<std::endl;
 		incrCurrentStep=true;
 	}
@@ -143,7 +143,6 @@ double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
 	}
 	//increment currentStep if stepSize chosen and not decreased
 	if(incrCurrentStep){
-		test_time_step = stepSize;
 		simHistory->currentStep+=1;
 		std::cout<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
 	}
