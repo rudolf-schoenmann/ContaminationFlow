@@ -33,6 +33,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 extern SimulationHistory* simHistory;
 extern Simulation *sHandle;
+extern ProblemDef* p;
 
 // Simulation on subprocess
 std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, int simutime){
@@ -68,11 +69,13 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 			}
 
 		if(i+timestep>=(double)(simutime)){ //last timestep
-			std::tie(eos,realtimestep) = SimulationRun((double)simutime-i, hitbuffer, rank); // Some additional simulation, as iteration step  does not run for exactly timestep ms
+			std::tie(eos,realtimestep) = SimulationRun((double)simutime-i, hitbuffer); // Some additional simulation, as iteration step  does not run for exactly timestep ms
 			}
 		else{
-			std::tie(eos, realtimestep) = SimulationRun(timestep, hitbuffer, rank);      // Run during timestep ms, performs MC steps
+			std::tie(eos, realtimestep) = SimulationRun(timestep, hitbuffer);      // Run during timestep ms, performs MC steps
 		}
+		std::cout <<"  Elapsed calculation time for step (substep of one iteration step) for process " <<rank <<": "  <<realtimestep <<"ms" <<std::endl;
+		p->outFile <<"  Elapsed calculation time for step (substep of one iteration step) for process " <<rank <<": "  <<realtimestep <<"ms" <<std::endl;
 	}
 
 	// Save simulation results in hitbuffer
@@ -133,6 +136,12 @@ double convertunit(double simutime, std::string unit){
 
 }
 //-----------------------------------------------------------
+void printConsole(std::string str,std::ofstream outFile){
+	std::cout <<str;
+	outFile <<str;
+}
+
+
 //ProblemDef class
 
 std::string get_path( )
@@ -151,10 +160,10 @@ ProblemDef::ProblemDef(int argc, char *argv[]){
 	resultbufferPath=argc > 3 ? argv[3]:"";
 
 	iterationNumber = 43200;
-	s1=0.99;
-	s2=0.2;
+	//s1=0.99;
+	//s2=0.2;
 	E_de=1E-21;
-	E_ad=1E-21;
+	//E_ad=1E-21;
 	d=1;
 
 	simulationTime = argc > 4? std::atof(argv[4]): 10.0;
@@ -181,11 +190,13 @@ ProblemDef::ProblemDef(){
 	hitbufferPath="/home/van/Buffer/hitbuffer_allee-6";
 	resultbufferPath=resultpath+"/resultbuffer";
 
+	outFile.open(resultpath+"/console.txt", std::fstream::app);
+
 	iterationNumber = 43200;
-	s1=1;
-	s2=0.2;
+	//s1=1;
+	//s2=0.2;
 	E_de=1E-21;
-	E_ad=1E-21;
+	//E_ad=1E-21;
 	d=1;
 
 	maxTime=10.0;
@@ -235,11 +246,11 @@ void ProblemDef::readInputfile(std::string filename, int rank){
 		else if(stringIn == "maxTime") {is >>doubleIn; maxTime = doubleIn;}
 		else if(stringIn == "maxUnit"){is >> stringIn; maxUnit=stringIn;}
 
-		else if(stringIn =="s2"){is >> doubleIn; s2=doubleIn;}
-		else if(stringIn =="s1"){is >> doubleIn; s1=doubleIn;}
+		//else if(stringIn =="s2"){is >> doubleIn; s2=doubleIn;}
+		//else if(stringIn =="s1"){is >> doubleIn; s1=doubleIn;}
 		else if(stringIn =="d"){is >> doubleIn; d=doubleIn;}
 		else if(stringIn =="E_de"){is >> doubleIn; E_de=doubleIn;}
-		else if(stringIn =="E_ad"){is >> doubleIn; E_ad=doubleIn;}
+		//else if(stringIn =="E_ad"){is >> doubleIn; E_ad=doubleIn;}
 
 		else{std::cout <<stringIn <<" not a valid argument." <<std::endl;}
 
@@ -266,38 +277,38 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 	outfile <<"maxTime" <<'\t' <<maxTime <<std::endl;
 	outfile <<"maxUnit" <<'\t' <<maxUnit <<std::endl;
 
-	outfile <<"s1" <<'\t' <<s1<<std::endl;
-	outfile <<"s2" <<'\t' <<s2<<std::endl;
+	//outfile <<"s1" <<'\t' <<s1<<std::endl;
+	//outfile <<"s2" <<'\t' <<s2<<std::endl;
 	outfile <<"d" <<'\t' <<d<<std::endl;
 	outfile <<"E_de" <<'\t' <<E_de<<std::endl;
-	outfile <<"E_ad" <<'\t' <<E_ad<<std::endl;
+	//outfile <<"E_ad" <<'\t' <<E_ad<<std::endl;
 
 }
 
-void ProblemDef::printInputfile(){
+void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 
-	std::cout <<std::endl<<"Print input arguments"<<std::endl;
+	out  <<std::endl<<"Print input arguments"<<std::endl;
 
-	std::cout  <<"resultPath" <<'\t' <<resultpath <<std::endl;
-	std::cout  <<"loadbufferPath" <<'\t' <<loadbufferPath <<std::endl;
-	std::cout  <<"hitbufferPath" <<'\t' <<hitbufferPath <<std::endl;
-	std::cout  <<"resultbufferPath" <<'\t' <<resultbufferPath <<std::endl<<std::endl;
+	out  <<"resultPath" <<'\t' <<resultpath <<std::endl;
+	out  <<"loadbufferPath" <<'\t' <<loadbufferPath <<std::endl;
+	out  <<"hitbufferPath" <<'\t' <<hitbufferPath <<std::endl;
+	out  <<"resultbufferPath" <<'\t' <<resultbufferPath <<std::endl<<std::endl;
 
-	std::cout  <<"simulationTime" <<'\t' <<simulationTime <<std::endl;
-	std::cout  <<"unit" <<'\t' <<unit <<std::endl;
+	out  <<"simulationTime" <<'\t' <<simulationTime <<std::endl;
+	out  <<"unit" <<'\t' <<unit <<std::endl;
 
-	std::cout  <<"iterationNumber" <<'\t' <<iterationNumber<<std::endl;
-	std::cout  <<"maxTime" <<'\t' <<maxTime <<std::endl;
-	std::cout  <<"maxUnit" <<'\t' <<maxUnit <<std::endl<<std::endl;
+	out  <<"iterationNumber" <<'\t' <<iterationNumber<<std::endl;
+	out  <<"maxTime" <<'\t' <<maxTime <<std::endl;
+	out  <<"maxUnit" <<'\t' <<maxUnit <<std::endl<<std::endl;
 
-	std::cout  <<"s1" <<'\t' <<s1<<std::endl;
-	std::cout  <<"s2" <<'\t' <<s2<<std::endl;
-	std::cout  <<"d" <<'\t' <<d<<std::endl;
-	std::cout  <<"E_de" <<'\t' <<E_de<<std::endl;
-	std::cout  <<"E_ad" <<'\t' <<E_ad<<std::endl<<std::endl;
+	//out  <<"s1" <<'\t' <<s1<<std::endl;
+	//out  <<"s2" <<'\t' <<s2<<std::endl;
+	out  <<"d" <<'\t' <<d<<std::endl;
+	out  <<"E_de" <<'\t' <<E_de<<std::endl;
+	//out  <<"E_ad" <<'\t' <<E_ad<<std::endl<<std::endl;
 
-	std::cout << "Simulation time " << simulationTime << unit << " converted to " << simulationTimeMS << "ms" << std::endl;
-	std::cout << "Maximum simulation time " << maxTime << maxUnit << " converted to " << maxTimeS << "s" << std::endl<<std::endl;
+	out  << "Simulation time " << simulationTime << unit << " converted to " << simulationTimeMS << "ms" << std::endl;
+	out  << "Maximum simulation time " << maxTime << maxUnit << " converted to " << maxTimeS << "s" << std::endl<<std::endl;
 
 }
 
@@ -387,8 +398,9 @@ void SimulationHistory::appendList(Databuff *hitbuffer, double time){
 
 }
 
-void SimulationHistory::print(){
-	coveringList.print();
+void SimulationHistory::print(bool write){
+	coveringList.print(std::cout);
+	if(write)	coveringList.print(p->outFile);
 }
 
 void SimulationHistory::write(std::string path){

@@ -654,7 +654,7 @@ void RecordLeakPos() {
 	}
 }
 
-std::pair<bool,double> SimulationRun(double time, Databuff *hitbuffer, int rank) {
+std::pair<bool,double> SimulationRun(double time, Databuff *hitbuffer) {
 
 	// 1s step
 	double t0, t1;
@@ -688,7 +688,6 @@ std::pair<bool,double> SimulationRun(double time, Databuff *hitbuffer, int rank)
 
 	t1 = GetTick();
 	sHandle->stepPerSec =1000.0* (double)(nbStep) / (t1 - t0);
-	std::cout <<"Elapsed time for calculation step (substep of one iteration step) for process " <<rank <<": "  <<t1-t0 <<std::endl;
 #ifdef _DEBUG
 	printf("Running: stepPerSec = %f\n", sHandle->stepPerSec);
 #endif

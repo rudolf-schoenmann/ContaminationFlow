@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 	else{
-		if (rank == 0){p->printInputfile();}
+		if (rank == 0){p->printInputfile(p->outFile);}
 	}
 
 	if (rank == 0) {
@@ -238,7 +238,8 @@ int main(int argc, char *argv[]) {
 		if (p->simulationTimeMS != 0) {
 
 			if(rank == 0){
-			std::cout <<std::endl <<"Starting iteration " <<it <<std::endl;
+			std::cout <<std::endl <<"----------------Starting iteration " <<it <<"----------------"<<std::endl;
+			p->outFile <<std::endl <<"----------------Starting iteration " <<it <<"----------------"<<std::endl;
 			}
 
 			//----Send hitbuffer content to all subprocesses
@@ -273,14 +274,17 @@ int main(int argc, char *argv[]) {
 					else{
 						for (uint facets=0; facets < facetNum.size(); facets++){
 							std::cout <<"Facet " <<facetNum[facets] <<" reached threshold " <<sHandle->coveringThreshold[facetNum[facets]] <<" for process " <<rank <<std::endl;
+							p->outFile <<"Facet " <<facetNum[facets] <<" reached threshold " <<sHandle->coveringThreshold[facetNum[facets]] <<" for process " <<rank <<std::endl;
 						}
 					}
 				} else {
-					std::cout << "Simulation for process " << rank << " for step " << it << " finished."<< std::endl;
+					std::cout << "Simulation for process " << rank << " for iteration " << it << " finished."<< std::endl;
+					p->outFile << "Simulation for process " << rank << " for iteration " << it << " finished."<< std::endl;
 				}
 			}
 			else{
 				std::cout <<"Wait for "<< p->simulationTime <<p->unit << std::endl;
+				p->outFile <<"Wait for "<< p->simulationTime <<p->unit << std::endl;
 				//record time needed for simulation step
 				t0 = GetTick();
 				MPI_Barrier(MPI_COMM_WORLD);
@@ -296,6 +300,7 @@ int main(int argc, char *argv[]) {
 
 					MPI_Send(&simHistory->flightTime, 1, MPI::DOUBLE, 0, 0,MPI_COMM_WORLD);
 					MPI_Send(&simHistory->nParticles, 1, MPI::INT, 0, 0,MPI_COMM_WORLD);
+					MPI_Barrier(MPI_COMM_WORLD);
 
 				} else if (rank == 0) {
 					//Process 0 receives hitbuffer from Process i
@@ -305,6 +310,7 @@ int main(int argc, char *argv[]) {
 					//UpdateMCMainHits(&hitbuffer_sum, &hitbuffer, &hitbuffer_phys, 0);
 					UpdateMCMainHits(&hitbuffer_sum, &hitbuffer, simHistory ,0);
 					std::cout << "Updated hitbuffer with process " << i <<std::endl << std::endl;
+					p->outFile << "Updated hitbuffer with process " << i <<std::endl << std::endl;
 
 					double old_flightTime=simHistory->flightTime;
 					int old_nParticles = simHistory->nParticles; //reset in UpdateCoveringPhys
@@ -314,6 +320,9 @@ int main(int argc, char *argv[]) {
 					simHistory->nParticles+=old_nParticles;
 					std::cout << "flightTime " << simHistory->flightTime << std::endl;
 					std::cout << "nParticles " << simHistory->nParticles << std::endl;
+					p->outFile << "flightTime " << simHistory->flightTime << std::endl;
+					p->outFile << "nParticles " << simHistory->nParticles << std::endl;
+					MPI_Barrier(MPI_COMM_WORLD);
 				}
 			}
 
@@ -328,7 +337,8 @@ int main(int argc, char *argv[]) {
 				//memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //Not needed, only covering copied in UpdateCoveringPhys
 
 				UpdateCoveringphys(&hitbuffer_sum, &hitbuffer);
-				simHistory->coveringList.print();
+				simHistory->coveringList.print(std::cout);
+				simHistory->coveringList.print(p->outFile);
 
 			}
 
@@ -349,8 +359,9 @@ int main(int argc, char *argv[]) {
 	if(rank==0){
 		//----Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
 		std::cout << "Process 0 exporting final hitbuffer" << std::endl <<std::endl;
+		p->outFile << "Process 0 exporting final hitbuffer" << std::endl <<std::endl;
 		exportBuff(p->resultbufferPath,&hitbuffer_sum);//export hitbuffer_sum
-		simHistory->print();
+		simHistory->print(true);
 		simHistory->write(p->resultpath);
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
