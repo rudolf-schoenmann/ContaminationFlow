@@ -203,9 +203,9 @@ with the input file defining the following parameters:
 \item maxTime (optional): maximum simulation time; default: \codew{10.0}
 \item maxUnit (optional): maximum simulation time unit; default: \codew{y}
 \item iterationNumber(optional): number of iteration with legth of simulationTime * unit; default: 43200
-\item \codew{$s_1$}, coefficient used for calculation of sticking coefficient; default:\codew{1}
-\item \codew{$s_2$}, coefficient used for calculation of sticking coefficient; default:\codew{0.2}
-\item \codew{$E_{ad}$}, energy used for calculation of sticking coefficient; default:\codew{1\text{E}-21}
+%\item \codew{$s_1$}, coefficient used for calculation of sticking coefficient; default:\codew{1}
+%\item \codew{$s_2$}, coefficient used for calculation of sticking coefficient; default:\codew{0.2}
+%\item \codew{$E_{ad}$}, energy used for calculation of sticking coefficient; default:\codew{1\text{E}-21}
 \item \codew{$E_{de}$}, energy used for calculation of desorption; default:\codew{1\text{E}-21}
 \item\codew{$d$}, power for base of coverage used for calculation of desorption; default:\codew{1}
 \end{itemize}
@@ -268,9 +268,11 @@ with the input file defining the following parameters:
 
 \subsubsection{Sticking factor}
 \begin{itemize}[noitemsep,topsep=0pt]
-\item Calculated from coverage (and temperature)
-\item Sticking factor computed from \codew{Simulationcalc.cpp} file in \codew{calcStickingnew($\cdot$)}
-\item Updated and fixed before each interation
+\item Ratio adsorbed particles to impinging particles
+\item Set to 1
+%\item Calculated from coverage (and temperature)
+%\item Sticking factor computed from \codew{Simulationcalc.cpp} file in \codew{calcStickingnew($\cdot$)}
+%\item Updated and fixed before each interation
 \end{itemize}
 
 \subsubsection{Desorption $[1/\text{s}]$}
@@ -305,7 +307,7 @@ with the input file defining the following parameters:
 \item $\text{K}_{\text{real}/\text{virtual}}$ computed from \codew{Simulationcalc.cpp} file in \codew{GetMoleculesPerTP($\cdot$)}
 \end{itemize}
 
-
+\newpage
 \subsection{Iterative algorithm}
 \subsubsection{General Pipeline}
 \begin{itemize}[noitemsep,topsep=0pt]
@@ -314,7 +316,7 @@ with the input file defining the following parameters:
 \item Start iteration: iterationNumber steps of length simulationTime * unit:
 	\begin{itemize}[noitemsep,topsep=0pt]
 	\item[$\bullet$] Send hitbuffer from main process to subprocess using MPI
-	\item[$\bullet$] Update sticking factor and desorption rate in sub processes using \codew{UpdateSticking($\cdot$)} and \codew{UpdateDesorptionRate($\cdot$)} from \codew{UpdateSubProcess.cpp}
+	\item[$\bullet$] Update desorption rate in sub processes using \codew{UpdateDesorptionRate($\cdot$)} from \codew{UpdateSubProcess.cpp}
 	\item[$\bullet$] Simulate for SimulationTime * unit using \codew{SimulationRun()}
 	\item[$\bullet$] Update hitbuffer of sub processes from sHandle using \codew{UpdateSubHits($\cdot$)} from \codew{UpdateSubProcess.cpp}
 	\item[$\bullet$] Update Main process:

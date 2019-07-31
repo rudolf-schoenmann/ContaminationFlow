@@ -15,9 +15,12 @@ Add screenshot of GUI
 
 \subsubsection{New GUI elements}
 \begin{itemize}[noitemsep,topsep=0pt]
+\item "Particles out" renamed to Contamination level
+\begin{itemize}
 \item Text field for covering
 \item Text field for coverage
-\item Text field for new sticking coefficient
+\end{itemize}
+%\item Text field for new sticking coefficient
 \item Window for CoveringHistory (reworked to SimulationHistory in ContaminationFlow Linux)
 \item PressureEvolution window expanded
 	\begin{itemize}[noitemsep,topsep=0pt]
@@ -47,14 +50,9 @@ Add screenshot of GUI
 \item Added covering to GUI, can be defined through textfield
 \end{itemize}
 
-\subsubsection{Compute sticking factor based on covering}
+\subsubsection{Removal of irrelevant quantities}
 \begin{itemize}[noitemsep,topsep=0pt]
-\item Sticking factor computed in \codew{Molflow.cpp} file in \codew{calcStickingnew()}
-\item Updated automatically whenever covering is changed
-\end{itemize}
-
-\subsubsection{Removal of Flow-Sticking dependency}
-\begin{itemize}[noitemsep,topsep=0pt]
+\item Sticking factor and pumping speed removed from GUI
 \item \codew{calcSticking()} and \codew{calcFlow()} in \codew{Molflow.cpp} file not used anymore
 \item Flow not needed for iterative Algorithm
 \end{itemize}
