@@ -42,19 +42,19 @@
 	\end{split}
 \end{equation}
 
-\subsubsection*{Sticking factor $sc$}
-\begin{equation}
-	\label{eq:sc}
-	sc(\theta)=
-	\begin{cases}
-		\begin{split}
-		1&, \text{\quad if}\ \theta^* \geq 100\\
-		0&,  \text{\quad otherwise}
-		%(s_1 (1-\theta) + s_2 \theta) \cdot (1 -  \exp({-\frac{E_{ad}}{K_b T}}))&, \text{\quad if}\ \theta < 1\\
-		%s_2  \cdot (1 -  \exp({-\frac{E_{ad}}{K_b T}}))&,  \text{\quad otherwise}.
-		\end{split}
-	\end{cases}
-\end{equation}
+%\subsubsection*{Sticking factor $sc$}
+%\begin{equation}
+%	\label{eq:sc}
+%	sc(\theta)=
+%	\begin{cases}
+%		\begin{split}
+%		1&, \text{\quad if}\ \theta^* \geq 100\\
+%		0&,  \text{\quad otherwise}
+%		%(s_1 (1-\theta) + s_2 \theta) \cdot (1 -  \exp({-\frac{E_{ad}}{K_b T}}))&, \text{\quad if}\ \theta < 1\\
+%		%s_2  \cdot (1 -  \exp({-\frac{E_{ad}}{K_b T}}))&,  \text{\quad otherwise}.
+%		\end{split}
+%	\end{cases}
+%\end{equation}
 
 \subsubsection*{Desorption rate $des$}
 \begin{equation}
@@ -164,7 +164,7 @@
 \rule{0pt}{3ex} maxTime, maxUnit& \multirow{2}{*}{Maximal total simulated time in seconds}\\
 \quad$\Rightarrow$maxTimeS&\\
 \rule{0pt}{3ex} iterationNumber& Number of iterations\\
-\rule{0pt}{3ex} s1, s2, E\_de, E\_ad, d& Parameters for simulation, see equation \ref{eq:sc} and \ref{eq:des}\\
+\rule{0pt}{3ex}  E\_de, d& Parameters to calculate desorption rate, see equation \ref{eq:des}\\
 \hline
 \rule{0pt}{3ex} readArg()& Initialization from command line arguments\\
 \rule{0pt}{3ex} readInputfile()& Initialization from input file\\
@@ -248,7 +248,7 @@
 \rule{0pt}{3ex} calcNmono()& see equation \ref{eq:nmono} \\
 \rule{0pt}{3ex} calcdNsurf()& see equation \ref{eq:nsurf} \\
 \rule{0pt}{3ex} calcCoverage()& see equation \ref{eq:cov} \\
-\rule{0pt}{3ex} calcStickingnew()& see equation \ref{eq:sc} \\
+\rule{0pt}{3ex} calcStickingnew()& sets sticking coefficient to 1 \\
 \rule{0pt}{3ex} calcDesorption(), calcDesorptionRate()& see equation \ref{eq:des} \\
 \rule{0pt}{3ex} GetMoleculesPerTP()& see equation \ref{eq:krealvirt} \\
 \rule{0pt}{3ex} \multirow{2}{*}{calctotalDesorption}& calculates desorption for\\

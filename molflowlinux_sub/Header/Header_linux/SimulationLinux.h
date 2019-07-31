@@ -75,30 +75,62 @@ public:
 		pointintime_list.push_back(std::make_pair(time,List));
 
 	}
-	void print(){
+	std::string convertTime(double time){
+		std::string final="";
+		std::div_t divresult;
+		divresult=std::div((int)time, 60); //min sec
+		int seconds=divresult.rem;
+		divresult=std::div(divresult.quot, 60); //hours min
+		int minutes=divresult.rem;
+		divresult=std::div(divresult.quot, 24); //days h
+		int hours=divresult.rem;
+		divresult=std::div(divresult.quot, 30.4375); //month days
+		int days=divresult.rem;
+		divresult=std::div(divresult.quot, 12); //years month
+		int months=divresult.rem;
+		int years=divresult.quot;
 
-		std::cout <<std::setw(12)<<std::right<<"time[s]";
+		if(years!=0) final=final+std::to_string(years)+"y";//3
+		if(months!=0) final=final+std::to_string(months)+"mo";//4
+		if(days!=0) final=final+std::to_string(days)+"d";//3
+		if(hours!=0) final=final+std::to_string(hours)+"h";//3
+		if(minutes!=0) final=final+std::to_string(minutes)+"min";//5
+		if(seconds!=0) final=final+std::to_string(seconds)+"s";//3
+
+		if(final==""){
+			final=std::to_string(time)+"s";
+		}
+
+		return final;
+	}
+	void print(std::ostream& out){
+
+		out <<std::setw(11)<<std::right<<"time[s]";
+		out <<std::setw(22)<<std::right<<"time";
 		for(uint i=0;i<pointintime_list.size();i++)
 		{
 			if(i==0){
 				for(uint j=0; j<pointintime_list[i].second.size();j++)
 						{
-						std::cout <<"\t" <<std::setw(6)<<std::right <<"Facet " <<std::setw(6)<<std::right <<j;
+						out <<"\t" <<std::setw(6)<<std::right <<"Facet " <<std::setw(6)<<std::right <<j;
 						}
 			}
-			std::cout<<std::endl;
+			out<<std::endl;
 
 			//std::cout <<std::setw(12)<<std::right <<(llong)pointintime_list[i].first ;
-			std::cout <<std::setw(12)<<std::right <<(double)pointintime_list[i].first ;
+
+			out<<std::setw(11)<<std::right <<pointintime_list[i].first ;
+			out<<std::setw(22)<<std::right <<convertTime(pointintime_list[i].first);
 
 			for(uint j=0; j<pointintime_list[i].second.size();j++)
 			{
 				//std::cout <<"\t\t" <<pointintime_list[i].second[j];
-				std::cout <<"\t" <<std::setw(12)<<std::right <<(double)pointintime_list[i].second[j];
+				out <<"\t" <<std::setw(12)<<std::right <<pointintime_list[i].second[j];
+
 			}
 
 		}
-		std::cout<<std::endl<<std::endl;
+		out<<std::endl<<std::endl;
 	}
 	void write(std::string filename){
 		//std::string write = "/home/van/history"+std::to_string(num)+".txt";
@@ -192,6 +224,46 @@ public:
 
 };
 
+class ProblemDef{
+public:
+	ProblemDef(int argc, char *argv[]);
+	ProblemDef();
+
+	void readArg(int argc, char *argv[], int rank=1);
+	void readInputfile(std::string filename, int rank=1);
+	void writeInputfile(std::string filename, int rank=1);
+	void printInputfile(std::ostream& out);
+
+
+	std::string resultpath;
+	std::ofstream outFile;
+
+	// These can be given as parameters directly
+	std::string loadbufferPath;
+	std::string hitbufferPath;
+	std::string resultbufferPath;
+	double simulationTime;
+	std::string unit;
+
+	// These can be given through input file only
+	int iterationNumber; //number of iterations, all of length simulationTimeMS so far
+	double maxTime;
+	std::string maxUnit;
+
+	//double s1;
+	//double s2;
+	double E_de;
+	//double E_ad;
+	double d;
+
+	double H_vap;
+	double W_tr;
+
+	//These cannot be given, but are computed from other variables
+	int simulationTimeMS;
+	int maxTimeS;
+};
+
 class SimulationHistory{
 public:
 	SimulationHistory();
@@ -208,53 +280,20 @@ public:
 	int currentStep;
 
 	void appendList(Databuff *hitbuffer, double time=-1.0);
-	void print();
+	void print(bool write=false);
 	void write(std::string path);
 	void updateHistory(Databuff *hitbuffer);
 
 
 };
 
-class ProblemDef{
-public:
-	ProblemDef(int argc, char *argv[]);
-	ProblemDef();
-
-	void readArg(int argc, char *argv[], int rank=1);
-	void readInputfile(std::string filename, int rank=1);
-	void writeInputfile(std::string filename, int rank=1);
-	void printInputfile();
-
-
-	std::string resultpath;
-
-	// These can be given as parameters directly
-	std::string loadbufferPath;
-	std::string hitbufferPath;
-	std::string resultbufferPath;
-	double simulationTime;
-	std::string unit;
-
-	// These can be given through input file only
-	int iterationNumber; //number of iterations, all of length simulationTimeMS so far
-	double maxTime;
-	std::string maxUnit;
-
-	double s1;
-	double s2;
-	double E_de;
-	double E_ad;
-	double d;
-
-	//These cannot be given, but are computed from other variables
-	int simulationTimeMS;
-	int maxTimeS;
-};
 
 //-----------------------------------------------------------
 //SimulationLinux.cpp
 std::tuple<bool, std::vector<int> >  simulateSub(Databuff *hitbuffer, int rank, int simutime);
 double convertunit(double simutime, std::string unit);
+
+void printConsole(std::string str,std::ofstream outFile);
 //ProblemDef
 //SimulationHistory
 

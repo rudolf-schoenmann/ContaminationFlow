@@ -58,6 +58,7 @@ double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
 	if (test_time_step*Krealvirt < 1){
 		test_time_step = test_time_step * (1/(test_time_step*Krealvirt)) *20; // 20 is just a chosen random value to increase the output per iteration
 		std::cout << "increased time step to " << test_time_step << " s." << std::endl;
+		p->outFile << "increased time step to " << test_time_step << " s." << std::endl;
 	}
 	//Damit hat man aber den time step stärker nach unten hin begrenzt, als mit dem 'increase time step check' pro Facet. Mit dem 'increase time step check' pro Facet kann es auch ein Verhältnis von realen zu Testteilchen
 	//kleiner eins geben. Damit hat man eine besserer Statistik.
@@ -114,6 +115,7 @@ double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
 	if(stepSize>test_time_step){
 		test_time_step=stepSize;
 		std::cout<<"Replace test_time_step with stepSize: "<<stepSize <<std::endl;
+		p->outFile<<"Replace test_time_step with stepSize: "<<stepSize <<std::endl;
 		incrCurrentStep=true;
 	}
 	else{
@@ -129,11 +131,12 @@ double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
 					if (covering_sum < covering_phys){
 
 						covering_check = (long double)(covering_phys - (covering_phys - covering_sum)*(long double)(Krealvirt*test_time_step));
-						//std::cout<<"Decrease "<<covering_check <<std::endl;
+
 						if(covering_check<0.0){
 							test_time_step=0.05*(double)((long double)(covering_phys/((covering_phys - covering_sum)*(long double)Krealvirt)));//0.05 (decreasing multiplier) is a trade off between fast convergence and small oscillations
 							//decreased_time_step = true;
 							std::cout<<"Decreased Tmin: "<<test_time_step <<std::endl;
+							p->outFile<<"Decreased Tmin: "<<test_time_step <<std::endl;
 							incrCurrentStep=false;
 							//std::cout << covering_check << std::endl;
 						}	
@@ -145,6 +148,7 @@ double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
 	if(incrCurrentStep){
 		simHistory->currentStep+=1;
 		std::cout<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
+		p->outFile<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
 	}
 	
 	/*
@@ -260,9 +264,13 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 	//buffer_sum = hitbuffer_sum->buff;
 
 	std::cout << "Tmin = " << estimateAverageFlightTime() << " s."<< std::endl;
+	p->outFile << "Tmin = " << estimateAverageFlightTime() << " s."<< std::endl;
 	double time_step = manageTimeStep(hitbuffer_sum,  Krealvirt);
 	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
 	std::cout << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*time_step << std::endl;
+
+	p->outFile <<"Krealvirt = " << Krealvirt << std::endl;
+	p->outFile << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*time_step << std::endl;
 	//std::cout <<"testing timestep: " <<time_step <<'\t' <<estimateAverageFlightTime() <<std::endl;
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
@@ -275,19 +283,28 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 				std::cout << "covering_sum = " << covering_sum  << " = "<< (long double)(covering_sum) << std::endl;
 				std::cout<< "covering_phys_before = " << covering_phys << " = "<< (long double)(covering_phys) << std::endl;
 
+				p->outFile<<std::endl << "Facet " << f.globalId << std::endl;
+				p->outFile<< "covering_sum = " << covering_sum  << " = "<< (long double)(covering_sum) << std::endl;
+				p->outFile<< "covering_phys_before = " << covering_phys << " = "<< (long double)(covering_phys) << std::endl;
+
 				if (covering_sum > covering_phys){
 					llong covering_delta = static_cast < llong > ((covering_sum - covering_phys)*Krealvirt*time_step);
 					covering_phys += covering_delta;
 					std::cout << "covering rises by " <<covering_delta << " = "<<(long double)(covering_delta) << std::endl;
+					p->outFile << "covering rises by " <<covering_delta << " = "<<(long double)(covering_delta) << std::endl;
 				}
 				else{
 					llong covering_delta = static_cast < llong > ((covering_phys - covering_sum)*Krealvirt*time_step);
 					covering_phys -= covering_delta;
 					std::cout << "covering decreases by "<<covering_delta << " = " << (long double)(covering_delta) << std::endl;
+					p->outFile << "covering decreases by "<<covering_delta << " = " << (long double)(covering_delta) << std::endl;
 
 				}
 				std::cout<< "covering_phys_after = " << covering_phys << " = " << (long double)(covering_phys) << std::endl;
 				std::cout<< "coveringThreshhold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << " = " << (long double)(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
+				p->outFile<< "covering_phys_after = " << covering_phys << " = " << (long double)(covering_phys) << std::endl;
+				p->outFile<< "coveringThreshhold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << " = " << (long double)(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
+
 				simHistory->coveringList.setCurrentList(&f, covering_phys);
 		}
 	}
