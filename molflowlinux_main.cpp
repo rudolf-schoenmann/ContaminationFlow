@@ -300,7 +300,6 @@ int main(int argc, char *argv[]) {
 
 					MPI_Send(&simHistory->flightTime, 1, MPI::DOUBLE, 0, 0,MPI_COMM_WORLD);
 					MPI_Send(&simHistory->nParticles, 1, MPI::INT, 0, 0,MPI_COMM_WORLD);
-					MPI_Barrier(MPI_COMM_WORLD);
 
 				} else if (rank == 0) {
 					//Process 0 receives hitbuffer from Process i
@@ -322,7 +321,6 @@ int main(int argc, char *argv[]) {
 					std::cout << "nParticles " << simHistory->nParticles << std::endl;
 					p->outFile << "flightTime " << simHistory->flightTime << std::endl;
 					p->outFile << "nParticles " << simHistory->nParticles << std::endl;
-					MPI_Barrier(MPI_COMM_WORLD);
 				}
 			}
 

@@ -254,6 +254,9 @@ public:
 	//double E_ad;
 	double d;
 
+	double H_vap;
+	double W_tr;
+
 	//These cannot be given, but are computed from other variables
 	int simulationTimeMS;
 	int maxTimeS;

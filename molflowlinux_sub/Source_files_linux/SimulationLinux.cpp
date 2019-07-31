@@ -165,6 +165,8 @@ ProblemDef::ProblemDef(int argc, char *argv[]){
 	E_de=1E-21;
 	//E_ad=1E-21;
 	d=1;
+	H_vap=0.8E-19;
+	W_tr=1.0;
 
 	simulationTime = argc > 4? std::atof(argv[4]): 10.0;
 	unit = argc > 5? argv[5]:"s";
@@ -198,6 +200,8 @@ ProblemDef::ProblemDef(){
 	E_de=1E-21;
 	//E_ad=1E-21;
 	d=1;
+	H_vap=0.8E-19;
+	W_tr=1.0;
 
 	maxTime=10.0;
 	maxUnit="y";
@@ -251,6 +255,8 @@ void ProblemDef::readInputfile(std::string filename, int rank){
 		else if(stringIn =="d"){is >> doubleIn; d=doubleIn;}
 		else if(stringIn =="E_de"){is >> doubleIn; E_de=doubleIn;}
 		//else if(stringIn =="E_ad"){is >> doubleIn; E_ad=doubleIn;}
+		else if(stringIn =="H_vap"){is >> doubleIn; H_vap=doubleIn;}
+		else if(stringIn =="W_tr"){is >> doubleIn; W_tr=doubleIn;}
 
 		else{std::cout <<stringIn <<" not a valid argument." <<std::endl;}
 
@@ -283,6 +289,9 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 	outfile <<"E_de" <<'\t' <<E_de<<std::endl;
 	//outfile <<"E_ad" <<'\t' <<E_ad<<std::endl;
 
+	outfile <<"H_vap" <<'\t' <<H_vap <<std::endl;
+	outfile <<"W_tr" <<'\t' <<W_tr <<std::endl;
+
 }
 
 void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
@@ -306,6 +315,8 @@ void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 	out  <<"d" <<'\t' <<d<<std::endl;
 	out  <<"E_de" <<'\t' <<E_de<<std::endl;
 	//out  <<"E_ad" <<'\t' <<E_ad<<std::endl<<std::endl;
+	out <<"H_vap" <<'\t' <<H_vap <<std::endl;
+	out <<"W_tr" <<'\t' <<W_tr <<std::endl;
 
 	out  << "Simulation time " << simulationTime << unit << " converted to " << simulationTimeMS << "ms" << std::endl;
 	out  << "Maximum simulation time " << maxTime << maxUnit << " converted to " << maxTimeS << "s" << std::endl<<std::endl;
