@@ -89,8 +89,8 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 
 
 	//Print simHistory example
-	if(rank==1)
-		simHistory->print();
+	//if(rank==1)
+	//	simHistory->print();
 
 	//std::cout <<simHistory->flightTime <<'\t' <<simHistory->nParticles <<std::endl;
 
@@ -336,11 +336,11 @@ SimulationHistory::SimulationHistory(){
 }
 
 SimulationHistory::SimulationHistory(Databuff *hitbuffer){
-	std::vector<llong> currentstep;
-	currentstep =std::vector<llong> ();
+	std::vector<llong> currentCov;
+	currentCov =std::vector<llong> ();
 
-	std::vector<llong> currentHits;
-	currentHits =std::vector<llong> ();
+	std::vector<double> currentHits;
+	currentHits =std::vector<double> ();
 
 	numFacet=0;
 	nParticles=0;
@@ -349,20 +349,20 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer){
 
 	nbDesorbed_old= getnbDesorbed(hitbuffer);
 
-	llong numHit;
+	double numHit;
 	llong covering;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				covering = getCovering(&f, hitbuffer);
 				numHit=getHits(&f, hitbuffer);
-				currentstep.push_back(covering);
+				currentCov.push_back(covering);
 				currentHits.push_back(numHit);
 				f.tmpCounter[0].hit.covering=covering;
 				numFacet+=1;
 			}
 	}
 
-	coveringList.appendList(currentstep, 0);
+	coveringList.appendList(currentCov, 0);
 	coveringList.initCurrent(numFacet);
 	hitList.appendList(currentHits, 0);
 	hitList.initCurrent(numFacet);
@@ -372,10 +372,10 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer){
 }
 
 void SimulationHistory::updateHistory(Databuff *hitbuffer){
-	std::vector<llong> currentstep;
-	currentstep =std::vector<llong> ();
-	std::vector<llong> currentHits;
-	currentHits =std::vector<llong> ();
+	std::vector<llong> currentCov;
+	currentCov =std::vector<llong> ();
+	std::vector<double> currentHits;
+	currentHits =std::vector<double> ();
 	numFacet=0;
 	nParticles=0;
 	flightTime=0.0;
@@ -383,20 +383,20 @@ void SimulationHistory::updateHistory(Databuff *hitbuffer){
 
 	nbDesorbed_old= getnbDesorbed(hitbuffer);
 
-	llong numHit;
+	double numHit;
 	llong covering;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				covering = getCovering(&f, hitbuffer);
 				numHit=getHits(&f, hitbuffer);
-				currentstep.push_back(covering);
+				currentCov.push_back(covering);
 				currentHits.push_back(numHit);
 				f.tmpCounter[0].hit.covering=covering;
 				numFacet+=1;
 			}
 	}
 	coveringList.reset();
-	coveringList.appendList(currentstep, 0);
+	coveringList.appendList(currentCov, 0);
 	coveringList.initCurrent(numFacet);
 	hitList.reset();
 	hitList.appendList(currentHits, 0);
@@ -408,8 +408,8 @@ void SimulationHistory::updateHistory(Databuff *hitbuffer){
 
 void SimulationHistory::appendList(Databuff *hitbuffer, double time){
 
-	std::vector<llong> currentstep;
-	currentstep =std::vector<llong> ();
+	std::vector<llong> currentCov;
+	currentCov =std::vector<llong> ();
 
 	if(time==-1.0) //One step
 		time=coveringList.pointintime_list.back().first+1.0;
@@ -420,11 +420,11 @@ void SimulationHistory::appendList(Databuff *hitbuffer, double time){
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			covering=getCovering(&f, hitbuffer);
-			currentstep.push_back(covering);
+			currentCov.push_back(covering);
 			//i+=1;
 		}
 	}
-	coveringList.appendList(currentstep, time);
+	coveringList.appendList(currentCov, time);
 
 }
 

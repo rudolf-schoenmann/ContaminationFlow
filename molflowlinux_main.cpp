@@ -212,6 +212,7 @@ int main(int argc, char *argv[]) {
 			return 0;
 		}
 		initCoveringThresh();
+		UpdateSojourn();
 		if(rank==0){ // hitbuffer_sum and histphys
 			//Save copies of the original loaded hitbuffer
 			//These copise will be used in process 0. The hitbuffers of all subprocesses will be add up and written in the hitbuffer_sum
