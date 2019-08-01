@@ -135,7 +135,7 @@ double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
 	//Check, if the time step is too long. We avoid the covering counter going negative (=overflow of llong) by decreasing the time step.
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
-					covering_phys = simHistory->coveringList.getCurrent(&f);
+					covering_phys = simHistory->coveringList.getLast(&f);
 					covering_sum = getCovering(&f, hitbuffer_sum);
 
 					if (covering_sum < covering_phys){
@@ -286,7 +286,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				//FacetHitBuffer *facetHitBuffer_sum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
-				covering_phys = simHistory->coveringList.getCurrent(&f);
+				covering_phys = simHistory->coveringList.getLast(&f);
 				covering_sum = getCovering(&f, hitbuffer_sum);
 
 				std::cout<<std::endl << "Facet " << f.globalId << std::endl;
@@ -322,6 +322,30 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 	simHistory->lastTime+=time_step;
 }
 
+void UpdateError(Databuff *hitbuffer_sum){
+
+	double num_hit_it=0;
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) { //save current num total hits in currentList, add difference current-old to num_hit_it
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			num_hit_it+=f.sh.opacity * (getHits(&f,hitbuffer_sum)-simHistory->hitList.getLast(&f));
+		}
+	}
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			if(f.sh.opacity==0){simHistory->errorList.setCurrentList(&f, 0.0);}
+			else{
+				double num_hit_f=f.sh.opacity * ( getHits(&f,hitbuffer_sum)-simHistory->hitList.getLast(&f));
+				double error=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
+				simHistory->errorList.setCurrentList(&f, error);
+			}
+			simHistory->hitList.setLast(&f,getHits(&f,hitbuffer_sum));
+		}
+	}
+	simHistory->errorList.appendCurrent(simHistory->lastTime);
+	simHistory->hitList.pointintime_list.back().first=simHistory->lastTime;
+
+}
+
 // Copy covering to buffer
 void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
 	llong covering_phys;
@@ -335,7 +359,7 @@ void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
 				FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
-				covering_phys = simHistory->coveringList.getCurrent(&f);
+				covering_phys = simHistory->coveringList.getLast(&f);
 				facetHitBuffer->hit.covering=covering_phys;
 				facetHitSum->hit.covering=covering_phys;
 			}
@@ -806,7 +830,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) { // Add hits
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 					FacetHitBuffer *facetHitSub = (FacetHitBuffer *)(subbuff + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
-					llong covering_phys=history->coveringList.getCurrent(&f);
+					llong covering_phys=history->coveringList.getLast(&f);
 					llong covering_sum = facetHitSub->hit.covering;
 /*
 					std::cout <<sizeof(GlobalHitBuffer) <<std::endl;

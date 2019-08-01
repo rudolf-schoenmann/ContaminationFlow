@@ -25,6 +25,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 #include "SimulationLinux.h"
 extern Simulation *sHandle;
+extern ProblemDef* p;
 
 //Update values of subprocess
 //sticking
@@ -64,6 +65,16 @@ void UpdateDesorptionRate (Databuff *hitbuffer){
 		}
 	}
 
+}
+
+void UpdateSojourn(){
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			f.sh.enableSojournTime = true;
+			f.sh.sojournFreq = (kb*f.sh.temperature)/h;
+			f.sh.sojournE = p->E_de;
+		}
+	}
 }
 
 

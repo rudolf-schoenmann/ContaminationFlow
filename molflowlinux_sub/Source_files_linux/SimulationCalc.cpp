@@ -53,6 +53,14 @@ llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns cove
 	return facetHitBuffer->hit.covering;
 }
 
+double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number hits from hitbuffer
+	BYTE *buffer;
+	buffer = hitbuffer->buff;
+	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
+
+	return facetHitBuffer->hit.nbHitEquiv; //TODO nbMCHit or nbHitEquiv?
+}
+
 llong getnbDesorbed(Databuff *hitbuffer_sum){
 	BYTE *buffer;
 	buffer = hitbuffer_sum->buff;
@@ -95,6 +103,13 @@ std::tuple<double, double> calctotalDesorption(){// desorptionrate as well as to
 			}
 	}
 	return {std::make_tuple(desrate, totaldes)};
+}
+
+double calcEnergy(SubprocessFacet *iFacet, Databuff *hitbuffer){ //TODO verify
+	long double coverage=calcCoverage(iFacet,hitbuffer);
+
+	return (double)tanh((1-coverage) * (2*tuneE)/p->W_tr) * (p->E_de - p->H_vap)/2 +(p->E_de+p->H_vap)/2; //tanh(adjust width) * adjust height + adjust bias
+
 }
 
 

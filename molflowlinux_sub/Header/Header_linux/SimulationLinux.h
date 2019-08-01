@@ -38,6 +38,7 @@ const double carbondiameter = 2 *76E-12;
 const double kb = 1.38E-23;
 //const double tau = 1E-13;
 const double h= 6.626E-34;
+const double tuneE=2.7;
 
 template <typename T> class HistoryList{
 public:
@@ -78,32 +79,35 @@ public:
 	std::string convertTime(double time){
 		std::string final="";
 		std::div_t divresult;
-		divresult=std::div((int)time, 60); //min sec
-		int seconds=divresult.rem;
-		divresult=std::div(divresult.quot, 60); //hours min
-		int minutes=divresult.rem;
-		divresult=std::div(divresult.quot, 24); //days h
-		int hours=divresult.rem;
-		divresult=std::div(divresult.quot, 30.4375); //month days
-		int days=divresult.rem;
-		divresult=std::div(divresult.quot, 12); //years month
-		int months=divresult.rem;
-		int years=divresult.quot;
+		if(time/60.0>1){
+			divresult=std::div((int)time, 60); //min sec
+			int seconds=divresult.rem;
+			divresult=std::div(divresult.quot, 60); //hours min
+			int minutes=divresult.rem;
+			divresult=std::div(divresult.quot, 24); //days h
+			int hours=divresult.rem;
+			divresult=std::div(divresult.quot, 30.4375); //month days
+			int days=divresult.rem;
+			divresult=std::div(divresult.quot, 12); //years month
+			int months=divresult.rem;
+			int years=divresult.quot;
 
-		if(years!=0) final=final+std::to_string(years)+"y";//3
-		if(months!=0) final=final+std::to_string(months)+"mo";//4
-		if(days!=0) final=final+std::to_string(days)+"d";//3
-		if(hours!=0) final=final+std::to_string(hours)+"h";//3
-		if(minutes!=0) final=final+std::to_string(minutes)+"min";//5
-		if(seconds!=0) final=final+std::to_string(seconds)+"s";//3
-
+			if(years!=0) final=final+std::to_string(years)+"y";//3
+			if(months!=0) final=(months>9)?final+std::to_string(months)+"mo":final+" "+std::to_string(months)+"mo";//4
+			if(days!=0) final=(days>9)?final+std::to_string(days)+"d":final+" "+std::to_string(days)+"d";//3
+			if(hours!=0) final=(hours>9)?final+std::to_string(hours)+"h":final+" "+std::to_string(hours)+"h";//3
+			if(minutes!=0) final=(minutes>9)?final+std::to_string(minutes)+"min":final+" "+std::to_string(minutes)+"min";//5
+			if(seconds!=0) final=(seconds>9)?final+std::to_string(seconds)+"s":final+" "+std::to_string(seconds)+"s";//3
+		}
 		if(final==""){
-			final=std::to_string(time)+"s";
+			final=std::to_string((int)time)+"s";
 		}
 
 		return final;
 	}
-	void print(std::ostream& out){
+	void print(std::ostream& out, std::string msg= ""){
+
+		out<<std::endl <<msg <<std::endl;
 
 		out <<std::setw(11)<<std::right<<"time[s]";
 		out <<std::setw(22)<<std::right<<"time";
@@ -218,9 +222,10 @@ public:
 	}*/
 	//void setCurrent(SubprocessFacet *iFacet, T newValue){int covidx = getFacetIndex(iFacet);	pointintime_list.back().second[covidx]=newValue;}
 	void setCurrentList(SubprocessFacet *iFacet, T newValue){int covidx = getFacetIndex(iFacet);	currentList[covidx]=newValue;}
-	T getCurrent(int idx){return pointintime_list.back().second[idx];}
-	T getCurrent(SubprocessFacet *iFacet){int covidx = getFacetIndex(iFacet);return pointintime_list.back().second[covidx];}
+	T getLast(int idx){return pointintime_list.back().second[idx];}
+	T getLast(SubprocessFacet *iFacet){int covidx = getFacetIndex(iFacet);return pointintime_list.back().second[covidx];}
 	std::vector<T> getCurrent(){return pointintime_list.back().second;};
+	void setLast(SubprocessFacet *iFacet, T newValue){int covidx = getFacetIndex(iFacet);	pointintime_list.back().second[covidx]=newValue;}
 
 };
 
@@ -261,7 +266,7 @@ public:
 
 	//These cannot be given, but are computed from other variables
 	int simulationTimeMS;
-	int maxTimeS;
+	double maxTimeS;
 };
 
 class SimulationHistory{
@@ -272,6 +277,10 @@ public:
 	//std::vector< std::pair<double,std::vector<double>> > pointintime_list_read;
 
 	HistoryList<llong> coveringList;
+	HistoryList<double> hitList;
+	HistoryList<double> errorList;
+
+
 	unsigned int numFacet;
 	llong nbDesorbed_old;
 	double flightTime;
@@ -302,6 +311,7 @@ void printConsole(std::string str,std::ofstream outFile);
 
 void UpdateSticking(Databuff *hitbuffer);
 void UpdateDesorptionRate (Databuff *hitbuffer);
+void UpdateSojourn();
 
 void UpdateMCSubHits(Databuff *databuffer, int rank);
 
@@ -316,11 +326,14 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 void UpdateCovering(Databuff *hitbuffer, Databuff *hitbuffer_original, double time_step);
 void UpdateCovering(Databuff *hitbuffer_sum);
 void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer);
+
+void UpdateError(Databuff *hitbuffer_sum);
 //-----------------------------------------------------------
 //SimulationCalc.cpp
 
 llong getnbDesorbed(Databuff *hitbuffer_sum);
 llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
+double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer);
 
 double GetMoleculesPerTP(Databuff *hitbuffer_sum, llong nbDesorbed_old);
 void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
