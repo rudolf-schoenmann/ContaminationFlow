@@ -176,7 +176,7 @@ ProblemDef::ProblemDef(int argc, char *argv[]){
 
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
 
-	maxTimeS=(int) (convertunit(maxTime, maxUnit)/1000.0 + 0.5);
+	maxTimeS=convertunit(maxTime, maxUnit)/1000.0;
 
 }
 
@@ -205,7 +205,7 @@ ProblemDef::ProblemDef(){
 
 	maxTime=10.0;
 	maxUnit="y";
-	maxTimeS=(int) (convertunit(maxTime, maxUnit)/1000.0 + 0.5);
+	maxTimeS=convertunit(maxTime, maxUnit)/1000.0;
 
 	simulationTime = 10.0;
 	unit = "s";
@@ -264,7 +264,7 @@ void ProblemDef::readInputfile(std::string filename, int rank){
 
 	}
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
-	maxTimeS=(int) (convertunit(maxTime, maxUnit)/1000.0 + 0.5);
+	maxTimeS=convertunit(maxTime, maxUnit)/1000.0;
 
 	writeInputfile(resultpath+"/InputFile.txt",rank);
 }
@@ -338,6 +338,10 @@ SimulationHistory::SimulationHistory(){
 SimulationHistory::SimulationHistory(Databuff *hitbuffer){
 	std::vector<llong> currentstep;
 	currentstep =std::vector<llong> ();
+
+	std::vector<llong> currentHits;
+	currentHits =std::vector<llong> ();
+
 	numFacet=0;
 	nParticles=0;
 	flightTime=0.0;
@@ -345,12 +349,14 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer){
 
 	nbDesorbed_old= getnbDesorbed(hitbuffer);
 
-
+	llong numHit;
 	llong covering;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				covering = getCovering(&f, hitbuffer);
+				numHit=getHits(&f, hitbuffer);
 				currentstep.push_back(covering);
+				currentHits.push_back(numHit);
 				f.tmpCounter[0].hit.covering=covering;
 				numFacet+=1;
 			}
@@ -358,12 +364,18 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer){
 
 	coveringList.appendList(currentstep, 0);
 	coveringList.initCurrent(numFacet);
+	hitList.appendList(currentHits, 0);
+	hitList.initCurrent(numFacet);
+	errorList.initCurrent(numFacet);
+	errorList.appendCurrent(0.0);
 	currentStep=0;
 }
 
 void SimulationHistory::updateHistory(Databuff *hitbuffer){
 	std::vector<llong> currentstep;
 	currentstep =std::vector<llong> ();
+	std::vector<llong> currentHits;
+	currentHits =std::vector<llong> ();
 	numFacet=0;
 	nParticles=0;
 	flightTime=0.0;
@@ -371,12 +383,14 @@ void SimulationHistory::updateHistory(Databuff *hitbuffer){
 
 	nbDesorbed_old= getnbDesorbed(hitbuffer);
 
-
+	llong numHit;
 	llong covering;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				covering = getCovering(&f, hitbuffer);
+				numHit=getHits(&f, hitbuffer);
 				currentstep.push_back(covering);
+				currentHits.push_back(numHit);
 				f.tmpCounter[0].hit.covering=covering;
 				numFacet+=1;
 			}
@@ -384,6 +398,11 @@ void SimulationHistory::updateHistory(Databuff *hitbuffer){
 	coveringList.reset();
 	coveringList.appendList(currentstep, 0);
 	coveringList.initCurrent(numFacet);
+	hitList.reset();
+	hitList.appendList(currentHits, 0);
+	hitList.initCurrent(numFacet);
+
+
 }
 
 
@@ -410,8 +429,14 @@ void SimulationHistory::appendList(Databuff *hitbuffer, double time){
 }
 
 void SimulationHistory::print(bool write){
-	coveringList.print(std::cout);
-	if(write)	coveringList.print(p->outFile);
+	coveringList.print(std::cout, "Accumulative covering");
+	hitList.print(std::cout, "Accumulative number hits");
+	errorList.print(std::cout, "Error per iteration");
+	if(write){
+		coveringList.print(p->outFile, "Accumulative covering");
+		hitList.print(p->outFile, "Accumulative number hits");
+		errorList.print(p->outFile, "Error per iteration");
+	}
 }
 
 void SimulationHistory::write(std::string path){

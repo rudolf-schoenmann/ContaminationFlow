@@ -53,6 +53,14 @@ llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns cove
 	return facetHitBuffer->hit.covering;
 }
 
+llong getHits(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number hits from hitbuffer
+	BYTE *buffer;
+	buffer = hitbuffer->buff;
+	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
+
+	return facetHitBuffer->hit.nbHitEquiv; //nbMCHit or nbHitEquiv?
+}
+
 llong getnbDesorbed(Databuff *hitbuffer_sum){
 	BYTE *buffer;
 	buffer = hitbuffer_sum->buff;

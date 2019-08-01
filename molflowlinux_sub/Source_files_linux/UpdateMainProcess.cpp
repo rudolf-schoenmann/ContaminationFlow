@@ -312,6 +312,27 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 	simHistory->lastTime+=time_step;
 }
 
+void UpdateError(Databuff *hitbuffer_sum){
+
+	llong num_hit_it=0;
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) { //save current num total hits in currentList, add difference current-old to num_hit_it
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			simHistory->hitList.setCurrentList(&f, getHits(&f,hitbuffer_sum));
+			num_hit_it+=getHits(&f,hitbuffer_sum)-simHistory->hitList.getCurrent(&f);
+		}
+	}
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			double num_hit_f=(double)getHits(&f,hitbuffer_sum)-(double)simHistory->hitList.getCurrent(&f);
+			double error=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5); //TODO: check formula (1-n)/N or 1-n/N
+			simHistory->errorList.setCurrentList(&f, error);
+		}
+	}
+	simHistory->hitList.appendCurrent(simHistory->lastTime);
+	simHistory->errorList.appendCurrent(simHistory->lastTime);
+
+}
+
 // Copy covering to buffer
 void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
 	llong covering_phys;

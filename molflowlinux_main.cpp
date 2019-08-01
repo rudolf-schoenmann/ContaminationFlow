@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
 	Databuff loadbuffer; //Loadbuffer to read in data of geometry and physical parameters
 	loadbuffer.buff=NULL;
 
-	double t0,t1;
+	//double t0,t1;
 
 	//llong nbDesorbed_old; //test: nbDesorbed of previous iteration, used so that hitbuffer_sum does not have to be reset -> true final hitbuffer, added to simhistory
 
@@ -126,7 +126,14 @@ int main(int argc, char *argv[]) {
 	// Get the rank of the process
 	int rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	if(world_size<=1){
+		if (rank == 0){
+			std::cout <<"Minimum number of 2 Subprocesses needed. Currently "<<world_size <<std::endl;
+		}
 
+		MPI_Finalize();
+		return 0;
+	}
 
 	p = new ProblemDef();
 
@@ -288,9 +295,9 @@ int main(int argc, char *argv[]) {
 				std::cout <<"Wait for "<< p->simulationTime <<p->unit << std::endl;
 				p->outFile <<"Wait for "<< p->simulationTime <<p->unit << std::endl;
 				//record time needed for simulation step
-				t0 = GetTick();
+				//t0 = GetTick();
 				MPI_Barrier(MPI_COMM_WORLD);
-				t1 = GetTick();
+				//t1 = GetTick();
 			}
 
 			//----iteratively add hitbuffer from subprocesses
@@ -334,19 +341,29 @@ int main(int argc, char *argv[]) {
 
 				//double time_step = estimateTmin_RudiTest(&hitbuffer);
 				UpdateCovering(&hitbuffer_sum);
+				UpdateError(&hitbuffer_sum);
 				//memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //Not needed, only covering copied in UpdateCoveringPhys
 
 				UpdateCoveringphys(&hitbuffer_sum, &hitbuffer);
-				simHistory->coveringList.print(std::cout);
-				simHistory->coveringList.print(p->outFile);
+				simHistory->coveringList.print(std::cout, "Accumulative covering after iteration "+std::to_string(it));
+				simHistory->coveringList.print(p->outFile,"Accumulative covering after iteration "+std::to_string(it));
+
+				simHistory->hitList.print(std::cout,"Accumulative number hits after iteration "+std::to_string(it));
+				simHistory->hitList.print(p->outFile,"Accumulative number hits after iteration "+std::to_string(it));
+
+				simHistory->errorList.print(std::cout,"Error after iteration "+std::to_string(it));
+				simHistory->errorList.print(p->outFile,"Error after iteration "+std::to_string(it));
 
 			}
 
 			//UpdateDesorptionRate(&hitbuffer);//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes //already doing this at beginning of iteration
-			if (rank == 0) std::cout << "ending iteration " << it <<std::endl;
+			if (rank == 0) {std::cout << "ending iteration " << it <<std::endl;}
 
+			MPI_Bcast(&simHistory->lastTime, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
 			if(simHistory->lastTime > p->maxTimeS){
-				std::cout <<"maximum simulation time reached" <<std::endl;
+				if(rank==0) {
+					std::cout <<"maximum simulation time reached: " <<simHistory->lastTime  <<" > " <<p->maxTimeS <<std::endl;
+					p->outFile <<"maximum simulation time reached: " <<simHistory->lastTime  <<" > " <<p->maxTimeS <<std::endl;}
 				break;
 			}
 

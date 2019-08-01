@@ -103,7 +103,9 @@ public:
 
 		return final;
 	}
-	void print(std::ostream& out){
+	void print(std::ostream& out, std::string msg= ""){
+
+		out<<std::endl <<msg <<std::endl;
 
 		out <<std::setw(11)<<std::right<<"time[s]";
 		out <<std::setw(22)<<std::right<<"time";
@@ -261,7 +263,7 @@ public:
 
 	//These cannot be given, but are computed from other variables
 	int simulationTimeMS;
-	int maxTimeS;
+	double maxTimeS;
 };
 
 class SimulationHistory{
@@ -272,6 +274,10 @@ public:
 	//std::vector< std::pair<double,std::vector<double>> > pointintime_list_read;
 
 	HistoryList<llong> coveringList;
+	HistoryList<llong> hitList;
+	HistoryList<double> errorList;
+
+
 	unsigned int numFacet;
 	llong nbDesorbed_old;
 	double flightTime;
@@ -316,11 +322,14 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 void UpdateCovering(Databuff *hitbuffer, Databuff *hitbuffer_original, double time_step);
 void UpdateCovering(Databuff *hitbuffer_sum);
 void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer);
+
+void UpdateError(Databuff *hitbuffer_sum);
 //-----------------------------------------------------------
 //SimulationCalc.cpp
 
 llong getnbDesorbed(Databuff *hitbuffer_sum);
 llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
+llong getHits(SubprocessFacet *iFacet, Databuff *hitbuffer);
 
 double GetMoleculesPerTP(Databuff *hitbuffer_sum, llong nbDesorbed_old);
 void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
