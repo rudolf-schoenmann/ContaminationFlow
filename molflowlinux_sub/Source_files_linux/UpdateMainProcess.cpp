@@ -32,7 +32,17 @@ extern SimulationHistory* simHistory;
 
 // Step size for intervals
 double getStepSize(){
-	return exp((double)simHistory->currentStep*(log(p->maxTimeS)/(double)p->iterationNumber));
+	//return exp((double)simHistory->currentStep*(log(p->maxTimeS/(0.0001))/(double)p->iterationNumber));//set minimal time resolution to 1E-4 seconds.
+	if(simHistory->currentStep==0){
+		const double T_min = estimateAverageFlightTime();
+		return T_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/estimateAverageFlightTime())/(double)p->iterationNumber));
+	}
+	//return T_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/estimateAverageFlightTime())/(double)p->iterationNumber));
+
+	else{
+		return exp((double)simHistory->currentStep*(log(p->maxTimeS/simHistory->coveringList.pointintime_list[1].first)/(double)p->iterationNumber));
+	}
+
 }
 
 // Function that adapts timestep if needed, to avoid negative covering
