@@ -32,16 +32,20 @@ extern SimulationHistory* simHistory;
 
 // Step size for intervals
 double getStepSize(){
-	//return exp((double)simHistory->currentStep*(log(p->maxTimeS/(0.0001))/(double)p->iterationNumber));//set minimal time resolution to 1E-4 seconds.
-	if(simHistory->currentStep==0){
-		const double T_min = estimateAverageFlightTime();
-		return T_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/estimateAverageFlightTime())/(double)p->iterationNumber));
-	}
-	//return T_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/estimateAverageFlightTime())/(double)p->iterationNumber));
-
+	double T_min = 0.0001;//set minimal time resolution to 1E-4 seconds.
+	//Dynamical calculation of min_time is not straight forward, since 'manageTimeStep()' can change it.
+	//Dynamical calculation can be done later, if it is regarded as useful.
+	double t_start = T_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/(T_min))/(double)p->iterationNumber));
+	double t_stop = T_min*exp((double)(simHistory->currentStep+1)*(log(p->maxTimeS/(T_min))/(double)p->iterationNumber));
+	double Delta = t_stop - t_start;
+	return Delta;
+	/*if(simHistory->currentStep==0){
+		double T_min = estimateAverageFlightTime();
+		return T_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/T_min)/(double)p->iterationNumber));
+		}
 	else{
 		return exp((double)simHistory->currentStep*(log(p->maxTimeS/simHistory->coveringList.pointintime_list[1].first)/(double)p->iterationNumber));
-	}
+		}*/
 
 }
 
