@@ -336,9 +336,9 @@ void UpdateError(Databuff *hitbuffer_sum){
 	}
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			if(f.sh.opacity==0){simHistory->errorList.setCurrentList(&f, 0.0);}
+			double num_hit_f=f.sh.opacity * ( getHits(&f,hitbuffer_sum)-simHistory->hitList.getLast(&f));
+			if(f.sh.opacity==0 || num_hit_f==0){simHistory->errorList.setCurrentList(&f, 0.0);}
 			else{
-				double num_hit_f=f.sh.opacity * ( getHits(&f,hitbuffer_sum)-simHistory->hitList.getLast(&f));
 				double error=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
 				simHistory->errorList.setCurrentList(&f, error);
 			}

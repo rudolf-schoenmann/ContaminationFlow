@@ -204,13 +204,14 @@ double calcCoveringUpdate(SubprocessFacet *iFacet)
 
 void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates sticking coefficient dependent on covering.
 
-	llong covering=getCovering(iFacet,hitbuffer);
-
+	//llong covering=getCovering(iFacet,hitbuffer);
+	/*
 	if (covering>=100){
 		iFacet->sh.sticking = 1;}
 	else{
 		iFacet->sh.sticking = 0.0;
-	}
+	}*/
+	iFacet->sh.sticking = 1;
 }
 
 long double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This returns ((d'coverage')/dt)de. So to speak desorption rate in units of [1/s]

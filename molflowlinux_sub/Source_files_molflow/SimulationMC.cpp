@@ -1556,19 +1556,13 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 				//std::cout<< f->tmpCounter[m].hit.covering << std::endl;
 				//double a = f->tmpCounter[m].hit.covering;
 				f->tmpCounter[m].hit.covering += 1;
-				//double b = f->tmpCounter[m].hit.covering;
-				//std::cout << "a = "<< a << "; b = " << b << "; a - b = " << a-b << std::endl;
-				//std::cout << calcCoveringUpdate(f) << std::endl;
-				//std::cout<< f->tmpCounter[m].hit.covering << std::endl;
-				/*if(b-a > 0)
-					std::cout<< "Covering counter vergrößert" << std::endl;
-				if (b-a < 0)
-					std::cout<< "Covering counter verkleinert" << std::endl;
-				if (a-b == 0)
-					std::cout<< "Covering counter bleibt" << std::endl;*/
+				//std::cout <<"Absorb from facet " <<getFacetIndex(f) <<std::endl;
 				}
 			if (desorbed){
-				if(f->tmpCounter[m].hit.covering>sHandle->coveringThreshold[getFacetIndex(f)]){f->tmpCounter[m].hit.covering -= 1;}
+				if(f->tmpCounter[m].hit.covering>sHandle->coveringThreshold[getFacetIndex(f)]){
+					f->tmpCounter[m].hit.covering -= 1;
+					//std::cout <<"Desorption from facet " <<getFacetIndex(f) <<std::endl;
+					}
 				else{sHandle->posCovering=false;}
 
 				}
