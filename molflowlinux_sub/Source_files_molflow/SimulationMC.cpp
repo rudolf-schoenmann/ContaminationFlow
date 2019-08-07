@@ -546,7 +546,12 @@ bool SimulationMCStep(size_t nbStep, Databuff *hitbuffer) {
 						}
 						else {
 							//Reflected
-							PerformBounce(collidedFacet);
+							if(!PerformBounce(collidedFacet)){
+								//if not bounce but "absorb"
+								if (!StartFromSource())
+									// desorptionLimit reached
+									return false;
+							}
 						}
 					}
 					else { //Low flux mode
@@ -559,7 +564,12 @@ bool SimulationMCStep(size_t nbStep, Databuff *hitbuffer) {
 						else
 							sHandle->currentParticle.oriRatio *= (1.0 - stickingProbability);
 						if (sHandle->currentParticle.oriRatio > sHandle->ontheflyParams.lowFluxCutoff) {
-							PerformBounce(collidedFacet);
+							if(!PerformBounce(collidedFacet)){
+								//if not bounce but "absorb"
+								if (!StartFromSource())
+									// desorptionLimit reached
+									return false;
+							}
 						}
 						else { //eliminate remainder and create new particle
 							if (!StartFromSource())
@@ -1155,7 +1165,7 @@ double Anglemap::GetPhiCDFSum(const double & thetaIndex, const AnglemapParams& a
 	}
 }
 
-void PerformBounce(SubprocessFacet *iFacet) {
+bool PerformBounce(SubprocessFacet *iFacet) {
 
 	bool revert = false;
 
@@ -1180,7 +1190,7 @@ void PerformBounce(SubprocessFacet *iFacet) {
 		if (/*iFacet->texture &&*/ iFacet->sh.countTrans) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, true, 2.0, 2.0);
 		if (/*iFacet->direction &&*/ iFacet->sh.countDirection) RecordDirectionVector(iFacet, sHandle->currentParticle.flightTime);
 
-		return;
+		return true;
 
 	}
 
@@ -1195,7 +1205,7 @@ void PerformBounce(SubprocessFacet *iFacet) {
 			if (/*iFacet->texture && */iFacet->sh.countAbs) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, true, 2.0, 1.0);
 			if (/*iFacet->direction && */iFacet->sh.countDirection) RecordDirectionVector(iFacet, sHandle->currentParticle.flightTime);
 		}
-		return;
+		return true;
 
 	}
 
@@ -1226,11 +1236,31 @@ void PerformBounce(SubprocessFacet *iFacet) {
 
 	// Relaunch particle
 	UpdateVelocity(iFacet);
-	//Sojourn time
+
+
+	//--------------------------------------Sojourn time begin----------------------------------------------
+	if(sHandle->currentParticle.flightTime>getStepSize()&&iFacet->sh.opacity!=0){ //TODO maybe other parts from recordAbsorb()?
+		sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv += sHandle->currentParticle.oriRatio;
+		simHistory->flightTime+=sHandle->currentParticle.flightTime;
+		simHistory->nParticles+=1;
+
+		IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 0, 0, 1, 0, 0);
+		return false;
+	}
 	if (iFacet->sh.enableSojournTime) {
 		double A = exp(-iFacet->sh.sojournE / (8.31*iFacet->sh.temperature));
 		sHandle->currentParticle.flightTime += -log(rnd()) / (A*iFacet->sh.sojournFreq);
 	}
+	if(sHandle->currentParticle.flightTime>getStepSize()&&iFacet->sh.opacity!=0){ //TODO maybe other parts from recordAbsorb()?
+		sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv += sHandle->currentParticle.oriRatio;
+		simHistory->flightTime+=sHandle->currentParticle.flightTime;
+		simHistory->nParticles+=1;
+
+		IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 0, 0, 1, 0, 0);
+		return false;
+	}
+	//----------------------------------------Sojourn time end----------------------------------------------
+
 
 	if (iFacet->sh.reflection.diffusePart > 0.999999) { //Speedup branch for most common, diffuse case
 		sHandle->currentParticle.direction = PolarToCartesian(iFacet, acos(sqrt(rnd())), rnd()*2.0*PI, revert);
@@ -1278,6 +1308,8 @@ void PerformBounce(SubprocessFacet *iFacet) {
 	else RecordHit(HIT_REF);
 	sHandle->currentParticle.lastHitFacet = iFacet;
 	//sHandle->nbPHit++;
+
+	return true;
 }
 
 void PerformTransparentPass(SubprocessFacet *iFacet) { //disabled, caused finding hits with the same facet
@@ -1552,7 +1584,8 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 			f->tmpCounter[m].hit.sum_v_ort += sHandle->currentParticle.oriRatio * sum_v_ort;
 			f->tmpCounter[m].hit.sum_1_per_velocity += (hitEquiv + static_cast<double>(desorb)) / sHandle->currentParticle.velocity;
 			//update covering: increases with every absorb, decreases with every desorb
-			if (absorb>0){
+			if (absorb>0){ //TODO which one better?
+			//if (time>getStepSize()){
 				//std::cout<< f->tmpCounter[m].hit.covering << std::endl;
 				//double a = f->tmpCounter[m].hit.covering;
 				f->tmpCounter[m].hit.covering += 1;

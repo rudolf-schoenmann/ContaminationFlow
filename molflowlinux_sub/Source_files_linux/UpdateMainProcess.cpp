@@ -147,7 +147,7 @@ double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
 						covering_check = (long double)(covering_phys - (covering_phys - covering_sum)*(long double)(Krealvirt*test_time_step));
 
 						if(covering_check<0.0){
-							test_time_step=0.05*(double)((long double)(covering_phys/((covering_phys - covering_sum)*(long double)Krealvirt)));//0.05 (decreasing multiplier) is a trade off between fast convergence and small oscillations
+							test_time_step=0.5*(double)((long double)(covering_phys/((covering_phys - covering_sum)*(long double)Krealvirt)));//0.05 (decreasing multiplier) is a trade off between fast convergence and small oscillations
 							//decreased_time_step = true;
 							std::cout<<"Decreased Tmin: "<<test_time_step <<std::endl;
 							p->outFile<<"Decreased Tmin: "<<test_time_step <<std::endl;
@@ -337,7 +337,7 @@ void UpdateError(Databuff *hitbuffer_sum){
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			double num_hit_f=f.sh.opacity * ( getHits(&f,hitbuffer_sum)-simHistory->hitList.getLast(&f));
-			if(f.sh.opacity==0 || num_hit_f==0){simHistory->errorList.setCurrentList(&f, 0.0);}
+			if(f.sh.opacity==0 || num_hit_f==0){simHistory->errorList.setCurrentList(&f, 0.0);} //TODO correct ig num_hit_f ==0?
 			else{
 				double error=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
 				simHistory->errorList.setCurrentList(&f, error);

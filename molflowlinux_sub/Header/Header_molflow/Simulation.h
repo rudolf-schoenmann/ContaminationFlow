@@ -236,7 +236,7 @@ void IncreaseDistanceCounters(double d);
 void RecordHit(const int& type);
 void RecordLeakPos();
 bool StartFromSource();
-void PerformBounce(SubprocessFacet *iFacet);
+bool PerformBounce(SubprocessFacet *iFacet);
 void RecordAbsorb(SubprocessFacet *iFacet);
 void RecordHistograms(SubprocessFacet * iFacet);
 void PerformTeleport(SubprocessFacet *iFacet);
@@ -273,4 +273,4 @@ void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum, double ti
 */
 
 int getFacetIndex(SubprocessFacet *iFacet);
-
+double getStepSize();

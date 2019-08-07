@@ -76,7 +76,10 @@ bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 		}
 	}
 	else if(argc==2){ // input file given
-		if(checkReadable(argv[1])){ p->readInputfile(argv[1],rank); return true;}
+		if(checkReadable(argv[1])){
+			p->readInputfile(argv[1],rank);
+			if(!checkReadable(p->hitbufferPath)||!checkReadable(p->loadbufferPath)){return false;}
+			return true;}
 		}
 	return false;
 	}
@@ -212,7 +215,6 @@ int main(int argc, char *argv[]) {
 			return 0;
 		}
 		initCoveringThresh();
-		UpdateSojourn();
 		if(rank==0){ // hitbuffer_sum and histphys
 			//Save copies of the original loaded hitbuffer
 			//These copise will be used in process 0. The hitbuffers of all subprocesses will be add up and written in the hitbuffer_sum
@@ -264,13 +266,12 @@ int main(int argc, char *argv[]) {
 			// currently 2nd ideo implemented as otherwise covering check is negative (-> adapt coveringphys?)
 			setCoveringThreshold(&hitbuffer, world_size, rank);
 
+			UpdateSticking(&hitbuffer);
 			UpdateDesorptionRate(&hitbuffer);//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes
-
+			UpdateSojourn(&hitbuffer);
 			//----Simulation on subprocesses
 			if (rank != 0) {
 				/* do work in any remaining processes */
-				// calc covering for threshold
-				setCoveringThreshold(&hitbuffer, world_size, rank);
 
 				sHandle->posCovering=true;//assumption that negative covering has been resolved before: implemented though covering threshold in sub processes and manageTimeStep()
 
@@ -359,6 +360,8 @@ int main(int argc, char *argv[]) {
 
 			//UpdateDesorptionRate(&hitbuffer);//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes //already doing this at beginning of iteration
 			if (rank == 0) {std::cout << "ending iteration " << it <<std::endl;}
+
+			MPI_Barrier(MPI_COMM_WORLD);
 
 			MPI_Bcast(&simHistory->lastTime, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
 			if(simHistory->lastTime > p->maxTimeS){

@@ -260,6 +260,7 @@ public:
 	double E_de;
 	//double E_ad;
 	double d;
+	double sticking;
 
 	double H_vap;
 	double W_tr;
@@ -311,7 +312,7 @@ void printConsole(std::string str,std::ofstream outFile);
 
 void UpdateSticking(Databuff *hitbuffer);
 void UpdateDesorptionRate (Databuff *hitbuffer);
-void UpdateSojourn();
+void UpdateSojourn(Databuff *hitbuffer);
 
 void UpdateMCSubHits(Databuff *databuffer, int rank);
 
@@ -334,6 +335,8 @@ void UpdateError(Databuff *hitbuffer_sum);
 llong getnbDesorbed(Databuff *hitbuffer_sum);
 llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
 double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer);
+
+double calcEnergy(SubprocessFacet *iFacet, Databuff *hitbuffer);
 
 double GetMoleculesPerTP(Databuff *hitbuffer_sum, llong nbDesorbed_old);
 void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);

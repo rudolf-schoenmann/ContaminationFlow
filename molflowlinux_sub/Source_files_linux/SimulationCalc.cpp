@@ -211,7 +211,7 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates
 	else{
 		iFacet->sh.sticking = 0.0;
 	}*/
-	iFacet->sh.sticking = 1;
+	iFacet->sh.sticking = p->sticking;
 }
 
 long double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This returns ((d'coverage')/dt)de. So to speak desorption rate in units of [1/s]
@@ -229,7 +229,9 @@ long double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This 
 	}
 	long double tau=(long double)(h/(kb*temperature));
 
-	desorption= (long double)(1.0/tau) * powl(coverage,(long double)p->d) *expl(-(long double)p->E_de/(long double)(kb*temperature));
+	long double energy_de=(long double) calcEnergy(iFacet,hitbuffer);
+
+	desorption= (long double)(1.0/tau) * powl(coverage,(long double)p->d) *expl(-energy_de/(long double)(kb*temperature));
 	//if (Desorption Energy/Temperature) >~ 1.02E-20J/K, desorption will be zero
 	return desorption;
 }

@@ -67,12 +67,12 @@ void UpdateDesorptionRate (Databuff *hitbuffer){
 
 }
 
-void UpdateSojourn(){
+void UpdateSojourn(Databuff *hitbuffer){
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			f.sh.enableSojournTime = true;
 			f.sh.sojournFreq = (kb*f.sh.temperature)/h;
-			f.sh.sojournE = p->E_de;
+			f.sh.sojournE = calcEnergy(&f, hitbuffer);
 		}
 	}
 }

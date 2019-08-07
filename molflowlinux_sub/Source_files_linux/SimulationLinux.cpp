@@ -53,10 +53,6 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 	std::vector<int> facetNum;
 	facetNum =std::vector<int> ();
 
-	//Update values of subprocess using hitbuffer
-	UpdateSticking(hitbuffer);
-	UpdateDesorptionRate(hitbuffer);
-
 	// Start Simulation = create first particle
 	if(!StartSimulation())
 		return {std::make_tuple(true,facetNum)};
@@ -167,6 +163,7 @@ ProblemDef::ProblemDef(int argc, char *argv[]){
 	d=1;
 	H_vap=0.8E-19;
 	W_tr=1.0;
+	sticking=0.0;
 
 	simulationTime = argc > 4? std::atof(argv[4]): 10.0;
 	unit = argc > 5? argv[5]:"s";
@@ -202,6 +199,7 @@ ProblemDef::ProblemDef(){
 	d=1;
 	H_vap=0.8E-19;
 	W_tr=1.0;
+	sticking=0.0;
 
 	maxTime=10.0;
 	maxUnit="y";
@@ -257,6 +255,7 @@ void ProblemDef::readInputfile(std::string filename, int rank){
 		//else if(stringIn =="E_ad"){is >> doubleIn; E_ad=doubleIn;}
 		else if(stringIn =="H_vap"){is >> doubleIn; H_vap=doubleIn;}
 		else if(stringIn =="W_tr"){is >> doubleIn; W_tr=doubleIn;}
+		else if(stringIn =="sticking"){is >> doubleIn; sticking=doubleIn;}
 
 		else{std::cout <<stringIn <<" not a valid argument." <<std::endl;}
 
@@ -283,6 +282,7 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 	outfile <<"maxTime" <<'\t' <<maxTime <<std::endl;
 	outfile <<"maxUnit" <<'\t' <<maxUnit <<std::endl;
 
+	outfile <<"sticking" <<'\t' <<sticking<<std::endl;
 	//outfile <<"s1" <<'\t' <<s1<<std::endl;
 	//outfile <<"s2" <<'\t' <<s2<<std::endl;
 	outfile <<"d" <<'\t' <<d<<std::endl;
@@ -312,6 +312,7 @@ void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 
 	//out  <<"s1" <<'\t' <<s1<<std::endl;
 	//out  <<"s2" <<'\t' <<s2<<std::endl;
+	out <<"sticking" <<'\t' <<sticking <<std::endl;
 	out  <<"d" <<'\t' <<d<<std::endl;
 	out  <<"E_de" <<'\t' <<E_de<<std::endl;
 	//out  <<"E_ad" <<'\t' <<E_ad<<std::endl<<std::endl;
