@@ -52,7 +52,7 @@ bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 			printf("argv[%d]: %s\n", i, argv[i]);
 		}
 	}
-	if(argc>2){ // list of parameters given
+	if(argc>3){ // list of parameters given
 		std::cout <<std::endl;
 		if (argc < 5 || argc > 6) {
 			if(rank==0){
@@ -60,7 +60,7 @@ bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 				std::cout << "Please pass these arguments to MolflowLinux:"<< std::endl;
 				std::cout << "1. Name of load-buffer file to read in (e.g. loadbuffer)."<< std::endl;
 				std::cout << "2. Name of hit-buffer file to read in (e.g. hitbuffer)."<< std::endl;
-				std::cout << "3. Choose a name for the buffer file to export the simulation results (e.g. resultbuffer)."<< std::endl;
+				std::cout << "3. Save results: 0=false, 1=true."<< std::endl;
 				std::cout << "4. The total simulation time (e.g 2.5)." << std::endl;
 				std::cout << "5. [OPTIONAL] Simulation time unit (e.g. seconds, minutes, hours, days). Default set to seconds." << std::endl;
 				std::cout << "MolflowLinux is terminated now." << std::endl;}
@@ -69,15 +69,15 @@ bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 		else{
 			if(rank==0){std::cout<<"Read arguments" <<std::endl;}
 
-			if(!checkReadable(argv[1])||!checkReadable(argv[2])||!checkWriteable(argv[3])||std::atof(argv[4])<0.0) // check if parameters are feasible
+			if(!checkReadable(argv[1])||!checkReadable(argv[2])||std::atof(argv[4])<0.0) // check if parameters are feasible
 				{return false;}
 			p->readArg(argc, argv, rank);
 			return true;
 		}
 	}
-	else if(argc==2){ // input file given
+	else if(argc<4 && argc>1){ // input file given
 		if(checkReadable(argv[1])){
-			p->readInputfile(argv[1],rank);
+			p->readInputfile(argv[1],rank, argc==3?(int)std::atof(argv[2]):1);
 			if(!checkReadable(p->hitbufferPath)||!checkReadable(p->loadbufferPath)){return false;}
 			return true;}
 		}
@@ -379,11 +379,15 @@ int main(int argc, char *argv[]) {
 	MPI_Barrier(MPI_COMM_WORLD);
 	if(rank==0){
 		//----Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
-		std::cout << "Process 0 exporting final hitbuffer" << std::endl <<std::endl;
-		p->outFile << "Process 0 exporting final hitbuffer" << std::endl <<std::endl;
-		exportBuff(p->resultbufferPath,&hitbuffer_sum);//export hitbuffer_sum
 		simHistory->print(true);
-		simHistory->write(p->resultpath);
+
+		if(p->saveResults){
+			simHistory->write(p->resultpath);
+
+			std::cout << "Process 0 exporting final hitbuffer" << std::endl <<std::endl;
+			p->outFile << "Process 0 exporting final hitbuffer" << std::endl <<std::endl;
+			exportBuff(p->resultbufferPath,&hitbuffer_sum);//export hitbuffer_sum
+		}
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
 

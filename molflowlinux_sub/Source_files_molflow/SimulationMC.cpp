@@ -1226,6 +1226,7 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 	iFacet->sh.tmpCounter.hit.sum_1_per_ort_velocity += 1.0 / ortVelocity;
 	iFacet->sh.tmpCounter.hit.sum_v_ort += (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity;*/
 
+
 	IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 1, 0, 0, 1.0 / ortVelocity, (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity);
 	sHandle->currentParticle.nbBounces++;
 	if (/*iFacet->texture &&*/ iFacet->sh.countRefl) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, true, 1.0, 1.0);
@@ -1233,6 +1234,7 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 	LogHit(iFacet);
 	ProfileFacet(iFacet, sHandle->currentParticle.flightTime, true, 1.0, 1.0);
 	if (iFacet->sh.anglemapParams.record) RecordAngleMap(iFacet);
+
 
 	// Relaunch particle
 	UpdateVelocity(iFacet);
@@ -1245,6 +1247,8 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 		simHistory->nParticles+=1;
 
 		IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 0, 0, 1, 0, 0);
+		if (/*iFacet->texture &&*/ iFacet->sh.countAbs) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, true, 2.0, 1.0); //was 2.0, 1.0
+
 		return false;
 	}
 	if (iFacet->sh.enableSojournTime) {
@@ -1257,6 +1261,8 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 		simHistory->nParticles+=1;
 
 		IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 0, 0, 1, 0, 0);
+		if (/*iFacet->texture &&*/ iFacet->sh.countAbs) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, true, 2.0, 1.0); //was 2.0, 1.0
+
 		return false;
 	}
 	//----------------------------------------Sojourn time end----------------------------------------------

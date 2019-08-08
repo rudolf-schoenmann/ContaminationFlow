@@ -48,6 +48,35 @@ double getStepSize(){
 		}*/
 
 }
+double manageStepSize(){
+	double step_size = getStepSize();
+	bool incrCurrentStep=true;
+
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			llong covering_phys = simHistory->coveringList.getLast(&f);
+			//llong covering_sum = getCovering(&f, hitbuffer);
+
+			if ((llong)(f.sh.desorption*step_size)>covering_phys){
+
+				step_size=(double)covering_phys/f.sh.desorption;
+				//std::cout <<"Desorption * step_size " <<(llong)(f.sh.desorption*step_size) <<std::endl;
+				//std::cout <<"Covering " <<covering_phys <<std::endl;
+				//std::cout<<"Decreased Tmin: "<<step_size <<std::endl;
+				//p->outFile<<"Decreased Tmin: "<<step_size <<std::endl;
+				incrCurrentStep=false;
+			}
+		}
+	}
+	/*
+	if(incrCurrentStep){//needed here?
+		simHistory->currentStep+=1;
+		std::cout<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
+		p->outFile<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
+	}*/
+
+	return step_size;
+}
 
 // Function that adapts timestep if needed, to avoid negative covering
 double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
@@ -67,13 +96,13 @@ double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
 	//decreased_time_step = increased_test_step = false;
 	//double minimum_time_step_increase = 0;
 	
-	
+	/*
 	//Man könnte sich auch den 'increase time step check' pro Facet sparen, indem man den time step sofort erhöht, wenn man sieht, dass ein virtuelles Testteilchen weniger als einem realen Teilchen entspricht:
 	if (test_time_step*Krealvirt < 1){
 		test_time_step = test_time_step * (1/(test_time_step*Krealvirt)) *20; // 20 is just a chosen random value to increase the output per iteration
 		std::cout << "increased time step to " << test_time_step << " s." << std::endl;
 		p->outFile << "increased time step to " << test_time_step << " s." << std::endl;
-	}
+	}*/
 	//Damit hat man aber den time step stärker nach unten hin begrenzt, als mit dem 'increase time step check' pro Facet. Mit dem 'increase time step check' pro Facet kann es auch ein Verhältnis von realen zu Testteilchen
 	//kleiner eins geben. Damit hat man eine besserer Statistik.
 	

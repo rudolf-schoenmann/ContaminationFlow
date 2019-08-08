@@ -234,11 +234,13 @@ public:
 	ProblemDef(int argc, char *argv[]);
 	ProblemDef();
 
+	void createOutput(int save);
 	void readArg(int argc, char *argv[], int rank=1);
-	void readInputfile(std::string filename, int rank=1);
+	void readInputfile(std::string filename, int rank=1, int save=1);
 	void writeInputfile(std::string filename, int rank=1);
 	void printInputfile(std::ostream& out);
 
+	bool saveResults;
 
 	std::string resultpath;
 	std::ofstream outFile;
@@ -297,6 +299,14 @@ public:
 
 };
 
+class NullStream : public std::ostream {
+    class NullBuffer : public std::streambuf {
+    public:
+        int overflow( int c ) { return c; }
+    } m_nb;
+public:
+    NullStream() : std::ostream( &m_nb ) {}
+};
 
 //-----------------------------------------------------------
 //SimulationLinux.cpp

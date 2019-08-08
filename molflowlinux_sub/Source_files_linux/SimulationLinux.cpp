@@ -150,46 +150,9 @@ std::string get_path( )
         return std::string( exepath );
 }
 
-ProblemDef::ProblemDef(int argc, char *argv[]){
-	loadbufferPath= argc > 1 ? argv[1] :"";
-	hitbufferPath=argc > 2 ? argv[2]:"";
-	resultbufferPath=argc > 3 ? argv[3]:"";
-
-	iterationNumber = 43200;
-	//s1=0.99;
-	//s2=0.2;
-	E_de=1E-21;
-	//E_ad=1E-21;
-	d=1;
-	H_vap=0.8E-19;
-	W_tr=1.0;
-	sticking=0.0;
-
-	simulationTime = argc > 4? std::atof(argv[4]): 10.0;
-	unit = argc > 5? argv[5]:"s";
-
-	maxTime=10.0;
-	maxUnit="y";
-
-	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
-
-	maxTimeS=convertunit(maxTime, maxUnit)/1000.0;
-
-}
-
 ProblemDef::ProblemDef(){
-	std::string path=get_path();
-	std::cout <<path <<std::endl;
-	char *test=&path[0u];
-	std::string test2(dirname(dirname(test)));
-	resultpath=test2+"/results/"+std::to_string(time(0));
-	mkdir(resultpath.c_str(),S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-
 	loadbufferPath= "/home/van/Buffer/loadbuffer_alle_RT";
 	hitbufferPath="/home/van/Buffer/hitbuffer_allee-6";
-	resultbufferPath=resultpath+"/resultbuffer";
-
-	outFile.open(resultpath+"/console.txt", std::fstream::app);
 
 	iterationNumber = 43200;
 	//s1=1;
@@ -208,23 +171,50 @@ ProblemDef::ProblemDef(){
 	simulationTime = 10.0;
 	unit = "s";
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
+
+	saveResults=true;
+}
+
+void ProblemDef::createOutput(int save){
+	if(save!=0){
+		std::string path=get_path();
+		std::cout <<path <<std::endl;
+		char *test=&path[0u];
+		std::string test2(dirname(dirname(test)));
+		resultpath=test2+"/results/"+std::to_string(time(0));
+		mkdir(resultpath.c_str(),S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+		resultbufferPath=resultpath+"/resultbuffer";
+		outFile.open(resultpath+"/console.txt", std::fstream::app);
+		saveResults=true;
+	}
+	else{
+		outFile.setstate(std::ios_base::badbit);
+		saveResults=false;
+	}
 }
 
 void ProblemDef::readArg(int argc, char *argv[], int rank){
+	int tmpsave=argc > 3 ? (int)atof(argv[3]):1;
+	createOutput(tmpsave);
+
 	loadbufferPath= argc > 1 ? argv[1] :loadbufferPath;
 	hitbufferPath=argc > 2 ? argv[2]:hitbufferPath;
-	resultbufferPath=argc > 3 ? argv[3]:resultbufferPath;
+
 
 	simulationTime = argc > 4? std::atof(argv[4]): simulationTime;
 	unit = argc > 5? argv[5]:unit;
 
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
 
-	writeInputfile(resultpath+"/InputFile.txt",rank);
+	if(saveResults)
+		writeInputfile(resultpath+"/InputFile.txt",rank);
 
 }
 
-void ProblemDef::readInputfile(std::string filename, int rank){
+void ProblemDef::readInputfile(std::string filename, int rank, int save){
+	createOutput(save);
+
 	std::string line;
 	std::ifstream input(filename,std::ifstream::in);
 	//if (rank==0) {std::cout <<"Test to read input arguments from " <<filename <<std::endl;}
@@ -265,7 +255,8 @@ void ProblemDef::readInputfile(std::string filename, int rank){
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
 	maxTimeS=convertunit(maxTime, maxUnit)/1000.0;
 
-	writeInputfile(resultpath+"/InputFile.txt",rank);
+	if(saveResults)
+		writeInputfile(resultpath+"/InputFile.txt",rank);
 }
 
 void ProblemDef::writeInputfile(std::string filename, int rank){
