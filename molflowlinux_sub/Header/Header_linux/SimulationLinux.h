@@ -80,7 +80,7 @@ public:
 		std::string final="";
 		std::div_t divresult;
 		if(time/60.0>1){
-			divresult=std::div((int)time, 60); //min sec
+			divresult=std::div((int)(time+0.5), 60); //min sec
 			int seconds=divresult.rem;
 			divresult=std::div(divresult.quot, 60); //hours min
 			int minutes=divresult.rem;
@@ -100,7 +100,7 @@ public:
 			if(seconds!=0) final=(seconds>9)?final+std::to_string(seconds)+"s":final+" "+std::to_string(seconds)+"s";//3
 		}
 		if(final==""){
-			final=std::to_string((int)time)+"s";
+			final=std::to_string((int)(time+0.5))+"s";
 		}
 
 		return final;
@@ -116,7 +116,7 @@ public:
 			if(i==0){
 				for(uint j=0; j<pointintime_list[i].second.size();j++)
 						{
-						out <<"\t" <<std::setw(6)<<std::right <<"Facet " <<std::setw(6)<<std::right <<j;
+						out <<"\t" <<std::setw(6)<<std::right <<"Facet " <<std::setw(8)<<std::right <<j;
 						}
 			}
 			out<<std::endl;
@@ -129,7 +129,7 @@ public:
 			for(uint j=0; j<pointintime_list[i].second.size();j++)
 			{
 				//std::cout <<"\t\t" <<pointintime_list[i].second[j];
-				out <<"\t" <<std::setw(12)<<std::right <<pointintime_list[i].second[j];
+				out <<"\t" <<std::setw(14)<<std::right <<pointintime_list[i].second[j];
 
 			}
 
@@ -146,11 +146,11 @@ public:
 			if(i==0){
 				for(uint j=0; j<pointintime_list[i].second.size();j++)
 						{
-						outfile <<"\t" <<std::setw(6)<<std::right <<"Facet " <<std::setw(6)<<std::right <<j;
+						outfile <<"\t" <<std::setw(6)<<std::right <<"Facet " <<std::setw(8)<<std::right <<j;
 						}
 			}
 			outfile <<std::endl;
-			outfile <<std::setw(12)<<std::right <<pointintime_list[i].first ;
+			outfile <<std::setw(14)<<std::right <<pointintime_list[i].first ;
 
 			for(uint j=0; j<pointintime_list[i].second.size();j++)
 			{

@@ -1226,6 +1226,20 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 	iFacet->sh.tmpCounter.hit.sum_1_per_ort_velocity += 1.0 / ortVelocity;
 	iFacet->sh.tmpCounter.hit.sum_v_ort += (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity;*/
 
+	if(sHandle->currentParticle.flightTime>manageStepSize()&&iFacet->sh.opacity!=0){ //TODO maybe other parts from recordAbsorb()?
+		sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv += sHandle->currentParticle.oriRatio;
+		simHistory->flightTime+=sHandle->currentParticle.flightTime;
+		simHistory->nParticles+=1;
+
+		IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 1, 0, 1, 2.0 / ortVelocity, (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity);
+		LogHit(iFacet);
+		ProfileFacet(iFacet, sHandle->currentParticle.flightTime, true, 2.0, 1.0); //was 2.0, 1.0
+		if (iFacet->sh.anglemapParams.record) RecordAngleMap(iFacet);
+		if (/*iFacet->texture &&*/ iFacet->sh.countAbs) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, true, 2.0, 1.0); //was 2.0, 1.0
+		if (/*iFacet->direction &&*/ iFacet->sh.countDirection) RecordDirectionVector(iFacet, sHandle->currentParticle.flightTime);
+
+		return false;
+	}
 
 	IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 1, 0, 0, 1.0 / ortVelocity, (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity);
 	sHandle->currentParticle.nbBounces++;
@@ -1241,21 +1255,12 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 
 
 	//--------------------------------------Sojourn time begin----------------------------------------------
-	if(sHandle->currentParticle.flightTime>getStepSize()&&iFacet->sh.opacity!=0){ //TODO maybe other parts from recordAbsorb()?
-		sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv += sHandle->currentParticle.oriRatio;
-		simHistory->flightTime+=sHandle->currentParticle.flightTime;
-		simHistory->nParticles+=1;
 
-		IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 0, 0, 1, 0, 0);
-		if (/*iFacet->texture &&*/ iFacet->sh.countAbs) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, true, 2.0, 1.0); //was 2.0, 1.0
-
-		return false;
-	}
 	if (iFacet->sh.enableSojournTime) {
 		double A = exp(-iFacet->sh.sojournE / (8.31*iFacet->sh.temperature));
 		sHandle->currentParticle.flightTime += -log(rnd()) / (A*iFacet->sh.sojournFreq);
 	}
-	if(sHandle->currentParticle.flightTime>getStepSize()&&iFacet->sh.opacity!=0){ //TODO maybe other parts from recordAbsorb()?
+	if(sHandle->currentParticle.flightTime>manageStepSize()&&iFacet->sh.opacity!=0){ //TODO maybe other parts from recordAbsorb()?
 		sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv += sHandle->currentParticle.oriRatio;
 		simHistory->flightTime+=sHandle->currentParticle.flightTime;
 		simHistory->nParticles+=1;

@@ -273,4 +273,4 @@ void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum, double ti
 */
 
 int getFacetIndex(SubprocessFacet *iFacet);
-double getStepSize();
+double manageStepSize();

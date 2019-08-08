@@ -59,7 +59,8 @@ double manageStepSize(){
 
 			if ((llong)(f.sh.desorption*step_size)>covering_phys){
 
-				step_size=(double)covering_phys/f.sh.desorption;
+				long double test_size=(long double)covering_phys/((long double)f.sh.desorption);
+				step_size=0.9*(double)test_size;
 				//std::cout <<"Desorption * step_size " <<(llong)(f.sh.desorption*step_size) <<std::endl;
 				//std::cout <<"Covering " <<covering_phys <<std::endl;
 				//std::cout<<"Decreased Tmin: "<<step_size <<std::endl;
@@ -176,7 +177,7 @@ double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
 						covering_check = (long double)(covering_phys - (covering_phys - covering_sum)*(long double)(Krealvirt*test_time_step));
 
 						if(covering_check<0.0){
-							test_time_step=0.5*(double)((long double)(covering_phys/((covering_phys - covering_sum)*(long double)Krealvirt)));//0.05 (decreasing multiplier) is a trade off between fast convergence and small oscillations
+							test_time_step=0.2*(double)((long double)(covering_phys/((covering_phys - covering_sum)*(long double)Krealvirt)));//0.05 (decreasing multiplier) is a trade off between fast convergence and small oscillations
 							//decreased_time_step = true;
 							std::cout<<"Decreased Tmin: "<<test_time_step <<std::endl;
 							p->outFile<<"Decreased Tmin: "<<test_time_step <<std::endl;
