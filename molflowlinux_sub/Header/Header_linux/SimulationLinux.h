@@ -129,7 +129,7 @@ public:
 			for(uint j=0; j<pointintime_list[i].second.size();j++)
 			{
 				//std::cout <<"\t\t" <<pointintime_list[i].second[j];
-				out <<"\t" <<std::setw(14)<<std::right <<pointintime_list[i].second[j];
+				out <<"\t" <<std::setw(14)<<std::right <<(double)pointintime_list[i].second[j];
 
 			}
 
