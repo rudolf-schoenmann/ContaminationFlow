@@ -163,7 +163,7 @@ double calcKrealvirt(SubprocessFacet *iFacet, int moment){
 // calculation of used values
 
 double GetMoleculesPerTP(Databuff *hitbuffer_sum, llong nbDesorbed_old) // Calculation of Krealvirt
-//Returns how many physical molecules one test particle represents
+//Returns how many physical molecules one test particle represents per time
 {
 	llong nbDesorbed = getnbDesorbed(hitbuffer_sum)-nbDesorbed_old;
 	if (nbDesorbed == 0) return 0; //avoid division by 0

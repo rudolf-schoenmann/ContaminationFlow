@@ -80,6 +80,7 @@ double manageStepSize(){
 }
 
 // Function that adapts timestep if needed, to avoid negative covering
+//This function is not used anymore
 double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
 	//double test_time_step = pow(10,-14);
 	double test_time_step = estimateAverageFlightTime();
@@ -307,9 +308,10 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 	//BYTE *buffer_sum;
 	//buffer_sum = hitbuffer_sum->buff;
 
-	std::cout << "Tmin = " << estimateAverageFlightTime() << " s."<< std::endl;
-	p->outFile << "Tmin = " << estimateAverageFlightTime() << " s."<< std::endl;
-	double time_step = manageTimeStep(hitbuffer_sum,  Krealvirt);
+	//std::cout << "Tmin = " << estimateAverageFlightTime() << " s."<< std::endl;
+	//p->outFile << "Tmin = " << estimateAverageFlightTime() << " s."<< std::endl;
+	//double time_step = manageTimeStep(hitbuffer_sum,  Krealvirt);//old version
+	double time_step = manageStepSize();
 	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
 	std::cout << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*time_step << std::endl;
 
