@@ -57,7 +57,7 @@ double manageStepSize(){
 			llong covering_phys = simHistory->coveringList.getLast(&f);
 			//llong covering_sum = getCovering(&f, hitbuffer);
 
-			if ((llong)(f.sh.desorption*step_size)>covering_phys){
+			if ((llong)((f.sh.desorption/(kb* f.sh.temperature))*step_size)>covering_phys){
 
 				long double test_size=(long double)covering_phys/((long double)f.sh.desorption);
 				step_size=0.9*(double)test_size;
