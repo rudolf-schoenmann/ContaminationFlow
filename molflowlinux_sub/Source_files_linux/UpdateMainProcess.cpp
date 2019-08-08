@@ -69,12 +69,12 @@ double manageStepSize(){
 			}
 		}
 	}
-	/*
-	if(incrCurrentStep){//needed here?
+
+	if(incrCurrentStep){//needed here?  => JEIN
 		simHistory->currentStep+=1;
 		std::cout<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
 		p->outFile<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
-	}*/
+	}
 
 	return step_size;
 }
