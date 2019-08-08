@@ -59,7 +59,7 @@ double manageStepSize(){
 
 			if ((llong)((f.sh.desorption/(kb* f.sh.temperature))*step_size)>covering_phys){
 
-				long double test_size=(long double)covering_phys/((long double)f.sh.desorption);
+				long double test_size=(long double)covering_phys/((long double)f.sh.desorption/(kb* f.sh.temperature));
 				step_size=0.9*(double)test_size;
 				//std::cout <<"Desorption * step_size " <<(llong)(f.sh.desorption*step_size) <<std::endl;
 				//std::cout <<"Covering " <<covering_phys <<std::endl;
