@@ -48,9 +48,11 @@ double getStepSize(){
 		}*/
 
 }
-double manageStepSize(){
+double manageStepSize(bool updateCurrentStep){
 	double step_size = getStepSize();
 	bool incrCurrentStep=true;
+
+	double factor=updateCurrentStep? 1.0:0.3;
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
@@ -70,13 +72,13 @@ double manageStepSize(){
 		}
 	}
 
-	if(incrCurrentStep){//needed here?  => JEIN
+	if(incrCurrentStep&&updateCurrentStep){//needed here?  => JEIN
 		simHistory->currentStep+=1;
 		std::cout<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
 		p->outFile<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
 	}
 
-	return step_size;
+	return simHistory->currentStepSizeFactor*factor*step_size;
 }
 
 // Function that adapts timestep if needed, to avoid negative covering
@@ -311,7 +313,18 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 	//std::cout << "Tmin = " << estimateAverageFlightTime() << " s."<< std::endl;
 	//p->outFile << "Tmin = " << estimateAverageFlightTime() << " s."<< std::endl;
 	//double time_step = manageTimeStep(hitbuffer_sum,  Krealvirt);//old version
-	double time_step = manageStepSize();
+	double time_step;
+	if(Krealvirt==0){ //if no Krealvirt(no desorption), increase currentStep, time_step=0
+		time_step=0;
+		simHistory->currentStepSizeFactor*=0.1;
+		//simHistory->currentStep*=0.5;
+	}
+	else{
+		time_step = manageStepSize(true);
+		simHistory->currentStepSizeFactor=1;
+	}
+
+
 	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
 	std::cout << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*time_step << std::endl;
 

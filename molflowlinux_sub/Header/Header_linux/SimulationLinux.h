@@ -290,6 +290,7 @@ public:
 	int nParticles;
 	double lastTime;
 	int currentStep;
+	double currentStepSizeFactor;
 
 	void appendList(Databuff *hitbuffer, double time=-1.0);
 	void print(bool write=false);

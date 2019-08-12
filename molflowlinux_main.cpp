@@ -259,6 +259,10 @@ int main(int argc, char *argv[]) {
 			initbufftozero(&hitbuffer);
 
 			MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
+
+			MPI_Bcast(&simHistory->currentStepSizeFactor, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
+			MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
+
 			MPI_Barrier(MPI_COMM_WORLD);
 
 			//Options: devide covering though (size-1) or keep covering and end simulation step at threshold (covering -covering/(size-1))
@@ -272,7 +276,6 @@ int main(int argc, char *argv[]) {
 			//----Simulation on subprocesses
 			if (rank != 0) {
 				/* do work in any remaining processes */
-
 				sHandle->posCovering=true;//assumption that negative covering has been resolved before: implemented though covering threshold in sub processes and manageTimeStep()
 
 				//Do the simulation
