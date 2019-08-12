@@ -292,6 +292,8 @@ public:
 	int currentStep;
 	double currentStepSizeFactor;
 
+	double StepSizeComputationTimeFactor;
+
 	void appendList(Databuff *hitbuffer, double time=-1.0);
 	void print(bool write=false);
 	void write(std::string path);
@@ -332,11 +334,13 @@ void initbufftozero(Databuff *databuffer);
 //-----------------------------------------------------------
 //UpdateMainProcess.cpp
 
+double manageSimulationTime(double computationTime, bool adaptStep);
+
 void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, Databuff *physbuffer,int rank);
 void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHistory *history,int rank);
 
 void UpdateCovering(Databuff *hitbuffer, Databuff *hitbuffer_original, double time_step);
-void UpdateCovering(Databuff *hitbuffer_sum);
+bool UpdateCovering(Databuff *hitbuffer_sum);
 void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer);
 
 void UpdateError(Databuff *hitbuffer_sum);

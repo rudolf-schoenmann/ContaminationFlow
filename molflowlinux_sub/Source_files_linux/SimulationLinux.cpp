@@ -40,6 +40,7 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 
 	//Replaced consrtuctor with update function
 	simHistory->updateHistory(hitbuffer);
+	if(simHistory->currentStep>0){simHistory->currentStep-=1;}
 	std::cout <<"Currentstep: " << simHistory->currentStep <<". CurrentStepSizeFactor: " << simHistory->currentStepSizeFactor  <<". Step size: " <<manageStepSize(false) <<std::endl;
 
 
@@ -328,6 +329,7 @@ SimulationHistory::SimulationHistory(){
 	lastTime=0.0;
 	currentStep=0;
 	currentStepSizeFactor=1.0;
+	StepSizeComputationTimeFactor=0.0;
 }
 
 SimulationHistory::SimulationHistory(Databuff *hitbuffer){
@@ -365,6 +367,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer){
 	errorList.appendCurrent(0.0);
 	currentStep=0;
 	currentStepSizeFactor=1.0;
+	StepSizeComputationTimeFactor=0.0;
 }
 
 void SimulationHistory::updateHistory(Databuff *hitbuffer){
