@@ -172,15 +172,16 @@ Call Molflow Linux application with standard parameters in the command line:
 
 \code{
 \$ module load mpi\\
-\$ mpirun -n N MolflowLinux loadbuffer hitbuffer resultbuffer simulationtime unit}
+\$ mpirun -n N MolflowLinux loadbuffer hitbuffer save simulationtime unit}
 \smallskip
-with the following parameters:
+with the following command line parameters:
 \begin{itemize}[noitemsep,topsep=0pt]
 \item n: desired number of worker processes; simulation on K=N-1 worker processes
 \item MolflowLinux: path to application, e.g.\ \codew{\textasciitilde/MolflowLinux/Debug/MolflowLinux}
-\item loadbuffer: path to loadbuffer file, that contains geometry, e.g.\ \codew{\textasciitilde/loadbuffer}
-\item hitbuffer: path to hitbuffer file, that contains counters, etc., e.g.\ \codew{\textasciitilde/hitbuffer}
-\item resultbuffer: path to resultbuffer file, where the final hitbuffer is exported to,\\ e.g.\ \codew{\textasciitilde/resultbuffer}
+\item loadbuffer: path to loadbuffer file, contains geometry, e.g.\ \codew{\textasciitilde/loadbuffer}
+\item hitbuffer: path to hitbuffer file, contains counters, etc., e.g.\ \codew{\textasciitilde/hitbuffer}
+%\item resultbuffer: path to resultbuffer file, where the final hitbuffer is exported to,\\ e.g.\ \codew{\textasciitilde/resultbuffer}
+\item save: determines whether result directory is created (1: true, 0:false), default:1
 \item simulationtime: simulation time, e.g.\ \codew{2.5}
 \item unit (optional): simulation time unit, e.g.\ \codew{min}; default: \codew{s}
 \end{itemize}
@@ -189,25 +190,35 @@ with the following parameters:
 Call Molflow Linux application with custom parameters in the command line:
 \code{
 \$ module load mpi\\
-\$ mpirun -n N MolflowLinux inputfile}
+\$ mpirun -n N MolflowLinux inputfile save}
 \smallskip
-with the input file defining the following parameters:
+with the following command line parameters:
+\begin{itemize}[noitemsep,topsep=0pt]
+\item inputfile: path to file that defines simulation parameters
+\item save: determines whether result directory is created (1: true, 0:false), default:1
+\end{itemize}
+\bigskip
+
+and the input file defining the following parameters:
 \begin{itemize}[noitemsep,topsep=0pt]
 \item n: desired number of worker processes; simulation on K=N-1 worker processes
 \item MolflowLinux: path to application, e.g.\ \codew{\textasciitilde/MolflowLinux/Debug/MolflowLinux}
-\item loadbufferPath: path to loadbuffer file, that contains geometry, e.g.\ \codew{\textasciitilde/loadbuffer}
-\item hitbufferPath: path to hitbuffer file, that contains counters, etc., e.g.\ \codew{\textasciitilde/hitbuffer}
-\item resultbufferPath: path to resultbuffer file, where the final hitbuffer is exported to,\\ e.g.\ \codew{\textasciitilde/resultbuffer}
-\item simulationTime (optional): simulation time per iteration step; default: \codew{10.0}
-\item unit (optional): simulation time unit; default: \codew{s}
-\item maxTime (optional): maximum simulation time; default: \codew{10.0}
-\item maxUnit (optional): maximum simulation time unit; default: \codew{y}
-\item iterationNumber(optional): number of iteration with legth of simulationTime * unit; default: 43200
+\item loadbufferPath: path to loadbuffer file, contains geometry, e.g.\ \codew{\textasciitilde/loadbuffer}
+\item hitbufferPath: path to hitbuffer file, contains counters, etc., e.g.\ \codew{\textasciitilde/hitbuffer}
+%\item resultbufferPath: path to resultbuffer file, where the final hitbuffer is exported to,\\ e.g.\ \codew{\textasciitilde/resultbuffer}
+\item simulationTime: simulation time per iteration step; default: \codew{10.0}
+\item unit: simulation time unit; default: \codew{s}
+\item maxTime: maximum simulation time; default: \codew{10.0}
+\item maxUnit: maximum simulation time unit; default: \codew{y}
+\item iterationNumber: number of iterations; default: 43200
 %\item \codew{$s_1$}, coefficient used for calculation of sticking coefficient; default:\codew{1}
 %\item \codew{$s_2$}, coefficient used for calculation of sticking coefficient; default:\codew{0.2}
 %\item \codew{$E_{ad}$}, energy used for calculation of sticking coefficient; default:\codew{1\text{E}-21}
-\item \codew{$E_{de}$}, energy used for calculation of desorption; default:\codew{1\text{E}-21}
 \item\codew{$d$}, power for base of coverage used for calculation of desorption; default:\codew{1}
+\item \codew{$E_{de}$}, maximum energy used for calculation of desorption; default:\codew{1\text{E}-21}
+\item \codew{$H_{vap}$}, minimum energy used for calculation of desorption; default:\codew{1\text{E}-21}
+\item \codew{$W_{tr}$}, window width used for calculation of desorption; default:\codew{1\text{E}-21}
+\item \codew{$sticking$}, constant sticking coefficient for all facets; default:\codew{0.8\text{E}-19}
 \end{itemize}
 
 \section{Application}
@@ -233,6 +244,11 @@ with the input file defining the following parameters:
 \item Creates result folder for each simulation
 \end{itemize}
 
+\subsubsection{Result Directory}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Final resultbuffer
+\item Final covering, input file and console output as text files
+\end{itemize}
 \subsection{Communication}
 \subsubsection{Import and export of buffer files}
 \begin{itemize}[noitemsep,topsep=0pt]
@@ -251,6 +267,7 @@ with the input file defining the following parameters:
 \end{itemize}
 
 \subsection{New Quantities}
+\label{sub:quant}
 \subsubsection{New counter \codew{covering}}
 \begin{itemize}[noitemsep,topsep=0pt]
 \item Number of carbon equivalent particles on facet
@@ -269,15 +286,21 @@ with the input file defining the following parameters:
 \subsubsection{Sticking factor}
 \begin{itemize}[noitemsep,topsep=0pt]
 \item Ratio adsorbed particles to impinging particles
-\item Set to 1
+\item Set to 0, can be adapted through input file
 %\item Calculated from coverage (and temperature)
 %\item Sticking factor computed from \codew{Simulationcalc.cpp} file in \codew{calcStickingnew($\cdot$)}
 %\item Updated and fixed before each interation
 \end{itemize}
 
+\subsubsection{Binding energy}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Calculate energy using \codew{$E_{de}$}, \codew{$H_{vap}$} and \codew{$W_{tr}$}
+\item Desorption computed from \codew{Simulationcalc.cpp} file in \codew{calcEnergy($\cdot$)}
+\end{itemize}
+
 \subsubsection{Desorption $[1/\text{s}]$}
 \begin{itemize}[noitemsep,topsep=0pt]
-\item Calculated from covering and temperature
+\item Calculated from energy, covering and temperature
 \item Desorption computed from \codew{Simulationcalc.cpp} file in \codew{calcDesorption($\cdot$)}
 \end{itemize}
 
@@ -316,7 +339,7 @@ with the input file defining the following parameters:
 \item Start iteration: iterationNumber steps of length simulationTime * unit:
 	\begin{itemize}[noitemsep,topsep=0pt]
 	\item[$\bullet$] Send hitbuffer from main process to subprocess using MPI
-	\item[$\bullet$] Update desorption rate in sub processes using \codew{UpdateDesorptionRate($\cdot$)} from \codew{UpdateSubProcess.cpp}
+	\item[$\bullet$] Update desorption rate and sojourn frequency/energy in sub processes using \codew{UpdateDesorptionRate($\cdot$)} and \codew{UpdateSojourn($\cdot$)} from \codew{UpdateSubProcess.cpp}
 	\item[$\bullet$] Simulate for SimulationTime * unit using \codew{SimulationRun()}
 	\item[$\bullet$] Update hitbuffer of sub processes from sHandle using \codew{UpdateSubHits($\cdot$)} from \codew{UpdateSubProcess.cpp}
 	\item[$\bullet$] Update Main process:
@@ -364,25 +387,56 @@ with the input file defining the following parameters:
 \item Threshold set in \codew{setCoveringThreshold($\cdot$)}  from \codew{Iteration.cpp} file
 \end{itemize}
 
-\subsubsection{Estimation of time step \codew{$T_{min}$}}
-\begin{itemize}[noitemsep,topsep=0pt]
-\item Determines minimum timestep for simulation, average time between outgassing/desorption and adsorption
-\item $T_{min}$ computed in \codew{Iteration.cpp} file in \codew{estimateAverageFlightTime()} using simulationHistory: $\text{flightTime}/\text{nParticles}$ 
-\end{itemize}
+%\subsubsection{Estimation of time step \codew{$T_{min}$}}
+%\begin{itemize}[noitemsep,topsep=0pt]
+%\item Determines minimum timestep for simulation, average time between outgassing/desorption and adsorption
+%\item $T_{min}$ computed in \codew{Iteration.cpp} file in \codew{estimateAverageFlightTime()} using simulationHistory: $\text{flightTime}/\text{nParticles}$ 
+%\end{itemize}
+%
+%\subsubsection{Management of time step \codew{$T_{min}$}}
+%\begin{itemize}[noitemsep,topsep=0pt]
+%\item Currently not used
+%\item Chooses larger value between \codew{estimateAverageFlightTime()} and \codew{getStepSize()}
+%\item Checks whether current time step would cause covering to get negative
+%\item Adapts time step if needed
+%\item Increments \codew{SimulationHistory::currentStep} if \codew{getStepSize()} chosen and not decreased
+%\item Management in \codew{UpdateMainProcess.cpp} file in \codew{manageTimeStep($\cdot$)}
+%\end{itemize}
 
 \subsubsection{Calculate Step Size}
 \begin{itemize}[noitemsep,topsep=0pt]
 \item Uses \codew{SimulationHistory::currentStep} to calculate logarithmic step size
+\item Duration between outgassing/desorption and adsorption
 \end{itemize}
 
-\subsubsection{Managing of time step \codew{$T_{min}$}}
+\subsubsection{Management of Step Size}
 \begin{itemize}[noitemsep,topsep=0pt]
-\item Chooses larger value between \codew{estimateAverageFlightTime()} and \codew{getStepSize()}
-\item Checks whether current time step would cause covering to get negative
+\item Checks whether current step size would cause desorption to be larger than covering 
 \item Adapts time step if needed
-\item Increments \codew{SimulationHistory::currentStep} if \codew{getStepSize()} chosen and not decreased
-\item Management in \codew{UpdateMainProcess.cpp} file in \codew{manageTimeStep($\cdot$)}
+\item Increments if step size not decreased
+\item Management in \codew{UpdateMainProcess.cpp} file in \codew{manageStepSize($\cdot$)}
 \end{itemize}
+
+\subsubsection{Management of Simulation Time}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Increases simulation time (=computation time) per iteration if not enough particles desorbed
+\item Adapts simulation time if needed
+\item If enough desorption: compute maximum ratio $step size/computation time$
+\item If not enough desorption: adapt computation time using ration $step size/computation time$
+\item Management in \codew{UpdateMainProcess.cpp} file in \codew{manageSimulationTime($\cdot$)}
+\end{itemize}
+
+\subsubsection{Error Calculation}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Calculates statistical error dependent on hits for every facet, weighted with opacity of that facet
+\item TODO weighting for total error
+\end{itemize}
+
+\subsubsection{Sojourn}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Sojourn time of bounce calculated from energy and frequency
+\end{itemize}
+
 %\subsubsection{Thats changed}
 %\begin{itemize}[noitemsep,topsep=0pt]
 %\item use this for 
