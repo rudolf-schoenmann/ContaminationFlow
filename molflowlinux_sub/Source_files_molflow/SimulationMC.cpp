@@ -625,7 +625,12 @@ bool StartFromSource() {
 	if(!sHandle->posCovering){return false;}
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				totaldes+=sHandle->wp.latestMoment *f.sh.desorption/ (1.38E-23*f.sh.temperature);
+				if(f.sh.temperature>0){
+					totaldes+=sHandle->wp.latestMoment *f.sh.desorption/ (1.38E-23*f.sh.temperature);
+				}
+				else{
+					totaldes+=sHandle->wp.latestMoment *0;// No desorption at T = 0 K since residence time is infinite.
+				}
 			}
 	}
 
