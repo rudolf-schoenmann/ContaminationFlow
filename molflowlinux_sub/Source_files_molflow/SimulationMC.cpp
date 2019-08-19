@@ -625,6 +625,7 @@ bool StartFromSource() {
 	if(!sHandle->posCovering){return false;}
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
+				if(f.sh.temperature==0) {continue;}
 				totaldes+=sHandle->wp.latestMoment *f.sh.desorption/ (1.38E-23*f.sh.temperature);
 			}
 	}
@@ -632,12 +633,15 @@ bool StartFromSource() {
 	// Select source
 
 	srcRnd = rnd() * (sHandle->wp.totalDesorbedMolecules+totaldes);
+	if(srcRnd==0){return false;}
 	//std::cout <<srcRnd <<"\t" <<totaldes <<std::endl;
 
 	while (!found && j < (int)sHandle->sh.nbSuper) { //Go through superstructures
 		i = 0;
 		while (!found && i < (int)sHandle->structures[j].facets.size()) { //Go through facets in a structure
 			SubprocessFacet& f = sHandle->structures[j].facets[i];
+			if(f.sh.temperature==0) {i++;continue;}
+
 			double des=f.sh.desorption; //double des = sHandle->wp.latestMoment *calcDesorption(&f)/ (1.38E-23*f.sh.temperature); // TODO which one is right?
 			if (f.sh.desorbType != DES_NONE || des>0.0) { //there is some kind of outgassing
 				if (f.sh.useOutgassingFile) { //Using SynRad-generated outgassing map
@@ -1226,7 +1230,7 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 	iFacet->sh.tmpCounter.hit.sum_1_per_ort_velocity += 1.0 / ortVelocity;
 	iFacet->sh.tmpCounter.hit.sum_v_ort += (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity;*/
 
-	if(sHandle->currentParticle.flightTime>manageStepSize(false)&&iFacet->sh.opacity!=0){
+	if((sHandle->currentParticle.flightTime>simHistory->stepSize&&iFacet->sh.opacity!=0) || iFacet->sh.temperature==0){ //no bounce if 0K
 		sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv += sHandle->currentParticle.oriRatio;
 		simHistory->flightTime+=sHandle->currentParticle.flightTime;
 		simHistory->nParticles+=1;
@@ -1264,7 +1268,7 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 		double A = exp(-iFacet->sh.sojournE / (8.31*iFacet->sh.temperature));
 		sHandle->currentParticle.flightTime += -log(rnd()) / (A*iFacet->sh.sojournFreq);
 	}
-	if(sHandle->currentParticle.flightTime>manageStepSize(false)&&iFacet->sh.opacity!=0){ //TODO maybe other parts from recordAbsorb()?
+	if(sHandle->currentParticle.flightTime>simHistory->stepSize&&iFacet->sh.opacity!=0){ //TODO maybe other parts from recordAbsorb()?
 		sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv += sHandle->currentParticle.oriRatio;
 		simHistory->flightTime+=sHandle->currentParticle.flightTime;
 		simHistory->nParticles+=1;

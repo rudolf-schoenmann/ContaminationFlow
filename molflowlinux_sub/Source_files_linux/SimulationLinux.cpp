@@ -37,12 +37,18 @@ extern ProblemDef* p;
 
 // Simulation on subprocess
 std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, int simutime){
+	//target values
+	int targetParticles=1000/simHistory->numSubProcess;
+	double targetError=0.001*pow(simHistory->numSubProcess,0.5);
+	double i;
+
 
 	//Replaced consrtuctor with update function
 	simHistory->updateHistory(hitbuffer);
-	if(simHistory->currentStep>0){simHistory->currentStep-=1;}
-	std::cout <<"Currentstep: " << simHistory->currentStep <<". CurrentStepSizeFactor: " << simHistory->currentStepSizeFactor  <<". Step size: " <<manageStepSize(false) <<std::endl;
-
+	if(rank==1){
+		std::cout <<"Currentstep: " << simHistory->currentStep <<". Step size: " <<simHistory->stepSize <<std::endl;
+		std::cout <<"Target Particles: " << targetParticles <<". Target Error: " <<targetError <<std::endl;
+	}
 
 	//timesteps
 	double timestep=1000; // desired length per iteration for simulation, here hardcoded to 1 second
@@ -56,25 +62,47 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 	std::vector<int> facetNum;
 	facetNum =std::vector<int> ();
 
+	//Set error
+	double totalError=1.;
+
 	// Start Simulation = create first particle
 	if(!StartSimulation())
 		return {std::make_tuple(true,facetNum)};
 
+
 	// Run Simulation for timestep milliseconds
-	for(double i=0; i<(double)(simutime) && !eos;i+=realtimestep){
-		if(i>=(double(simutime)*0.99)){break;}
-		if(simHistory->coveringList.empty()){
-			simHistory->appendList(hitbuffer,i); //append list with initial covering
+	for(int j=0; !(j>0 && simHistory->nParticles>targetParticles &&(totalError<targetError/*||j>1000*/)); j++){
+		for(i=0; i<(double)(simutime) && !eos;i+=realtimestep){
+
+			if(i>=(double(simutime)*0.99)){break;}
+			if(simHistory->coveringList.empty()){
+				simHistory->appendList(hitbuffer,i); //append list with initial covering
+				}
+
+			if(i+timestep>=(double)(simutime)){ //last timestep
+				std::tie(eos,realtimestep) = SimulationRun((double)simutime-i, hitbuffer); // Some additional simulation, as iteration step  does not run for exactly timestep ms
+				}
+			else{
+				std::tie(eos, realtimestep) = SimulationRun(timestep, hitbuffer);      // Run during timestep ms, performs MC steps
 			}
 
-		if(i+timestep>=(double)(simutime)){ //last timestep
-			std::tie(eos,realtimestep) = SimulationRun((double)simutime-i, hitbuffer); // Some additional simulation, as iteration step  does not run for exactly timestep ms
-			}
-		else{
-			std::tie(eos, realtimestep) = SimulationRun(timestep, hitbuffer);      // Run during timestep ms, performs MC steps
+			//std::cout <<"  Elapsed calculation time for step (substep of one iteration step) for process " <<rank <<": "  <<realtimestep <<"ms" <<std::endl;
+			//p->outFile <<"  Elapsed calculation time for step (substep of one iteration step) for process " <<rank <<": "  <<realtimestep <<"ms" <<std::endl;
 		}
-		std::cout <<"  Elapsed calculation time for step (substep of one iteration step) for process " <<rank <<": "  <<realtimestep <<"ms" <<std::endl;
-		p->outFile <<"  Elapsed calculation time for step (substep of one iteration step) for process " <<rank <<": "  <<realtimestep <<"ms" <<std::endl;
+
+		totalError=UpdateError(hitbuffer);
+
+		std::cout <<"  Elapsed time for step"<<std::setw(4)<<std::right <<j <<": " <<std::setw(10)<<std::right <<i <<"ms\tfor process " <<rank <<": \tDesorbed particles: "<<std::setw(10)<<std::right<<simHistory->nParticles <<". \tTotal error: "  <<totalError<<std::endl;
+		p->outFile <<"  Elapsed time for step"<<std::setw(4)<<std::right <<j <<": " <<std::setw(10)<<std::right <<i <<"ms\tfor process " <<rank <<": \tDesorbed particles: "<<std::setw(10)<<std::right<<simHistory->nParticles <<". \tTotal error: "  <<totalError<<std::endl;
+		/*
+		std::cout<<"    Process " <<rank <<": Desorbed particles: "<<simHistory->nParticles <<". Total error: "  <<totalError<<"\t";
+		p->outFile <<"    Process " <<rank <<": Desorbed particles: "<<simHistory->nParticles <<". Total error: "  <<totalError<<"\t";
+		for(unsigned int nf=0;nf<simHistory->numFacet;nf++){
+			std::cout <<"\t" <<simHistory->errorList.getCurrent(nf);
+			p->outFile <<"\t" <<simHistory->errorList.getCurrent(nf);
+		}
+		std::cout <<std::endl<<std::endl;
+		p->outFile <<std::endl<<std::endl;*/
 	}
 
 	// Save simulation results in hitbuffer
@@ -321,18 +349,18 @@ void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 //-----------------------------------------------------------
 //SimulationHistory
 
-SimulationHistory::SimulationHistory(){
+SimulationHistory::SimulationHistory(int world_size){
 	numFacet=0;
 	nParticles=0;
 	flightTime=0.0;
 	nbDesorbed_old=0;
 	lastTime=0.0;
 	currentStep=0;
-	currentStepSizeFactor=1.0;
-	StepSizeComputationTimeFactor=0.0;
+	stepSize=0.0;
+	numSubProcess=world_size-1;
 }
 
-SimulationHistory::SimulationHistory(Databuff *hitbuffer){
+SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 	std::vector<llong> currentCov;
 	currentCov =std::vector<llong> ();
 
@@ -366,8 +394,11 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer){
 	errorList.initCurrent(numFacet);
 	errorList.appendCurrent(0.0);
 	currentStep=0;
-	currentStepSizeFactor=1.0;
-	StepSizeComputationTimeFactor=0.0;
+	stepSize=0.0;
+	//currentStepSizeFactor=1.0;
+	//StepSizeComputationTimeFactor=0.0;
+
+	numSubProcess=world_size-1;
 }
 
 void SimulationHistory::updateHistory(Databuff *hitbuffer){
@@ -400,8 +431,10 @@ void SimulationHistory::updateHistory(Databuff *hitbuffer){
 	hitList.reset();
 	hitList.appendList(currentHits, 0);
 	hitList.initCurrent(numFacet);
+	errorList.reset();
+	errorList.initCurrent(numFacet);
 
-
+	stepSize=manageStepSize(false);
 }
 
 

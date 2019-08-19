@@ -26,6 +26,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "SimulationLinux.h"
 extern Simulation *sHandle;
 //extern ProblemDef* p;
+extern SimulationHistory* simHistory;
 
 //Update values of subprocess
 //sticking
@@ -75,6 +76,46 @@ void UpdateSojourn(Databuff *hitbuffer){
 			f.sh.sojournE = calcEnergy(&f, hitbuffer);
 		}
 	}
+}
+
+void UpdateErrorSub(){
+
+	double num_hit_it=0;
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) { //save current num total hits in currentList, add difference current-old to num_hit_it
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			num_hit_it+=f.sh.opacity * (f.tmpCounter[0].hit.nbHitEquiv);
+		}
+	}
+
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			double num_hit_f=f.sh.opacity * ( f.tmpCounter[0].hit.nbHitEquiv);
+			if(f.sh.opacity==0 || num_hit_f==0){simHistory->errorList.setCurrentList(&f, 0.0);} //TODO correct ig num_hit_f ==0?
+			else{
+				double error=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
+
+				simHistory->errorList.setCurrentList(&f, error);
+			}
+			simHistory->hitList.setCurrentList(&f,f.tmpCounter[0].hit.nbHitEquiv);
+		}
+	}
+
+}
+
+double UpdateError(Databuff *hitbuffer){
+	UpdateErrorSub();
+
+	double error=0.0;
+	double area=0.0;
+
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			error+=simHistory->errorList.getCurrent(&f)*f.sh.area;
+			area+=f.sh.area;
+		}
+	}
+
+	return error/area;
 }
 
 

@@ -48,6 +48,7 @@ double getStepSize(){
 		}*/
 
 }
+/*
 double manageSimulationTime(double computationTime, bool adaptStep){
 	if(adaptStep){
 		double newtime=manageStepSize(false)/simHistory->StepSizeComputationTimeFactor;
@@ -79,16 +80,18 @@ double manageSimulationTime(double computationTime, bool adaptStep){
 		p->outFile <<"Mock Time " <<manageStepSize(false)/simHistory->StepSizeComputationTimeFactor <<std::endl;
 		return p->simulationTimeMS;
 	}
-}
+}*/
 
 double manageStepSize(bool updateCurrentStep){
 	double step_size = getStepSize();
 	bool incrCurrentStep=true;
 
-	double factor=updateCurrentStep?1.0:0.6*simHistory->currentStepSizeFactor;
+	double factor=1.;//updateCurrentStep?1.0:0.6*simHistory->currentStepSizeFactor;
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			if(f.sh.desorption==0||f.sh.temperature==0)continue;
+
 			llong covering_phys = simHistory->coveringList.getLast(&f);
 			//llong covering_sum = getCovering(&f, hitbuffer);
 
@@ -327,12 +330,13 @@ void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum, double ti
 }
 */
 //Simhistory version
-bool UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iteration using Krealvirt, resets other counters
+void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iteration using Krealvirt, resets other counters
 	//If one wants to read out pressure and particle density, this must be done before calling UpdateCovering.
 	//Calculates with the summed up counters of hitbuffer_sum how many test particles are equivalent to one physical particle.
 	//Then the physical values are stored in the hitbuffer.
 	//simTime in ms
-	bool adaptStep=false;
+
+	//bool adaptStep=false;
 
 	double Krealvirt = GetMoleculesPerTP(hitbuffer_sum, simHistory->nbDesorbed_old);
 	llong nbDesorbed = getnbDesorbed(hitbuffer_sum)-simHistory->nbDesorbed_old;
@@ -342,7 +346,7 @@ bool UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 
 	llong covering_phys;
 	llong covering_sum;
-	//double covering_check;
+	double covering_check;
 	//BYTE *buffer_sum;
 	//buffer_sum = hitbuffer_sum->buff;
 
@@ -352,19 +356,12 @@ bool UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 	double time_step;
 	if(Krealvirt==0){ //if no Krealvirt(no desorption), increase currentStep, time_step=0
 		time_step=0;
-		simHistory->currentStepSizeFactor*=0.9;
-		//simHistory->currentStep*=0.5;
-		adaptStep=true;
 	}
-	else if(nbDesorbed<5){
+	else if(nbDesorbed<1000){
 		time_step = manageStepSize(false);
-		simHistory->currentStepSizeFactor*=0.999;
-		//simHistory->currentStep*=0.5;
-		adaptStep=true;
 	}
 	else{
 		time_step = manageStepSize(true);
-		simHistory->currentStepSizeFactor*=1.0;
 	}
 
 
@@ -382,11 +379,11 @@ bool UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 				covering_phys = simHistory->coveringList.getLast(&f);
 				covering_sum = getCovering(&f, hitbuffer_sum);
 
-				std::cout<<std::endl << "Facet " << f.globalId << std::endl;
+				std::cout<<std::endl << "Facet " << getFacetIndex(&f)<< std::endl;
 				std::cout << "covering_sum = " << covering_sum  << " = "<< (long double)(covering_sum) << std::endl;
 				std::cout<< "covering_phys_before = " << covering_phys << " = "<< (long double)(covering_phys) << std::endl;
 
-				p->outFile<<std::endl << "Facet " << f.globalId << std::endl;
+				p->outFile<<std::endl << "Facet " << getFacetIndex(&f) << std::endl;
 				p->outFile<< "covering_sum = " << covering_sum  << " = "<< (long double)(covering_sum) << std::endl;
 				p->outFile<< "covering_phys_before = " << covering_phys << " = "<< (long double)(covering_phys) << std::endl;
 
@@ -398,6 +395,11 @@ bool UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 				}
 				else{
 					llong covering_delta = static_cast < llong > ((covering_phys - covering_sum)*Krealvirt*time_step);
+					if(covering_phys<covering_delta){
+						std::cout<<"!!!-----Covering gets negative: "<<covering_phys<<" - "<<covering_delta <<"-----!!!"<<std::endl;
+						p->outFile<<"!!!-----Covering gets negative: "<<covering_phys<<" - "<<covering_delta <<"-----!!!"<<std::endl;
+					}
+
 					covering_phys -= covering_delta;
 					std::cout << "covering decreases by "<<covering_delta << " = " << (long double)(covering_delta) << std::endl;
 					p->outFile << "covering decreases by "<<covering_delta << " = " << (long double)(covering_delta) << std::endl;
@@ -414,10 +416,10 @@ bool UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 	simHistory->coveringList.appendCurrent(simHistory->lastTime+time_step);
 	simHistory->lastTime+=time_step;
 
-	return adaptStep;
+	simHistory->stepSize=time_step;
 }
 
-void UpdateError(Databuff *hitbuffer_sum){
+void UpdateErrorMain(Databuff *hitbuffer_sum){
 
 	double num_hit_it=0;
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) { //save current num total hits in currentList, add difference current-old to num_hit_it
@@ -436,8 +438,10 @@ void UpdateError(Databuff *hitbuffer_sum){
 			simHistory->hitList.setLast(&f,getHits(&f,hitbuffer_sum));
 		}
 	}
+
 	simHistory->errorList.appendCurrent(simHistory->lastTime);
 	simHistory->hitList.pointintime_list.back().first=simHistory->lastTime;
+
 
 }
 

@@ -109,8 +109,6 @@ int main(int argc, char *argv[]) {
 	loadbuffer.buff=NULL;
 
 	double t0,t1;
-	int compTime;
-	bool adaptStep=false;
 
 	//llong nbDesorbed_old; //test: nbDesorbed of previous iteration, used so that hitbuffer_sum does not have to be reset -> true final hitbuffer, added to simhistory
 
@@ -231,15 +229,14 @@ int main(int argc, char *argv[]) {
 			//memcpy(hitbuffer_phys.buff,hitbuffer.buff,hitbuffer.size);
 			//hitbuffer_phys.size =hitbuffer.size;
 
-			simHistory = new SimulationHistory (&hitbuffer);
+			simHistory = new SimulationHistory (&hitbuffer, world_size);
 			//TODO: maybe add possibility of covering.txt file input
 			//simHistory->nbDesorbed_old = getnbDesorbed(&hitbuffer_sum); // added to constructor
 			initbufftozero(&hitbuffer);
-
-			compTime=p->simulationTimeMS;
 		}
 		else{
-			simHistory = new SimulationHistory();
+
+			simHistory = new SimulationHistory(world_size);
 		}
 	}
 
@@ -264,11 +261,7 @@ int main(int argc, char *argv[]) {
 
 			MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 
-			MPI_Bcast(&simHistory->currentStepSizeFactor, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
 			MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
-
-			MPI_Bcast(&compTime, 1, MPI::INT, 0, MPI_COMM_WORLD);
-
 
 
 			MPI_Barrier(MPI_COMM_WORLD);
@@ -288,7 +281,7 @@ int main(int argc, char *argv[]) {
 
 				//Do the simulation
 				bool eos; std::vector<int> facetNum;
-				std::tie(eos, facetNum) = simulateSub(&hitbuffer, rank, compTime);
+				std::tie(eos, facetNum) = simulateSub(&hitbuffer, rank, p->simulationTimeMS);
 				MPI_Barrier(MPI_COMM_WORLD);
 				if (eos) {
 					if(sHandle->posCovering)
@@ -305,8 +298,8 @@ int main(int argc, char *argv[]) {
 				}
 			}
 			else{
-				std::cout <<"Wait for "<< compTime/1000.0 <<"s" << std::endl;
-				p->outFile <<"Wait for "<< compTime/1000.0 <<"s" << std::endl;
+				std::cout <<"Wait for "<< p->simulationTime<<p->unit << std::endl;
+				p->outFile <<"Wait for "<< p->simulationTime <<p->unit << std::endl;
 				//record time needed
 				t0 = GetTick();
 				MPI_Barrier(MPI_COMM_WORLD);
@@ -353,15 +346,13 @@ int main(int argc, char *argv[]) {
 			if (rank == 0) {
 
 				//double time_step = estimateTmin_RudiTest(&hitbuffer);
-				adaptStep = UpdateCovering(&hitbuffer_sum);
-				UpdateError(&hitbuffer_sum);
+				UpdateCovering(&hitbuffer_sum);
+				UpdateErrorMain(&hitbuffer_sum);
 				//memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //Not needed, only covering copied in UpdateCoveringPhys
 
 				UpdateCoveringphys(&hitbuffer_sum, &hitbuffer);
 				simHistory->coveringList.print(std::cout, "Accumulative covering after iteration "+std::to_string(it));
 				simHistory->coveringList.print(p->outFile,"Accumulative covering after iteration "+std::to_string(it));
-
-				compTime=(int)manageSimulationTime(t1-t0, adaptStep);
 
 				//simHistory->hitList.print(std::cout,"Accumulative number hits after iteration "+std::to_string(it));
 				//simHistory->hitList.print(p->outFile,"Accumulative number hits after iteration "+std::to_string(it));
