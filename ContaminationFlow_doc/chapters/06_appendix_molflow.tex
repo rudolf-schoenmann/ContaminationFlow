@@ -56,6 +56,23 @@
 %	\end{cases}
 %\end{equation}
 
+\subsubsection*{Energy $E$}
+\begin{equation}
+	\label{eq:energy}
+	\begin{split}
+		E&=\frac{E_{de}-H_{vap}}{2} \cdot \text{tanh}\Big((1-coverage) \cdot \frac{5.4}{W_{tr}}\Big) + \frac{E_{de}+H_{vap}}{2}
+	\end{split}
+\end{equation}
+
+\subsubsection*{Sojourn}
+\begin{equation}
+	\label{eq:cov}
+	\begin{split}
+		Frequency&=\frac{K_b T}{h}\\
+		Energy&= E
+	\end{split}
+\end{equation}
+
 \subsubsection*{Desorption rate $des$}
 \begin{equation}
 	\label{eq:des}
@@ -65,7 +82,7 @@
 	des&=
 	\begin{cases}
 		\begin{split}
-		\frac{1}{\tau}\ \theta^d\ \exp({-\frac{E_{de}}{K_b T}})\cdot \frac{N_{mono}}{\Delta N_{surf}}\cdot K_b T&, \text{\quad if}\ \theta^* \geq 100\\
+		\frac{1}{\tau}\ \theta^d\ \exp\Big({-\frac{E}{K_b T}}\Big)\cdot \frac{N_{mono}}{\Delta N_{surf}}\cdot K_b T&, \text{\quad if}\ \theta^* \geq 100\\
 		0&,  \text{\quad otherwise}
 		\end{split}
 	\end{cases}
@@ -81,31 +98,43 @@
 \subsubsection*{$\text{K}_{\text{real}/\text{virtual}}$}
 \begin{equation}
 	\label{eq:krealvirt}
-	\text{K}_{\text{real}/\text{virtual}}=\frac{\sum\limits_{\text{facets}}(out + \frac{des}{K_b T})}{\text{number of total desorbed molecules}}
+	\text{K}_{\text{real}/\text{virtual}}=\frac{\sum\limits_{\text{facets}}\Big(out + \frac{des}{K_b T}\Big)}{\text{number of total desorbed molecules}}
 \end{equation}
 
-\subsubsection*{Average Flight Time $T_{avg}$}
-\begin{equation}
-	\label{eq:tavg}
-	T_{avg}=\frac{\text{Total flight time}}{\text{Total number of particles}}
-\end{equation}
+%\subsubsection*{Average Flight Time $T_{avg}$}
+%\begin{equation}
+%	\label{eq:tavg}
+%	T_{avg}=\frac{\text{Total flight time}}{\text{Total number of particles}}
+%\end{equation}
 
 \subsubsection*{Step Size $T_{step}$}
 \begin{equation}
 	\label{eq:tstep}
-	T_{step}=\exp\Big(\text{current Step}\cdot \ln(\text{max. simulation time})/\text{max. \# of steps})\Big)
+	\begin{split}
+	T_{min}&=0.0001\\
+	T_{i}&=T_{min} \cdot \exp\Big(\text{i}\cdot \ln(\text{max. simulation time}/T_{min})/\text{max. \# of steps})\Big)\\
+	T_{step}&=T_{currentStep+1}-T_{currentStep}\\
+	\end{split}
 \end{equation}
 
-\subsubsection*{Simulated Time step $\text{time}\_\text{step}$}
+%\subsubsection*{Simulated Time step}
+%\begin{equation}
+%	\label{eq:timestep}
+%	\text{time}\_\text{step}=
+%	\begin{cases}
+%		\begin{split}
+%		T_{avg}&, \text{\quad if}\ T_{avg} \geq T_{step}\\
+%		T_{step}&,  \text{\quad otherwise}
+%		\end{split}
+%	\end{cases}
+%\end{equation}
+
+\subsubsection*{Error}
 \begin{equation}
-	\label{eq:timestep}
-	\text{time}\_\text{step}=
-	\begin{cases}
-		\begin{split}
-		T_{avg}&, \text{\quad if}\ T_{avg} \geq T_{step}\\
-		T_{step}&,  \text{\quad otherwise}
-		\end{split}
-	\end{cases}
+	\label{eq:error}
+	\begin{split}
+		error&=\Big( \frac{1}{\text{hits on facet}} \cdot \frac{1-\text{hits on facet}}{\text{total hits}} \Big)^{0.5}
+	\end{split}
 \end{equation}
 
 \chapter{Overview of new Classes and Functions}
@@ -121,8 +150,8 @@
 \rule{0pt}{3ex} \multirow{2}{*}{nbDesorbed\_old}& number of total desorbed molecules of previous iteration\\
 &\qquad$\Rightarrow$ To calculate difference between consecutive iterations\\
 \rule{0pt}{3ex} flightTime& number of Facets\\
-\rule{0pt}{3ex} nParticles& Simulated flight time, to calculate average flight time\\
-\rule{0pt}{3ex} numFacet& Simulated particles, to calculate average flight time\\
+\rule{0pt}{3ex} nParticles& Simulated flight time for iteration\\
+\rule{0pt}{3ex} numFacet& Simulated particles for iteration\\
 \rule{0pt}{3ex} lastTime& Total simulated time\\
 \rule{0pt}{3ex} currentStep& step of logarithmic time step calculation in \codew{getStepSize()}\\
 \hline
@@ -140,7 +169,7 @@
 \hline
 \rule{0pt}{3ex} reset()& Resets lists\\
 \rule{0pt}{3ex} initCurrent()& Initializes size of lists\\
-\rule{0pt}{3ex} print()& Print to terminal\\
+\rule{0pt}{3ex} print()& Print list as table to terminal, optional message\\
 \rule{0pt}{3ex} write()& Write to file\\
 \rule{0pt}{3ex} read()& Read from file\\
 \rule{0pt}{3ex} empty()& Checks if pointintime\_list is empty\\
@@ -243,12 +272,14 @@
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}SimulationCalc.cpp}\\
 \hline
 \rule{0pt}{3ex} getCovering()& Get covering from hitbuffer\\
+\rule{0pt}{3ex} getHits()& Get number of hits from hitbuffer\\
 \rule{0pt}{3ex} \multirow{2}{*}{getnbDesorbed()}& Get number of total desorbed\\
 &molecules from hitbuffer\\
 \rule{0pt}{3ex} calcNmono()& see equation \ref{eq:nmono} \\
 \rule{0pt}{3ex} calcdNsurf()& see equation \ref{eq:nsurf} \\
 \rule{0pt}{3ex} calcCoverage()& see equation \ref{eq:cov} \\
-\rule{0pt}{3ex} calcStickingnew()& sets sticking coefficient to 1 \\
+\rule{0pt}{3ex} calcEnergy()& see equation \ref{eq:energy} \\
+\rule{0pt}{3ex} calcStickingnew()& sets sticking coefficient to p$\rightarrow$sticking \\
 \rule{0pt}{3ex} calcDesorption(), calcDesorptionRate()& see equation \ref{eq:des} \\
 \rule{0pt}{3ex} GetMoleculesPerTP()& see equation \ref{eq:krealvirt} \\
 \rule{0pt}{3ex} \multirow{2}{*}{calctotalDesorption}& calculates desorption for\\
@@ -280,6 +311,7 @@
 \hline
 \rule{0pt}{3ex} UpdateSticking()& Updates sticking\\
 \rule{0pt}{3ex} UpdateDesorptionRate()& Updates desorption rate \\
+\rule{0pt}{3ex} UpdateSojourn()& Updates sojourn freqency and energy \\
 \hline
 \multicolumn{2}{l}{}\\[1ex]
 \hline
@@ -304,8 +336,8 @@
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}Update real covering in hitbuffer}\\
 \hline
 \rule{0pt}{3ex} getStepSize()& Calculates step size for current step, see equation \ref{eq:tstep}\\
-\rule{0pt}{3ex} \multirow{2}{*}{manageTimeStep()}&Chooses time\_step, see equation \ref{eq:timestep}\\&  Adapts time\_step if covering would get negative\\
-\rule{0pt}{3ex} \multirow{3}{*}{UpdateCovering()}& Uses time\_step and Krealvirt to calculate new covering\\
+\rule{0pt}{3ex} {manageStepSize()}&  Adapts step size if desorptionrate $\cdot$ step size $>$ than covering\\
+\rule{0pt}{3ex} \multirow{2}{*}{UpdateCovering()}& Uses time\_step and Krealvirt to calculate new covering\\
 & Saved to simHistory$\rightarrow$coveringList\\
 \rule{0pt}{3ex} UpdateCoveringphys()& Saves current real covering to hitbuffer\\
 \hline
@@ -315,12 +347,12 @@
 \subsection{Iteration.cpp}
 \begin{center}
 \begin{tabular}{|l|l|}
-\hline
-\multicolumn{2}{|c|}{\rule{0pt}{3ex}Calculation of time\_step}\\
-\hline
-\rule{0pt}{3ex} estimateAverageFlightTime()& Average flight time, see equation \ref{eq:tavg}\\
-\rule{0pt}{3ex} estimateTmin\_RudiTest()& Average path length/average velocity\\
-\hline
+%\hline
+%\multicolumn{2}{|c|}{\rule{0pt}{3ex}Calculation of time\_step}\\
+%\hline
+%\rule{0pt}{3ex} estimateAverageFlightTime()& Average flight time, see equation \ref{eq:tavg}\\
+%\rule{0pt}{3ex} estimateTmin\_RudiTest()& Average path length/average velocity\\
+%\hline
 \multicolumn{2}{l}{}\\[1ex]
 \hline
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}Set Covering Threshold to avoid negative covering}\\

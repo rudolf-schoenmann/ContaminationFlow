@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
 	Databuff loadbuffer; //Loadbuffer to read in data of geometry and physical parameters
 	loadbuffer.buff=NULL;
 
-	//double t0,t1;
+	double t0,t1;
 
 	//llong nbDesorbed_old; //test: nbDesorbed of previous iteration, used so that hitbuffer_sum does not have to be reset -> true final hitbuffer, added to simhistory
 
@@ -229,13 +229,14 @@ int main(int argc, char *argv[]) {
 			//memcpy(hitbuffer_phys.buff,hitbuffer.buff,hitbuffer.size);
 			//hitbuffer_phys.size =hitbuffer.size;
 
-			simHistory = new SimulationHistory (&hitbuffer);
+			simHistory = new SimulationHistory (&hitbuffer, world_size);
 			//TODO: maybe add possibility of covering.txt file input
 			//simHistory->nbDesorbed_old = getnbDesorbed(&hitbuffer_sum); // added to constructor
 			initbufftozero(&hitbuffer);
 		}
 		else{
-			simHistory = new SimulationHistory();
+
+			simHistory = new SimulationHistory(world_size);
 		}
 	}
 
@@ -259,6 +260,10 @@ int main(int argc, char *argv[]) {
 			initbufftozero(&hitbuffer);
 
 			MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
+
+			MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
+
+
 			MPI_Barrier(MPI_COMM_WORLD);
 
 			//Options: devide covering though (size-1) or keep covering and end simulation step at threshold (covering -covering/(size-1))
@@ -272,7 +277,6 @@ int main(int argc, char *argv[]) {
 			//----Simulation on subprocesses
 			if (rank != 0) {
 				/* do work in any remaining processes */
-
 				sHandle->posCovering=true;//assumption that negative covering has been resolved before: implemented though covering threshold in sub processes and manageTimeStep()
 
 				//Do the simulation
@@ -294,12 +298,12 @@ int main(int argc, char *argv[]) {
 				}
 			}
 			else{
-				std::cout <<"Wait for "<< p->simulationTime <<p->unit << std::endl;
+				std::cout <<"Wait for "<< p->simulationTime<<p->unit << std::endl;
 				p->outFile <<"Wait for "<< p->simulationTime <<p->unit << std::endl;
-				//record time needed for simulation step
-				//t0 = GetTick();
+				//record time needed
+				t0 = GetTick();
 				MPI_Barrier(MPI_COMM_WORLD);
-				//t1 = GetTick();
+				t1 = GetTick();
 			}
 
 			//----iteratively add hitbuffer from subprocesses
@@ -343,7 +347,7 @@ int main(int argc, char *argv[]) {
 
 				//double time_step = estimateTmin_RudiTest(&hitbuffer);
 				UpdateCovering(&hitbuffer_sum);
-				UpdateError(&hitbuffer_sum);
+				UpdateErrorMain(&hitbuffer_sum);
 				//memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //Not needed, only covering copied in UpdateCoveringPhys
 
 				UpdateCoveringphys(&hitbuffer_sum, &hitbuffer);

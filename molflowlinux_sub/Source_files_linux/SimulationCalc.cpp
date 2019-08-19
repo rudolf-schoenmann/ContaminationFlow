@@ -95,11 +95,13 @@ std::tuple<double, double> calctotalDesorption(){// desorptionrate as well as to
 	double desrate =0.0, totaldes=0.0;
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
-					double facetdes = f.sh.desorption;
-					//std::cout<< "f.sh.desorption = " << f.sh.desorption << std::endl;
-					desrate+=facetdes/ (1.38E-23*f.sh.temperature);
-					//std::cout<< "desrate = " << desrate << std::endl;
-					totaldes+=sHandle->wp.latestMoment * facetdes / (1.38E-23*f.sh.temperature);;
+				if(f.sh.temperature==0) {continue;}
+
+				double facetdes = f.sh.desorption;
+				//std::cout<< "f.sh.desorption = " << f.sh.desorption << std::endl;
+				desrate+=facetdes/ (1.38E-23*f.sh.temperature);
+				//std::cout<< "desrate = " << desrate << std::endl;
+				totaldes+=sHandle->wp.latestMoment * facetdes / (1.38E-23*f.sh.temperature);
 			}
 	}
 	return {std::make_tuple(desrate, totaldes)};
@@ -204,14 +206,14 @@ double calcCoveringUpdate(SubprocessFacet *iFacet)
 
 void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates sticking coefficient dependent on covering.
 
-	//llong covering=getCovering(iFacet,hitbuffer);
-	/*
-	if (covering>=100){
-		iFacet->sh.sticking = 1;}
+	llong covering=getCovering(iFacet,hitbuffer);
+
+	if (covering>=0){
+		iFacet->sh.sticking = p->sticking;}
 	else{
 		iFacet->sh.sticking = 0.0;
-	}*/
-	iFacet->sh.sticking = p->sticking;
+	}
+
 }
 
 long double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This returns ((d'coverage')/dt)de. So to speak desorption rate in units of [1/s]
@@ -220,11 +222,9 @@ long double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This 
 	long double desorption=0.0;
 
 	coverage = calcCoverage(iFacet,hitbuffer);
-	llong covering=getCovering(iFacet,hitbuffer);
-
 	temperature=iFacet->sh.temperature;
 
-	if(coverage==0||covering<100){
+	if(coverage==0||temperature==0){
 		return 0.0;
 	}
 	long double tau=(long double)(h/(kb*temperature));
