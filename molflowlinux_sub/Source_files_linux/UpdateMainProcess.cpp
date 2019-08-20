@@ -86,8 +86,6 @@ double manageStepSize(bool updateCurrentStep){
 	double step_size = getStepSize();
 	bool incrCurrentStep=true;
 
-	double factor=1.;//updateCurrentStep?1.0:0.6*simHistory->currentStepSizeFactor;
-
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			if(f.sh.desorption==0||f.sh.temperature==0)continue;
@@ -95,10 +93,10 @@ double manageStepSize(bool updateCurrentStep){
 			llong covering_phys = simHistory->coveringList.getLast(&f);
 			//llong covering_sum = getCovering(&f, hitbuffer);
 
-			if ((llong)((f.sh.desorption/(kb* f.sh.temperature))*factor*step_size)>covering_phys){
+			if ((llong)((f.sh.desorption/(kb* f.sh.temperature))*step_size)>covering_phys){
 
 				long double test_size=(long double)covering_phys/((long double)f.sh.desorption/(kb* f.sh.temperature));
-				step_size=0.5*(double)test_size;
+				step_size=0.9*(double)test_size;
 				//std::cout <<"Desorption * step_size " <<(llong)(f.sh.desorption*step_size) <<std::endl;
 				//std::cout <<"Covering " <<covering_phys <<std::endl;
 				//std::cout<<"Decreased Tmin: "<<step_size <<std::endl;
@@ -114,7 +112,7 @@ double manageStepSize(bool updateCurrentStep){
 		p->outFile<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
 	}
 
-	return factor*step_size;
+	return step_size;
 }
 
 // Function that adapts timestep if needed, to avoid negative covering
@@ -356,9 +354,6 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 	double time_step;
 	if(Krealvirt==0){ //if no Krealvirt(no desorption), increase currentStep, time_step=0
 		time_step=0;
-	}
-	else if(nbDesorbed<1000){
-		time_step = manageStepSize(false);
 	}
 	else{
 		time_step = manageStepSize(true);
