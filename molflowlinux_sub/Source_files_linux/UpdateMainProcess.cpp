@@ -33,6 +33,7 @@ extern SimulationHistory* simHistory;
 // Step size for intervals
 double getStepSize(){
 	double T_min = 0.0001;//set minimal time resolution to 1E-4 seconds.
+	//double T_min = 1;
 	//Dynamical calculation of min_time is not straight forward, since 'manageTimeStep()' can change it.
 	//Dynamical calculation can be done later, if it is regarded as useful.
 	double t_start = T_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/(T_min))/(double)p->iterationNumber));
