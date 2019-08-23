@@ -231,7 +231,7 @@ long double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This 
 
 	long double energy_de=(long double) calcEnergy(iFacet,hitbuffer);
 
-	desorption= (long double)(1.0/tau) * powl(coverage,(long double)p->d) *expl(-energy_de/(long double)(kb*temperature))*(1-exp(-1));
+	desorption= (long double)(1.0/tau) * powl(coverage,(long double)p->d) *expl(-energy_de/(long double)(kb*temperature));
 	//if (Desorption Energy/Temperature) >~ 1.02E-20J/K, desorption will be zero
 	return desorption;
 }
