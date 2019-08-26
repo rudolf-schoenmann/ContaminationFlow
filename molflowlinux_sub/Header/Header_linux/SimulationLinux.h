@@ -92,12 +92,12 @@ public:
 			int months=divresult.rem;
 			int years=divresult.quot;
 
-			if(years!=0) final=final+std::to_string(years)+"y";//3
-			if(months!=0) final=(months>9)?final+std::to_string(months)+"mo":final+" "+std::to_string(months)+"mo";//4
-			if(days!=0) final=(days>9)?final+std::to_string(days)+"d":final+" "+std::to_string(days)+"d";//3
-			if(hours!=0) final=(hours>9)?final+std::to_string(hours)+"h":final+" "+std::to_string(hours)+"h";//3
-			if(minutes!=0) final=(minutes>9)?final+std::to_string(minutes)+"min":final+" "+std::to_string(minutes)+"min";//5
-			if(seconds!=0) final=(seconds>9)?final+std::to_string(seconds)+"s":final+" "+std::to_string(seconds)+"s";//3
+			if(years!=0) {final=final+std::to_string(years)+"y";}else{final=final+"   ";}//3
+			if(months!=0) {final=(months>9)?final+std::to_string(months)+"mo":final+" "+std::to_string(months)+"mo";}else{final=final+"    ";}//4
+			if(days!=0) {final=(days>9)?final+std::to_string(days)+"d":final+" "+std::to_string(days)+"d";}else{final=final+"   ";}//3
+			if(hours!=0) {final=(hours>9)?final+std::to_string(hours)+"h":final+" "+std::to_string(hours)+"h";}else{final=final+"   ";}//3
+			if(minutes!=0) {final=(minutes>9)?final+std::to_string(minutes)+"min":final+" "+std::to_string(minutes)+"min";}else{final=final+"     ";}//5
+			if(seconds!=0) {final=(seconds>9)?final+std::to_string(seconds)+"s":final+" "+std::to_string(seconds)+"s";}else{final=final+"   ";}//3
 		}
 		if(final==""){
 			final=std::to_string((int)(time+0.5))+"s";
@@ -106,7 +106,6 @@ public:
 		return final;
 	}
 	void print(std::ostream& out, std::string msg= ""){
-
 		out<<std::endl <<msg <<std::endl;
 
 		out <<std::setw(11)<<std::right<<"time[s]";
@@ -136,6 +135,19 @@ public:
 		}
 		out<<std::endl<<std::endl;
 	}
+
+	void printCurrent(std::ostream& out, std::string msg= ""){
+		out<<"    " <<std::setw(12)<<std::left<<msg;
+
+		for(uint i=0;i<currentList.size();i++)
+		{
+				//std::cout <<"\t\t" <<pointintime_list[i].second[j];
+				out <<"\t" <<std::setw(12)<<std::right <<(double)currentList[i];
+
+		}
+		out<<std::endl;
+	}
+
 	void write(std::string filename){
 		//std::string write = "/home/van/history"+std::to_string(num)+".txt";
 		std::ofstream outfile(filename,std::ofstream::out|std::ios::trunc);
@@ -269,6 +281,9 @@ public:
 	double H_vap;
 	double W_tr;
 
+	int targetParticles;
+	double targetError;
+
 	//These cannot be given, but are computed from other variables
 	int simulationTimeMS;
 	double maxTimeS;
@@ -331,7 +346,7 @@ void printConsole(std::string str,std::ofstream outFile);
 void UpdateSticking(Databuff *hitbuffer);
 void UpdateDesorptionRate (Databuff *hitbuffer);
 void UpdateSojourn(Databuff *hitbuffer);
-double UpdateError(Databuff *hitbuffer);
+double UpdateError();
 
 void UpdateMCSubHits(Databuff *databuffer, int rank);
 

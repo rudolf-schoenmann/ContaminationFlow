@@ -54,7 +54,7 @@ void UpdateSticking(Databuff *hitbuffer){
 			i+=1;
 		}
 	}
-	std::cout <<std::endl;
+	//std::cout <<std::endl;
 }
 //desorption
 void UpdateDesorptionRate (Databuff *hitbuffer){
@@ -102,7 +102,7 @@ void UpdateErrorSub(){
 
 }
 
-double UpdateError(Databuff *hitbuffer){
+double UpdateError(){
 	UpdateErrorSub();
 
 	double error=0.0;

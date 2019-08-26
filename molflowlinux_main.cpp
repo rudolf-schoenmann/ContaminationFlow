@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
 	Databuff loadbuffer; //Loadbuffer to read in data of geometry and physical parameters
 	loadbuffer.buff=NULL;
 
-	double t0,t1;
+	//double t0,t1;
 
 	//llong nbDesorbed_old; //test: nbDesorbed of previous iteration, used so that hitbuffer_sum does not have to be reset -> true final hitbuffer, added to simhistory
 
@@ -297,13 +297,14 @@ int main(int argc, char *argv[]) {
 					p->outFile << "Simulation for process " << rank << " for iteration " << it << " finished."<< std::endl;
 				}
 			}
-			else{
+			else{/*
 				std::cout <<"Wait for "<< p->simulationTime<<p->unit << std::endl;
-				p->outFile <<"Wait for "<< p->simulationTime <<p->unit << std::endl;
+				p->outFile <<"Wait for "<< p->simulationTime <<p->unit << std::endl;*/
 				//record time needed
-				t0 = GetTick();
+
+				//t0 = GetTick();
 				MPI_Barrier(MPI_COMM_WORLD);
-				t1 = GetTick();
+				//t1 = GetTick();
 			}
 
 			//----iteratively add hitbuffer from subprocesses
@@ -323,8 +324,8 @@ int main(int argc, char *argv[]) {
 
 					//UpdateMCMainHits(&hitbuffer_sum, &hitbuffer, &hitbuffer_phys, 0);
 					UpdateMCMainHits(&hitbuffer_sum, &hitbuffer, simHistory ,0);
-					std::cout << "Updated hitbuffer with process " << i <<std::endl << std::endl;
-					p->outFile << "Updated hitbuffer with process " << i <<std::endl << std::endl;
+					std::cout << "Updated hitbuffer with process " << i <<std::endl;
+					p->outFile << "Updated hitbuffer with process " << i <<std::endl;
 
 					double old_flightTime=simHistory->flightTime;
 					int old_nParticles = simHistory->nParticles; //reset in UpdateCoveringPhys
@@ -332,10 +333,12 @@ int main(int argc, char *argv[]) {
 					MPI_Recv(&simHistory->nParticles, 1, MPI::INT, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 					simHistory->flightTime += old_flightTime;
 					simHistory->nParticles+=old_nParticles;
-					std::cout << "flightTime " << simHistory->flightTime << std::endl;
-					std::cout << "nParticles " << simHistory->nParticles << std::endl;
-					p->outFile << "flightTime " << simHistory->flightTime << std::endl;
-					p->outFile << "nParticles " << simHistory->nParticles << std::endl;
+
+					if(i==world_size-1){
+						std::cout << std::endl<< "flightTime " << simHistory->flightTime << std::endl;
+						std::cout << std::endl<< "nParticles " << simHistory->nParticles << std::endl <<std::endl;
+						p->outFile << "flightTime " << simHistory->flightTime << std::endl;
+						p->outFile << "nParticles " << simHistory->nParticles << std::endl <<std::endl;}
 				}
 			}
 
@@ -368,10 +371,10 @@ int main(int argc, char *argv[]) {
 			MPI_Barrier(MPI_COMM_WORLD);
 
 			MPI_Bcast(&simHistory->lastTime, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
-			if(simHistory->lastTime > p->maxTimeS){
+			if((int)(simHistory->lastTime+0.5) >= p->maxTimeS){
 				if(rank==0) {
-					std::cout <<"maximum simulation time reached: " <<simHistory->lastTime  <<" > " <<p->maxTimeS <<std::endl;
-					p->outFile <<"maximum simulation time reached: " <<simHistory->lastTime  <<" > " <<p->maxTimeS <<std::endl;}
+					std::cout <<"maximum simulation time reached: " <<simHistory->lastTime  <<" >= " <<p->maxTimeS <<std::endl;
+					p->outFile <<"maximum simulation time reached: " <<simHistory->lastTime  <<" >= " <<p->maxTimeS <<std::endl;}
 				break;
 			}
 

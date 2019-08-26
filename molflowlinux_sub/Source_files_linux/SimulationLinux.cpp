@@ -38,16 +38,20 @@ extern ProblemDef* p;
 // Simulation on subprocess
 std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, int simutime){
 	//target values
-	int targetParticles=1000/simHistory->numSubProcess;
-	double targetError=0.001*pow(simHistory->numSubProcess,0.5);
+	int targetParticles=p->targetParticles/simHistory->numSubProcess;
+	double targetError=p->targetError*pow(simHistory->numSubProcess,0.5);
 	double i;
+	double totalTime=0.0;
 
 
 	//Replaced consrtuctor with update function
 	simHistory->updateHistory(hitbuffer);
 	if(rank==1){
-		std::cout <<"Currentstep: " << simHistory->currentStep <<". Step size: " <<simHistory->stepSize <<std::endl;
-		std::cout <<"Target Particles: " << targetParticles <<". Target Error: " <<targetError <<std::endl;
+		std::cout <<std::endl <<"Currentstep: " << simHistory->currentStep <<". Step size: " <<simHistory->stepSize <<std::endl;
+		std::cout <<"Target Particles: " << targetParticles <<". Target Error: " <<targetError <<std::endl <<std::endl;
+
+		p->outFile <<std::endl <<"Currentstep: " << simHistory->currentStep <<". Step size: " <<simHistory->stepSize <<std::endl;
+		p->outFile <<"Target Particles: " << targetParticles <<". Target Error: " <<targetError <<std::endl <<std::endl;
 	}
 
 	//timesteps
@@ -71,7 +75,7 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 
 
 	// Run Simulation for timestep milliseconds
-	for(int j=0; !(j>0 && simHistory->nParticles>targetParticles &&(totalError<targetError/*||j>1000*/)); j++){
+	for(int j=0; !(j>0 && simHistory->nParticles>targetParticles &&(totalError<targetError/*||j>1000*/))&& !eos; j++){
 		for(i=0; i<(double)(simutime) && !eos;i+=realtimestep){
 
 			if(i>=(double(simutime)*0.99)){break;}
@@ -89,11 +93,20 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 			//std::cout <<"  Elapsed calculation time for step (substep of one iteration step) for process " <<rank <<": "  <<realtimestep <<"ms" <<std::endl;
 			//p->outFile <<"  Elapsed calculation time for step (substep of one iteration step) for process " <<rank <<": "  <<realtimestep <<"ms" <<std::endl;
 		}
+		totalTime+=i;
 
-		totalError=UpdateError(hitbuffer);
+		totalError=UpdateError();
 
-		std::cout <<"  Elapsed time for step"<<std::setw(4)<<std::right <<j <<": " <<std::setw(10)<<std::right <<i <<"ms\tfor process " <<rank <<": \tDesorbed particles: "<<std::setw(10)<<std::right<<simHistory->nParticles <<". \tTotal error: "  <<totalError<<std::endl;
-		p->outFile <<"  Elapsed time for step"<<std::setw(4)<<std::right <<j <<": " <<std::setw(10)<<std::right <<i <<"ms\tfor process " <<rank <<": \tDesorbed particles: "<<std::setw(10)<<std::right<<simHistory->nParticles <<". \tTotal error: "  <<totalError<<std::endl;
+		if(j%(int)(30000/simutime)==0 || (simHistory->nParticles>targetParticles && totalError<targetError)|| eos){
+			if(totalError>0.1){
+				std::cout <<std::endl;
+				simHistory->errorList.printCurrent(std::cout, "errorlist");
+				simHistory->hitList.printCurrent(std::cout, "hitlist");
+
+			}
+			std::cout <<"  Total time after step "<<std::setw(4)<<std::right <<j <<": " <<std::setw(10)<<std::right <<totalTime <<"ms\tfor process " <<rank <<": \tDesorbed particles: "<<std::setw(10)<<std::right<<simHistory->nParticles <<"     &    Total error: "  <<std::setw(10)<<std::left<<totalError<<std::endl;
+			p->outFile <<"  Total time after step "<<std::setw(4)<<std::right <<j <<": " <<std::setw(10)<<std::right <<totalTime <<"ms\tfor process " <<rank <<": \tDesorbed particles: "<<std::setw(10)<<std::right<<simHistory->nParticles <<"     &    Total error: "  <<std::setw(10)<<std::left<<totalError<<std::endl;
+		}
 		/*
 		std::cout<<"    Process " <<rank <<": Desorbed particles: "<<simHistory->nParticles <<". Total error: "  <<totalError<<"\t";
 		p->outFile <<"    Process " <<rank <<": Desorbed particles: "<<simHistory->nParticles <<". Total error: "  <<totalError<<"\t";
@@ -126,6 +139,8 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 	int num;
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 				for (SubprocessFacet& f : sHandle->structures[j].facets) {
+					if(f.sh.desorption==0.0) continue;
+
 					num=getFacetIndex(&f);
 					if(f.tmpCounter[0].hit.covering==sHandle->coveringThreshold[num])
 						{facetNum.push_back(num);}
@@ -204,12 +219,15 @@ ProblemDef::ProblemDef(){
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
 
 	saveResults=true;
+
+	targetParticles=1000;
+	targetError=0.001;
 }
 
 void ProblemDef::createOutput(int save){
 	if(save!=0){
 		std::string path=get_path();
-		std::cout <<path <<std::endl;
+		//std::cout <<path <<std::endl;
 		char *test=&path[0u];
 		std::string test2(dirname(dirname(test)));
 		resultpath=test2+"/results/"+std::to_string(time(0));
@@ -278,6 +296,9 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn =="W_tr"){is >> doubleIn; W_tr=doubleIn;}
 		else if(stringIn =="sticking"){is >> doubleIn; sticking=doubleIn;}
 
+		else if(stringIn =="targetParticles"){is >> intIn; targetParticles=intIn;}
+		else if(stringIn == "targetError") {is >>doubleIn; targetError = doubleIn;}
+
 		else{std::cout <<stringIn <<" not a valid argument." <<std::endl;}
 
 
@@ -291,8 +312,10 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 }
 
 void ProblemDef::writeInputfile(std::string filename, int rank){
+
+	if(rank==0){
 	std::ofstream outfile(filename,std::ofstream::out|std::ios::trunc);
-	if (rank==0) {std::cout <<"Test to write input arguments to " <<filename <<std::endl;}
+	std::cout <<"Write input arguments to " <<filename <<std::endl;
 
 	outfile <<"loadbufferPath" <<'\t' <<loadbufferPath <<std::endl;
 	outfile <<"hitbufferPath" <<'\t' <<hitbufferPath <<std::endl;
@@ -313,6 +336,9 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 
 	outfile <<"H_vap" <<'\t' <<H_vap <<std::endl;
 	outfile <<"W_tr" <<'\t' <<W_tr <<std::endl;
+
+	outfile <<"targetError" <<targetError <<std::endl;
+	outfile <<"targetParticles" <<targetParticles <<std::endl;}
 
 }
 
@@ -341,6 +367,9 @@ void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 	out <<"H_vap" <<'\t' <<H_vap <<std::endl;
 	out <<"W_tr" <<'\t' <<W_tr <<std::endl;
 
+	out <<"targetError" <<targetError <<std::endl;
+	out <<"targetParticles" <<targetParticles <<std::endl;
+
 	out  << "Simulation time " << simulationTime << unit << " converted to " << simulationTimeMS << "ms" << std::endl;
 	out  << "Maximum simulation time " << maxTime << maxUnit << " converted to " << maxTimeS << "s" << std::endl<<std::endl;
 
@@ -358,6 +387,7 @@ SimulationHistory::SimulationHistory(int world_size){
 	currentStep=0;
 	stepSize=0.0;
 	numSubProcess=world_size-1;
+
 }
 
 SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
@@ -399,6 +429,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 	//StepSizeComputationTimeFactor=0.0;
 
 	numSubProcess=world_size-1;
+
 }
 
 void SimulationHistory::updateHistory(Databuff *hitbuffer){
