@@ -108,26 +108,25 @@ public:
 	void print(std::ostream& out, std::string msg= ""){
 		out<<std::endl <<msg <<std::endl;
 
-		out <<std::setw(11)<<std::right<<"time[s]";
-		out <<std::setw(22)<<std::right<<"time";
+		out <<std::setw(9)<<std::right<<"Iteration\t";
+		out <<std::setw(11)<<std::right<<"Time[s]";
+		out <<std::setw(22)<<std::right<<"Time";
 		for(uint i=0;i<pointintime_list.size();i++)
 		{
 			if(i==0){
 				for(uint j=0; j<pointintime_list[i].second.size();j++)
 						{
-						out <<"\t" <<std::setw(6)<<std::right <<"Facet " <<std::setw(8)<<std::right <<j;
+					out <<"\t" <<std::setw(6)<<std::right <<"Facet " <<std::setw(8)<<std::right <<j;
 						}
 			}
 			out<<std::endl;
 
-			//std::cout <<std::setw(12)<<std::right <<(llong)pointintime_list[i].first ;
-
+			out<<std::setw(9)<<std::right <<i<<"\t";
 			out<<std::setw(11)<<std::right <<pointintime_list[i].first ;
 			out<<std::setw(22)<<std::right <<convertTime(pointintime_list[i].first);
 
 			for(uint j=0; j<pointintime_list[i].second.size();j++)
 			{
-				//std::cout <<"\t\t" <<pointintime_list[i].second[j];
 				out <<"\t" <<std::setw(14)<<std::right <<(double)pointintime_list[i].second[j];
 
 			}
@@ -137,42 +136,49 @@ public:
 	}
 
 	void printCurrent(std::ostream& out, std::string msg= ""){
-		out<<"    " <<std::setw(12)<<std::left<<msg;
+		std::ostringstream tmpstream (std::ostringstream::app);
+
+		tmpstream<<"    " <<std::setw(12)<<std::left<<msg;
 
 		for(uint i=0;i<currentList.size();i++)
 		{
 				//std::cout <<"\t\t" <<pointintime_list[i].second[j];
-				out <<"\t" <<std::setw(12)<<std::right <<(double)currentList[i];
+			tmpstream <<"\t" <<std::setw(12)<<std::right <<(double)currentList[i];
 
 		}
-		out<<std::endl;
+		tmpstream<<std::endl;
+		out<<tmpstream.str();
 	}
 
 	void write(std::string filename){
 		//std::string write = "/home/van/history"+std::to_string(num)+".txt";
-		std::ofstream outfile(filename,std::ofstream::out|std::ios::trunc);
+		std::ofstream out(filename,std::ofstream::out|std::ios::trunc);
 
-		outfile <<std::setw(12)<<std::right<<"time[s]";
+		out <<std::setw(9)<<std::right<<"Iteration\t";
+		out <<std::setw(11)<<std::right<<"Time[s]";
+		out <<std::setw(22)<<std::right<<"Time";
 		for(uint i=0;i<pointintime_list.size();i++)
 		{
 			if(i==0){
 				for(uint j=0; j<pointintime_list[i].second.size();j++)
 						{
-						outfile <<"\t" <<std::setw(6)<<std::right <<"Facet " <<std::setw(8)<<std::right <<j;
+					out <<"\t" <<std::setw(6)<<std::right <<"Facet " <<std::setw(8)<<std::right <<j;
 						}
 			}
-			outfile <<std::endl;
-			outfile <<std::setw(14)<<std::right <<pointintime_list[i].first ;
+			out<<std::endl;
+
+			out<<std::setw(9)<<std::right <<i<<"\t";
+			out<<std::setw(11)<<std::right <<pointintime_list[i].first ;
+			out<<std::setw(22)<<std::right <<convertTime(pointintime_list[i].first);
 
 			for(uint j=0; j<pointintime_list[i].second.size();j++)
 			{
-				outfile <<"\t" <<std::setw(12)<<std::right <<pointintime_list[i].second[j];
+				out <<"\t" <<std::setw(14)<<std::right <<pointintime_list[i].second[j];
+
 			}
 
-			outfile <<'\n';
-
 		}
-		outfile.close();
+		out.close();
 		std::cout <<"Results saved to " <<filename <<std::endl;
 	}
 	void read(std::string filename, Databuff *hitbuffer, Simulation *sHandle){//Rudi: Not ready yet.
@@ -257,12 +263,12 @@ public:
 	bool saveResults;
 
 	std::string resultpath;
+	std::string resultbufferPath;
 	std::ofstream outFile;
 
 	// These can be given as parameters directly
 	std::string loadbufferPath;
 	std::string hitbufferPath;
-	std::string resultbufferPath;
 	double simulationTime;
 	std::string unit;
 
