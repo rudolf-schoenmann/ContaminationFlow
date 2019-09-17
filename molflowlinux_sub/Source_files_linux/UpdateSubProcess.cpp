@@ -90,6 +90,13 @@ void UpdateErrorSub(){
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			double num_hit_f=f.sh.opacity * ( f.tmpCounter[0].hit.nbHitEquiv);
+
+			//neglect hits if very small compared to total hits
+			if(num_hit_f/num_hit_it<1E-5){//random threshold, can be adapted
+				num_hit_it-=num_hit_f;
+				num_hit_f=0;
+			}
+
 			if(f.sh.opacity==0 /*|| num_hit_f==0*/){simHistory->errorList.setCurrentList(&f, 0.0);} //TODO correct ig num_hit_f ==0?
 			else{
 				double error=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
