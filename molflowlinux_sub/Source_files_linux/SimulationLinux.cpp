@@ -76,6 +76,8 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 
 	// Run Simulation for timestep milliseconds
 	for(int j=0; !(j>0 && simHistory->nParticles>targetParticles &&(totalError<targetError/*||j>1000*/))&& !eos; j++){
+		//after certain number of itearations, increase target
+
 		for(i=0; i<(double)(simutime) && !eos;i+=realtimestep){
 
 			if(i>=(double(simutime)*0.99)){break;}
@@ -98,14 +100,18 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 		totalError=UpdateError();
 
 		if(j%(int)(30000/simutime)==0 || (simHistory->nParticles>targetParticles && totalError<targetError)|| eos){
-			if(totalError>0.1){
-				std::cout <<std::endl;
-				simHistory->errorList.printCurrent(std::cout, "errorlist");
-				simHistory->hitList.printCurrent(std::cout, "hitlist");
+			std::ostringstream tmpstream (std::ostringstream::app);
+			tmpstream <<"  "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Desorbed particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
 
+			if(totalError>targetError){
+				simHistory->hitList.printCurrent(tmpstream, std::to_string(rank)+": hitlist");
+				simHistory->errorList.printCurrent(tmpstream, std::to_string(rank)+": errorlist");
+				tmpstream <<std::endl;
 			}
-			std::cout <<"  Total time after step "<<std::setw(4)<<std::right <<j <<": " <<std::setw(10)<<std::right <<totalTime <<"ms\tfor process " <<rank <<": \tDesorbed particles: "<<std::setw(10)<<std::right<<simHistory->nParticles <<"     &    Total error: "  <<std::setw(10)<<std::left<<totalError<<std::endl;
-			p->outFile <<"  Total time after step "<<std::setw(4)<<std::right <<j <<": " <<std::setw(10)<<std::right <<totalTime <<"ms\tfor process " <<rank <<": \tDesorbed particles: "<<std::setw(10)<<std::right<<simHistory->nParticles <<"     &    Total error: "  <<std::setw(10)<<std::left<<totalError<<std::endl;
+
+			if(j%(int)(300000/simutime)==0&&j>0){targetError=targetError*1.25; tmpstream<<"    "<<rank<<": increased targetError to "<<targetError<<std::endl;}
+			std::cout <<tmpstream.str();
+			p->outFile <<tmpstream.str();
 		}
 		/*
 		std::cout<<"    Process " <<rank <<": Desorbed particles: "<<simHistory->nParticles <<". Total error: "  <<totalError<<"\t";
@@ -337,8 +343,8 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 	outfile <<"H_vap" <<'\t' <<H_vap <<std::endl;
 	outfile <<"W_tr" <<'\t' <<W_tr <<std::endl;
 
-	outfile <<"targetError" <<targetError <<std::endl;
-	outfile <<"targetParticles" <<targetParticles <<std::endl;}
+	outfile <<"targetError " <<targetError <<std::endl;
+	outfile <<"targetParticles " <<targetParticles <<std::endl;}
 
 }
 
@@ -367,8 +373,8 @@ void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 	out <<"H_vap" <<'\t' <<H_vap <<std::endl;
 	out <<"W_tr" <<'\t' <<W_tr <<std::endl;
 
-	out <<"targetError" <<targetError <<std::endl;
-	out <<"targetParticles" <<targetParticles <<std::endl;
+	out <<"targetError " <<targetError <<std::endl;
+	out <<"targetParticles " <<targetParticles <<std::endl;
 
 	out  << "Simulation time " << simulationTime << unit << " converted to " << simulationTimeMS << "ms" << std::endl;
 	out  << "Maximum simulation time " << maxTime << maxUnit << " converted to " << maxTimeS << "s" << std::endl<<std::endl;
