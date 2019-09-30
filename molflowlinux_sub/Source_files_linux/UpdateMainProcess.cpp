@@ -357,7 +357,25 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 		time_step=0;
 	}
 	else{
-		time_step = manageStepSize(true);
+		double error=0.0;
+		double area=0.0;
+
+		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+			for (SubprocessFacet& f : sHandle->structures[s].facets) {
+				if(simHistory->errorList.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0)//ignore facet if no hits (=inf error)
+					continue;
+
+				error+=simHistory->errorList.getCurrent(&f)*f.sh.area;
+				area+=f.sh.area;
+			}
+		}
+		std::cout <<"Total Error "<<error/area <<std::endl;
+		simHistory->errorList.printCurrent(std::cout);
+
+		if(error/area < p->targetError) //if errorTarget not reached: donot update currentstep, TODO additional if cov threshold reached
+			{time_step = manageStepSize(true);}
+		else
+			{time_step = manageStepSize(false);}
 	}
 
 
@@ -426,6 +444,12 @@ void UpdateErrorMain(Databuff *hitbuffer_sum){
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			double num_hit_f=f.sh.opacity * ( getHits(&f,hitbuffer_sum)-simHistory->hitList.getLast(&f));
+
+			if(num_hit_f/num_hit_it<0.75E-5){//random threshold, can be adapted
+				num_hit_it-=num_hit_f; //also adapt facet counters??
+				num_hit_f=0;
+			}
+
 			if(f.sh.opacity==0){simHistory->errorList.setCurrentList(&f, 0.0);} //TODO correct ig num_hit_f ==0?
 			else{
 				double error=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
@@ -438,7 +462,37 @@ void UpdateErrorMain(Databuff *hitbuffer_sum){
 	simHistory->errorList.appendCurrent(simHistory->lastTime);
 	simHistory->hitList.pointintime_list.back().first=simHistory->lastTime;
 
+}
 
+std::tuple<std::vector<double>,std::vector<llong>>  CalcPerIteration(){
+	std::vector<double> errorPerIt;
+	errorPerIt =std::vector<double> ();
+
+	std::vector<llong> covPerIt;
+	covPerIt =std::vector<llong> ();
+
+	for(int it=0; it<simHistory->errorList.pointintime_list.size();it++){
+		double error=0.0;
+		double area=0.0;
+		llong covering;
+
+		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+			for (SubprocessFacet& f : sHandle->structures[s].facets) {
+				int idx=getFacetIndex(&f);
+				covering+=simHistory->coveringList.pointintime_list[it].second[idx];
+
+				double err=simHistory->errorList.pointintime_list[it].second[idx];
+				if(err== std::numeric_limits<double>::infinity()||f.sh.opacity==0)//ignore facet if no hits (=inf error)
+					continue;
+
+				error+=err*f.sh.area;
+				area+=f.sh.area;
+			}
+		errorPerIt.push_back(error/area);
+		covPerIt.push_back(covering);
+		}
+	}
+	return std::make_tuple(errorPerIt,covPerIt);
 }
 
 // Copy covering to buffer

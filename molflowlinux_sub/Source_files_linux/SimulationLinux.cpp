@@ -109,7 +109,7 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 				tmpstream <<std::endl;
 			}
 
-			if(j%(int)(300000/simutime)==0&&j>0){targetError=targetError*1.25; tmpstream<<"    "<<rank<<": increased targetError to "<<targetError<<std::endl;}
+			//if(j%(int)(300000/simutime)==0&&j>0){targetError=targetError*2; tmpstream<<"    "<<rank<<": increased targetError to "<<targetError<<std::endl;}
 			std::cout <<tmpstream.str();
 			p->outFile <<tmpstream.str();
 		}
@@ -498,13 +498,18 @@ void SimulationHistory::appendList(Databuff *hitbuffer, double time){
 }
 
 void SimulationHistory::print(bool write){
-	coveringList.print(std::cout, "Accumulative covering");
+	std::vector<double> errorPerIt;
+	std::vector<llong> covPerIt;
+	std::tie(errorPerIt,covPerIt) = CalcPerIteration();
+
+	coveringList.print(std::cout,covPerIt, "Accumulative covering");
 	hitList.print(std::cout, "Accumulative number hits");
-	errorList.print(std::cout, "Error per iteration");
+
+	errorList.print(std::cout,errorPerIt, "Error per iteration");
 	if(write){
-		coveringList.print(p->outFile, "Accumulative covering");
+		coveringList.print(p->outFile,covPerIt, "Accumulative covering");
 		hitList.print(p->outFile, "Accumulative number hits");
-		errorList.print(p->outFile, "Error per iteration");
+		errorList.print(p->outFile,errorPerIt, "Error per iteration");
 	}
 }
 

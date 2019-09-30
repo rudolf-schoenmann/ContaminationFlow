@@ -92,8 +92,8 @@ void UpdateErrorSub(){
 			double num_hit_f=f.sh.opacity * ( f.tmpCounter[0].hit.nbHitEquiv);
 
 			//neglect hits if very small compared to total hits
-			if(num_hit_f/num_hit_it<1E-5){//random threshold, can be adapted
-				num_hit_it-=num_hit_f;
+			if(num_hit_f/num_hit_it<0.75E-5){//random threshold, can be adapted
+				num_hit_it-=num_hit_f; //also adapt facet counters??
 				num_hit_f=0;
 			}
 
@@ -117,7 +117,7 @@ double UpdateError(){
 
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			if(simHistory->errorList.getCurrent(&f)== std::numeric_limits<double>::infinity())//ignore facet if no hits (=inf error)
+			if(simHistory->errorList.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0)//ignore facet if no hits (=inf error)
 				continue;
 
 			error+=simHistory->errorList.getCurrent(&f)*f.sh.area;
