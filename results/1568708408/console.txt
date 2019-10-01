@@ -1,0 +1,2291 @@
+
+Print input arguments
+resultPath	/home/van/MolflowLinux/results/1568708408
+loadbufferPath	/home/van/Buffer/loadbuffer_alle_RT
+hitbufferPath	/home/van/Buffer/hitbuffer_0102
+resultbufferPath	/home/van/MolflowLinux/results/1568708408/resultbuffer
+
+simulationTime	0.5
+unit	s
+iterationNumber	50
+maxTime	4
+maxUnit	d
+
+sticking	0
+d	1
+E_de	1.6e-19
+H_vap	8e-20
+W_tr	1
+targetError0.001
+targetParticles1000
+Simulation time 0.5s converted to 500ms
+Maximum simulation time 4d converted to 345600s
+
+
+----------------Starting iteration 0----------------
+
+Currentstep: 0. Step size: 5.5157e-05
+Target Particles: 250. Target Error: 0.002
+
+  1: Step    0    &    Total time    569.819ms    &    Desorbed particles     250000    &    Total error 0.00333338
+    1: hitlist  	      103755	           0	       49624	       50233	       49821	       49918	       50404
+    1: errorlist	           0	         inf	   0.0040189	  0.00398839	  0.00400897	   0.0040041	  0.00397991
+
+  1: Step    2    &    Total time    1869.94ms    &    Desorbed particles     710254    &    Total error 0.00197762
+Simulation for process 1 for iteration 0 finished.
+  3: Step    0    &    Total time    874.399ms    &    Desorbed particles     250000    &    Total error 0.00333334
+    3: hitlist  	      103761	           0	       49971	       50078	       49933	       50086	       49932
+    3: errorlist	           0	         inf	  0.00400145	   0.0039961	  0.00400335	  0.00399571	   0.0040034
+
+  3: Step    3    &    Total time    2374.44ms    &    Desorbed particles     900011    &    Total error 0.00175681
+Simulation for process 3 for iteration 0 finished.
+  4: Step    0    &    Total time    591.126ms    &    Desorbed particles     250000    &    Total error 0.00333336
+    4: hitlist  	      103572	           0	       49899	       49675	       50115	       50059	       50252
+    4: errorlist	           0	         inf	  0.00400506	  0.00401632	  0.00399426	  0.00399705	  0.00398744
+
+  4: Step    2    &    Total time    1895.03ms    &    Desorbed particles     707713    &    Total error 0.00198117
+Simulation for process 4 for iteration 0 finished.
+  2: Step    0    &    Total time    580.457ms    &    Desorbed particles     250000    &    Total error 0.00333342
+    2: hitlist  	      103523	           0	       49883	       49367	       50508	       49965	       50277
+    2: errorlist	           0	         inf	  0.00400586	  0.00403193	  0.00397478	  0.00400175	   0.0039862
+
+  2: Step    3    &    Total time    2120.15ms    &    Desorbed particles     919980    &    Total error 0.00173765
+Simulation for process 2 for iteration 0 finished.
+Updated hitbuffer with process 1
+Updated hitbuffer with process 2
+Updated hitbuffer with process 3
+Updated hitbuffer with process 4
+flightTime 71.657
+nParticles 3237958
+
+Increase simHistory->currentStep: 1
+Krealvirt = 0.00960459
+Covering difference will be multiplied by Krealvirt*(time step): 5.29761e-07
+
+Facet 0
+covering_sum = 0 = 0
+covering_phys_before = 0 = 0
+covering decreases by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 1
+covering_sum = 761271875 = 7.61272e+08
+covering_phys_before = 764509837 = 7.6451e+08
+covering decreases by 1 = 1
+covering_phys_after = 764509836 = 7.6451e+08
+coveringThreshhold = 573382378 = 5.73382e+08
+
+Facet 2
+covering_sum = 646623 = 646623
+covering_phys_before = 0 = 0
+covering rises by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 3
+covering_sum = 647180 = 647180
+covering_phys_before = 0 = 0
+covering rises by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 4
+covering_sum = 648143 = 648143
+covering_phys_before = 0 = 0
+covering rises by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 5
+covering_sum = 647427 = 647427
+covering_phys_before = 0 = 0
+covering rises by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 6
+covering_sum = 648585 = 648585
+covering_phys_before = 0 = 0
+covering rises by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Accumulative covering after iteration 0
+Iteration	    Time[s]                  Time	Facet        0	Facet        1	Facet        2	Facet        3	Facet        4	Facet        5	Facet        6
+        0	          0                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        1	 5.5157e-05                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+
+
+----------------Starting iteration 1----------------
+
+Currentstep: 1. Step size: 8.558e-05
+Target Particles: 250. Target Error: 0.002
+
+  1: Step    0    &    Total time    528.111ms    &    Desorbed particles     144159    &    Total error 0.00438963
+    1: hitlist  	       59766	           0	       28826	       28876	       28752	       28841	       28864
+    1: errorlist	           0	         inf	  0.00526822	  0.00526251	  0.00527668	  0.00526651	  0.00526388
+
+  1: Step    5    &    Total time    3027.38ms    &    Desorbed particles     835496    &    Total error 0.00182338
+Simulation for process 1 for iteration 1 finished.
+  3: Step    0    &    Total time    502.336ms    &    Desorbed particles     231090    &    Total error 0.00346705
+    3: hitlist  	       95906	           0	       46132	       46358	       46195	       46011	       46394
+    3: errorlist	           0	         inf	  0.00416529	  0.00415258	  0.00416174	  0.00417212	  0.00415057
+
+  3: Step    3    &    Total time    2002.32ms    &    Desorbed particles     921185    &    Total error 0.0017365 
+Simulation for process 3 for iteration 1 finished.
+  4: Step    0    &    Total time    520.391ms    &    Desorbed particles     143415    &    Total error 0.00440103
+    4: hitlist  	       59408	           0	       28771	       28838	       28547	       28540	       28719
+    4: errorlist	           0	         inf	   0.0052711	  0.00526343	   0.0052969	  0.00529771	  0.00527706
+
+  4: Step    4    &    Total time    2520.13ms    &    Desorbed particles     694661    &    Total error 0.0019997 
+Simulation for process 4 for iteration 1 finished.
+  2: Step    0    &    Total time    503.042ms    &    Desorbed particles     230309    &    Total error 0.00347295
+    2: hitlist  	       95678	           0	       45947	       45981	       46142	       45770	       46469
+    2: errorlist	           0	         inf	  0.00417399	  0.00417206	  0.00416296	  0.00418406	   0.0041446
+
+  2: Step    3    &    Total time    2002.17ms    &    Desorbed particles     917474    &    Total error 0.00174001
+Simulation for process 2 for iteration 1 finished.
+Updated hitbuffer with process 1
+Updated hitbuffer with process 2
+Updated hitbuffer with process 3
+Updated hitbuffer with process 4
+flightTime 74.5954
+nParticles 3368816
+
+Increase simHistory->currentStep: 2
+Krealvirt = 0.00923152
+Covering difference will be multiplied by Krealvirt*(time step): 7.90034e-07
+
+Facet 0
+covering_sum = 0 = 0
+covering_phys_before = 0 = 0
+covering decreases by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 1
+covering_sum = 761141020 = 7.61141e+08
+covering_phys_before = 764509836 = 7.6451e+08
+covering decreases by 2 = 2
+covering_phys_after = 764509834 = 7.6451e+08
+coveringThreshhold = 573382377 = 5.73382e+08
+
+Facet 2
+covering_sum = 673287 = 673287
+covering_phys_before = 0 = 0
+covering rises by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 3
+covering_sum = 674553 = 674553
+covering_phys_before = 0 = 0
+covering rises by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 4
+covering_sum = 674116 = 674116
+covering_phys_before = 0 = 0
+covering rises by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 5
+covering_sum = 672192 = 672192
+covering_phys_before = 0 = 0
+covering rises by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 6
+covering_sum = 674668 = 674668
+covering_phys_before = 0 = 0
+covering rises by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Accumulative covering after iteration 1
+Iteration	    Time[s]                  Time	Facet        0	Facet        1	Facet        2	Facet        3	Facet        4	Facet        5	Facet        6
+        0	          0                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        1	 5.5157e-05                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        2	0.000140737                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+
+
+----------------Starting iteration 2----------------
+
+Currentstep: 2. Step size: 0.000132783
+Target Particles: 250. Target Error: 0.002
+
+  2: Step    0    &    Total time    501.425ms    &    Desorbed particles     229316    &    Total error 0.00348043
+    2: hitlist  	       95136	           0	       45877	       45815	       45772	       45807	       46045
+    2: errorlist	           0	         inf	  0.00417572	  0.00417925	   0.0041817	   0.0041797	  0.00416618
+
+  2: Step    3    &    Total time    2000.79ms    &    Desorbed particles     915299    &    Total error 0.00174208
+Simulation for process 2 for iteration 2 finished.
+  3: Step    0    &    Total time    500.385ms    &    Desorbed particles     230021    &    Total error 0.00347513
+    3: hitlist  	       95656	           0	       46383	       45668	       46108	       45740	       46122
+    3: errorlist	           0	         inf	  0.00414876	  0.00418924	  0.00416423	  0.00418513	  0.00416344
+
+  3: Step    3    &    Total time    1999.94ms    &    Desorbed particles     919799    &    Total error 0.00173782
+Simulation for process 3 for iteration 2 finished.
+  1: Step    0    &    Total time    532.231ms    &    Desorbed particles     145146    &    Total error 0.00437469
+    1: hitlist  	       60338	           0	       29031	       28926	       29046	       29153	       28990
+    1: errorlist	           0	         inf	  0.00524941	  0.00526131	  0.00524772	  0.00523566	  0.00525405
+
+  1: Step    3    &    Total time    2031.83ms    &    Desorbed particles     714946    &    Total error 0.00197112
+Simulation for process 1 for iteration 2 finished.
+  4: Step    0    &    Total time    500.658ms    &    Desorbed particles     137867    &    Total error 0.00448873
+    4: hitlist  	       57088	           0	       27463	       27368	       27771	       27688	       27577
+    4: errorlist	           0	         inf	  0.00539993	  0.00541162	  0.00536241	  0.00537246	  0.00538598
+
+  4: Step    4    &    Total time     2501.3ms    &    Desorbed particles     879188    &    Total error 0.0017775 
+Simulation for process 4 for iteration 2 finished.
+Updated hitbuffer with process 1
+Updated hitbuffer with process 2
+Updated hitbuffer with process 3
+Updated hitbuffer with process 4
+flightTime 75.9687
+nParticles 3429232
+
+Increase simHistory->currentStep: 3
+Krealvirt = 0.00906888
+Covering difference will be multiplied by Krealvirt*(time step): 1.2042e-06
+
+Facet 0
+covering_sum = 0 = 0
+covering_phys_before = 0 = 0
+covering decreases by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 1
+covering_sum = 761080602 = 7.61081e+08
+covering_phys_before = 764509834 = 7.6451e+08
+covering decreases by 4 = 4
+covering_phys_after = 764509830 = 7.6451e+08
+coveringThreshhold = 573382376 = 5.73382e+08
+
+Facet 2
+covering_sum = 686703 = 686703
+covering_phys_before = 0 = 0
+covering rises by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 3
+covering_sum = 685677 = 685677
+covering_phys_before = 0 = 0
+covering rises by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 4
+covering_sum = 687042 = 687042
+covering_phys_before = 0 = 0
+covering rises by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 5
+covering_sum = 684703 = 684703
+covering_phys_before = 0 = 0
+covering rises by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 6
+covering_sum = 685107 = 685107
+covering_phys_before = 0 = 0
+covering rises by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Accumulative covering after iteration 2
+Iteration	    Time[s]                  Time	Facet        0	Facet        1	Facet        2	Facet        3	Facet        4	Facet        5	Facet        6
+        0	          0                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        1	 5.5157e-05                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        2	0.000140737                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        3	 0.00027352                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+
+
+----------------Starting iteration 3----------------
+
+Currentstep: 3. Step size: 0.000206023
+Target Particles: 250. Target Error: 0.002
+
+  4: Step    0    &    Total time    500.388ms    &    Desorbed particles     229015    &    Total error 0.00348274
+    4: hitlist  	       95104	           0	       45718	       46155	       45512	       45879	       45751
+    4: errorlist	           0	         inf	   0.0041841	  0.00415928	  0.00419591	  0.00417492	  0.00418221
+
+  4: Step    3    &    Total time    1999.52ms    &    Desorbed particles     916263    &    Total error 0.00174117
+Simulation for process 4 for iteration 3 finished.
+  1: Step    0    &    Total time     500.19ms    &    Desorbed particles     229898    &    Total error 0.00347603
+    1: hitlist  	       95449	           0	       46085	       45941	       45652	       46182	       46038
+    1: errorlist	           0	         inf	  0.00416525	   0.0041734	  0.00418988	  0.00415977	   0.0041679
+
+  1: Step    3    &    Total time    2000.35ms    &    Desorbed particles     919164    &    Total error 0.00173841
+Simulation for process 1 for iteration 3 finished.
+  3: Step    0    &    Total time    500.843ms    &    Desorbed particles     230049    &    Total error 0.00347489
+    3: hitlist  	       95514	           0	       45791	       46148	       46053	       45853	       46204
+    3: errorlist	           0	         inf	  0.00418228	  0.00416203	   0.0041674	  0.00417875	  0.00415888
+
+  3: Step    3    &    Total time    1999.99ms    &    Desorbed particles     919696    &    Total error 0.00173791
+Simulation for process 3 for iteration 3 finished.
+  2: Step    0    &    Total time    500.607ms    &    Desorbed particles     228955    &    Total error 0.00348321
+    2: hitlist  	       95109	           0	       46027	       45866	       45523	       46088	       45451
+    2: errorlist	           0	         inf	  0.00416638	  0.00417552	  0.00419515	  0.00416293	  0.00419929
+
+  2: Step    3    &    Total time    2000.07ms    &    Desorbed particles     915190    &    Total error 0.00174219
+Simulation for process 2 for iteration 3 finished.
+Updated hitbuffer with process 1
+Updated hitbuffer with process 2
+Updated hitbuffer with process 3
+Updated hitbuffer with process 4
+flightTime 81.2665
+nParticles 3670313
+
+Increase simHistory->currentStep: 4
+Krealvirt = 0.0084732
+Covering difference will be multiplied by Krealvirt*(time step): 1.74567e-06
+
+Facet 0
+covering_sum = 0 = 0
+covering_phys_before = 0 = 0
+covering decreases by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 1
+covering_sum = 760839517 = 7.6084e+08
+covering_phys_before = 764509830 = 7.6451e+08
+covering decreases by 6 = 6
+covering_phys_after = 764509824 = 7.6451e+08
+coveringThreshhold = 573382373 = 5.73382e+08
+
+Facet 2
+covering_sum = 733669 = 733669
+covering_phys_before = 0 = 0
+covering rises by 1 = 1
+covering_phys_after = 1 = 1
+coveringThreshhold = 0 = 0
+
+Facet 3
+covering_sum = 734329 = 734329
+covering_phys_before = 0 = 0
+covering rises by 1 = 1
+covering_phys_after = 1 = 1
+coveringThreshhold = 0 = 0
+
+Facet 4
+covering_sum = 733819 = 733819
+covering_phys_before = 0 = 0
+covering rises by 1 = 1
+covering_phys_after = 1 = 1
+coveringThreshhold = 0 = 0
+
+Facet 5
+covering_sum = 734742 = 734742
+covering_phys_before = 0 = 0
+covering rises by 1 = 1
+covering_phys_after = 1 = 1
+coveringThreshhold = 0 = 0
+
+Facet 6
+covering_sum = 733754 = 733754
+covering_phys_before = 0 = 0
+covering rises by 1 = 1
+covering_phys_after = 1 = 1
+coveringThreshhold = 0 = 0
+
+Accumulative covering after iteration 3
+Iteration	    Time[s]                  Time	Facet        0	Facet        1	Facet        2	Facet        3	Facet        4	Facet        5	Facet        6
+        0	          0                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        1	 5.5157e-05                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        2	0.000140737                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        3	 0.00027352                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        4	0.000479543                    0s	             0	    7.6451e+08	             1	             1	             1	             1	             1
+
+
+----------------Starting iteration 4----------------
+
+Currentstep: 4. Step size: 0.000319659
+Target Particles: 250. Target Error: 0.002
+
+  2: Step    0    &    Total time     501.21ms    &    Desorbed particles     228924    &    Total error 0.00348344
+    2: hitlist  	       94744	           0	       45608	       45729	       46216	       45572	       45799
+    2: errorlist	           0	         inf	  0.00419019	  0.00418326	  0.00415563	  0.00419226	  0.00417927
+
+  2: Step    3    &    Total time    2000.66ms    &    Desorbed particles     914128    &    Total error 0.0017432 
+Simulation for process 2 for iteration 4 finished.
+  3: Step    0    &    Total time    501.103ms    &    Desorbed particles     230056    &    Total error 0.00347486
+    3: hitlist  	       95190	           0	       45831	       46167	       45608	       46220	       46230
+    3: errorlist	           0	         inf	  0.00418001	  0.00416098	  0.00419276	  0.00415799	  0.00415743
+
+  3: Step    3    &    Total time    2000.79ms    &    Desorbed particles     918924    &    Total error 0.00173864
+Simulation for process 3 for iteration 4 finished.
+  1: Step    0    &    Total time    500.767ms    &    Desorbed particles     229739    &    Total error 0.00347726
+    1: hitlist  	       95294	           0	       45814	       46383	       45873	       46050	       45619
+    1: errorlist	           0	         inf	  0.00418027	  0.00414811	  0.00417691	  0.00416686	  0.00419141
+
+  1: Step    3    &    Total time    2290.88ms    &    Desorbed particles     857500    &    Total error 0.00179983
+Simulation for process 1 for iteration 4 finished.
+  4: Step    0    &    Total time    501.249ms    &    Desorbed particles     229233    &    Total error 0.00348109
+    4: hitlist  	       95311	           0	       46190	       45980	       45759	       45478	       45826
+    4: errorlist	           0	         inf	   0.0041578	  0.00416968	  0.00418225	  0.00419837	  0.00417843
+
+  4: Step    3    &    Total time     2301.6ms    &    Desorbed particles     856260    &    Total error 0.00180114
+Simulation for process 4 for iteration 4 finished.
+Updated hitbuffer with process 1
+Updated hitbuffer with process 2
+Updated hitbuffer with process 3
+Updated hitbuffer with process 4
+flightTime 78.5745
+nParticles 3546812
+
+Increase simHistory->currentStep: 5
+Krealvirt = 0.00876824
+Covering difference will be multiplied by Krealvirt*(time step): 2.80285e-06
+
+Facet 0
+covering_sum = 0 = 0
+covering_phys_before = 0 = 0
+covering decreases by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 1
+covering_sum = 760963012 = 7.60963e+08
+covering_phys_before = 764509824 = 7.6451e+08
+covering decreases by 9 = 9
+covering_phys_after = 764509815 = 7.6451e+08
+coveringThreshhold = 573382368 = 5.73382e+08
+
+Facet 2
+covering_sum = 709003 = 709003
+covering_phys_before = 1 = 1
+covering rises by 1 = 1
+covering_phys_after = 2 = 2
+coveringThreshhold = 1 = 1
+
+Facet 3
+covering_sum = 710446 = 710446
+covering_phys_before = 1 = 1
+covering rises by 1 = 1
+covering_phys_after = 2 = 2
+coveringThreshhold = 1 = 1
+
+Facet 4
+covering_sum = 709791 = 709791
+covering_phys_before = 1 = 1
+covering rises by 1 = 1
+covering_phys_after = 2 = 2
+coveringThreshhold = 1 = 1
+
+Facet 5
+covering_sum = 708019 = 708019
+covering_phys_before = 1 = 1
+covering rises by 1 = 1
+covering_phys_after = 2 = 2
+coveringThreshhold = 1 = 1
+
+Facet 6
+covering_sum = 709558 = 709558
+covering_phys_before = 1 = 1
+covering rises by 1 = 1
+covering_phys_after = 2 = 2
+coveringThreshhold = 1 = 1
+
+Accumulative covering after iteration 4
+Iteration	    Time[s]                  Time	Facet        0	Facet        1	Facet        2	Facet        3	Facet        4	Facet        5	Facet        6
+        0	          0                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        1	 5.5157e-05                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        2	0.000140737                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        3	 0.00027352                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        4	0.000479543                    0s	             0	    7.6451e+08	             1	             1	             1	             1	             1
+        5	0.000799202                    0s	             0	    7.6451e+08	             2	             2	             2	             2	             2
+
+
+----------------Starting iteration 5----------------
+
+Currentstep: 5. Step size: 0.000495973
+Target Particles: 250. Target Error: 0.002
+
+  1: Step    0    &    Total time    499.937ms    &    Desorbed particles     229352    &    Total error 0.0034802 
+    1: hitlist  	       95113	           0	       45649	       45706	       46385	       45745	       45867
+    1: errorlist	           0	         inf	  0.00418882	  0.00418555	  0.00414712	  0.00418332	  0.00417637
+
+  1: Step    3    &    Total time    2000.07ms    &    Desorbed particles     917511    &    Total error 0.00173998
+Simulation for process 1 for iteration 5 finished.
+  3: Step    0    &    Total time    500.083ms    &    Desorbed particles     229694    &    Total error 0.00347756
+    3: hitlist  	       95296	           0	       45789	       45921	       45982	       45939	       46063
+    3: errorlist	           0	         inf	  0.00418159	  0.00417408	  0.00417061	  0.00417305	  0.00416603
+
+  3: Step    3    &    Total time     2000.3ms    &    Desorbed particles     918691    &    Total error 0.00173886
+Simulation for process 3 for iteration 5 finished.
+  4: Step    0    &    Total time    499.991ms    &    Desorbed particles     192029    &    Total error 0.00380336
+    4: hitlist  	       80242	           0	       38514	       38261	       38411	       38543	       38300
+    4: errorlist	           0	         inf	  0.00455599	  0.00457479	  0.00456362	  0.00455384	  0.00457188
+
+  4: Step    3    &    Total time     1998.5ms    &    Desorbed particles     871483    &    Total error 0.00178533
+Simulation for process 4 for iteration 5 finished.
+  2: Step    0    &    Total time    500.735ms    &    Desorbed particles     228623    &    Total error 0.00348573
+    2: hitlist  	       95072	           0	       45547	       45751	       45535	       46181	       45609
+    2: errorlist	           0	         inf	  0.00419301	  0.00418132	   0.0041937	  0.00415691	  0.00418945
+
+  2: Step    3    &    Total time     1999.9ms    &    Desorbed particles     914100    &    Total error 0.00174322
+Simulation for process 2 for iteration 5 finished.
+Updated hitbuffer with process 1
+Updated hitbuffer with process 2
+Updated hitbuffer with process 3
+Updated hitbuffer with process 4
+flightTime 80.1658
+nParticles 3621785
+
+Increase simHistory->currentStep: 6
+Krealvirt = 0.00858673
+Covering difference will be multiplied by Krealvirt*(time step): 4.25879e-06
+
+Facet 0
+covering_sum = 0 = 0
+covering_phys_before = 0 = 0
+covering decreases by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 1
+covering_sum = 760888030 = 7.60888e+08
+covering_phys_before = 764509815 = 7.6451e+08
+covering decreases by 15 = 15
+covering_phys_after = 764509800 = 7.6451e+08
+coveringThreshhold = 573382362 = 5.73382e+08
+
+Facet 2
+covering_sum = 723517 = 723517
+covering_phys_before = 2 = 2
+covering rises by 3 = 3
+covering_phys_after = 5 = 5
+coveringThreshhold = 2 = 2
+
+Facet 3
+covering_sum = 723783 = 723783
+covering_phys_before = 2 = 2
+covering rises by 3 = 3
+covering_phys_after = 5 = 5
+coveringThreshhold = 2 = 2
+
+Facet 4
+covering_sum = 724167 = 724167
+covering_phys_before = 2 = 2
+covering rises by 3 = 3
+covering_phys_after = 5 = 5
+coveringThreshhold = 2 = 2
+
+Facet 5
+covering_sum = 724899 = 724899
+covering_phys_before = 2 = 2
+covering rises by 3 = 3
+covering_phys_after = 5 = 5
+coveringThreshhold = 2 = 2
+
+Facet 6
+covering_sum = 725429 = 725429
+covering_phys_before = 2 = 2
+covering rises by 3 = 3
+covering_phys_after = 5 = 5
+coveringThreshhold = 2 = 2
+
+Accumulative covering after iteration 5
+Iteration	    Time[s]                  Time	Facet        0	Facet        1	Facet        2	Facet        3	Facet        4	Facet        5	Facet        6
+        0	          0                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        1	 5.5157e-05                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        2	0.000140737                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        3	 0.00027352                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        4	0.000479543                    0s	             0	    7.6451e+08	             1	             1	             1	             1	             1
+        5	0.000799202                    0s	             0	    7.6451e+08	             2	             2	             2	             2	             2
+        6	 0.00129518                    0s	             0	    7.6451e+08	             5	             5	             5	             5	             5
+
+
+----------------Starting iteration 6----------------
+
+Currentstep: 6. Step size: 0.000769537
+Target Particles: 250. Target Error: 0.002
+
+  1: Step    0    &    Total time    500.008ms    &    Desorbed particles     229365    &    Total error 0.00348008
+    1: hitlist  	       95100	           0	       45562	       46140	       45705	       46044	       45914
+    1: errorlist	           0	         inf	  0.00419383	  0.00416093	  0.00418564	  0.00416635	  0.00417373
+
+  1: Step    3    &    Total time    1999.75ms    &    Desorbed particles     917711    &    Total error 0.00173979
+Simulation for process 1 for iteration 6 finished.
+  2: Step    0    &    Total time    501.269ms    &    Desorbed particles     228667    &    Total error 0.00348536
+    2: hitlist  	       95096	           0	       45690	       45862	       45745	       45820	       45550
+    2: errorlist	           0	         inf	  0.00418491	  0.00417509	  0.00418176	  0.00417748	  0.00419294
+
+  2: Step    3    &    Total time    2000.52ms    &    Desorbed particles     913629    &    Total error 0.00174367
+Simulation for process 2 for iteration 6 finished.
+  3: Step    0    &    Total time    499.807ms    &    Desorbed particles     229555    &    Total error 0.00347865
+    3: hitlist  	       95307	           0	       45889	       45500	       46167	       45834	       46165
+    3: errorlist	           0	         inf	  0.00417558	  0.00419783	  0.00415984	  0.00417871	  0.00415995
+
+  3: Step    3    &    Total time    2000.12ms    &    Desorbed particles     918524    &    Total error 0.00173902
+Simulation for process 3 for iteration 6 finished.
+  4: Step    0    &    Total time    499.956ms    &    Desorbed particles     228619    &    Total error 0.00348574
+    4: hitlist  	       94608	           0	       45448	       45646	       45705	       45984	       45836
+    4: errorlist	           0	         inf	   0.0041987	  0.00418732	  0.00418394	  0.00416805	  0.00417646
+
+  4: Step    3    &    Total time    1999.93ms    &    Desorbed particles     914688    &    Total error 0.00174266
+Simulation for process 4 for iteration 6 finished.
+Updated hitbuffer with process 1
+Updated hitbuffer with process 2
+Updated hitbuffer with process 3
+Updated hitbuffer with process 4
+flightTime 81.1577
+nParticles 3664552
+
+Increase simHistory->currentStep: 7
+Krealvirt = 0.00848652
+Covering difference will be multiplied by Krealvirt*(time step): 6.5307e-06
+
+Facet 0
+covering_sum = 0 = 0
+covering_phys_before = 0 = 0
+covering decreases by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 1
+covering_sum = 760845248 = 7.60845e+08
+covering_phys_before = 764509800 = 7.6451e+08
+covering decreases by 23 = 23
+covering_phys_after = 764509777 = 7.6451e+08
+coveringThreshhold = 573382350 = 5.73382e+08
+
+Facet 2
+covering_sum = 731539 = 731539
+covering_phys_before = 5 = 5
+covering rises by 4 = 4
+covering_phys_after = 9 = 9
+coveringThreshhold = 4 = 4
+
+Facet 3
+covering_sum = 733846 = 733846
+covering_phys_before = 5 = 5
+covering rises by 4 = 4
+covering_phys_after = 9 = 9
+coveringThreshhold = 4 = 4
+
+Facet 4
+covering_sum = 733003 = 733003
+covering_phys_before = 5 = 5
+covering rises by 4 = 4
+covering_phys_after = 9 = 9
+coveringThreshhold = 4 = 4
+
+Facet 5
+covering_sum = 733188 = 733188
+covering_phys_before = 5 = 5
+covering rises by 4 = 4
+covering_phys_after = 9 = 9
+coveringThreshhold = 4 = 4
+
+Facet 6
+covering_sum = 733001 = 733001
+covering_phys_before = 5 = 5
+covering rises by 4 = 4
+covering_phys_after = 9 = 9
+coveringThreshhold = 4 = 4
+
+Accumulative covering after iteration 6
+Iteration	    Time[s]                  Time	Facet        0	Facet        1	Facet        2	Facet        3	Facet        4	Facet        5	Facet        6
+        0	          0                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        1	 5.5157e-05                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        2	0.000140737                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        3	 0.00027352                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        4	0.000479543                    0s	             0	    7.6451e+08	             1	             1	             1	             1	             1
+        5	0.000799202                    0s	             0	    7.6451e+08	             2	             2	             2	             2	             2
+        6	 0.00129518                    0s	             0	    7.6451e+08	             5	             5	             5	             5	             5
+        7	 0.00206471                    0s	             0	    7.6451e+08	             9	             9	             9	             9	             9
+
+
+----------------Starting iteration 7----------------
+
+Currentstep: 7. Step size: 0.00119399
+Target Particles: 250. Target Error: 0.002
+
+  2: Step    0    &    Total time    501.331ms    &    Desorbed particles     228430    &    Total error 0.0034872 
+    2: hitlist  	       94701	           0	       45549	       45723	       46015	       45798	       45345
+    2: errorlist	           0	         inf	  0.00419245	  0.00418248	  0.00416585	  0.00417819	  0.00420422
+
+  2: Step    3    &    Total time    1999.68ms    &    Desorbed particles     913084    &    Total error 0.00174419
+Simulation for process 2 for iteration 7 finished.
+  1: Step    0    &    Total time      500.2ms    &    Desorbed particles     229478    &    Total error 0.00347925
+    1: hitlist  	       95804	           0	       46405	       45965	       45684	       45846	       45578
+    1: errorlist	           0	         inf	  0.00414629	  0.00417109	   0.0041871	  0.00417785	  0.00419317
+
+  1: Step    3    &    Total time    1999.99ms    &    Desorbed particles     917850    &    Total error 0.00173965
+Simulation for process 1 for iteration 7 finished.
+  3: Step    0    &    Total time    499.822ms    &    Desorbed particles     229501    &    Total error 0.00347905
+    3: hitlist  	       95033	           0	       45814	       45713	       46315	       45928	       45731
+    3: errorlist	           0	         inf	  0.00417973	  0.00418549	  0.00415139	  0.00417324	  0.00418446
+
+  3: Step    3    &    Total time       2000ms    &    Desorbed particles     918087    &    Total error 0.00173943
+Simulation for process 3 for iteration 7 finished.
+  4: Step    0    &    Total time    500.268ms    &    Desorbed particles     228652    &    Total error 0.00348551
+    4: hitlist  	       94763	           0	       45954	       46075	       45469	       45621	       45533
+    4: errorlist	           0	         inf	  0.00416982	  0.00416297	  0.00419756	  0.00418883	  0.00419388
+
+  4: Step    3    &    Total time    2000.06ms    &    Desorbed particles     914561    &    Total error 0.00174278
+Simulation for process 4 for iteration 7 finished.
+Updated hitbuffer with process 1
+Updated hitbuffer with process 2
+Updated hitbuffer with process 3
+Updated hitbuffer with process 4
+flightTime 81.1723
+nParticles 3663582
+
+Increase simHistory->currentStep: 8
+Krealvirt = 0.00848877
+Covering difference will be multiplied by Krealvirt*(time step): 1.01355e-05
+
+Facet 0
+covering_sum = 0 = 0
+covering_phys_before = 0 = 0
+covering decreases by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 1
+covering_sum = 760846195 = 7.60846e+08
+covering_phys_before = 764509777 = 7.6451e+08
+covering decreases by 37 = 37
+covering_phys_after = 764509740 = 7.6451e+08
+coveringThreshhold = 573382333 = 5.73382e+08
+
+Facet 2
+covering_sum = 732369 = 732369
+covering_phys_before = 9 = 9
+covering rises by 7 = 7
+covering_phys_after = 16 = 16
+coveringThreshhold = 7 = 7
+
+Facet 3
+covering_sum = 733803 = 733803
+covering_phys_before = 9 = 9
+covering rises by 7 = 7
+covering_phys_after = 16 = 16
+coveringThreshhold = 7 = 7
+
+Facet 4
+covering_sum = 732595 = 732595
+covering_phys_before = 9 = 9
+covering rises by 7 = 7
+covering_phys_after = 16 = 16
+coveringThreshhold = 7 = 7
+
+Facet 5
+covering_sum = 733025 = 733025
+covering_phys_before = 9 = 9
+covering rises by 7 = 7
+covering_phys_after = 16 = 16
+coveringThreshhold = 7 = 7
+
+Facet 6
+covering_sum = 731835 = 731835
+covering_phys_before = 9 = 9
+covering rises by 7 = 7
+covering_phys_after = 16 = 16
+coveringThreshhold = 7 = 7
+
+Accumulative covering after iteration 7
+Iteration	    Time[s]                  Time	Facet        0	Facet        1	Facet        2	Facet        3	Facet        4	Facet        5	Facet        6
+        0	          0                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        1	 5.5157e-05                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        2	0.000140737                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        3	 0.00027352                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        4	0.000479543                    0s	             0	    7.6451e+08	             1	             1	             1	             1	             1
+        5	0.000799202                    0s	             0	    7.6451e+08	             2	             2	             2	             2	             2
+        6	 0.00129518                    0s	             0	    7.6451e+08	             5	             5	             5	             5	             5
+        7	 0.00206471                    0s	             0	    7.6451e+08	             9	             9	             9	             9	             9
+        8	  0.0032587                    0s	             0	    7.6451e+08	            16	            16	            16	            16	            16
+
+
+----------------Starting iteration 8----------------
+
+Currentstep: 8. Step size: 0.00185256
+Target Particles: 250. Target Error: 0.002
+
+  1: Step    0    &    Total time    500.277ms    &    Desorbed particles     229483    &    Total error 0.00347919
+    1: hitlist  	       95440	           0	       45956	       45954	       45645	       45688	       46240
+    1: errorlist	           0	         inf	  0.00417161	  0.00417172	  0.00418934	  0.00418688	  0.00415556
+
+  1: Step    3    &    Total time    2000.12ms    &    Desorbed particles     917641    &    Total error 0.00173985
+Simulation for process 1 for iteration 8 finished.
+  3: Step    0    &    Total time    499.903ms    &    Desorbed particles     229502    &    Total error 0.00347902
+    3: hitlist  	       95464	           0	       45773	       45795	       46066	       45883	       45985
+    3: errorlist	           0	         inf	  0.00418207	  0.00418081	  0.00416542	   0.0041758	  0.00417001
+
+  3: Step    3    &    Total time    2000.03ms    &    Desorbed particles     918277    &    Total error 0.00173925
+Simulation for process 3 for iteration 8 finished.
+  4: Step    0    &    Total time    500.184ms    &    Desorbed particles     228623    &    Total error 0.00348571
+    4: hitlist  	       95284	           0	       45725	       45825	       45466	       45972	       45635
+    4: errorlist	           0	         inf	  0.00418281	   0.0041771	  0.00419767	  0.00416874	  0.00418796
+
+  4: Step    3    &    Total time    1999.89ms    &    Desorbed particles     914507    &    Total error 0.00174283
+Simulation for process 4 for iteration 8 finished.
+  2: Step    0    &    Total time    501.241ms    &    Desorbed particles     228578    &    Total error 0.00348605
+    2: hitlist  	       95067	           0	       45953	       45632	       45797	       45583	       45613
+    2: errorlist	           0	         inf	  0.00416971	  0.00418803	  0.00417859	  0.00419084	  0.00418912
+
+  2: Step    3    &    Total time    2000.24ms    &    Desorbed particles     913202    &    Total error 0.00174408
+Simulation for process 2 for iteration 8 finished.
+Updated hitbuffer with process 1
+Updated hitbuffer with process 2
+Updated hitbuffer with process 3
+Updated hitbuffer with process 4
+flightTime 81.1376
+nParticles 3663627
+
+Increase simHistory->currentStep: 9
+Krealvirt = 0.00848867
+Covering difference will be multiplied by Krealvirt*(time step): 1.57258e-05
+
+Facet 0
+covering_sum = 0 = 0
+covering_phys_before = 0 = 0
+covering decreases by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 1
+covering_sum = 760846113 = 7.60846e+08
+covering_phys_before = 764509740 = 7.6451e+08
+covering decreases by 57 = 57
+covering_phys_after = 764509683 = 7.6451e+08
+coveringThreshhold = 573382305 = 5.73382e+08
+
+Facet 2
+covering_sum = 732903 = 732903
+covering_phys_before = 16 = 16
+covering rises by 11 = 11
+covering_phys_after = 27 = 27
+coveringThreshhold = 12 = 12
+
+Facet 3
+covering_sum = 732822 = 732822
+covering_phys_before = 16 = 16
+covering rises by 11 = 11
+covering_phys_after = 27 = 27
+coveringThreshhold = 12 = 12
+
+Facet 4
+covering_sum = 732234 = 732234
+covering_phys_before = 16 = 16
+covering rises by 11 = 11
+covering_phys_after = 27 = 27
+coveringThreshhold = 12 = 12
+
+Facet 5
+covering_sum = 732667 = 732667
+covering_phys_before = 16 = 16
+covering rises by 11 = 11
+covering_phys_after = 27 = 27
+coveringThreshhold = 12 = 12
+
+Facet 6
+covering_sum = 733081 = 733081
+covering_phys_before = 16 = 16
+covering rises by 11 = 11
+covering_phys_after = 27 = 27
+coveringThreshhold = 12 = 12
+
+Accumulative covering after iteration 8
+Iteration	    Time[s]                  Time	Facet        0	Facet        1	Facet        2	Facet        3	Facet        4	Facet        5	Facet        6
+        0	          0                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        1	 5.5157e-05                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        2	0.000140737                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        3	 0.00027352                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        4	0.000479543                    0s	             0	    7.6451e+08	             1	             1	             1	             1	             1
+        5	0.000799202                    0s	             0	    7.6451e+08	             2	             2	             2	             2	             2
+        6	 0.00129518                    0s	             0	    7.6451e+08	             5	             5	             5	             5	             5
+        7	 0.00206471                    0s	             0	    7.6451e+08	             9	             9	             9	             9	             9
+        8	  0.0032587                    0s	             0	    7.6451e+08	            16	            16	            16	            16	            16
+        9	 0.00511127                    0s	             0	    7.6451e+08	            27	            27	            27	            27	            27
+
+
+----------------Starting iteration 9----------------
+
+Currentstep: 9. Step size: 0.00287438
+Target Particles: 250. Target Error: 0.002
+
+  4: Step    0    &    Total time    499.963ms    &    Desorbed particles     228675    &    Total error 0.00348534
+    4: hitlist  	       94938	           0	       45581	       45692	       46179	       45466	       45757
+    4: errorlist	           0	         inf	  0.00419117	  0.00418481	  0.00415714	  0.00419779	   0.0041811
+
+  4: Step    3    &    Total time     2000.1ms    &    Desorbed particles     914604    &    Total error 0.00174274
+Simulation for process 4 for iteration 9 finished.
+  1: Step    0    &    Total time    500.214ms    &    Desorbed particles     229430    &    Total error 0.00347958
+    1: hitlist  	       95084	           0	       45540	       45988	       46005	       46082	       45815
+    1: errorlist	           0	         inf	  0.00419525	  0.00416967	  0.00416871	  0.00416435	  0.00417951
+
+  1: Step    3    &    Total time    2000.23ms    &    Desorbed particles     917474    &    Total error 0.00174001
+Simulation for process 1 for iteration 9 finished.
+  3: Step    0    &    Total time    499.735ms    &    Desorbed particles     229489    &    Total error 0.00347917
+    3: hitlist  	       95244	           0	       45666	       45616	       45714	       46361	       46132
+    3: errorlist	           0	         inf	  0.00418815	  0.00419102	  0.00418541	  0.00414878	  0.00416166
+
+  3: Step    3    &    Total time    2000.06ms    &    Desorbed particles     918445    &    Total error 0.0017391 
+Simulation for process 3 for iteration 9 finished.
+  2: Step    0    &    Total time    500.893ms    &    Desorbed particles     228470    &    Total error 0.00348687
+    2: hitlist  	       95003	           0	       45529	       45821	       45895	       45639	       45586
+    2: errorlist	           0	         inf	   0.0041937	  0.00417697	  0.00417276	  0.00418738	  0.00419042
+
+  2: Step    3    &    Total time    1999.97ms    &    Desorbed particles     912908    &    Total error 0.00174437
+Simulation for process 2 for iteration 9 finished.
+Updated hitbuffer with process 1
+Updated hitbuffer with process 2
+Updated hitbuffer with process 3
+Updated hitbuffer with process 4
+flightTime 81.0495
+nParticles 3663431
+
+Increase simHistory->currentStep: 10
+Krealvirt = 0.00848912
+Covering difference will be multiplied by Krealvirt*(time step): 2.4401e-05
+
+Facet 0
+covering_sum = 0 = 0
+covering_phys_before = 0 = 0
+covering decreases by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 1
+covering_sum = 760846252 = 7.60846e+08
+covering_phys_before = 764509683 = 7.6451e+08
+covering decreases by 89 = 89
+covering_phys_after = 764509594 = 7.6451e+08
+coveringThreshhold = 573382263 = 5.73382e+08
+
+Facet 2
+covering_sum = 730073 = 730073
+covering_phys_before = 27 = 27
+covering rises by 17 = 17
+covering_phys_after = 44 = 44
+coveringThreshhold = 21 = 21
+
+Facet 3
+covering_sum = 733627 = 733627
+covering_phys_before = 27 = 27
+covering rises by 17 = 17
+covering_phys_after = 44 = 44
+coveringThreshhold = 21 = 21
+
+Facet 4
+covering_sum = 733638 = 733638
+covering_phys_before = 27 = 27
+covering rises by 17 = 17
+covering_phys_after = 44 = 44
+coveringThreshhold = 21 = 21
+
+Facet 5
+covering_sum = 733726 = 733726
+covering_phys_before = 27 = 27
+covering rises by 17 = 17
+covering_phys_after = 44 = 44
+coveringThreshhold = 21 = 21
+
+Facet 6
+covering_sum = 732502 = 732502
+covering_phys_before = 27 = 27
+covering rises by 17 = 17
+covering_phys_after = 44 = 44
+coveringThreshhold = 21 = 21
+
+Accumulative covering after iteration 9
+Iteration	    Time[s]                  Time	Facet        0	Facet        1	Facet        2	Facet        3	Facet        4	Facet        5	Facet        6
+        0	          0                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        1	 5.5157e-05                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        2	0.000140737                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        3	 0.00027352                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        4	0.000479543                    0s	             0	    7.6451e+08	             1	             1	             1	             1	             1
+        5	0.000799202                    0s	             0	    7.6451e+08	             2	             2	             2	             2	             2
+        6	 0.00129518                    0s	             0	    7.6451e+08	             5	             5	             5	             5	             5
+        7	 0.00206471                    0s	             0	    7.6451e+08	             9	             9	             9	             9	             9
+        8	  0.0032587                    0s	             0	    7.6451e+08	            16	            16	            16	            16	            16
+        9	 0.00511127                    0s	             0	    7.6451e+08	            27	            27	            27	            27	            27
+       10	 0.00798565                    0s	             0	    7.6451e+08	            44	            44	            44	            44	            44
+
+
+----------------Starting iteration 10----------------
+
+Currentstep: 10. Step size: 0.0044598
+Target Particles: 250. Target Error: 0.002
+
+  3: Step    0    &    Total time     499.69ms    &    Desorbed particles     229460    &    Total error 0.00347937
+    3: hitlist  	       95127	           0	       45857	       46024	       46180	       45426	       45973
+    3: errorlist	           0	         inf	  0.00417718	   0.0041677	  0.00415889	  0.00420188	  0.00417059
+
+  3: Step    3    &    Total time    1999.88ms    &    Desorbed particles     918399    &    Total error 0.00173914
+Simulation for process 3 for iteration 10 finished.
+  4: Step    0    &    Total time     500.06ms    &    Desorbed particles     228631    &    Total error 0.00348564
+    4: hitlist  	       95054	           0	       45808	       45630	       45745	       45542	       45906
+    4: errorlist	           0	         inf	  0.00417808	  0.00418826	  0.00418168	  0.00419332	   0.0041725
+
+  4: Step    3    &    Total time    1999.78ms    &    Desorbed particles     914579    &    Total error 0.00174277
+Simulation for process 4 for iteration 10 finished.
+  1: Step    0    &    Total time    500.019ms    &    Desorbed particles     229327    &    Total error 0.00348035
+    1: hitlist  	       95281	           0	       45606	       45921	       46014	       45886	       45900
+    1: errorlist	           0	         inf	  0.00419122	  0.00417324	  0.00416796	  0.00417523	  0.00417443
+
+  1: Step    3    &    Total time    1999.99ms    &    Desorbed particles     917352    &    Total error 0.00174013
+Simulation for process 1 for iteration 10 finished.
+  2: Step    0    &    Total time    500.987ms    &    Desorbed particles     228484    &    Total error 0.00348679
+    2: hitlist  	       94904	           0	       45596	       45762	       45640	       45375	       46111
+    2: errorlist	           0	         inf	  0.00418988	  0.00418037	  0.00418735	  0.00420261	  0.00416054
+
+  2: Step    3    &    Total time    1999.71ms    &    Desorbed particles     913361    &    Total error 0.00174393
+Simulation for process 2 for iteration 10 finished.
+Updated hitbuffer with process 1
+Updated hitbuffer with process 2
+Updated hitbuffer with process 3
+Updated hitbuffer with process 4
+flightTime 81.0953
+nParticles 3663691
+
+Increase simHistory->currentStep: 11
+Krealvirt = 0.00848852
+Covering difference will be multiplied by Krealvirt*(time step): 3.78571e-05
+
+Facet 0
+covering_sum = 0 = 0
+covering_phys_before = 0 = 0
+covering decreases by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 1
+covering_sum = 760845904 = 7.60846e+08
+covering_phys_before = 764509594 = 7.6451e+08
+covering decreases by 138 = 138
+covering_phys_after = 764509456 = 7.64509e+08
+coveringThreshhold = 573382196 = 5.73382e+08
+
+Facet 2
+covering_sum = 731921 = 731921
+covering_phys_before = 44 = 44
+covering rises by 27 = 27
+covering_phys_after = 71 = 71
+coveringThreshhold = 33 = 33
+
+Facet 3
+covering_sum = 733331 = 733331
+covering_phys_before = 44 = 44
+covering rises by 27 = 27
+covering_phys_after = 71 = 71
+coveringThreshhold = 33 = 33
+
+Facet 4
+covering_sum = 733697 = 733697
+covering_phys_before = 44 = 44
+covering rises by 27 = 27
+covering_phys_after = 71 = 71
+coveringThreshhold = 33 = 33
+
+Facet 5
+covering_sum = 730771 = 730771
+covering_phys_before = 44 = 44
+covering rises by 27 = 27
+covering_phys_after = 71 = 71
+coveringThreshhold = 33 = 33
+
+Facet 6
+covering_sum = 734190 = 734190
+covering_phys_before = 44 = 44
+covering rises by 27 = 27
+covering_phys_after = 71 = 71
+coveringThreshhold = 33 = 33
+
+Accumulative covering after iteration 10
+Iteration	    Time[s]                  Time	Facet        0	Facet        1	Facet        2	Facet        3	Facet        4	Facet        5	Facet        6
+        0	          0                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        1	 5.5157e-05                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        2	0.000140737                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        3	 0.00027352                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        4	0.000479543                    0s	             0	    7.6451e+08	             1	             1	             1	             1	             1
+        5	0.000799202                    0s	             0	    7.6451e+08	             2	             2	             2	             2	             2
+        6	 0.00129518                    0s	             0	    7.6451e+08	             5	             5	             5	             5	             5
+        7	 0.00206471                    0s	             0	    7.6451e+08	             9	             9	             9	             9	             9
+        8	  0.0032587                    0s	             0	    7.6451e+08	            16	            16	            16	            16	            16
+        9	 0.00511127                    0s	             0	    7.6451e+08	            27	            27	            27	            27	            27
+       10	 0.00798565                    0s	             0	    7.6451e+08	            44	            44	            44	            44	            44
+       11	  0.0124454                    0s	             0	   7.64509e+08	            71	            71	            71	            71	            71
+
+
+----------------Starting iteration 11----------------
+
+Currentstep: 11. Step size: 0.0069197
+Target Particles: 250. Target Error: 0.002
+
+  2: Step    0    &    Total time    500.919ms    &    Desorbed particles     228617    &    Total error 0.00348581
+    2: hitlist  	       95013	           0	       45324	       45380	       45977	       46116	       45820
+    2: errorlist	           0	         inf	  0.00420586	  0.00420262	  0.00416844	  0.00416057	  0.00417737
+
+  2: Step    3    &    Total time    2000.08ms    &    Desorbed particles     913891    &    Total error 0.00174343
+Simulation for process 2 for iteration 11 finished.
+  3: Step    0    &    Total time    499.799ms    &    Desorbed particles     229514    &    Total error 0.00347899
+    3: hitlist  	       94913	           0	       45941	       46330	       46118	       45737	       45388
+    3: errorlist	           0	         inf	  0.00417253	  0.00415057	  0.00416251	  0.00418415	  0.00420419
+
+  3: Step    3    &    Total time    2000.04ms    &    Desorbed particles     918360    &    Total error 0.00173918
+Simulation for process 3 for iteration 11 finished.
+  1: Step    0    &    Total time    500.015ms    &    Desorbed particles     229332    &    Total error 0.00348032
+    1: hitlist  	       95616	           0	       46177	       45774	       45883	       45630	       45868
+    1: errorlist	           0	         inf	  0.00415876	  0.00418162	  0.00417541	  0.00418986	  0.00417627
+
+  1: Step    3    &    Total time    1999.79ms    &    Desorbed particles     917598    &    Total error 0.00173989
+Simulation for process 1 for iteration 11 finished.
+  4: Step    0    &    Total time    500.268ms    &    Desorbed particles     228734    &    Total error 0.00348488
+    4: hitlist  	       95022	           0	       45988	       45529	       45982	       45739	       45496
+    4: errorlist	           0	         inf	  0.00416808	   0.0041943	  0.00416842	  0.00418226	   0.0041962
+
+  4: Step    3    &    Total time    2000.15ms    &    Desorbed particles     914767    &    Total error 0.00174258
+Simulation for process 4 for iteration 11 finished.
+Updated hitbuffer with process 1
+Updated hitbuffer with process 2
+Updated hitbuffer with process 3
+Updated hitbuffer with process 4
+flightTime 81.0921
+nParticles 3664616
+
+Increase simHistory->currentStep: 12
+Krealvirt = 0.00848637
+Covering difference will be multiplied by Krealvirt*(time step): 5.87232e-05
+
+Facet 0
+covering_sum = 0 = 0
+covering_phys_before = 0 = 0
+covering decreases by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 1
+covering_sum = 760844841 = 7.60845e+08
+covering_phys_before = 764509456 = 7.64509e+08
+covering decreases by 215 = 215
+covering_phys_after = 764509241 = 7.64509e+08
+coveringThreshhold = 573382092 = 5.73382e+08
+
+Facet 2
+covering_sum = 731251 = 731251
+covering_phys_before = 71 = 71
+covering rises by 42 = 42
+covering_phys_after = 113 = 113
+coveringThreshhold = 54 = 54
+
+Facet 3
+covering_sum = 733609 = 733609
+covering_phys_before = 71 = 71
+covering rises by 43 = 43
+covering_phys_after = 114 = 114
+coveringThreshhold = 54 = 54
+
+Facet 4
+covering_sum = 733737 = 733737
+covering_phys_before = 71 = 71
+covering rises by 43 = 43
+covering_phys_after = 114 = 114
+coveringThreshhold = 54 = 54
+
+Facet 5
+covering_sum = 734184 = 734184
+covering_phys_before = 71 = 71
+covering rises by 43 = 43
+covering_phys_after = 114 = 114
+coveringThreshhold = 54 = 54
+
+Facet 6
+covering_sum = 732189 = 732189
+covering_phys_before = 71 = 71
+covering rises by 42 = 42
+covering_phys_after = 113 = 113
+coveringThreshhold = 54 = 54
+
+Accumulative covering after iteration 11
+Iteration	    Time[s]                  Time	Facet        0	Facet        1	Facet        2	Facet        3	Facet        4	Facet        5	Facet        6
+        0	          0                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        1	 5.5157e-05                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        2	0.000140737                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        3	 0.00027352                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        4	0.000479543                    0s	             0	    7.6451e+08	             1	             1	             1	             1	             1
+        5	0.000799202                    0s	             0	    7.6451e+08	             2	             2	             2	             2	             2
+        6	 0.00129518                    0s	             0	    7.6451e+08	             5	             5	             5	             5	             5
+        7	 0.00206471                    0s	             0	    7.6451e+08	             9	             9	             9	             9	             9
+        8	  0.0032587                    0s	             0	    7.6451e+08	            16	            16	            16	            16	            16
+        9	 0.00511127                    0s	             0	    7.6451e+08	            27	            27	            27	            27	            27
+       10	 0.00798565                    0s	             0	    7.6451e+08	            44	            44	            44	            44	            44
+       11	  0.0124454                    0s	             0	   7.64509e+08	            71	            71	            71	            71	            71
+       12	  0.0193651                    0s	             0	   7.64509e+08	           113	           114	           114	           114	           113
+
+
+----------------Starting iteration 12----------------
+
+Currentstep: 12. Step size: 0.0107364
+Target Particles: 250. Target Error: 0.002
+
+  4: Step    0    &    Total time    500.371ms    &    Desorbed particles     228664    &    Total error 0.0034854 
+    4: hitlist  	       95151	           0	       45795	       45827	       45751	       45364	       45927
+    4: errorlist	           0	         inf	   0.0041789	  0.00417708	  0.00418141	  0.00420365	  0.00417139
+
+  4: Step    3    &    Total time    2000.01ms    &    Desorbed particles     914419    &    Total error 0.00174292
+Simulation for process 4 for iteration 12 finished.
+  3: Step    0    &    Total time    499.663ms    &    Desorbed particles     229498    &    Total error 0.00347906
+    3: hitlist  	       95183	           0	       45576	       46003	       45919	       45895	       46105
+    3: errorlist	           0	         inf	  0.00419333	  0.00416898	  0.00417374	  0.00417511	  0.00416321
+
+  3: Step    3    &    Total time    1999.89ms    &    Desorbed particles     918322    &    Total error 0.00173921
+Simulation for process 3 for iteration 12 finished.
+  1: Step    0    &    Total time    499.906ms    &    Desorbed particles     229426    &    Total error 0.0034796 
+    1: hitlist  	       95228	           0	       45868	       45996	       45639	       45821	       46102
+    1: errorlist	           0	         inf	  0.00417648	  0.00416921	  0.00418956	  0.00417916	  0.00416321
+
+  1: Step    3    &    Total time    2295.36ms    &    Desorbed particles     747344    &    Total error 0.00192792
+Simulation for process 1 for iteration 12 finished.
+  2: Step    0    &    Total time    501.217ms    &    Desorbed particles     228580    &    Total error 0.00348604
+    2: hitlist  	       94805	           0	       45586	       45591	       45620	       46092	       45691
+    2: errorlist	           0	         inf	  0.00419067	  0.00419038	  0.00418872	  0.00416184	  0.00418465
+
+  2: Step    3    &    Total time    2000.01ms    &    Desorbed particles     913505    &    Total error 0.00174379
+Simulation for process 2 for iteration 12 finished.
+Updated hitbuffer with process 1
+Updated hitbuffer with process 2
+Updated hitbuffer with process 3
+Updated hitbuffer with process 4
+flightTime 77.3935
+nParticles 3493590
+
+Increase simHistory->currentStep: 13
+Krealvirt = 0.00890182
+Covering difference will be multiplied by Krealvirt*(time step): 9.55735e-05
+
+Facet 0
+covering_sum = 0 = 0
+covering_phys_before = 0 = 0
+covering decreases by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 1
+covering_sum = 761015652 = 7.61016e+08
+covering_phys_before = 764509241 = 7.64509e+08
+covering decreases by 333 = 333
+covering_phys_after = 764508908 = 7.64509e+08
+coveringThreshhold = 573381931 = 5.73382e+08
+
+Facet 2
+covering_sum = 697926 = 697926
+covering_phys_before = 113 = 113
+covering rises by 66 = 66
+covering_phys_after = 179 = 179
+coveringThreshhold = 85 = 85
+
+Facet 3
+covering_sum = 699183 = 699183
+covering_phys_before = 114 = 114
+covering rises by 66 = 66
+covering_phys_after = 180 = 180
+coveringThreshhold = 86 = 86
+
+Facet 4
+covering_sum = 699067 = 699067
+covering_phys_before = 114 = 114
+covering rises by 66 = 66
+covering_phys_after = 180 = 180
+coveringThreshhold = 86 = 86
+
+Facet 5
+covering_sum = 698779 = 698779
+covering_phys_before = 114 = 114
+covering rises by 66 = 66
+covering_phys_after = 180 = 180
+coveringThreshhold = 86 = 86
+
+Facet 6
+covering_sum = 699202 = 699202
+covering_phys_before = 113 = 113
+covering rises by 66 = 66
+covering_phys_after = 179 = 179
+coveringThreshhold = 85 = 85
+
+Accumulative covering after iteration 12
+Iteration	    Time[s]                  Time	Facet        0	Facet        1	Facet        2	Facet        3	Facet        4	Facet        5	Facet        6
+        0	          0                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        1	 5.5157e-05                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        2	0.000140737                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        3	 0.00027352                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        4	0.000479543                    0s	             0	    7.6451e+08	             1	             1	             1	             1	             1
+        5	0.000799202                    0s	             0	    7.6451e+08	             2	             2	             2	             2	             2
+        6	 0.00129518                    0s	             0	    7.6451e+08	             5	             5	             5	             5	             5
+        7	 0.00206471                    0s	             0	    7.6451e+08	             9	             9	             9	             9	             9
+        8	  0.0032587                    0s	             0	    7.6451e+08	            16	            16	            16	            16	            16
+        9	 0.00511127                    0s	             0	    7.6451e+08	            27	            27	            27	            27	            27
+       10	 0.00798565                    0s	             0	    7.6451e+08	            44	            44	            44	            44	            44
+       11	  0.0124454                    0s	             0	   7.64509e+08	            71	            71	            71	            71	            71
+       12	  0.0193651                    0s	             0	   7.64509e+08	           113	           114	           114	           114	           113
+       13	  0.0301015                    0s	             0	   7.64509e+08	           179	           180	           180	           180	           179
+
+
+----------------Starting iteration 13----------------
+
+Currentstep: 13. Step size: 0.0166583
+Target Particles: 250. Target Error: 0.002
+
+  2: Step    0    &    Total time    500.508ms    &    Desorbed particles     228574    &    Total error 0.0034861 
+    2: hitlist  	       94976	           0	       45532	       45554	       46078	       45916	       45495
+    2: errorlist	           0	         inf	  0.00419376	   0.0041925	  0.00416262	  0.00417181	  0.00419589
+
+  2: Step   60    &    Total time    30975.5ms    &    Desorbed particles   13797327    &    Total error 0.0587058 
+    2: hitlist  	 5.73051e+06	           6	 2.75897e+06	 2.75919e+06	 2.76226e+06	 2.76004e+06	 2.75687e+06
+    2: errorlist	           0	    0.408248	 0.000538494	 0.000538467	 0.000538093	 0.000538364	 0.000538751
+
+  2: Step  120    &    Total time    61428.1ms    &    Desorbed particles   27025097    &    Total error 0.0478938 
+    2: hitlist  	 1.12249e+07	           9	 5.40479e+06	 5.40674e+06	 5.40733e+06	 5.40599e+06	 5.40026e+06
+    2: errorlist	           0	    0.333333	 0.000384732	 0.000384645	 0.000384619	 0.000384678	 0.000384933
+
+  2: Step  180    &    Total time    91428.7ms    &    Desorbed particles   38011226    &    Total error 0.035946  
+    2: hitlist  	 1.57831e+07	          16	 7.59831e+06	 7.60769e+06	 7.60292e+06	 7.60355e+06	 7.59878e+06
+    2: errorlist	           0	        0.25	   0.0003245	  0.00032425	 0.000324377	  0.00032436	 0.000324487
+
+  2: Step  240    &    Total time     121499ms    &    Desorbed particles   51720721    &    Total error 0.0329723 
+    2: hitlist  	 2.14763e+07	          19	 1.03369e+07	 1.03504e+07	 1.03457e+07	 1.03448e+07	  1.0343e+07
+    2: errorlist	           0	    0.229416	  0.00027822	 0.000277993	 0.000278072	 0.000278087	 0.000278117
+
+  2: Step  300    &    Total time     151499ms    &    Desorbed particles   65433619    &    Total error 0.0293372 
+    2: hitlist  	 2.71742e+07	          24	   1.308e+07	 1.30937e+07	  1.3088e+07	 1.30863e+07	 1.30856e+07
+    2: errorlist	           0	    0.204124	 0.000247325	 0.000247164	 0.000247231	 0.000247251	 0.000247259
+
+  2: Step  360    &    Total time     181519ms    &    Desorbed particles   79142897    &    Total error 0.0276534 
+    2: hitlist  	 3.28673e+07	          27	 1.58196e+07	  1.5836e+07	 1.58316e+07	 1.58293e+07	 1.58264e+07
+    2: errorlist	           0	     0.19245	 0.000224894	 0.000224748	 0.000224788	 0.000224808	 0.000224834
+
+  2: Step  420    &    Total time     211518ms    &    Desorbed particles   92854878    &    Total error 0.0266762 
+    2: hitlist  	   3.856e+07	          29	 1.85593e+07	 1.85794e+07	 1.85725e+07	 1.85727e+07	 1.85709e+07
+    2: errorlist	           0	    0.185695	 0.000207634	 0.000207493	 0.000207542	  0.00020754	 0.000207553
+
+  2: Step  480    &    Total time     241592ms    &    Desorbed particles  104776017    &    Total error 0.0239491 
+    2: hitlist  	 4.35093e+07	          36	  2.0941e+07	 2.09634e+07	 2.09593e+07	 2.09561e+07	 2.09562e+07
+    2: errorlist	           0	    0.166667	 0.000195471	 0.000195341	 0.000195364	 0.000195384	 0.000195383
+
+  2: Step  540    &    Total time     271592ms    &    Desorbed particles  118321044    &    Total error 0.0224419 
+    2: hitlist  	 4.91366e+07	          41	 2.36486e+07	 2.36689e+07	 2.36736e+07	 2.36622e+07	 2.36678e+07
+    2: errorlist	           0	    0.156174	 0.000183941	 0.000183842	 0.000183819	 0.000183875	 0.000183848
+
+  2: Step  600    &    Total time     301592ms    &    Desorbed particles  132030438    &    Total error 0.0209622 
+    2: hitlist  	 5.48265e+07	          47	 2.63864e+07	 2.64121e+07	 2.64169e+07	 2.64039e+07	 2.64112e+07
+    2: errorlist	           0	    0.145865	 0.000174139	 0.000174033	 0.000174013	 0.000174066	 0.000174037
+
+  2: Step  660    &    Total time     331592ms    &    Desorbed particles  145740273    &    Total error 0.0201223 
+    2: hitlist  	 6.05187e+07	          51	 2.91241e+07	 2.91555e+07	 2.91596e+07	 2.91473e+07	 2.91538e+07
+    2: errorlist	           0	    0.140028	 0.000165754	 0.000165642	 0.000165627	 0.000165671	 0.000165648
+
+  2: Step  720    &    Total time     361592ms    &    Desorbed particles  159448438    &    Total error 0.0195535 
+    2: hitlist  	 6.62119e+07	          54	 3.18629e+07	  3.1898e+07	 3.18999e+07	 3.18882e+07	 3.18995e+07
+    2: errorlist	           0	    0.136083	  0.00015847	 0.000158361	 0.000158355	 0.000158392	 0.000158357
+
+  2: Step  780    &    Total time     391928ms    &    Desorbed particles  172130725    &    Total error 0.0185517 
+    2: hitlist  	 7.14803e+07	          60	  3.4397e+07	 3.44336e+07	 3.44384e+07	 3.44245e+07	 3.44373e+07
+    2: errorlist	           0	    0.129099	 0.000152521	  0.00015242	 0.000152407	 0.000152445	  0.00015241
+
+  2: Step  840    &    Total time     421972ms    &    Desorbed particles  185845954    &    Total error 0.0171795 
+    2: hitlist  	 7.71756e+07	          70	 3.71366e+07	 3.71768e+07	 3.71808e+07	 3.71709e+07	 3.71808e+07
+    2: errorlist	           0	    0.119523	 0.000146788	 0.000146689	 0.000146679	 0.000146704	 0.000146679
+
+  2: Step  864    &    Total time     433524ms    &    Desorbed particles  191127535    &    Total error 0.0163834 
+    2: hitlist  	 7.93686e+07	          77	 3.81918e+07	 3.82323e+07	  3.8238e+07	 3.82284e+07	 3.82372e+07
+    2: errorlist	           0	    0.113961	 0.000144747	 0.000144651	 0.000144637	  0.00014466	 0.000144639
+
+Facet 1 reached threshold 573381681 for process 2
+  3: Step    0    &    Total time    500.142ms    &    Desorbed particles     229548    &    Total error 0.00347867
+    3: hitlist  	       95211	           0	       45721	       45873	       45925	       46086	       45943
+    3: errorlist	           0	         inf	  0.00418514	  0.00417647	  0.00417352	  0.00416439	  0.00417249
+
+  3: Step   60    &    Total time    30917.6ms    &    Desorbed particles   13810680    &    Total error 0.1014    
+    3: hitlist  	 5.73212e+06	           2	 2.75774e+06	 2.75888e+06	 2.76362e+06	 2.76652e+06	 2.76393e+06
+    3: errorlist	           0	    0.707107	  0.00053871	 0.000538571	 0.000537994	  0.00053764	 0.000537955
+
+  3: Step  120    &    Total time    60964.3ms    &    Desorbed particles   27580692    &    Total error 0.0454474 
+    3: hitlist  	 1.14493e+07	          10	 5.50879e+06	 5.51528e+06	  5.5155e+06	 5.51994e+06	 5.52118e+06
+    3: errorlist	           0	    0.316228	 0.000381144	 0.000380864	 0.000380854	 0.000380663	 0.000380609
+
+  3: Step  180    &    Total time    91086.7ms    &    Desorbed particles   41350453    &    Total error 0.0338939 
+    3: hitlist  	 1.71671e+07	          18	 8.25776e+06	 8.27123e+06	 8.27034e+06	 8.27455e+06	 8.27658e+06
+    3: errorlist	           0	    0.235702	 0.000311311	 0.000310994	 0.000311015	 0.000310916	 0.000310869
+
+  3: Step  240    &    Total time     121297ms    &    Desorbed particles   55107505    &    Total error 0.0321363 
+    3: hitlist  	 2.28803e+07	          20	 1.10058e+07	 1.10231e+07	 1.10212e+07	 1.10283e+07	 1.10292e+07
+    3: errorlist	           0	    0.223607	 0.000269658	 0.000269392	 0.000269421	 0.000269314	   0.0002693
+
+  3: Step  300    &    Total time     151297ms    &    Desorbed particles   68884539    &    Total error 0.0299599 
+    3: hitlist  	 2.86015e+07	          23	  1.3762e+07	 1.37775e+07	 1.37792e+07	 1.37796e+07	 1.37862e+07
+    3: errorlist	           0	    0.208514	 0.000241136	 0.000240967	 0.000240948	 0.000240944	 0.000240872
+
+  3: Step  360    &    Total time     181402ms    &    Desorbed particles   82560192    &    Total error 0.0271547 
+    3: hitlist  	 3.42804e+07	          28	 1.64954e+07	 1.65141e+07	 1.65145e+07	 1.65147e+07	 1.65215e+07
+    3: errorlist	           0	    0.188982	 0.000220252	 0.000220095	 0.000220092	  0.00022009	 0.000220033
+
+  3: Step  420    &    Total time     211401ms    &    Desorbed particles   96316472    &    Total error 0.0250138 
+    3: hitlist  	 3.99907e+07	          33	  1.9243e+07	 1.92669e+07	 1.92656e+07	  1.9267e+07	 1.92739e+07
+    3: errorlist	           0	    0.174078	 0.000203923	 0.000203764	 0.000203773	 0.000203764	 0.000203718
+
+  3: Step  480    &    Total time     241671ms    &    Desorbed particles  108448563    &    Total error 0.0221805 
+    3: hitlist  	  4.5029e+07	          42	 2.16679e+07	 2.16934e+07	 2.16919e+07	 2.16954e+07	 2.17001e+07
+    3: errorlist	           0	    0.154303	 0.000192172	 0.000192032	  0.00019204	  0.00019202	 0.000191994
+
+  3: Step  540    &    Total time     271671ms    &    Desorbed particles  121810642    &    Total error 0.0209673 
+    3: hitlist  	 5.05743e+07	          47	  2.4335e+07	 2.43691e+07	 2.43645e+07	   2.437e+07	 2.43721e+07
+    3: errorlist	           0	    0.145865	 0.000181338	  0.00018118	 0.000181201	 0.000181176	 0.000181166
+
+  3: Step  600    &    Total time     301671ms    &    Desorbed particles  135586224    &    Total error 0.0201267 
+    3: hitlist  	 5.62955e+07	          51	 2.70878e+07	 2.71231e+07	 2.71211e+07	 2.71253e+07	  2.7129e+07
+    3: errorlist	           0	    0.140028	 0.000171877	 0.000171737	 0.000171745	 0.000171728	 0.000171713
+
+  3: Step  660    &    Total time     331712ms    &    Desorbed particles  149328770    &    Total error 0.0197398 
+    3: hitlist  	 6.20051e+07	          53	  2.9837e+07	 2.98698e+07	 2.98683e+07	 2.98756e+07	 2.98781e+07
+    3: errorlist	           0	    0.137361	 0.000163765	 0.000163652	 0.000163657	 0.000163632	 0.000163623
+
+  3: Step  720    &    Total time     361746ms    &    Desorbed particles  163085699    &    Total error 0.0184028 
+    3: hitlist  	 6.77174e+07	          61	 3.25859e+07	 3.26244e+07	  3.2621e+07	 3.26273e+07	 3.26272e+07
+    3: errorlist	           0	    0.128037	 0.000156705	 0.000156589	 0.000156599	 0.000156581	 0.000156581
+
+  3: Step  780    &    Total time     391824ms    &    Desorbed particles  176710591    &    Total error 0.0179646 
+    3: hitlist  	 7.33722e+07	          64	 3.53082e+07	 3.53507e+07	 3.53474e+07	 3.53522e+07	 3.53521e+07
+    3: errorlist	           0	       0.125	 0.000150543	 0.000150429	 0.000150438	 0.000150425	 0.000150426
+
+  3: Step  840    &    Total time     421940ms    &    Desorbed particles  190423340    &    Total error 0.0173015 
+    3: hitlist  	 7.90666e+07	          69	 3.80475e+07	 3.80953e+07	 3.80919e+07	 3.80961e+07	 3.80925e+07
+    3: errorlist	           0	    0.120386	 0.000145022	 0.000144909	 0.000144917	 0.000144907	 0.000144915
+
+  3: Step  844    &    Total time     423474ms    &    Desorbed particles  191127530    &    Total error 0.0173013 
+    3: hitlist  	 7.93593e+07	          69	 3.81881e+07	 3.82362e+07	 3.82336e+07	 3.82368e+07	  3.8233e+07
+    3: errorlist	           0	    0.120386	 0.000144755	 0.000144641	 0.000144648	  0.00014464	 0.000144649
+
+Facet 1 reached threshold 573381681 for process 3
+  4: Step    0    &    Total time    500.059ms    &    Desorbed particles     228658    &    Total error 0.00348547
+    4: hitlist  	       94795	           0	       45529	       46156	       45631	       45905	       45437
+    4: errorlist	           0	         inf	  0.00419412	   0.0041584	  0.00418827	  0.00417262	  0.00419942
+
+  4: Step    3    &    Total time    1999.93ms    &    Desorbed particles     914689    &    Total error 0.00174266
+Simulation for process 4 for iteration 13 finished.
+  1: Step    0    &    Total time    499.902ms    &    Desorbed particles     229292    &    Total error 0.00348063
+    1: hitlist  	       95666	           0	       45898	       45876	       46197	       45709	       45612
+    1: errorlist	           0	         inf	  0.00417447	  0.00417572	  0.00415754	  0.00418525	   0.0041908
+
+  1: Step    3    &    Total time    1999.87ms    &    Desorbed particles     917442    &    Total error 0.00174004
+Simulation for process 1 for iteration 13 finished.
+Updated hitbuffer with process 1
+Updated hitbuffer with process 2
+Updated hitbuffer with process 3
+Updated hitbuffer with process 4
+flightTime 8509
+nParticles 384087196
+
+Increase simHistory->currentStep: 14
+Krealvirt = 8.09694e-05
+Covering difference will be multiplied by Krealvirt*(time step): 1.34881e-06
+
+Facet 0
+covering_sum = 0 = 0
+covering_phys_before = 0 = 0
+covering decreases by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 1
+covering_sum = 380422324 = 3.80422e+08
+covering_phys_before = 764508908 = 7.64509e+08
+covering decreases by 518 = 518
+covering_phys_after = 764508390 = 7.64508e+08
+coveringThreshhold = 573381681 = 5.73382e+08
+
+Facet 2
+covering_sum = 76745498 = 7.67455e+07
+covering_phys_before = 179 = 179
+covering rises by 103 = 103
+covering_phys_after = 282 = 282
+coveringThreshhold = 135 = 135
+
+Facet 3
+covering_sum = 76835262 = 7.68353e+07
+covering_phys_before = 180 = 180
+covering rises by 103 = 103
+covering_phys_after = 283 = 283
+coveringThreshhold = 135 = 135
+
+Facet 4
+covering_sum = 76838638 = 7.68386e+07
+covering_phys_before = 180 = 180
+covering rises by 103 = 103
+covering_phys_after = 283 = 283
+coveringThreshhold = 135 = 135
+
+Facet 5
+covering_sum = 76831895 = 7.68319e+07
+covering_phys_before = 180 = 180
+covering rises by 103 = 103
+covering_phys_after = 283 = 283
+coveringThreshhold = 135 = 135
+
+Facet 6
+covering_sum = 76836193 = 7.68362e+07
+covering_phys_before = 179 = 179
+covering rises by 103 = 103
+covering_phys_after = 282 = 282
+coveringThreshhold = 135 = 135
+
+Accumulative covering after iteration 13
+Iteration	    Time[s]                  Time	Facet        0	Facet        1	Facet        2	Facet        3	Facet        4	Facet        5	Facet        6
+        0	          0                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        1	 5.5157e-05                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        2	0.000140737                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        3	 0.00027352                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        4	0.000479543                    0s	             0	    7.6451e+08	             1	             1	             1	             1	             1
+        5	0.000799202                    0s	             0	    7.6451e+08	             2	             2	             2	             2	             2
+        6	 0.00129518                    0s	             0	    7.6451e+08	             5	             5	             5	             5	             5
+        7	 0.00206471                    0s	             0	    7.6451e+08	             9	             9	             9	             9	             9
+        8	  0.0032587                    0s	             0	    7.6451e+08	            16	            16	            16	            16	            16
+        9	 0.00511127                    0s	             0	    7.6451e+08	            27	            27	            27	            27	            27
+       10	 0.00798565                    0s	             0	    7.6451e+08	            44	            44	            44	            44	            44
+       11	  0.0124454                    0s	             0	   7.64509e+08	            71	            71	            71	            71	            71
+       12	  0.0193651                    0s	             0	   7.64509e+08	           113	           114	           114	           114	           113
+       13	  0.0301015                    0s	             0	   7.64509e+08	           179	           180	           180	           180	           179
+       14	  0.0467598                    0s	             0	   7.64508e+08	           282	           283	           283	           283	           282
+
+
+----------------Starting iteration 14----------------
+
+Currentstep: 14. Step size: 0.0258465
+Target Particles: 250. Target Error: 0.002
+
+  2: Step    0    &    Total time    4790.52ms    &    Desorbed particles    2189968    &    Total error 0.143822  
+    2: hitlist  	      909003	           1	      436423	      438898	      437352	      439031	      438265
+    2: errorlist	           0	           1	  0.00135452	  0.00134974	  0.00135272	  0.00134949	  0.00135096
+
+  2: Step   60    &    Total time    34790.3ms    &    Desorbed particles   15904871    &    Total error 0.0543531 
+    2: hitlist  	   6.604e+06	           7	  3.1758e+06	 3.18103e+06	 3.18017e+06	 3.18493e+06	 3.18295e+06
+    2: errorlist	           0	    0.377964	 0.000502004	 0.000501488	 0.000501573	 0.000501103	 0.000501299
+
+  2: Step  120    &    Total time    65096.3ms    &    Desorbed particles   28758466    &    Total error 0.0359807 
+    2: hitlist  	 1.19422e+07	          16	 5.74599e+06	 5.75114e+06	 5.75055e+06	 5.75505e+06	 5.75574e+06
+    2: errorlist	           0	        0.25	 0.000373178	 0.000372969	 0.000372993	 0.000372811	 0.000372783
+
+  2: Step  180    &    Total time      95390ms    &    Desorbed particles   40607024    &    Total error 0.032168  
+    2: hitlist  	 1.68646e+07	          20	 8.11406e+06	 8.12227e+06	 8.11979e+06	  8.1248e+06	 8.12612e+06
+    2: errorlist	           0	    0.223607	 0.000314033	 0.000313834	 0.000313894	 0.000313773	 0.000313741
+
+  2: Step  240    &    Total time     125784ms    &    Desorbed particles   54187824    &    Total error 0.0250623 
+    2: hitlist  	 2.25034e+07	          33	 1.08282e+07	  1.0842e+07	 1.08347e+07	 1.08411e+07	 1.08418e+07
+    2: errorlist	           0	    0.174078	  0.00027184	 0.000271623	 0.000271738	 0.000271639	 0.000271627
+
+  2: Step  300    &    Total time     156048ms    &    Desorbed particles   67102851    &    Total error 0.0222177 
+    2: hitlist  	 2.78647e+07	          42	 1.34069e+07	 1.34243e+07	 1.34197e+07	 1.34247e+07	 1.34272e+07
+    2: errorlist	           0	    0.154303	 0.000244307	 0.000244109	 0.000244161	 0.000244105	 0.000244077
+
+  2: Step  360    &    Total time     186080ms    &    Desorbed particles   80810294    &    Total error 0.0199696 
+    2: hitlist  	 3.35535e+07	          52	 1.61445e+07	 1.61679e+07	 1.61618e+07	 1.61679e+07	 1.61684e+07
+    2: errorlist	           0	    0.138675	 0.000222634	 0.000222433	 0.000222486	 0.000222433	 0.000222429
+
+  2: Step  420    &    Total time     216080ms    &    Desorbed particles   94527318    &    Total error 0.018905  
+    2: hitlist  	 3.92477e+07	          58	  1.8885e+07	 1.89121e+07	 1.89046e+07	 1.89127e+07	 1.89129e+07
+    2: errorlist	           0	    0.131306	 0.000205847	 0.000205663	 0.000205714	 0.000205659	 0.000205658
+
+  2: Step  480    &    Total time     246080ms    &    Desorbed particles  108246272    &    Total error 0.0177218 
+    2: hitlist  	 4.49422e+07	          66	 2.16258e+07	 2.16551e+07	 2.16512e+07	 2.16572e+07	 2.16571e+07
+    2: errorlist	           0	    0.123091	 0.000192361	 0.000192199	  0.00019222	 0.000192187	 0.000192188
+
+  2: Step  540    &    Total time     276119ms    &    Desorbed particles  121964654    &    Total error 0.0169652 
+    2: hitlist  	 5.06407e+07	          72	 2.43688e+07	 2.43976e+07	 2.43955e+07	 2.44008e+07	  2.4402e+07
+    2: errorlist	           0	    0.117851	  0.00018121	 0.000181076	 0.000181086	 0.000181061	 0.000181056
+
+  2: Step  600    &    Total time     306223ms    &    Desorbed particles  135653869    &    Total error 0.0158986 
+    2: hitlist  	 5.63282e+07	          82	 2.71061e+07	 2.71356e+07	 2.71319e+07	 2.71386e+07	 2.71417e+07
+    2: errorlist	           0	    0.110431	 0.000171815	 0.000171698	 0.000171713	 0.000171686	 0.000171674
+
+  2: Step  660    &    Total time     336681ms    &    Desorbed particles  149308709    &    Total error 0.0147737 
+    2: hitlist  	 6.19987e+07	          95	 2.98328e+07	 2.98671e+07	 2.98637e+07	 2.98704e+07	 2.98747e+07
+    2: errorlist	           0	    0.102598	 0.000163776	 0.000163658	  0.00016367	 0.000163647	 0.000163633
+
+  2: Step  720    &    Total time     367274ms    &    Desorbed particles  162943183    &    Total error 0.0139874 
+    2: hitlist  	 6.76596e+07	         106	 3.25569e+07	 3.25956e+07	 3.25911e+07	 3.25991e+07	 3.26005e+07
+    2: errorlist	           0	   0.0971286	 0.000156775	 0.000156659	 0.000156672	 0.000156648	 0.000156644
+
+  2: Step  780    &    Total time     397928ms    &    Desorbed particles  176548440    &    Total error 0.0135464 
+    2: hitlist  	 7.33096e+07	         113	 3.52735e+07	 3.53157e+07	 3.53125e+07	 3.53236e+07	 3.53232e+07
+    2: errorlist	           0	   0.0940721	 0.000150618	 0.000150505	 0.000150514	 0.000150484	 0.000150485
+
+  2: Step  840    &    Total time     427928ms    &    Desorbed particles  190262247    &    Total error 0.0131446 
+    2: hitlist  	 7.90068e+07	         120	 3.80131e+07	 3.80585e+07	 3.80548e+07	 3.80666e+07	 3.80693e+07
+    2: errorlist	           0	   0.0912871	 0.000145089	 0.000144981	  0.00014499	 0.000144961	 0.000144955
+
+  2: Step  844    &    Total time     429821ms    &    Desorbed particles  191127551    &    Total error 0.0131443 
+    2: hitlist  	 7.93667e+07	         120	 3.81865e+07	 3.82312e+07	 3.82281e+07	 3.82394e+07	 3.82424e+07
+    2: errorlist	           0	   0.0912871	 0.000144759	 0.000144653	  0.00014466	 0.000144634	 0.000144627
+
+Facet 1 reached threshold 573381293 for process 2
+  4: Step    0    &    Total time    499.654ms    &    Desorbed particles     228687    &    Total error 0.145844  
+    4: hitlist  	       94994	           1	       45747	       45691	       45937	       45752	       45560
+    4: errorlist	           0	    0.999998	   0.0041817	   0.0041849	  0.00417087	  0.00418141	  0.00419241
+
+  4: Step   60    &    Total time    30499.4ms    &    Desorbed particles   13970708    &    Total error 0.0455576 
+    4: hitlist  	 5.80243e+06	          10	 2.79173e+06	 2.79355e+06	 2.79657e+06	 2.79476e+06	  2.7941e+06
+    4: errorlist	           0	    0.316228	 0.000535372	 0.000535154	 0.000534792	 0.000535008	 0.000535088
+
+  4: Step  120    &    Total time    60793.8ms    &    Desorbed particles   27644953    &    Total error 0.0314457 
+    4: hitlist  	 1.14798e+07	          21	 5.52439e+06	  5.5257e+06	 5.53392e+06	 5.53002e+06	 5.53094e+06
+    4: errorlist	           0	    0.218218	 0.000380582	 0.000380526	 0.000380172	  0.00038034	   0.0003803
+
+  4: Step  180    &    Total time    91093.5ms    &    Desorbed particles   38845966    &    Total error 0.0258871 
+    4: hitlist  	 1.61305e+07	          31	 7.76261e+06	 7.76569e+06	 7.77577e+06	 7.76998e+06	 7.77192e+06
+    4: errorlist	           0	    0.179605	 0.000321061	 0.000320981	 0.000320721	  0.00032087	  0.00032082
+
+  4: Step  240    &    Total time     121093ms    &    Desorbed particles   52590046    &    Total error 0.0219825 
+    4: hitlist  	 2.18397e+07	          43	 1.05101e+07	 1.05139e+07	 1.05225e+07	 1.05213e+07	 1.05223e+07
+    4: errorlist	           0	    0.152499	  0.00027592	 0.000275857	 0.000275716	 0.000275737	  0.00027572
+
+  4: Step  300    &    Total time     151672ms    &    Desorbed particles   66115784    &    Total error 0.0201797 
+    4: hitlist  	 2.74546e+07	          51	 1.32113e+07	 1.32205e+07	 1.32263e+07	 1.32294e+07	 1.32282e+07
+    4: errorlist	           0	    0.140028	 0.000246105	 0.000245998	 0.000245931	 0.000245895	 0.000245908
+
+  4: Step  360    &    Total time     181686ms    &    Desorbed particles   79849345    &    Total error 0.0186026 
+    4: hitlist  	 3.31545e+07	          60	 1.59555e+07	  1.5967e+07	 1.59713e+07	 1.59781e+07	 1.59775e+07
+    4: errorlist	           0	    0.129099	 0.000223944	 0.000223843	 0.000223805	 0.000223746	 0.000223751
+
+  4: Step  420    &    Total time     211686ms    &    Desorbed particles   93593681    &    Total error 0.0173456 
+    4: hitlist  	 3.88596e+07	          69	 1.87025e+07	 1.87157e+07	   1.872e+07	 1.87304e+07	 1.87252e+07
+    4: errorlist	           0	    0.120386	 0.000206844	 0.000206752	 0.000206723	 0.000206651	 0.000206687
+
+  4: Step  480    &    Total time     241686ms    &    Desorbed particles  107337591    &    Total error 0.0165247 
+    4: hitlist  	 4.45667e+07	          76	 2.14494e+07	 2.14678e+07	 2.14702e+07	 2.14786e+07	 2.14716e+07
+    4: errorlist	           0	    0.114708	 0.000193145	 0.000193042	 0.000193028	 0.000192981	  0.00019302
+
+  4: Step  540    &    Total time     271686ms    &    Desorbed particles  121078595    &    Total error 0.0158104 
+    4: hitlist  	 5.02717e+07	          83	 2.41958e+07	 2.42179e+07	 2.42174e+07	 2.42277e+07	 2.42198e+07
+    4: errorlist	           0	    0.109764	 0.000181853	 0.000181749	 0.000181751	 0.000181703	  0.00018174
+
+  4: Step  600    &    Total time     301821ms    &    Desorbed particles  134731465    &    Total error 0.015017  
+    4: hitlist  	 5.59437e+07	          92	 2.69237e+07	 2.69479e+07	 2.69496e+07	 2.69607e+07	 2.69496e+07
+    4: errorlist	           0	    0.104257	 0.000172394	 0.000172298	 0.000172291	 0.000172247	 0.000172291
+
+  4: Step  660    &    Total time     332035ms    &    Desorbed particles  148368617    &    Total error 0.0142622 
+    4: hitlist  	 6.16068e+07	         102	 2.96495e+07	 2.96753e+07	 2.96755e+07	  2.9691e+07	 2.96773e+07
+    4: errorlist	           0	   0.0990147	 0.000164278	 0.000164189	 0.000164188	 0.000164135	 0.000164182
+
+  4: Step  720    &    Total time     362464ms    &    Desorbed particles  162081349    &    Total error 0.0134337 
+    4: hitlist  	 6.73001e+07	         115	 3.23893e+07	 3.24179e+07	 3.24184e+07	 3.24345e+07	 3.24213e+07
+    4: errorlist	           0	   0.0932504	 0.000157177	 0.000157091	 0.000157089	  0.00015704	  0.00015708
+
+  4: Step  780    &    Total time     393063ms    &    Desorbed particles  175714580    &    Total error 0.0128345 
+    4: hitlist  	 7.29606e+07	         126	 3.51131e+07	 3.51459e+07	 3.51456e+07	  3.5162e+07	 3.51481e+07
+    4: errorlist	           0	    0.089087	 0.000150958	  0.00015087	 0.000150871	 0.000150827	 0.000150864
+
+  4: Step  840    &    Total time     423063ms    &    Desorbed particles  189450278    &    Total error 0.0123537 
+    4: hitlist  	 7.86674e+07	         136	 3.78618e+07	  3.7891e+07	 3.78925e+07	 3.79107e+07	 3.78944e+07
+    4: errorlist	           0	   0.0857493	 0.000145373	 0.000145303	   0.0001453	 0.000145256	 0.000145295
+
+  4: Step  848    &    Total time     426726ms    &    Desorbed particles  191127614    &    Total error 0.0122641 
+    4: hitlist  	 7.93648e+07	         138	 3.81969e+07	 3.82259e+07	 3.82276e+07	 3.82466e+07	 3.82306e+07
+    4: errorlist	           0	   0.0851256	 0.000144734	 0.000144666	 0.000144662	 0.000144617	 0.000144655
+
+Facet 1 reached threshold 573381293 for process 4
+  1: Step    0    &    Total time     500.35ms    &    Desorbed particles     229426    &    Total error 0.00347962
+    1: hitlist  	       95440	           0	       45834	       45967	       45589	       46254	       45782
+    1: errorlist	           0	         inf	  0.00417842	  0.00417086	  0.00419242	  0.00415464	  0.00418138
+
+  1: Step    3    &    Total time    2000.36ms    &    Desorbed particles     917306    &    Total error 0.00174017
+Simulation for process 1 for iteration 14 finished.
+  3: Step    0    &    Total time    7363.45ms    &    Desorbed particles    3380816    &    Total error 0.143634  
+    3: hitlist  	  1.4016e+06	           1	      674257	      676980	      676010	      675533	      678039
+    3: errorlist	           0	           1	  0.00108965	   0.0010869	  0.00108788	  0.00108836	  0.00108584
+
+  3: Step   60    &    Total time    37363.2ms    &    Desorbed particles   17155936    &    Total error 0.0642325 
+    3: hitlist  	 7.11811e+06	           5	 3.42763e+06	 3.43138e+06	 3.43111e+06	 3.43269e+06	 3.43314e+06
+    3: errorlist	           0	    0.447214	 0.000483175	 0.000482845	 0.000482869	 0.000482729	  0.00048269
+
+  3: Step  120    &    Total time    67609.4ms    &    Desorbed particles   30758731    &    Total error 0.0371431 
+    3: hitlist  	 1.27689e+07	          15	 6.14673e+06	 6.15282e+06	 6.15152e+06	 6.15378e+06	 6.15391e+06
+    3: errorlist	           0	    0.258199	 0.000360801	 0.000360577	 0.000360625	 0.000360542	 0.000360538
+
+  3: Step  180    &    Total time    97673.8ms    &    Desorbed particles   44475591    &    Total error 0.0277071 
+    3: hitlist  	 1.84652e+07	          27	 8.88642e+06	 8.89797e+06	 8.89653e+06	  8.8971e+06	  8.8976e+06
+    3: errorlist	           0	     0.19245	 0.000300078	 0.000299835	 0.000299865	 0.000299853	 0.000299843
+
+  3: Step  240    &    Total time     128203ms    &    Desorbed particles   57928812    &    Total error 0.0239972 
+    3: hitlist  	 2.40534e+07	          36	 1.15775e+07	 1.15888e+07	 1.15893e+07	 1.15879e+07	 1.15854e+07
+    3: errorlist	           0	    0.166667	 0.000262892	 0.000262731	 0.000262723	 0.000262744	  0.00026278
+
+  3: Step  300    &    Total time     158626ms    &    Desorbed particles   71059938    &    Total error 0.0227572 
+    3: hitlist  	 2.95083e+07	          40	 1.42015e+07	 1.42154e+07	 1.42173e+07	 1.42139e+07	 1.42118e+07
+    3: errorlist	           0	    0.158114	 0.000237366	  0.00023722	 0.000237201	 0.000237236	 0.000237258
+
+  3: Step  360    &    Total time     188719ms    &    Desorbed particles   84740286    &    Total error 0.0192453 
+    3: hitlist  	 3.51896e+07	          56	 1.69348e+07	  1.6954e+07	  1.6954e+07	 1.69506e+07	 1.69469e+07
+    3: errorlist	           0	    0.133631	 0.000217369	 0.000217215	 0.000217215	 0.000217242	 0.000217272
+
+  3: Step  420    &    Total time     218719ms    &    Desorbed particles   98515633    &    Total error 0.0178632 
+    3: hitlist  	 4.09086e+07	          65	 1.96869e+07	 1.97106e+07	   1.971e+07	 1.97056e+07	 1.97025e+07
+    3: errorlist	           0	    0.124035	 0.000201605	 0.000201453	 0.000201457	 0.000201485	 0.000201505
+
+  3: Step  480    &    Total time     248719ms    &    Desorbed particles  112289515    &    Total error 0.0170888 
+    3: hitlist  	 4.66279e+07	          71	 2.24399e+07	 2.24637e+07	 2.24656e+07	  2.2463e+07	 2.24573e+07
+    3: errorlist	           0	    0.118678	 0.000188833	 0.000188708	 0.000188698	 0.000188712	 0.000188741
+
+  3: Step  540    &    Total time     278822ms    &    Desorbed particles  126040157    &    Total error 0.0160992 
+    3: hitlist  	 5.23381e+07	          80	 2.51876e+07	 2.52167e+07	 2.52128e+07	 2.52156e+07	 2.52075e+07
+    3: errorlist	           0	    0.111803	 0.000178236	 0.000178107	 0.000178125	 0.000178112	 0.000178148
+
+  3: Step  600    &    Total time     309574ms    &    Desorbed particles  139486223    &    Total error 0.0150965 
+    3: hitlist  	 5.79199e+07	          91	 2.78741e+07	 2.79089e+07	 2.79005e+07	 2.79054e+07	 2.78974e+07
+    3: errorlist	           0	    0.104828	  0.00016943	 0.000169298	  0.00016933	 0.000169311	 0.000169341
+
+  3: Step  660    &    Total time     339940ms    &    Desorbed particles  153226818    &    Total error 0.0145462 
+    3: hitlist  	 6.36276e+07	          98	  3.0621e+07	 3.06584e+07	 3.06493e+07	  3.0656e+07	 3.06422e+07
+    3: errorlist	           0	    0.101015	 0.000161651	 0.000161528	 0.000161558	 0.000161536	 0.000161581
+
+  3: Step  720    &    Total time     370171ms    &    Desorbed particles  166942144    &    Total error 0.014052  
+    3: hitlist  	 6.93217e+07	         105	  3.3362e+07	  3.3404e+07	 3.33925e+07	 3.33997e+07	 3.33841e+07
+    3: errorlist	           0	     0.09759	 0.000154868	 0.000154747	  0.00015478	 0.000154759	 0.000154804
+
+  3: Step  780    &    Total time     400523ms    &    Desorbed particles  180694393    &    Total error 0.0134278 
+    3: hitlist  	   7.503e+07	         115	 3.61108e+07	 3.61549e+07	 3.61434e+07	 3.61512e+07	 3.61342e+07
+    3: errorlist	           0	   0.0932505	 0.000148857	 0.000148743	 0.000148773	 0.000148753	 0.000148797
+
+  3: Step  826    &    Total time     423253ms    &    Desorbed particles  191127580    &    Total error 0.0127302 
+    3: hitlist  	 7.93613e+07	         128	 3.81955e+07	 3.82422e+07	 3.82299e+07	 3.82383e+07	 3.82217e+07
+    3: errorlist	           0	   0.0883883	 0.000144738	 0.000144627	 0.000144656	 0.000144636	 0.000144676
+
+Facet 1 reached threshold 573381293 for process 3
+Updated hitbuffer with process 1
+Updated hitbuffer with process 2
+Updated hitbuffer with process 3
+Updated hitbuffer with process 4
+flightTime 73225.5
+nParticles 574300051
+
+Increase simHistory->currentStep: 15
+Krealvirt = 5.41517e-05
+Covering difference will be multiplied by Krealvirt*(time step): 1.39963e-06
+
+Facet 0
+covering_sum = 0 = 0
+covering_phys_before = 0 = 0
+covering decreases by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 1
+covering_sum = 190209794 = 1.9021e+08
+covering_phys_before = 764508390 = 7.64508e+08
+covering decreases by 803 = 803
+covering_phys_after = 764507587 = 7.64508e+08
+coveringThreshhold = 573381293 = 5.73381e+08
+
+Facet 2
+covering_sum = 114762152 = 1.14762e+08
+covering_phys_before = 282 = 282
+covering rises by 160 = 160
+covering_phys_after = 442 = 442
+coveringThreshhold = 212 = 212
+
+Facet 3
+covering_sum = 114883192 = 1.14883e+08
+covering_phys_before = 283 = 283
+covering rises by 160 = 160
+covering_phys_after = 443 = 443
+coveringThreshhold = 213 = 213
+
+Facet 4
+covering_sum = 114868468 = 1.14868e+08
+covering_phys_before = 283 = 283
+covering rises by 160 = 160
+covering_phys_after = 443 = 443
+coveringThreshhold = 213 = 213
+
+Facet 5
+covering_sum = 114907880 = 1.14908e+08
+covering_phys_before = 283 = 283
+covering rises by 160 = 160
+covering_phys_after = 443 = 443
+coveringThreshhold = 213 = 213
+
+Facet 6
+covering_sum = 114878322 = 1.14878e+08
+covering_phys_before = 282 = 282
+covering rises by 160 = 160
+covering_phys_after = 442 = 442
+coveringThreshhold = 212 = 212
+
+Accumulative covering after iteration 14
+Iteration	    Time[s]                  Time	Facet        0	Facet        1	Facet        2	Facet        3	Facet        4	Facet        5	Facet        6
+        0	          0                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        1	 5.5157e-05                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        2	0.000140737                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        3	 0.00027352                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        4	0.000479543                    0s	             0	    7.6451e+08	             1	             1	             1	             1	             1
+        5	0.000799202                    0s	             0	    7.6451e+08	             2	             2	             2	             2	             2
+        6	 0.00129518                    0s	             0	    7.6451e+08	             5	             5	             5	             5	             5
+        7	 0.00206471                    0s	             0	    7.6451e+08	             9	             9	             9	             9	             9
+        8	  0.0032587                    0s	             0	    7.6451e+08	            16	            16	            16	            16	            16
+        9	 0.00511127                    0s	             0	    7.6451e+08	            27	            27	            27	            27	            27
+       10	 0.00798565                    0s	             0	    7.6451e+08	            44	            44	            44	            44	            44
+       11	  0.0124454                    0s	             0	   7.64509e+08	            71	            71	            71	            71	            71
+       12	  0.0193651                    0s	             0	   7.64509e+08	           113	           114	           114	           114	           113
+       13	  0.0301015                    0s	             0	   7.64509e+08	           179	           180	           180	           180	           179
+       14	  0.0467598                    0s	             0	   7.64508e+08	           282	           283	           283	           283	           282
+       15	  0.0726063                    0s	             0	   7.64508e+08	           442	           443	           443	           443	           442
+
+
+----------------Starting iteration 15----------------
+
+Currentstep: 15. Step size: 0.0401026
+Target Particles: 250. Target Error: 0.002
+
+  4: Step    0    &    Total time    1536.04ms    &    Desorbed particles     703353    &    Total error 0.0019873 
+Simulation for process 4 for iteration 15 finished.
+  1: Step    0    &    Total time    499.732ms    &    Desorbed particles     229262    &    Total error 0.00348085
+    1: hitlist  	       94825	           0	       45616	       45716	       46073	       45908	       45949
+    1: errorlist	           0	         inf	   0.0041905	  0.00418478	  0.00416448	  0.00417383	   0.0041715
+
+  1: Step    3    &    Total time    1999.59ms    &    Desorbed particles     916941    &    Total error 0.00174052
+Simulation for process 1 for iteration 15 finished.
+  2: Step    0    &    Total time    636.998ms    &    Desorbed particles     290800    &    Total error 0.00309068
+    2: hitlist  	      121011	           0	       58405	       58156	       57813	       58320	       58106
+    2: errorlist	           0	         inf	  0.00369906	  0.00370895	  0.00372268	  0.00370243	  0.00371095
+
+  2: Step    2    &    Total time    1636.17ms    &    Desorbed particles     747605    &    Total error 0.00192758
+Simulation for process 2 for iteration 15 finished.
+  3: Step    0    &    Total time    1084.38ms    &    Desorbed particles     497710    &    Total error 0.00236244
+    3: hitlist  	      206801	           0	       99814	       99687	       99607	       99232	       99370
+    3: errorlist	           0	         inf	  0.00283009	  0.00283235	  0.00283377	  0.00284046	  0.00283799
+
+  3: Step    1    &    Total time    1584.04ms    &    Desorbed particles     727200    &    Total error 0.00195444
+Simulation for process 3 for iteration 15 finished.
+Updated hitbuffer with process 1
+Updated hitbuffer with process 2
+Updated hitbuffer with process 3
+Updated hitbuffer with process 4
+flightTime 4587.76
+nParticles 3095099
+
+Increase simHistory->currentStep: 16
+Krealvirt = 0.0100479
+Covering difference will be multiplied by Krealvirt*(time step): 0.000402948
+
+Facet 0
+covering_sum = 0 = 0
+covering_phys_before = 0 = 0
+covering decreases by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 1
+covering_sum = 761412494 = 7.61412e+08
+covering_phys_before = 764507587 = 7.64508e+08
+covering decreases by 1247 = 1247
+covering_phys_after = 764506340 = 7.64506e+08
+coveringThreshhold = 573380691 = 5.73381e+08
+
+Facet 2
+covering_sum = 618656 = 618656
+covering_phys_before = 442 = 442
+covering rises by 249 = 249
+covering_phys_after = 691 = 691
+coveringThreshhold = 332 = 332
+
+Facet 3
+covering_sum = 620003 = 620003
+covering_phys_before = 443 = 443
+covering rises by 249 = 249
+covering_phys_after = 692 = 692
+coveringThreshhold = 333 = 333
+
+Facet 4
+covering_sum = 620046 = 620046
+covering_phys_before = 443 = 443
+covering rises by 249 = 249
+covering_phys_after = 692 = 692
+coveringThreshhold = 333 = 333
+
+Facet 5
+covering_sum = 619042 = 619042
+covering_phys_before = 443 = 443
+covering rises by 249 = 249
+covering_phys_after = 692 = 692
+coveringThreshhold = 333 = 333
+
+Facet 6
+covering_sum = 619557 = 619557
+covering_phys_before = 442 = 442
+covering rises by 249 = 249
+covering_phys_after = 691 = 691
+coveringThreshhold = 332 = 332
+
+Accumulative covering after iteration 15
+Iteration	    Time[s]                  Time	Facet        0	Facet        1	Facet        2	Facet        3	Facet        4	Facet        5	Facet        6
+        0	          0                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        1	 5.5157e-05                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        2	0.000140737                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        3	 0.00027352                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        4	0.000479543                    0s	             0	    7.6451e+08	             1	             1	             1	             1	             1
+        5	0.000799202                    0s	             0	    7.6451e+08	             2	             2	             2	             2	             2
+        6	 0.00129518                    0s	             0	    7.6451e+08	             5	             5	             5	             5	             5
+        7	 0.00206471                    0s	             0	    7.6451e+08	             9	             9	             9	             9	             9
+        8	  0.0032587                    0s	             0	    7.6451e+08	            16	            16	            16	            16	            16
+        9	 0.00511127                    0s	             0	    7.6451e+08	            27	            27	            27	            27	            27
+       10	 0.00798565                    0s	             0	    7.6451e+08	            44	            44	            44	            44	            44
+       11	  0.0124454                    0s	             0	   7.64509e+08	            71	            71	            71	            71	            71
+       12	  0.0193651                    0s	             0	   7.64509e+08	           113	           114	           114	           114	           113
+       13	  0.0301015                    0s	             0	   7.64509e+08	           179	           180	           180	           180	           179
+       14	  0.0467598                    0s	             0	   7.64508e+08	           282	           283	           283	           283	           282
+       15	  0.0726063                    0s	             0	   7.64508e+08	           442	           443	           443	           443	           442
+       16	   0.112709                    0s	             0	   7.64506e+08	           691	           692	           692	           692	           691
+
+
+----------------Starting iteration 16----------------
+
+Currentstep: 16. Step size: 0.0622221
+Target Particles: 250. Target Error: 0.002
+
+  2: Step    0    &    Total time    500.125ms    &    Desorbed particles     228634    &    Total error 0.104002  
+    2: hitlist  	       94837	           2	       45737	       45674	       45638	       45711	       45874
+    2: errorlist	           0	    0.707104	  0.00418215	  0.00418575	  0.00418782	  0.00418364	  0.00417434
+
+  2: Step   60    &    Total time    31754.7ms    &    Desorbed particles   13213877    &    Total error 0.0323368 
+    2: hitlist  	 5.48617e+06	          20	 2.64055e+06	 2.64375e+06	 2.64298e+06	 2.64197e+06	 2.64464e+06
+    2: errorlist	           0	    0.223607	 0.000550483	 0.000550066	 0.000550166	 0.000550297	 0.000549951
+
+  2: Step  120    &    Total time    61969.6ms    &    Desorbed particles   26880256    &    Total error 0.02345   
+    2: hitlist  	 1.11569e+07	          38	  5.3683e+06	 5.37999e+06	 5.37409e+06	 5.37979e+06	 5.37814e+06
+    2: errorlist	           0	    0.162221	 0.000386105	  0.00038558	 0.000385845	 0.000385589	 0.000385663
+
+  2: Step  180    &    Total time    92476.3ms    &    Desorbed particles   40320945    &    Total error 0.0175489 
+    2: hitlist  	 1.67395e+07	          68	 8.05545e+06	 8.07074e+06	 8.06271e+06	 8.06732e+06	 8.06477e+06
+    2: errorlist	           0	    0.121268	  0.00031518	 0.000314807	 0.000315003	  0.00031489	 0.000314953
+
+  2: Step  240    &    Total time     122579ms    &    Desorbed particles   53932361    &    Total error 0.0155992 
+    2: hitlist  	 2.23906e+07	          86	 1.07745e+07	 1.07913e+07	 1.07878e+07	 1.07899e+07	 1.07889e+07
+    2: errorlist	           0	    0.107833	 0.000272526	 0.000272261	 0.000272315	 0.000272281	 0.000272297
+
+  2: Step  300    &    Total time     152684ms    &    Desorbed particles   67569374    &    Total error 0.0140493 
+    2: hitlist  	 2.80511e+07	         106	 1.34976e+07	 1.35191e+07	 1.35158e+07	 1.35204e+07	 1.35166e+07
+    2: errorlist	           0	   0.0971285	  0.00024349	 0.000243248	 0.000243286	 0.000243234	 0.000243277
+
+  2: Step  360    &    Total time     183090ms    &    Desorbed particles   81071510    &    Total error 0.0130396 
+    2: hitlist  	 3.36567e+07	         123	 1.61956e+07	 1.62184e+07	 1.62177e+07	 1.62233e+07	 1.62166e+07
+    2: errorlist	           0	   0.0901669	 0.000222284	 0.000222089	 0.000222095	 0.000222047	 0.000222105
+
+  2: Step  420    &    Total time     213838ms    &    Desorbed particles   93381813    &    Total error 0.0123086 
+    2: hitlist  	 3.87687e+07	         138	 1.86555e+07	 1.86809e+07	 1.86805e+07	 1.86861e+07	 1.86789e+07
+    2: errorlist	           0	   0.0851256	 0.000207111	 0.000206934	 0.000206938	 0.000206898	 0.000206948
+
+  2: Step  480    &    Total time     243839ms    &    Desorbed particles  107086218    &    Total error 0.0114319 
+    2: hitlist  	 4.44581e+07	         160	 2.13922e+07	 2.14246e+07	 2.14226e+07	 2.14262e+07	 2.14208e+07
+    2: errorlist	           0	   0.0790569	 0.000193411	 0.000193228	 0.000193239	 0.000193219	  0.00019325
+
+  2: Step  540    &    Total time     273838ms    &    Desorbed particles  120790488    &    Total error 0.0109599 
+    2: hitlist  	  5.0147e+07	         174	 2.41278e+07	 2.41682e+07	 2.41665e+07	 2.41653e+07	 2.41628e+07
+    2: errorlist	           0	   0.0758097	 0.000182118	 0.000181928	 0.000181937	 0.000181942	 0.000181954
+
+  2: Step  600    &    Total time     303860ms    &    Desorbed particles  134506240    &    Total error 0.01025   
+    2: hitlist  	 5.58415e+07	         199	 2.68663e+07	 2.69135e+07	 2.69104e+07	  2.6909e+07	 2.69072e+07
+    2: errorlist	           0	   0.0708881	 0.000172589	 0.000172399	 0.000172412	 0.000172417	 0.000172425
+
+  2: Step  660    &    Total time     333860ms    &    Desorbed particles  148218059    &    Total error 0.00974876
+    2: hitlist  	  6.1533e+07	         220	 2.96051e+07	 2.96585e+07	  2.9653e+07	 2.96514e+07	 2.96502e+07
+    2: errorlist	           0	   0.0674199	 0.000164412	 0.000164226	 0.000164246	 0.000164251	 0.000164255
+
+  2: Step  720    &    Total time     363860ms    &    Desorbed particles  161931792    &    Total error 0.00933364
+    2: hitlist  	 6.72288e+07	         240	 3.23452e+07	 3.24018e+07	 3.23947e+07	 3.23959e+07	 3.23944e+07
+    2: errorlist	           0	   0.0645497	 0.000157293	 0.000157121	 0.000157143	 0.000157139	 0.000157144
+
+  2: Step  780    &    Total time     393860ms    &    Desorbed particles  175645878    &    Total error 0.0089845 
+    2: hitlist  	 7.29274e+07	         259	 3.50886e+07	 3.51441e+07	 3.51389e+07	 3.51385e+07	 3.51359e+07
+    2: errorlist	           0	   0.0621369	 0.000151017	 0.000150868	 0.000150882	 0.000150883	 0.000150889
+
+  2: Step  840    &    Total time     423863ms    &    Desorbed particles  189360018    &    Total error 0.00856593
+    2: hitlist  	 7.86223e+07	         285	 3.78306e+07	 3.78867e+07	 3.78811e+07	 3.78828e+07	 3.78791e+07
+    2: errorlist	           0	   0.0592348	  0.00014544	 0.000145305	 0.000145319	 0.000145314	 0.000145323
+
+  2: Step  848    &    Total time     427748ms    &    Desorbed particles  191127747    &    Total error 0.00850669
+    2: hitlist  	 7.93559e+07	         289	  3.8184e+07	 3.82402e+07	 3.82341e+07	  3.8237e+07	 3.82326e+07
+    2: errorlist	           0	   0.0588235	 0.000144765	 0.000144632	 0.000144646	 0.000144639	  0.00014465
+
+Facet 1 reached threshold 573379755 for process 2
+  1: Step    0    &    Total time    500.415ms    &    Desorbed particles     229447    &    Total error 0.00347943
+    1: hitlist  	       95511	           0	       45974	       45710	       45719	       46111	       45935
+    1: errorlist	           0	         inf	  0.00417051	  0.00418554	  0.00418503	  0.00416276	  0.00417272
+
+  1: Step   60    &    Total time    31294.2ms    &    Desorbed particles   13848905    &    Total error 0.0350318 
+    1: hitlist  	 5.75036e+06	          17	 2.76794e+06	 2.76911e+06	 2.76844e+06	  2.7729e+06	 2.77053e+06
+    1: errorlist	           0	    0.242535	 0.000537654	 0.000537512	 0.000537593	 0.000537053	 0.000537339
+
+  1: Step  120    &    Total time      61294ms    &    Desorbed particles   27616129    &    Total error 0.0259297 
+    1: hitlist  	 1.14641e+07	          31	  5.5162e+06	 5.52352e+06	 5.51958e+06	 5.53013e+06	 5.52672e+06
+    1: errorlist	           0	    0.179605	 0.000380885	  0.00038057	 0.000380739	 0.000380285	 0.000380432
+
+  1: Step  180    &    Total time    91476.3ms    &    Desorbed particles   41332297    &    Total error 0.0208418 
+    1: hitlist  	 1.71573e+07	          48	 8.25257e+06	 8.26818e+06	  8.2634e+06	 8.27508e+06	 8.27312e+06
+    1: errorlist	           0	    0.144337	 0.000311417	 0.000311049	 0.000311162	 0.000310887	 0.000310933
+
+  1: Step  240    &    Total time     121476ms    &    Desorbed particles   55101076    &    Total error 0.0166882 
+    1: hitlist  	 2.28723e+07	          75	 1.10039e+07	 1.10211e+07	 1.10195e+07	 1.10301e+07	 1.10266e+07
+    1: errorlist	           0	     0.11547	 0.000269682	 0.000269419	 0.000269443	 0.000269282	 0.000269336
+
+  1: Step  300    &    Total time     151541ms    &    Desorbed particles   68867551    &    Total error 0.0147524 
+    1: hitlist  	 2.85859e+07	          96	 1.37538e+07	 1.37723e+07	 1.37756e+07	  1.3786e+07	 1.37798e+07
+    1: errorlist	           0	    0.102062	 0.000241219	 0.000241016	  0.00024098	 0.000240867	 0.000240934
+
+  1: Step  360    &    Total time     181602ms    &    Desorbed particles   82612987    &    Total error 0.0131442 
+    1: hitlist  	 3.42929e+07	         121	 1.65002e+07	 1.65235e+07	 1.65265e+07	 1.65368e+07	 1.65261e+07
+    1: errorlist	           0	    0.090909	 0.000220228	 0.000220035	  0.00022001	 0.000219924	 0.000220013
+
+  1: Step  420    &    Total time     212113ms    &    Desorbed particles   96334691    &    Total error 0.0122192 
+    1: hitlist  	   3.999e+07	         140	 1.92397e+07	 1.92686e+07	 1.92717e+07	 1.92821e+07	 1.92727e+07
+    1: errorlist	           0	   0.0845154	 0.000203949	 0.000203759	 0.000203738	 0.000203669	 0.000203731
+
+  1: Step  480    &    Total time     242113ms    &    Desorbed particles  110100645    &    Total error 0.0113601 
+    1: hitlist  	 4.57083e+07	         162	 2.19913e+07	 2.20234e+07	 2.20272e+07	  2.2034e+07	 2.20248e+07
+    1: errorlist	           0	   0.0785674	 0.000190761	 0.000190588	 0.000190567	  0.00019053	  0.00019058
+
+  1: Step  540    &    Total time     272113ms    &    Desorbed particles  123867061    &    Total error 0.0106314 
+    1: hitlist  	 5.14228e+07	         185	 2.47414e+07	  2.4779e+07	 2.47802e+07	 2.47885e+07	 2.47781e+07
+    1: errorlist	           0	   0.0735214	 0.000179847	 0.000179676	 0.000179671	 0.000179633	 0.000179681
+
+  1: Step  600    &    Total time     302128ms    &    Desorbed particles  137629982    &    Total error 0.0102233 
+    1: hitlist  	  5.7136e+07	         200	 2.74911e+07	  2.7533e+07	 2.75337e+07	 2.75423e+07	   2.753e+07
+    1: errorlist	           0	   0.0707106	 0.000170615	 0.000170453	  0.00017045	 0.000170417	 0.000170465
+
+  1: Step  660    &    Total time     332129ms    &    Desorbed particles  151394392    &    Total error 0.00966114
+    1: hitlist  	 6.28503e+07	         224	 3.02414e+07	 3.02864e+07	 3.02878e+07	 3.02953e+07	 3.02837e+07
+    1: errorlist	           0	   0.0668153	 0.000162672	  0.00016252	 0.000162516	 0.000162491	 0.000162529
+
+  1: Step  720    &    Total time     362129ms    &    Desorbed particles  165159929    &    Total error 0.00925664
+    1: hitlist  	 6.85675e+07	         244	 3.29926e+07	 3.30379e+07	 3.30415e+07	 3.30498e+07	 3.30383e+07
+    1: errorlist	           0	   0.0640184	  0.00015574	 0.000155607	 0.000155596	 0.000155572	 0.000155606
+
+  1: Step  780    &    Total time     392129ms    &    Desorbed particles  178925524    &    Total error 0.00894943
+    1: hitlist  	  7.4281e+07	         261	 3.57442e+07	 3.57913e+07	  3.5797e+07	 3.58027e+07	 3.57906e+07
+    1: errorlist	           0	   0.0618984	 0.000149625	 0.000149502	 0.000149487	 0.000149472	 0.000149504
+
+  1: Step  834    &    Total time     418723ms    &    Desorbed particles  191127718    &    Total error 0.00868678
+    1: hitlist  	  7.9352e+07	         277	 3.81838e+07	 3.82316e+07	 3.82399e+07	  3.8242e+07	 3.82307e+07
+    1: errorlist	           0	   0.0600841	 0.000144766	 0.000144652	 0.000144633	 0.000144628	 0.000144654
+
+Facet 1 reached threshold 573379755 for process 1
+  3: Step    0    &    Total time     500.34ms    &    Desorbed particles     229647    &    Total error 0.00347793
+    3: hitlist  	       95662	           0	       46212	       45694	       45870	       45953	       45918
+    3: errorlist	           0	         inf	  0.00415751	  0.00418691	  0.00417687	  0.00417215	  0.00417414
+
+  3: Step   60    &    Total time    31519.7ms    &    Desorbed particles   13291423    &    Total error 0.0308491 
+    3: hitlist  	 5.52055e+06	          22	 2.65978e+06	 2.65756e+06	 2.65902e+06	 2.65702e+06	 2.65806e+06
+    3: errorlist	           0	    0.213201	 0.000548393	 0.000548679	  0.00054849	 0.000548749	 0.000548615
+
+  3: Step  120    &    Total time    61518.2ms    &    Desorbed particles   27056177    &    Total error 0.0213378 
+    3: hitlist  	 1.12353e+07	          46	 5.41025e+06	 5.41301e+06	 5.41151e+06	 5.40862e+06	 5.41282e+06
+    3: errorlist	           0	    0.147442	 0.000384544	 0.000384422	 0.000384488	 0.000384617	  0.00038443
+
+  3: Step  180    &    Total time    91860.7ms    &    Desorbed particles   40788183    &    Total error 0.0185147 
+    3: hitlist  	 1.69367e+07	          61	 8.15483e+06	 8.16033e+06	 8.15647e+06	 8.15633e+06	 8.16028e+06
+    3: errorlist	           0	    0.128037	 0.000313225	 0.000313093	 0.000313186	 0.000313189	 0.000313094
+
+  3: Step  240    &    Total time     121866ms    &    Desorbed particles   54561098    &    Total error 0.0159693 
+    3: hitlist  	 2.26598e+07	          82	 1.09097e+07	 1.09143e+07	 1.09113e+07	 1.09108e+07	 1.09151e+07
+    3: errorlist	           0	    0.110431	 0.000270802	 0.000270731	 0.000270776	 0.000270785	 0.000270718
+
+  3: Step  300    &    Total time     151975ms    &    Desorbed particles   68332786    &    Total error 0.013856  
+    3: hitlist  	 2.83795e+07	         109	 1.36644e+07	 1.36673e+07	 1.36673e+07	 1.36649e+07	 1.36689e+07
+    3: errorlist	           0	   0.0957826	 0.000241968	 0.000241936	 0.000241936	 0.000241962	 0.000241919
+
+  3: Step  360    &    Total time     182473ms    &    Desorbed particles   81994986    &    Total error 0.0128845 
+    3: hitlist  	 3.40546e+07	         126	 1.63941e+07	 1.63985e+07	 1.64019e+07	 1.63976e+07	 1.64029e+07
+    3: errorlist	           0	    0.089087	 0.000220911	 0.000220874	 0.000220845	 0.000220881	 0.000220837
+
+  3: Step  420    &    Total time     213092ms    &    Desorbed particles   94941443    &    Total error 0.0121349 
+    3: hitlist  	 3.94333e+07	         142	 1.89816e+07	  1.8989e+07	 1.89898e+07	 1.89876e+07	 1.89936e+07
+    3: errorlist	           0	   0.0839181	 0.000205304	 0.000205254	 0.000205249	 0.000205264	 0.000205223
+
+  3: Step  480    &    Total time     243092ms    &    Desorbed particles  108718927    &    Total error 0.0112584 
+    3: hitlist  	 4.51573e+07	         165	 2.17372e+07	 2.17467e+07	 2.17441e+07	 2.17408e+07	 2.17501e+07
+    3: errorlist	           0	   0.0778498	 0.000191849	 0.000191796	 0.000191811	 0.000191829	 0.000191778
+
+  3: Step  540    &    Total time     273092ms    &    Desorbed particles  122498131    &    Total error 0.0103593 
+    3: hitlist  	 5.08768e+07	         195	 2.44898e+07	 2.45036e+07	 2.44994e+07	 2.44982e+07	 2.45072e+07
+    3: errorlist	           0	   0.0716114	 0.000180748	 0.000180685	 0.000180704	 0.000180709	 0.000180668
+
+  3: Step  600    &    Total time     303107ms    &    Desorbed particles  136276091    &    Total error 0.00984256
+    3: hitlist  	 5.65977e+07	         216	 2.72439e+07	 2.72586e+07	 2.72576e+07	 2.72532e+07	  2.7263e+07
+    3: errorlist	           0	   0.0680413	 0.000171369	 0.000171312	 0.000171316	 0.000171333	 0.000171294
+
+  3: Step  660    &    Total time     333107ms    &    Desorbed particles  150051824    &    Total error 0.00937667
+    3: hitlist  	 6.23175e+07	         238	 2.99962e+07	  3.0014e+07	 3.00161e+07	 3.00065e+07	 3.00191e+07
+    3: errorlist	           0	   0.0648203	 0.000163319	 0.000163259	 0.000163252	 0.000163284	 0.000163241
+
+  3: Step  720    &    Total time     363107ms    &    Desorbed particles  163829792    &    Total error 0.00897123
+    3: hitlist  	 6.80412e+07	         260	 3.27507e+07	 3.27699e+07	 3.27716e+07	 3.27613e+07	 3.27764e+07
+    3: errorlist	           0	   0.0620173	   0.0001563	 0.000156243	 0.000156238	 0.000156269	 0.000156224
+
+  3: Step  780    &    Total time     393107ms    &    Desorbed particles  177608190    &    Total error 0.00867519
+    3: hitlist  	 7.37609e+07	         278	 3.55037e+07	 3.55261e+07	 3.55284e+07	 3.55179e+07	 3.55322e+07
+    3: errorlist	           0	    0.059976	 0.000150119	  0.00015006	 0.000150054	 0.000150081	 0.000150044
+
+  3: Step  839    &    Total time     422542ms    &    Desorbed particles  191127792    &    Total error 0.00835119
+    3: hitlist  	 7.93765e+07	         300	 3.82058e+07	 3.82298e+07	 3.82322e+07	 3.82223e+07	 3.82379e+07
+    3: errorlist	           0	    0.057735	 0.000144713	 0.000144657	 0.000144651	 0.000144674	 0.000144637
+
+Facet 1 reached threshold 573379755 for process 3
+  4: Step    0    &    Total time    499.972ms    &    Desorbed particles     228949    &    Total error 0.104     
+    4: hitlist  	       95185	           2	       45912	       45990	       45402	       46025	       45619
+    4: errorlist	           0	    0.707104	  0.00417289	  0.00416846	  0.00420211	  0.00416648	  0.00418962
+
+  4: Step   60    &    Total time    31032.2ms    &    Desorbed particles   13713916    &    Total error 0.0331594 
+    4: hitlist  	 5.69415e+06	          19	 2.73981e+06	 2.74229e+06	 2.74367e+06	 2.74613e+06	 2.74202e+06
+    4: errorlist	           0	    0.229416	 0.000540435	  0.00054013	  0.00053996	 0.000539657	 0.000540163
+
+  4: Step  120    &    Total time      61033ms    &    Desorbed particles   27455463    &    Total error 0.0225832 
+    4: hitlist  	 1.13981e+07	          41	 5.48457e+06	  5.4924e+06	 5.49238e+06	 5.49647e+06	 5.48965e+06
+    4: errorlist	           0	    0.156174	 0.000381978	 0.000381638	 0.000381638	 0.000381461	 0.000381757
+
+  4: Step  180    &    Total time    91423.6ms    &    Desorbed particles   41035026    &    Total error 0.0182213 
+    4: hitlist  	 1.70388e+07	          63	 8.19939e+06	 8.20945e+06	 8.20836e+06	 8.21214e+06	 8.20571e+06
+    4: errorlist	           0	    0.125988	 0.000312395	 0.000312156	 0.000312182	 0.000312092	 0.000312245
+
+  4: Step  240    &    Total time     121494ms    &    Desorbed particles   54701623    &    Total error 0.0157801 
+    4: hitlist  	 2.27121e+07	          84	 1.09286e+07	 1.09457e+07	 1.09399e+07	  1.0948e+07	 1.09394e+07
+    4: errorlist	           0	    0.109109	 0.000270595	 0.000270332	 0.000270421	 0.000270295	 0.000270429
+
+  4: Step  300    &    Total time     151528ms    &    Desorbed particles   68421718    &    Total error 0.0139832 
+    4: hitlist  	 2.84099e+07	         107	 1.36715e+07	 1.36876e+07	 1.36838e+07	 1.36964e+07	 1.36825e+07
+    4: errorlist	           0	   0.0966736	 0.000241929	 0.000241752	 0.000241793	 0.000241654	 0.000241808
+
+  4: Step  360    &    Total time     181610ms    &    Desorbed particles   82156965    &    Total error 0.0133647 
+    4: hitlist  	 3.41111e+07	         117	 1.64162e+07	 1.64347e+07	 1.64326e+07	 1.64417e+07	 1.64319e+07
+    4: errorlist	           0	     0.09245	  0.00022078	 0.000220624	 0.000220642	 0.000220565	 0.000220648
+
+  4: Step  420    &    Total time     212595ms    &    Desorbed particles   95571263    &    Total error 0.0123069 
+    4: hitlist  	 3.96804e+07	         138	 1.90944e+07	 1.91185e+07	 1.91181e+07	 1.91249e+07	 1.91154e+07
+    4: errorlist	           0	   0.0851256	 0.000204715	 0.000204553	 0.000204556	  0.00020451	 0.000204574
+
+  4: Step  480    &    Total time     242594ms    &    Desorbed particles  109306179    &    Total error 0.0118009 
+    4: hitlist  	 4.53852e+07	         150	 2.18413e+07	 2.18644e+07	 2.18674e+07	 2.18701e+07	  2.1863e+07
+    4: errorlist	           0	   0.0816496	 0.000191406	  0.00019128	 0.000191263	 0.000191248	 0.000191287
+
+  4: Step  540    &    Total time     272594ms    &    Desorbed particles  123042706    &    Total error 0.0109588 
+    4: hitlist  	 5.10901e+07	         174	 2.45865e+07	 2.46144e+07	  2.4613e+07	 2.46189e+07	   2.461e+07
+    4: errorlist	           0	   0.0758098	 0.000180404	 0.000180276	 0.000180282	 0.000180255	 0.000180296
+
+  4: Step  600    &    Total time     302612ms    &    Desorbed particles  136781450    &    Total error 0.0103262 
+    4: hitlist  	 5.67955e+07	         196	 2.73299e+07	 2.73625e+07	 2.73618e+07	 2.73683e+07	 2.73591e+07
+    4: errorlist	           0	   0.0714285	 0.000171111	 0.000170984	 0.000170987	 0.000170961	 0.000170997
+
+  4: Step  660    &    Total time     332612ms    &    Desorbed particles  150520217    &    Total error 0.00979194
+    4: hitlist  	 6.25002e+07	         218	 3.00741e+07	 3.01116e+07	 3.01115e+07	 3.01154e+07	 3.01077e+07
+    4: errorlist	           0	   0.0677285	 0.000163118	 0.000162991	 0.000162992	 0.000162978	 0.000163004
+
+  4: Step  720    &    Total time     362612ms    &    Desorbed particles  164259751    &    Total error 0.00941067
+    4: hitlist  	 6.82038e+07	         236	 3.28164e+07	 3.28597e+07	  3.2861e+07	 3.28671e+07	 3.28557e+07
+    4: errorlist	           0	   0.0650944	 0.000156156	 0.000156027	 0.000156024	 0.000156005	 0.000156039
+
+  4: Step  780    &    Total time     392612ms    &    Desorbed particles  177998984    &    Total error 0.00884978
+    4: hitlist  	 7.39075e+07	         267	 3.55601e+07	  3.5607e+07	 3.56091e+07	 3.56164e+07	 3.56065e+07
+    4: errorlist	           0	    0.061199	 0.000150011	 0.000149888	 0.000149882	 0.000149863	 0.000149889
+
+  4: Step  838    &    Total time     421281ms    &    Desorbed particles  191127737    &    Total error 0.0085953 
+    4: hitlist  	 7.93586e+07	         283	 3.81841e+07	 3.82351e+07	  3.8232e+07	 3.82433e+07	 3.82334e+07
+    4: errorlist	           0	   0.0594438	 0.000144765	 0.000144644	 0.000144651	 0.000144625	 0.000144648
+
+Facet 1 reached threshold 573379755 for process 4
+Updated hitbuffer with process 1
+Updated hitbuffer with process 2
+Updated hitbuffer with process 3
+Updated hitbuffer with process 4
+flightTime 16992.4
+nParticles 764510994
+
+Increase simHistory->currentStep: 17
+Krealvirt = 4.06787e-05
+Covering difference will be multiplied by Krealvirt*(time step): 2.53111e-06
+
+Facet 0
+covering_sum = 0 = 0
+covering_phys_before = 0 = 0
+covering decreases by 0 = 0
+covering_phys_after = 0 = 0
+coveringThreshhold = 0 = 0
+
+Facet 1
+covering_sum = 0 = 0
+covering_phys_before = 764506340 = 7.64506e+08
+covering decreases by 1935 = 1935
+covering_phys_after = 764504405 = 7.64504e+08
+coveringThreshhold = 573379755 = 5.7338e+08
+
+Facet 2
+covering_sum = 152757241 = 1.52757e+08
+covering_phys_before = 691 = 691
+covering rises by 386 = 386
+covering_phys_after = 1077 = 1077
+coveringThreshhold = 519 = 519
+
+Facet 3
+covering_sum = 152936386 = 1.52936e+08
+covering_phys_before = 692 = 692
+covering rises by 387 = 387
+covering_phys_after = 1079 = 1079
+coveringThreshhold = 519 = 519
+
+Facet 4
+covering_sum = 152937677 = 1.52938e+08
+covering_phys_before = 692 = 692
+covering rises by 387 = 387
+covering_phys_after = 1079 = 1079
+coveringThreshhold = 519 = 519
+
+Facet 5
+covering_sum = 152944295 = 1.52944e+08
+covering_phys_before = 692 = 692
+covering rises by 387 = 387
+covering_phys_after = 1079 = 1079
+coveringThreshhold = 519 = 519
+
+Facet 6
+covering_sum = 152934207 = 1.52934e+08
+covering_phys_before = 691 = 691
+covering rises by 387 = 387
+covering_phys_after = 1078 = 1078
+coveringThreshhold = 519 = 519
+
+Accumulative covering after iteration 16
+Iteration	    Time[s]                  Time	Facet        0	Facet        1	Facet        2	Facet        3	Facet        4	Facet        5	Facet        6
+        0	          0                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        1	 5.5157e-05                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        2	0.000140737                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        3	 0.00027352                    0s	             0	    7.6451e+08	             0	             0	             0	             0	             0
+        4	0.000479543                    0s	             0	    7.6451e+08	             1	             1	             1	             1	             1
+        5	0.000799202                    0s	             0	    7.6451e+08	             2	             2	             2	             2	             2
+        6	 0.00129518                    0s	             0	    7.6451e+08	             5	             5	             5	             5	             5
+        7	 0.00206471                    0s	             0	    7.6451e+08	             9	             9	             9	             9	             9
+        8	  0.0032587                    0s	             0	    7.6451e+08	            16	            16	            16	            16	            16
+        9	 0.00511127                    0s	             0	    7.6451e+08	            27	            27	            27	            27	            27
+       10	 0.00798565                    0s	             0	    7.6451e+08	            44	            44	            44	            44	            44
+       11	  0.0124454                    0s	             0	   7.64509e+08	            71	            71	            71	            71	            71
+       12	  0.0193651                    0s	             0	   7.64509e+08	           113	           114	           114	           114	           113
+       13	  0.0301015                    0s	             0	   7.64509e+08	           179	           180	           180	           180	           179
+       14	  0.0467598                    0s	             0	   7.64508e+08	           282	           283	           283	           283	           282
+       15	  0.0726063                    0s	             0	   7.64508e+08	           442	           443	           443	           443	           442
+       16	   0.112709                    0s	             0	   7.64506e+08	           691	           692	           692	           692	           691
+       17	   0.174931                    0s	             0	   7.64504e+08	          1077	          1079	          1079	          1079	          1078
+
+
+----------------Starting iteration 17----------------
+
+Currentstep: 17. Step size: 0.0965419
+Target Particles: 250. Target Error: 0.002
+

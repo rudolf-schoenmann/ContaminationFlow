@@ -159,7 +159,10 @@ public:
 
 				for(uint j=0; j<pointintime_list[i].second.size();j++)
 				{
-					out <<"\t" <<std::setw(14)<<std::right <<(double)pointintime_list[i].second[j];
+					if(j==pointintime_list[i].second.size()-1)
+						out <<"\t" <<std::setw(14)<<std::right <<pointintime_list[i].second[j];
+					else
+						out <<"\t" <<std::setw(14)<<std::right <<(double)pointintime_list[i].second[j];
 
 				}
 				out<<"\t"<<std::setw(14)<<std::right<<(double)totalvec[i];
@@ -322,6 +325,8 @@ public:
 
 	int targetParticles;
 	double targetError;
+
+	double hitRatioLimit;
 
 	//These cannot be given, but are computed from other variables
 	int simulationTimeMS;

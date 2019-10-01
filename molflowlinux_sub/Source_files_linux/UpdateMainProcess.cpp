@@ -372,7 +372,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 		std::cout <<"Total Error "<<error/area <<std::endl;
 		simHistory->errorList.printCurrent(std::cout);
 
-		if(error/area < p->targetError) //if errorTarget not reached: donot update currentstep, TODO additional if cov threshold reached
+		if(error/area < 1.05*p->targetError) //if errorTarget not reached: donot update currentstep, TODO additional if cov threshold reached
 			{time_step = manageStepSize(true);}
 		else
 			{time_step = manageStepSize(false);}
@@ -445,7 +445,7 @@ void UpdateErrorMain(Databuff *hitbuffer_sum){
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			double num_hit_f=f.sh.opacity * ( getHits(&f,hitbuffer_sum)-simHistory->hitList.getLast(&f));
 
-			if(num_hit_f/num_hit_it<0.75E-5){//random threshold, can be adapted
+			if(num_hit_f/num_hit_it<p->hitRatioLimit){//random threshold, can be adapted
 				num_hit_it-=num_hit_f; //also adapt facet counters??
 				num_hit_f=0;
 			}
@@ -474,7 +474,7 @@ std::tuple<std::vector<double>,std::vector<llong>>  CalcPerIteration(){
 	for(int it=0; it<simHistory->errorList.pointintime_list.size();it++){
 		double error=0.0;
 		double area=0.0;
-		llong covering;
+		llong covering=0;
 
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {

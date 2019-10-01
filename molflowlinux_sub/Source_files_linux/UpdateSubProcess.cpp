@@ -25,7 +25,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 #include "SimulationLinux.h"
 extern Simulation *sHandle;
-//extern ProblemDef* p;
+extern ProblemDef* p;
 extern SimulationHistory* simHistory;
 
 //Update values of subprocess
@@ -92,7 +92,7 @@ void UpdateErrorSub(){
 			double num_hit_f=f.sh.opacity * ( f.tmpCounter[0].hit.nbHitEquiv);
 
 			//neglect hits if very small compared to total hits
-			if(num_hit_f/num_hit_it<0.75E-5){//random threshold, can be adapted
+			if(num_hit_f/num_hit_it<p->hitRatioLimit){//random threshold, can be adapted
 				num_hit_it-=num_hit_f; //also adapt facet counters??
 				num_hit_f=0;
 			}
