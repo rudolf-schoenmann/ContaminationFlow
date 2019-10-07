@@ -229,6 +229,7 @@ ProblemDef::ProblemDef(){
 	targetParticles=1000;
 	targetError=0.001;
 	hitRatioLimit=1E-5;
+	Tmin=1E-4;
 }
 
 void ProblemDef::createOutput(int save){
@@ -306,6 +307,7 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn =="targetParticles"){is >> intIn; targetParticles=intIn;}
 		else if(stringIn == "targetError") {is >>doubleIn; targetError = doubleIn;}
 		else if(stringIn == "hitRatioLimit") {is >>doubleIn; hitRatioLimit = doubleIn;}
+		else if(stringIn == "Tmin") {is >>doubleIn; Tmin = doubleIn;}
 
 		else{std::cout <<stringIn <<" not a valid argument." <<std::endl;}
 
@@ -345,9 +347,10 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 	outfile <<"H_vap" <<'\t' <<H_vap <<std::endl;
 	outfile <<"W_tr" <<'\t' <<W_tr <<std::endl;
 
-	outfile <<"targetError " <<targetError <<std::endl;
-	outfile <<"targetParticles " <<targetParticles <<std::endl;
-	outfile <<"hitRatioLimit " <<hitRatioLimit <<std::endl;}
+	outfile <<"targetError" <<'\t' <<targetError <<std::endl;
+	outfile <<"targetParticles" <<'\t' <<targetParticles <<std::endl;
+	outfile <<"hitRatioLimit" <<'\t' <<hitRatioLimit <<std::endl;
+	outfile <<"Tmin" <<Tmin <<'\t' <<std::endl;}
 
 }
 
@@ -376,9 +379,10 @@ void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 	out <<"H_vap" <<'\t' <<H_vap <<std::endl;
 	out <<"W_tr" <<'\t' <<W_tr <<std::endl;
 
-	out <<"targetError " <<targetError <<std::endl;
-	out <<"targetParticles " <<targetParticles <<std::endl;
-	out <<"hitRatioLimit " <<hitRatioLimit <<std::endl;
+	out <<"targetError" <<'\t' <<targetError <<std::endl;
+	out <<"targetParticles" <<'\t' <<targetParticles <<std::endl;
+	out <<"hitRatioLimit" <<'\t' <<hitRatioLimit <<std::endl;
+	out <<"Tmin" <<'\t' <<Tmin <<std::endl;
 
 	out  << "Simulation time " << simulationTime << unit << " converted to " << simulationTimeMS << "ms" << std::endl;
 	out  << "Maximum simulation time " << maxTime << maxUnit << " converted to " << maxTimeS << "s" << std::endl<<std::endl;

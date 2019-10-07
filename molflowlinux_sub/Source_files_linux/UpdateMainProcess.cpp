@@ -32,7 +32,7 @@ extern SimulationHistory* simHistory;
 
 // Step size for intervals
 double getStepSize(){
-	double T_min = 0.0001;//set minimal time resolution to 1E-4 seconds.
+	double T_min = p->Tmin;//set minimal time resolution to 1E-4 seconds.
 	//double T_min = 1;
 	//Dynamical calculation of min_time is not straight forward, since 'manageTimeStep()' can change it.
 	//Dynamical calculation can be done later, if it is regarded as useful.
@@ -372,7 +372,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 		std::cout <<"Total Error "<<error/area <<std::endl;
 		simHistory->errorList.printCurrent(std::cout);
 
-		if(error/area < 1.05*p->targetError) //if errorTarget not reached: donot update currentstep, TODO additional if cov threshold reached
+		if(error/area < /*1.05**/p->targetError) //if errorTarget not reached: donot update currentstep, TODO additional if cov threshold reached
 			{time_step = manageStepSize(true);}
 		else
 			{time_step = manageStepSize(false);}
@@ -429,6 +429,8 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 	}
 	simHistory->coveringList.appendCurrent(simHistory->lastTime+time_step);
 	simHistory->lastTime+=time_step;
+	simHistory->hitList.pointintime_list.back().first=simHistory->lastTime;
+	simHistory->errorList.pointintime_list.back().first=simHistory->lastTime;
 
 	simHistory->stepSize=time_step;
 }
@@ -460,7 +462,7 @@ void UpdateErrorMain(Databuff *hitbuffer_sum){
 	}
 
 	simHistory->errorList.appendCurrent(simHistory->lastTime);
-	simHistory->hitList.pointintime_list.back().first=simHistory->lastTime;
+	//simHistory->hitList.pointintime_list.back().first=simHistory->lastTime;
 
 }
 
@@ -488,9 +490,9 @@ std::tuple<std::vector<double>,std::vector<llong>>  CalcPerIteration(){
 				error+=err*f.sh.area;
 				area+=f.sh.area;
 			}
+		}
 		errorPerIt.push_back(error/area);
 		covPerIt.push_back(covering);
-		}
 	}
 	return std::make_tuple(errorPerIt,covPerIt);
 }

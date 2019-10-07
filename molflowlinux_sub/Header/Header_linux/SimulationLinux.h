@@ -144,12 +144,11 @@ public:
 			for(uint i=0;i<pointintime_list.size();i++)
 			{
 				if(i==0){
-					for(uint j=0; j<pointintime_list[i].second.size();j++)
-							{
+					for(uint j=0; j<pointintime_list[i].second.size();j++){
 						out <<"\t" <<std::setw(6)<<std::right <<"Facet " <<std::setw(8)<<std::right <<j;
-							}
+						}
 
-						out <<"\t" <<std::setw(14)<<std::right<<"Total";
+					out <<"\t" <<std::setw(14)<<std::right<<"Total";
 				}
 				out<<std::endl;
 
@@ -165,7 +164,7 @@ public:
 						out <<"\t" <<std::setw(14)<<std::right <<(double)pointintime_list[i].second[j];
 
 				}
-				out<<"\t"<<std::setw(14)<<std::right<<(double)totalvec[i];
+				out<<"\t"<<std::setw(14)<<std::right<<totalvec[i];
 
 			}
 			out<<std::endl<<std::endl;
@@ -327,6 +326,7 @@ public:
 	double targetError;
 
 	double hitRatioLimit;
+	double Tmin;
 
 	//These cannot be given, but are computed from other variables
 	int simulationTimeMS;
