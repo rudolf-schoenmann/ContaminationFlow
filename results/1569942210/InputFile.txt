@@ -1,0 +1,16 @@
+loadbufferPath	/home/van/Buffer/loadbuffer_F1_200K
+hitbufferPath	/home/van/Buffer/hitbuffer_allee-6
+resultbufferPath	/home/van/MolflowLinux/results/1569942210/resultbuffer
+simulationTime	0.5
+unit	s
+iterationNumber	50
+maxTime	4
+maxUnit	d
+sticking	0
+d	1
+E_de	1.6e-19
+H_vap	8e-20
+W_tr	1
+targetError 0.001
+targetParticles 1000
+hitRatioLimit 5e-06

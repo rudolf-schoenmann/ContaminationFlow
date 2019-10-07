@@ -109,7 +109,7 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 				tmpstream <<std::endl;
 			}
 
-			if(j%(int)(300000/simutime)==0&&j>0){targetError=targetError*1.25; tmpstream<<"    "<<rank<<": increased targetError to "<<targetError<<std::endl;}
+			//if(j%(int)(300000/simutime)==0&&j>0){targetError=targetError*2; tmpstream<<"    "<<rank<<": increased targetError to "<<targetError<<std::endl;}
 			std::cout <<tmpstream.str();
 			p->outFile <<tmpstream.str();
 		}
@@ -228,6 +228,8 @@ ProblemDef::ProblemDef(){
 
 	targetParticles=1000;
 	targetError=0.001;
+	hitRatioLimit=1E-5;
+	Tmin=1E-4;
 }
 
 void ProblemDef::createOutput(int save){
@@ -304,6 +306,8 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 
 		else if(stringIn =="targetParticles"){is >> intIn; targetParticles=intIn;}
 		else if(stringIn == "targetError") {is >>doubleIn; targetError = doubleIn;}
+		else if(stringIn == "hitRatioLimit") {is >>doubleIn; hitRatioLimit = doubleIn;}
+		else if(stringIn == "Tmin") {is >>doubleIn; Tmin = doubleIn;}
 
 		else{std::cout <<stringIn <<" not a valid argument." <<std::endl;}
 
@@ -343,8 +347,10 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 	outfile <<"H_vap" <<'\t' <<H_vap <<std::endl;
 	outfile <<"W_tr" <<'\t' <<W_tr <<std::endl;
 
-	outfile <<"targetError " <<targetError <<std::endl;
-	outfile <<"targetParticles " <<targetParticles <<std::endl;}
+	outfile <<"targetError" <<'\t' <<targetError <<std::endl;
+	outfile <<"targetParticles" <<'\t' <<targetParticles <<std::endl;
+	outfile <<"hitRatioLimit" <<'\t' <<hitRatioLimit <<std::endl;
+	outfile <<"Tmin" <<Tmin <<'\t' <<std::endl;}
 
 }
 
@@ -373,8 +379,10 @@ void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 	out <<"H_vap" <<'\t' <<H_vap <<std::endl;
 	out <<"W_tr" <<'\t' <<W_tr <<std::endl;
 
-	out <<"targetError " <<targetError <<std::endl;
-	out <<"targetParticles " <<targetParticles <<std::endl;
+	out <<"targetError" <<'\t' <<targetError <<std::endl;
+	out <<"targetParticles" <<'\t' <<targetParticles <<std::endl;
+	out <<"hitRatioLimit" <<'\t' <<hitRatioLimit <<std::endl;
+	out <<"Tmin" <<'\t' <<Tmin <<std::endl;
 
 	out  << "Simulation time " << simulationTime << unit << " converted to " << simulationTimeMS << "ms" << std::endl;
 	out  << "Maximum simulation time " << maxTime << maxUnit << " converted to " << maxTimeS << "s" << std::endl<<std::endl;
@@ -498,13 +506,18 @@ void SimulationHistory::appendList(Databuff *hitbuffer, double time){
 }
 
 void SimulationHistory::print(bool write){
-	coveringList.print(std::cout, "Accumulative covering");
+	std::vector<double> errorPerIt;
+	std::vector<llong> covPerIt;
+	std::tie(errorPerIt,covPerIt) = CalcPerIteration();
+
+	coveringList.print(std::cout,covPerIt, "Accumulative covering");
 	hitList.print(std::cout, "Accumulative number hits");
-	errorList.print(std::cout, "Error per iteration");
+
+	errorList.print(std::cout,errorPerIt, "Error per iteration");
 	if(write){
-		coveringList.print(p->outFile, "Accumulative covering");
+		coveringList.print(p->outFile,covPerIt, "Accumulative covering");
 		hitList.print(p->outFile, "Accumulative number hits");
-		errorList.print(p->outFile, "Error per iteration");
+		errorList.print(p->outFile,errorPerIt, "Error per iteration");
 	}
 }
 

@@ -350,8 +350,9 @@ int main(int argc, char *argv[]) {
 			if (rank == 0) {
 
 				//double time_step = estimateTmin_RudiTest(&hitbuffer);
-				UpdateCovering(&hitbuffer_sum);
 				UpdateErrorMain(&hitbuffer_sum);
+				UpdateCovering(&hitbuffer_sum);
+
 				//memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //Not needed, only covering copied in UpdateCoveringPhys
 
 				UpdateCoveringphys(&hitbuffer_sum, &hitbuffer);

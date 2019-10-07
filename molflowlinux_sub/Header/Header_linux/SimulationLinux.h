@@ -135,6 +135,41 @@ public:
 		out<<std::endl<<std::endl;
 	}
 
+	void print(std::ostream& out, std::vector<T> totalvec, std::string msg= ""){
+			out<<std::endl <<msg <<std::endl;
+
+			out <<std::setw(9)<<std::right<<"Iteration\t";
+			out <<std::setw(11)<<std::right<<"Time[s]";
+			out <<std::setw(22)<<std::right<<"Time";
+			for(uint i=0;i<pointintime_list.size();i++)
+			{
+				if(i==0){
+					for(uint j=0; j<pointintime_list[i].second.size();j++){
+						out <<"\t" <<std::setw(6)<<std::right <<"Facet " <<std::setw(8)<<std::right <<j;
+						}
+
+					out <<"\t" <<std::setw(14)<<std::right<<"Total";
+				}
+				out<<std::endl;
+
+				out<<std::setw(9)<<std::right <<i<<"\t";
+				out<<std::setw(11)<<std::right <<pointintime_list[i].first ;
+				out<<std::setw(22)<<std::right <<convertTime(pointintime_list[i].first);
+
+				for(uint j=0; j<pointintime_list[i].second.size();j++)
+				{
+					if(j==pointintime_list[i].second.size()-1)
+						out <<"\t" <<std::setw(14)<<std::right <<pointintime_list[i].second[j];
+					else
+						out <<"\t" <<std::setw(14)<<std::right <<(double)pointintime_list[i].second[j];
+
+				}
+				out<<"\t"<<std::setw(14)<<std::right<<totalvec[i];
+
+			}
+			out<<std::endl<<std::endl;
+		}
+
 	void printCurrent(std::ostream& out, std::string msg= ""){
 		std::ostringstream tmpstream (std::ostringstream::app);
 
@@ -290,6 +325,9 @@ public:
 	int targetParticles;
 	double targetError;
 
+	double hitRatioLimit;
+	double Tmin;
+
 	//These cannot be given, but are computed from other variables
 	int simulationTimeMS;
 	double maxTimeS;
@@ -353,6 +391,8 @@ void UpdateSticking(Databuff *hitbuffer);
 void UpdateDesorptionRate (Databuff *hitbuffer);
 void UpdateSojourn(Databuff *hitbuffer);
 double UpdateError();
+void UpdateErrorSub();
+
 
 void UpdateMCSubHits(Databuff *databuffer, int rank);
 
@@ -373,7 +413,7 @@ void UpdateCovering(Databuff *hitbuffer_sum);
 void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer);
 
 void UpdateErrorMain(Databuff *hitbuffer_sum);
-void UpdateErrorSub();
+std::tuple<std::vector<double>,std::vector<llong>>  CalcPerIteration();
 
 //-----------------------------------------------------------
 //SimulationCalc.cpp

@@ -118,6 +118,10 @@ public:
 	double sticking;       // Sticking (0=>reflection  , 1=>absorption)   - can be overridden by time-dependent parameter
 	double opacity;        // opacity  (0=>transparent , 1=>opaque)
 	double area;           // Facet area (m^2)
+	double effectiveSurfaceFactor;	//
+	double facetDepth;	// in cm
+	double diffusionCoefficient;	//m2/s
+	double concentration;	//kg/cm3
 	//double covering;
 
 	int    profileType;    // Profile type
@@ -223,6 +227,10 @@ public:
 			CEREAL_NVP(sticking),       // Sticking (0=>reflection  , 1=>absorption)   - can be overridden by time-dependent parameter
 			CEREAL_NVP(opacity),        // opacity  (0=>transparent , 1=>opaque)
 			CEREAL_NVP(area),          // Facet area (m^2)
+			//CEREAL_NVP(effectiveSurfaceFactor),          // Effective surface factor
+			//CEREAL_NVP(facetDepth),          // facet depth (cm)
+			//CEREAL_NVP(diffusionCoefficient),          // diffusion coefficient (m2/s)
+			//CEREAL_NVP(concentration),
 
 			CEREAL_NVP(profileType),    // Profile type
 			CEREAL_NVP(superIdx),       // Super structure index (Indexed from 0)
