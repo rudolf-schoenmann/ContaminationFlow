@@ -26,11 +26,14 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "GLApp/MathTools.h"
 #include <math.h>
 #include <assert.h>
+
 // Global handles
 extern Simulation* sHandle; //Declared at molflowlinux_main.cpp
 extern ProblemDef* p;
 
-//get values from buffer/handle
+//-----------------------------------------------------------
+
+//----get values from buffer/handle
 int getFacetIndex(SubprocessFacet *iFacet){ // finds index of facet. index used for CoveringHistory class
 	int idx = 0;
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
@@ -61,6 +64,14 @@ double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number 
 	return facetHitBuffer->hit.nbHitEquiv; //TODO nbMCHit or nbHitEquiv?
 }
 
+llong getnbDesorbed(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number hits from hitbuffer
+	BYTE *buffer;
+	buffer = hitbuffer->buff;
+	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
+
+	return facetHitBuffer->hit.nbDesorbed;
+}
+
 llong getnbDesorbed(Databuff *hitbuffer_sum){
 	BYTE *buffer;
 	buffer = hitbuffer_sum->buff;
@@ -72,7 +83,7 @@ llong getnbDesorbed(Databuff *hitbuffer_sum){
 
 //-----------------------------------------------------------
 
-// calculation of useful intermediate values
+//----calculation of useful intermediate values
 double calcNmono(SubprocessFacet *iFacet){//Calculates the Number of (carbon equivalent) particles of one monolayer
 	return (iFacet->sh.area*1E-4)/(pow(carbondiameter, 2));
 }
@@ -147,20 +158,6 @@ std::tuple<double, double> calctotalParticles_out(Databuff *hitbuffer){
 }
 */
 
-/*
-// Use GetMolecules per TP
-double calcKrealvirt(SubprocessFacet *iFacet, int moment){
-	double desrate, totaldes=0.0;
-	std::tie( desrate,  totaldes)=calctotalDesorption();
-	double timeCorrection = moment == 0 ? (sHandle->wp.finalOutgassingRate+desrate) : (sHandle->wp.totalDesorbedMolecules + totaldes) / sHandle->wp.timeWindowSize;
-	//Hier entspricht jetzt ein einziger Hit der (Ausgas + Desorptions)-Rate!
-	//Rudi: Lass uns den Code von GetMoleculesPerTP nutzen. Dann müssen wir nur noch schauen, wie wir das mit dem globalHitCache machen
-	assert(timeCorrection>0.0);
-	return timeCorrection;
-
-}
-*/
-
 //-----------------------------------------------------------
 // calculation of used values
 
@@ -184,6 +181,7 @@ double GetMoleculesPerTP(Databuff *hitbuffer_sum, llong nbDesorbed_old) // Calcu
 	*/
 	return (sHandle->wp.finalOutgassingRate+desrate) / nbDesorbed;
 	}
+
 /* //Wahrscheinlich brauchen wir das nicht.
 double calcRealCovering(SubprocessFacet *iFacet){
 
@@ -243,12 +241,12 @@ long double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer) {//
 }
 
 double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f){
-	double scaleY = 1.0 / (f->sh.area  /*/(double)PROFILE_SIZE*/*1E-4); //0.01: Pa->mbar
+	double scaleY = 1.0 / (f->sh.area * 1E-4); //0.01: Pa->mbar
 	//TODO is this correct?
 	return scaleY *GetMoleculesPerTP(hitbuffer_sum,0) * f->tmpCounter[0].hit.sum_1_per_ort_velocity;
 }
 
 double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f){
-	double scaleY = 1.0 / (f->sh.area  /*/(double)PROFILE_SIZE*/*1E-4)* sHandle->wp.gasMass / 1000 / 6E23 * 0.0100; //0.01: Pa->mbar;  //1E4 is conversion from m2 to cm2, 0.01: Pa->mbar
+	double scaleY = 1.0 / (f->sh.area  * 1E-4)* sHandle->wp.gasMass / 1000 / 6E23 * 0.0100; //0.01: Pa->mbar;  //1E4 is conversion from m2 to cm2, 0.01: Pa->mbar
 	return f->tmpCounter[0].hit.sum_1_per_ort_velocity*scaleY * GetMoleculesPerTP(hitbuffer_sum,0);
 }

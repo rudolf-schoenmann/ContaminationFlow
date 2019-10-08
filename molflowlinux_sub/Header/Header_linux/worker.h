@@ -21,6 +21,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 /*
  * Reduced Worker class for iterativve algorithm
  */
+
 #pragma once
 
 #include <string>

@@ -37,14 +37,12 @@ extern ProblemDef* p;
 
 // Simulation on subprocess
 std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, int simutime){
-	//target values
+
+	//Calculate target values for error and desorbed particles
 	int targetParticles=p->targetParticles/simHistory->numSubProcess;
 	double targetError=p->targetError*pow(simHistory->numSubProcess,0.5);
-	double i;
-	double totalTime=0.0;
 
-
-	//Replaced consrtuctor with update function
+	//Replaced constructor with update function
 	simHistory->updateHistory(hitbuffer);
 	if(rank==1){
 		std::cout <<std::endl <<"Currentstep: " << simHistory->currentStep <<". Step size: " <<simHistory->stepSize <<std::endl;
@@ -54,20 +52,19 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 		p->outFile <<"Target Particles: " << targetParticles <<". Target Error: " <<targetError <<std::endl <<std::endl;
 	}
 
-	//timesteps
+	//Values for simulation
 	double timestep=1000; // desired length per iteration for simulation, here hardcoded to 1 second
 	double realtimestep; // actual time elapsed for iteration step
-
-
-	// Set end of simulation flag
-	bool eos=false;
+	double i;			// Time elapsed between checking of targets
+	double totalTime=0.0;	//Total simulated time
+	bool eos=false;		// Set end of simulation flag
+	double totalError=1.;//Total error
 
 	// Facets that have reached the covering threshold
 	std::vector<int> facetNum;
 	facetNum =std::vector<int> ();
 
-	//Set error
-	double totalError=1.;
+	//----Simulation
 
 	// Start Simulation = create first particle
 	if(!StartSimulation())
@@ -76,7 +73,6 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 
 	// Run Simulation for timestep milliseconds
 	for(int j=0; !(j>0 && simHistory->nParticles>targetParticles &&(totalError<targetError/*||j>1000*/))&& !eos; j++){
-		//after certain number of itearations, increase target
 
 		for(i=0; i<(double)(simutime) && !eos;i+=realtimestep){
 
@@ -92,54 +88,30 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 				std::tie(eos, realtimestep) = SimulationRun(timestep, hitbuffer);      // Run during timestep ms, performs MC steps
 			}
 
-			//std::cout <<"  Elapsed calculation time for step (substep of one iteration step) for process " <<rank <<": "  <<realtimestep <<"ms" <<std::endl;
-			//p->outFile <<"  Elapsed calculation time for step (substep of one iteration step) for process " <<rank <<": "  <<realtimestep <<"ms" <<std::endl;
 		}
 		totalTime+=i;
 
 		totalError=UpdateError();
 
 		if(j%(int)(30000/simutime)==0 || (simHistory->nParticles>targetParticles && totalError<targetError)|| eos){
+			// Print information every 30s or if target reached
 			std::ostringstream tmpstream (std::ostringstream::app);
 			tmpstream <<"  "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Desorbed particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
 
 			if(totalError>targetError){
 				simHistory->hitList.printCurrent(tmpstream, std::to_string(rank)+": hitlist");
+				simHistory->desorbedList.printCurrent(tmpstream, std::to_string(rank)+": desorbedlist");
 				simHistory->errorList.printCurrent(tmpstream, std::to_string(rank)+": errorlist");
 				tmpstream <<std::endl;
 			}
 
-			//if(j%(int)(300000/simutime)==0&&j>0){targetError=targetError*2; tmpstream<<"    "<<rank<<": increased targetError to "<<targetError<<std::endl;}
 			std::cout <<tmpstream.str();
 			p->outFile <<tmpstream.str();
 		}
-		/*
-		std::cout<<"    Process " <<rank <<": Desorbed particles: "<<simHistory->nParticles <<". Total error: "  <<totalError<<"\t";
-		p->outFile <<"    Process " <<rank <<": Desorbed particles: "<<simHistory->nParticles <<". Total error: "  <<totalError<<"\t";
-		for(unsigned int nf=0;nf<simHistory->numFacet;nf++){
-			std::cout <<"\t" <<simHistory->errorList.getCurrent(nf);
-			p->outFile <<"\t" <<simHistory->errorList.getCurrent(nf);
-		}
-		std::cout <<std::endl<<std::endl;
-		p->outFile <<std::endl<<std::endl;*/
 	}
 
 	// Save simulation results in hitbuffer
 	UpdateMCSubHits(hitbuffer, rank);
-
-
-	// Update quantaties for contamination
-	//UpdateSticking();
-	//estimateTmin();
-	//estimateTmin_RudiTest(hitbuffer);
-
-
-	//Print simHistory example
-	//if(rank==1)
-	//	simHistory->print();
-
-	//std::cout <<simHistory->flightTime <<'\t' <<simHistory->nParticles <<std::endl;
-
 
 	// Find Facets that have reached the covering threshold
 	int num;
@@ -189,9 +161,7 @@ void printConsole(std::string str,std::ofstream outFile){
 	outFile <<str;
 }
 
-
-//ProblemDef class
-
+//----get path of executable
 std::string get_path( )
 {
         char arg1[20];
@@ -202,6 +172,7 @@ std::string get_path( )
         return std::string( exepath );
 }
 
+//----ProblemDef class
 ProblemDef::ProblemDef(){
 	loadbufferPath= "/home/van/Buffer/loadbuffer_alle_RT";
 	hitbufferPath="/home/van/Buffer/hitbuffer_allee-6";
@@ -287,7 +258,7 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 
 		if(stringIn == "loadbufferPath") {if(rank==0) {std::cout <<line <<std::endl;}is >> stringIn; loadbufferPath=stringIn;}
 		else if(stringIn == "hitbufferPath") {is >> stringIn; hitbufferPath=stringIn;}
-		//else if(stringIn=="resultbufferPath"){is >> stringIn; resultbufferPath=stringIn;}
+		//else if(stringIn=="resultbufferPath"){is >> stringIn; resultbufferPath=stringIn;} //deprecated
 		else if(stringIn == "simulationTime") {is >>doubleIn; simulationTime = doubleIn;}
 		else if(stringIn == "unit"){is >> stringIn; unit=stringIn;}
 
@@ -295,11 +266,11 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn == "maxTime") {is >>doubleIn; maxTime = doubleIn;}
 		else if(stringIn == "maxUnit"){is >> stringIn; maxUnit=stringIn;}
 
-		//else if(stringIn =="s2"){is >> doubleIn; s2=doubleIn;}
-		//else if(stringIn =="s1"){is >> doubleIn; s1=doubleIn;}
+		//else if(stringIn =="s2"){is >> doubleIn; s2=doubleIn;} //deprecated
+		//else if(stringIn =="s1"){is >> doubleIn; s1=doubleIn;} //deprecated
 		else if(stringIn =="d"){is >> doubleIn; d=doubleIn;}
 		else if(stringIn =="E_de"){is >> doubleIn; E_de=doubleIn;}
-		//else if(stringIn =="E_ad"){is >> doubleIn; E_ad=doubleIn;}
+		//else if(stringIn =="E_ad"){is >> doubleIn; E_ad=doubleIn;} //deprecated
 		else if(stringIn =="H_vap"){is >> doubleIn; H_vap=doubleIn;}
 		else if(stringIn =="W_tr"){is >> doubleIn; W_tr=doubleIn;}
 		else if(stringIn =="sticking"){is >> doubleIn; sticking=doubleIn;}
@@ -329,7 +300,7 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 
 	outfile <<"loadbufferPath" <<'\t' <<loadbufferPath <<std::endl;
 	outfile <<"hitbufferPath" <<'\t' <<hitbufferPath <<std::endl;
-	outfile <<"resultbufferPath" <<'\t' <<resultbufferPath <<std::endl;
+	//outfile <<"resultbufferPath" <<'\t' <<resultbufferPath <<std::endl; //deprecated
 	outfile <<"simulationTime" <<'\t' <<simulationTime <<std::endl;
 	outfile <<"unit" <<'\t' <<unit <<std::endl;
 
@@ -338,11 +309,11 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 	outfile <<"maxUnit" <<'\t' <<maxUnit <<std::endl;
 
 	outfile <<"sticking" <<'\t' <<sticking<<std::endl;
-	//outfile <<"s1" <<'\t' <<s1<<std::endl;
-	//outfile <<"s2" <<'\t' <<s2<<std::endl;
+	//outfile <<"s1" <<'\t' <<s1<<std::endl; //deprecated
+	//outfile <<"s2" <<'\t' <<s2<<std::endl; //deprecated
 	outfile <<"d" <<'\t' <<d<<std::endl;
 	outfile <<"E_de" <<'\t' <<E_de<<std::endl;
-	//outfile <<"E_ad" <<'\t' <<E_ad<<std::endl;
+	//outfile <<"E_ad" <<'\t' <<E_ad<<std::endl; //deprecated
 
 	outfile <<"H_vap" <<'\t' <<H_vap <<std::endl;
 	outfile <<"W_tr" <<'\t' <<W_tr <<std::endl;
@@ -370,12 +341,12 @@ void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 	out  <<"maxTime" <<'\t' <<maxTime <<std::endl;
 	out  <<"maxUnit" <<'\t' <<maxUnit <<std::endl<<std::endl;
 
-	//out  <<"s1" <<'\t' <<s1<<std::endl;
-	//out  <<"s2" <<'\t' <<s2<<std::endl;
+	//out  <<"s1" <<'\t' <<s1<<std::endl; //deprecated
+	//out  <<"s2" <<'\t' <<s2<<std::endl; //deprecated
 	out <<"sticking" <<'\t' <<sticking <<std::endl;
 	out  <<"d" <<'\t' <<d<<std::endl;
 	out  <<"E_de" <<'\t' <<E_de<<std::endl;
-	//out  <<"E_ad" <<'\t' <<E_ad<<std::endl<<std::endl;
+	//out  <<"E_ad" <<'\t' <<E_ad<<std::endl<<std::endl; //deprecated
 	out <<"H_vap" <<'\t' <<H_vap <<std::endl;
 	out <<"W_tr" <<'\t' <<W_tr <<std::endl;
 
@@ -390,7 +361,7 @@ void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 }
 
 //-----------------------------------------------------------
-//SimulationHistory
+//----SimulationHistory class
 
 SimulationHistory::SimulationHistory(int world_size){
 	numFacet=0;
@@ -405,8 +376,11 @@ SimulationHistory::SimulationHistory(int world_size){
 }
 
 SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
-	std::vector<llong> currentCov;
-	currentCov =std::vector<llong> ();
+	std::vector<boost::multiprecision::uint128_t> currentCov;
+	currentCov =std::vector<boost::multiprecision::uint128_t> ();
+
+	std::vector<llong> currentDes;
+	currentDes =std::vector<llong> ();
 
 	std::vector<double> currentHits;
 	currentHits =std::vector<double> ();
@@ -419,14 +393,18 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 	nbDesorbed_old= getnbDesorbed(hitbuffer);
 
 	double numHit;
-	llong covering;
+	llong numDes;
+	boost::multiprecision::uint128_t covering;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				covering = getCovering(&f, hitbuffer);
+				covering = boost::multiprecision::uint128_t(getCovering(&f, hitbuffer));
 				numHit=getHits(&f, hitbuffer);
+				numDes=getnbDesorbed(&f, hitbuffer);
+
 				currentCov.push_back(covering);
 				currentHits.push_back(numHit);
-				f.tmpCounter[0].hit.covering=covering;
+				currentDes.push_back(numDes);
+				f.tmpCounter[0].hit.covering=(llong)covering;
 				numFacet+=1;
 			}
 	}
@@ -435,22 +413,26 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 	coveringList.initCurrent(numFacet);
 	hitList.appendList(currentHits, 0);
 	hitList.initCurrent(numFacet);
+	desorbedList.appendList(currentDes, 0);
+	desorbedList.initCurrent(numFacet);
 	errorList.initCurrent(numFacet);
 	errorList.appendCurrent(0.0);
+
 	currentStep=0;
 	stepSize=0.0;
-	//currentStepSizeFactor=1.0;
-	//StepSizeComputationTimeFactor=0.0;
 
 	numSubProcess=world_size-1;
 
 }
 
 void SimulationHistory::updateHistory(Databuff *hitbuffer){
-	std::vector<llong> currentCov;
-	currentCov =std::vector<llong> ();
+	std::vector<boost::multiprecision::uint128_t> currentCov;
+	currentCov =std::vector<boost::multiprecision::uint128_t> ();
 	std::vector<double> currentHits;
 	currentHits =std::vector<double> ();
+	std::vector<llong> currentDes;
+	currentDes =std::vector<llong> ();
+
 	numFacet=0;
 	nParticles=0;
 	flightTime=0.0;
@@ -459,14 +441,18 @@ void SimulationHistory::updateHistory(Databuff *hitbuffer){
 	nbDesorbed_old= getnbDesorbed(hitbuffer);
 
 	double numHit;
-	llong covering;
+	llong numDes;
+	boost::multiprecision::uint128_t covering;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				covering = getCovering(&f, hitbuffer);
+				covering = boost::multiprecision::uint128_t(getCovering(&f, hitbuffer));
 				numHit=getHits(&f, hitbuffer);
+				numDes=getnbDesorbed(&f, hitbuffer);
+
 				currentCov.push_back(covering);
 				currentHits.push_back(numHit);
-				f.tmpCounter[0].hit.covering=covering;
+				currentDes.push_back(numDes);
+				f.tmpCounter[0].hit.covering=(llong)covering;
 				numFacet+=1;
 			}
 	}
@@ -476,6 +462,9 @@ void SimulationHistory::updateHistory(Databuff *hitbuffer){
 	hitList.reset();
 	hitList.appendList(currentHits, 0);
 	hitList.initCurrent(numFacet);
+	desorbedList.reset();
+	desorbedList.appendList(currentDes, 0);
+	desorbedList.initCurrent(numFacet);
 	errorList.reset();
 	errorList.initCurrent(numFacet);
 
@@ -485,20 +474,18 @@ void SimulationHistory::updateHistory(Databuff *hitbuffer){
 
 void SimulationHistory::appendList(Databuff *hitbuffer, double time){
 
-	std::vector<llong> currentCov;
-	currentCov =std::vector<llong> ();
+	std::vector<boost::multiprecision::uint128_t> currentCov;
+	currentCov =std::vector<boost::multiprecision::uint128_t> ();
 
 	if(time==-1.0) //One step
 		time=coveringList.pointintime_list.back().first+1.0;
 
-	llong covering;
+	boost::multiprecision::uint128_t covering;
 
-	//int i=0;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			covering=getCovering(&f, hitbuffer);
+			covering=boost::multiprecision::uint128_t(getCovering(&f, hitbuffer));
 			currentCov.push_back(covering);
-			//i+=1;
 		}
 	}
 	coveringList.appendList(currentCov, time);
@@ -507,16 +494,18 @@ void SimulationHistory::appendList(Databuff *hitbuffer, double time){
 
 void SimulationHistory::print(bool write){
 	std::vector<double> errorPerIt;
-	std::vector<llong> covPerIt;
+	std::vector<boost::multiprecision::uint128_t> covPerIt;
 	std::tie(errorPerIt,covPerIt) = CalcPerIteration();
 
 	coveringList.print(std::cout,covPerIt, "Accumulative covering");
 	hitList.print(std::cout, "Accumulative number hits");
-
+	desorbedList.print(std::cout, "Accumulative number desorbed");
 	errorList.print(std::cout,errorPerIt, "Error per iteration");
+
 	if(write){
 		coveringList.print(p->outFile,covPerIt, "Accumulative covering");
 		hitList.print(p->outFile, "Accumulative number hits");
+		desorbedList.print(p->outFile, "Accumulative number desorbed");
 		errorList.print(p->outFile,errorPerIt, "Error per iteration");
 	}
 }

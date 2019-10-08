@@ -33,7 +33,7 @@ extern SimulationHistory* simHistory;
 // Step size for intervals
 double getStepSize(){
 	double T_min = p->Tmin;//set minimal time resolution to 1E-4 seconds.
-	//double T_min = 1;
+
 	//Dynamical calculation of min_time is not straight forward, since 'manageTimeStep()' can change it.
 	//Dynamical calculation can be done later, if it is regarded as useful.
 	double t_start = T_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/(T_min))/(double)p->iterationNumber));
@@ -91,13 +91,13 @@ double manageStepSize(bool updateCurrentStep){
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			if(f.sh.desorption==0||f.sh.temperature==0)continue;
 
-			llong covering_phys = simHistory->coveringList.getLast(&f);
+			boost::multiprecision::uint128_t covering_phys = simHistory->coveringList.getLast(&f);
 			//llong covering_sum = getCovering(&f, hitbuffer);
 
-			if ((llong)((f.sh.desorption/(kb* f.sh.temperature))*step_size)>covering_phys){
+			if ((boost::multiprecision::uint128_t)((f.sh.desorption/(kb* f.sh.temperature))*step_size)>covering_phys){
 
-				long double test_size=(long double)covering_phys/((long double)f.sh.desorption/(kb* f.sh.temperature));
-				step_size=0.9*(double)test_size;
+				boost::multiprecision::float128 test_size=boost::multiprecision::float128(covering_phys)/boost::multiprecision::float128(f.sh.desorption/(kb* f.sh.temperature));
+				step_size=0.9*test_size.convert_to<double>();
 				//std::cout <<"Desorption * step_size " <<(llong)(f.sh.desorption*step_size) <<std::endl;
 				//std::cout <<"Covering " <<covering_phys <<std::endl;
 				//std::cout<<"Decreased Tmin: "<<step_size <<std::endl;
@@ -124,9 +124,9 @@ double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
 	double stepSize=getStepSize();
 	bool incrCurrentStep=false;
 
-	llong covering_phys;
-	llong covering_sum;
-	long double covering_check;
+	boost::multiprecision::uint128_t covering_phys;
+	boost::multiprecision::uint128_t covering_sum;
+	boost::multiprecision::float128 covering_check;
 
 	//double	covering_diff, covering_diff_min = 0;
 	//llong facet_count_1 = 0;
@@ -208,14 +208,15 @@ double manageTimeStep(Databuff *hitbuffer_sum, double Krealvirt){
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 					covering_phys = simHistory->coveringList.getLast(&f);
-					covering_sum = getCovering(&f, hitbuffer_sum);
+					covering_sum = static_cast<boost::multiprecision::uint128_t>(getCovering(&f, hitbuffer_sum));
 
 					if (covering_sum < covering_phys){
 
-						covering_check = (long double)(covering_phys - (covering_phys - covering_sum)*(long double)(Krealvirt*test_time_step));
+						covering_check = boost::multiprecision::float128(covering_phys) - boost::multiprecision::float128(covering_phys - covering_sum)*boost::multiprecision::float128(Krealvirt*test_time_step);
 
 						if(covering_check<0.0){
-							test_time_step=0.2*(double)((long double)(covering_phys/((covering_phys - covering_sum)*(long double)Krealvirt)));//0.05 (decreasing multiplier) is a trade off between fast convergence and small oscillations
+							boost::multiprecision::float128 tmp_step=boost::multiprecision::float128(covering_phys)/(boost::multiprecision::float128(covering_phys - covering_sum)*boost::multiprecision::float128(Krealvirt));
+							test_time_step=0.2*tmp_step.convert_to<double>();//0.05 (decreasing multiplier) is a trade off between fast convergence and small oscillations
 							//decreased_time_step = true;
 							std::cout<<"Decreased Tmin: "<<test_time_step <<std::endl;
 							p->outFile<<"Decreased Tmin: "<<test_time_step <<std::endl;
@@ -335,25 +336,22 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 	//Then the physical values are stored in the hitbuffer.
 	//simTime in ms
 
-	//bool adaptStep=false;
-
 	double Krealvirt = GetMoleculesPerTP(hitbuffer_sum, simHistory->nbDesorbed_old);
 	llong nbDesorbed = getnbDesorbed(hitbuffer_sum)-simHistory->nbDesorbed_old;
 	//std::cout <<"nbDesorbed before and after:\t" << history->nbDesorbed_old <<'\t';
 	simHistory->nbDesorbed_old = getnbDesorbed(hitbuffer_sum);
 	//std::cout << history->nbDesorbed_old <<std::endl;
 
-	llong covering_phys;
-	llong covering_sum;
-	double covering_check;
-	//BYTE *buffer_sum;
-	//buffer_sum = hitbuffer_sum->buff;
+	boost::multiprecision::uint128_t covering_phys;
+	boost::multiprecision::uint128_t covering_sum;
+	boost::multiprecision::float128 covering_check;
+
 
 	//std::cout << "Tmin = " << estimateAverageFlightTime() << " s."<< std::endl;
 	//p->outFile << "Tmin = " << estimateAverageFlightTime() << " s."<< std::endl;
-	//double time_step = manageTimeStep(hitbuffer_sum,  Krealvirt);//old version
+
 	double time_step;
-	if(Krealvirt==0){ //if no Krealvirt(no desorption), increase currentStep, time_step=0
+	if(Krealvirt==0){ //if no Krealvirt(no desorption), do not increase currentStep, time_step=0
 		time_step=0;
 	}
 	else{
@@ -369,16 +367,16 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 				area+=f.sh.area;
 			}
 		}
+		// Print total error and error per facet of this iteration
 		std::cout <<"Total Error "<<error/area <<std::endl;
 		simHistory->errorList.printCurrent(std::cout);
 
-		if(error/area < /*1.05**/p->targetError) //if errorTarget not reached: donot update currentstep, TODO additional if cov threshold reached
+		//if targetError not reached: do not update currentstep
+		if(error/area < /*1.05**/p->targetError)
 			{time_step = manageStepSize(true);}
 		else
 			{time_step = manageStepSize(false);}
 	}
-
-
 
 	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
 	std::cout << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*time_step << std::endl;
@@ -389,48 +387,51 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-				//FacetHitBuffer *facetHitBuffer_sum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
+
 				covering_phys = simHistory->coveringList.getLast(&f);
-				covering_sum = getCovering(&f, hitbuffer_sum);
+				covering_sum = boost::multiprecision::uint128_t(getCovering(&f, hitbuffer_sum));
 
 				std::cout<<std::endl << "Facet " << getFacetIndex(&f)<< std::endl;
-				std::cout << "covering_sum = " << covering_sum  << " = "<< (long double)(covering_sum) << std::endl;
-				std::cout<< "covering_phys_before = " << covering_phys << " = "<< (long double)(covering_phys) << std::endl;
+				std::cout << "covering_sum = " << covering_sum  << " = "<< boost::multiprecision::float128(covering_sum) << std::endl;
+				std::cout<< "covering_phys_before = " << covering_phys << " = "<< boost::multiprecision::float128(covering_phys) << std::endl;
 
 				p->outFile<<std::endl << "Facet " << getFacetIndex(&f) << std::endl;
-				p->outFile<< "covering_sum = " << covering_sum  << " = "<< (long double)(covering_sum) << std::endl;
-				p->outFile<< "covering_phys_before = " << covering_phys << " = "<< (long double)(covering_phys) << std::endl;
+				p->outFile<< "covering_sum = " << covering_sum  << " = "<< boost::multiprecision::float128(covering_sum) << std::endl;
+				p->outFile<< "covering_phys_before = " << covering_phys << " = "<< boost::multiprecision::float128(covering_phys) << std::endl;
 
 				if (covering_sum > covering_phys){
-					llong covering_delta = static_cast < llong > ((covering_sum - covering_phys)*Krealvirt*time_step);
+					//+0.5 for rounding
+					boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (boost::multiprecision::float128(0.5) + boost::multiprecision::float128(covering_sum - covering_phys)*boost::multiprecision::float128(Krealvirt*time_step));
 					covering_phys += covering_delta;
-					std::cout << "covering rises by " <<covering_delta << " = "<<(long double)(covering_delta) << std::endl;
-					p->outFile << "covering rises by " <<covering_delta << " = "<<(long double)(covering_delta) << std::endl;
+					std::cout << "covering rises by " <<covering_delta << " = "<<boost::multiprecision::float128(covering_delta) << std::endl;
+					p->outFile << "covering rises by " <<covering_delta << " = "<<boost::multiprecision::float128(covering_delta) << std::endl;
 				}
 				else{
-					llong covering_delta = static_cast < llong > ((covering_phys - covering_sum)*Krealvirt*time_step);
+					//+0.5 for rounding
+					boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (boost::multiprecision::float128(0.5) + boost::multiprecision::float128(covering_phys - covering_sum)*boost::multiprecision::float128(Krealvirt*time_step));
 					if(covering_phys<covering_delta){
 						std::cout<<"!!!-----Covering gets negative: "<<covering_phys<<" - "<<covering_delta <<"-----!!!"<<std::endl;
 						p->outFile<<"!!!-----Covering gets negative: "<<covering_phys<<" - "<<covering_delta <<"-----!!!"<<std::endl;
 					}
 
 					covering_phys -= covering_delta;
-					std::cout << "covering decreases by "<<covering_delta << " = " << (long double)(covering_delta) << std::endl;
-					p->outFile << "covering decreases by "<<covering_delta << " = " << (long double)(covering_delta) << std::endl;
+					std::cout << "covering decreases by "<<covering_delta << " = " << boost::multiprecision::float128(covering_delta) << std::endl;
+					p->outFile << "covering decreases by "<<covering_delta << " = " << boost::multiprecision::float128(covering_delta) << std::endl;
 
 				}
-				std::cout<< "covering_phys_after = " << covering_phys << " = " << (long double)(covering_phys) << std::endl;
-				std::cout<< "coveringThreshhold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << " = " << (long double)(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
-				p->outFile<< "covering_phys_after = " << covering_phys << " = " << (long double)(covering_phys) << std::endl;
-				p->outFile<< "coveringThreshhold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << " = " << (long double)(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
+				std::cout<< "covering_phys_after = " << covering_phys << " = " << boost::multiprecision::float128(covering_phys) << std::endl;
+				std::cout<< "coveringThreshhold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << " = " << boost::multiprecision::float128(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
+				p->outFile<< "covering_phys_after = " << covering_phys << " = " << boost::multiprecision::float128(covering_phys) << std::endl;
+				p->outFile<< "coveringThreshhold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << " = " << boost::multiprecision::float128(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
 
 				simHistory->coveringList.setCurrentList(&f, covering_phys);
 		}
 	}
 	simHistory->coveringList.appendCurrent(simHistory->lastTime+time_step);
 	simHistory->lastTime+=time_step;
-	simHistory->hitList.pointintime_list.back().first=simHistory->lastTime;
-	simHistory->errorList.pointintime_list.back().first=simHistory->lastTime;
+	simHistory->hitList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+	simHistory->errorList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+	simHistory->desorbedList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 
 	simHistory->stepSize=time_step;
 }
@@ -438,45 +439,50 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 void UpdateErrorMain(Databuff *hitbuffer_sum){
 
 	double num_hit_it=0;
-	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) { //save current num total hits in currentList, add difference current-old to num_hit_it
+
+	//save current num total hits in currentList, add difference current-old to num_hit_it
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			num_hit_it+=f.sh.opacity * (getHits(&f,hitbuffer_sum)-simHistory->hitList.getLast(&f));
+			num_hit_it+=f.sh.opacity * (getHits(&f,hitbuffer_sum)-simHistory->hitList.getLast(&f) + getnbDesorbed(&f, hitbuffer_sum) - simHistory->desorbedList.getLast(&f));
 		}
 	}
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			double num_hit_f=f.sh.opacity * ( getHits(&f,hitbuffer_sum)-simHistory->hitList.getLast(&f));
+			double num_hit_f=f.sh.opacity * ( getHits(&f,hitbuffer_sum)-simHistory->hitList.getLast(&f) + getnbDesorbed(&f, hitbuffer_sum) - simHistory->desorbedList.getLast(&f));
 
-			if(num_hit_f/num_hit_it<p->hitRatioLimit){//random threshold, can be adapted
-				num_hit_it-=num_hit_f; //also adapt facet counters??
+			if(num_hit_f/num_hit_it<p->hitRatioLimit){// threshold. If reached, small number of hits neglected
+				num_hit_it-=num_hit_f; //TODO also adapt facet counters??
 				num_hit_f=0;
 			}
 
-			if(f.sh.opacity==0){simHistory->errorList.setCurrentList(&f, 0.0);} //TODO correct ig num_hit_f ==0?
+			if(f.sh.opacity==0){simHistory->errorList.setCurrentList(&f, 0.0);}
 			else{
 				double error=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
 				simHistory->errorList.setCurrentList(&f, error);
 			}
 			simHistory->hitList.setLast(&f,getHits(&f,hitbuffer_sum));
+			simHistory->desorbedList.setLast(&f,getnbDesorbed(&f,hitbuffer_sum));
 		}
 	}
 
 	simHistory->errorList.appendCurrent(simHistory->lastTime);
-	//simHistory->hitList.pointintime_list.back().first=simHistory->lastTime;
+	//simHistory->hitList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
+	//simHistory->desorbedList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
 
 }
 
-std::tuple<std::vector<double>,std::vector<llong>>  CalcPerIteration(){
+std::tuple<std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  CalcPerIteration(){
 	std::vector<double> errorPerIt;
 	errorPerIt =std::vector<double> ();
 
-	std::vector<llong> covPerIt;
-	covPerIt =std::vector<llong> ();
+	std::vector<boost::multiprecision::uint128_t> covPerIt;
+	covPerIt =std::vector<boost::multiprecision::uint128_t> ();
 
 	for(int it=0; it<simHistory->errorList.pointintime_list.size();it++){
+		// Total error/covering for each iteration
 		double error=0.0;
 		double area=0.0;
-		llong covering=0;
+		boost::multiprecision::uint128_t covering=0;
 
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
@@ -499,7 +505,7 @@ std::tuple<std::vector<double>,std::vector<llong>>  CalcPerIteration(){
 
 // Copy covering to buffer
 void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
-	llong covering_phys;
+	boost::multiprecision::uint128_t covering_phys;
 	BYTE *buffer_sum;
 	buffer_sum = hitbuffer_sum->buff;
 
@@ -511,8 +517,8 @@ void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
 				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
 				FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
 				covering_phys = simHistory->coveringList.getLast(&f);
-				facetHitBuffer->hit.covering=covering_phys;
-				facetHitSum->hit.covering=covering_phys;
+				facetHitBuffer->hit.covering=covering_phys.convert_to<llong>();
+				facetHitSum->hit.covering=covering_phys.convert_to<llong>();
 			}
 	}
 
@@ -981,7 +987,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) { // Add hits
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 					FacetHitBuffer *facetHitSub = (FacetHitBuffer *)(subbuff + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
-					llong covering_phys=history->coveringList.getLast(&f);
+					llong covering_phys= history->coveringList.getLast(&f).convert_to<llong>();
 					llong covering_sum = facetHitSub->hit.covering;
 /*
 					std::cout <<sizeof(GlobalHitBuffer) <<std::endl;

@@ -88,13 +88,6 @@ bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 //Main Function
 int main(int argc, char *argv[]) {
 
-	/*
-	double a;
-	long double b;
-	std::cout << "sizeof a double is  " << sizeof(a) << std::endl;
-	std::cout << "sizeof a long double is  " << sizeof(b) << std::endl;
-	*/
-
 	// Initialise data buffers
 	Databuff hitbuffer; //Hitbuffer for the data of the subprocesses
 	hitbuffer.buff=NULL;
@@ -108,9 +101,8 @@ int main(int argc, char *argv[]) {
 	Databuff loadbuffer; //Loadbuffer to read in data of geometry and physical parameters
 	loadbuffer.buff=NULL;
 
-	//double t0,t1;
-
-	//llong nbDesorbed_old; //test: nbDesorbed of previous iteration, used so that hitbuffer_sum does not have to be reset -> true final hitbuffer, added to simhistory
+	double t0,t1;
+	double computedTime=0.0;
 
 
 	/* Create child processes, each of which has its own variables.
@@ -160,13 +152,6 @@ int main(int argc, char *argv[]) {
 		importBuff(p->loadbufferPath,&loadbuffer);
 		importBuff(p->hitbufferPath,&hitbuffer);
 
-		/*
-		 * show informations about the loading
-		 * just interesting for debugging => build some conditional (if debug, then show)?
-		 * leave out or put in function?*/
-		//std::cout << "size of " << p->hitbufferPath << " = " << hitbuffer.size << std::endl;
-		//std::cout << "size of " << p->loadbufferPath << " = " << loadbuffer.size << std::endl;
-
 		std::cout << "Buffers sent. Wait for a few seconds. " << std::endl;
 	}
 
@@ -192,17 +177,6 @@ int main(int argc, char *argv[]) {
 		hitbuffer.buff = new BYTE[hitbuffer.size];
 	}
 
-	/*Generell könnte man überlegen, dass man der Übersichtlichkeit halber vor der Iterationsschleife alles für die Simulation
-	vorbereitet.
-	1)Hitbuffer einlesen (Prozess 0)
-	2)Loadbuffer einlesen (Prozess 0)
-	3)SimulationHandle kreieren (Prozess 0)
-	4)CounterResetfunktion für Hitbuffer anwenden (Prozess 0)
-	5)Hitbuffer kopieren: Hitbuffer_sum und Hitbuffer_phys (Prozess 0)
-	6)Hitbuffer und Loadbuffer an alle Subprozesse schicken
-	7)SimulationHandle in allen Subrozessen kreieren
-	8)Jetzt sind alle Subprozesse bereit zum Starten. Dann kann die Schleife durchlaufen werden oder später ein klügerer Algorithmus.
-	*/
 //----create Simulation handle and preprocess hitbuffer
 	if (p->simulationTimeMS != 0) {
 		//Creates sHandle instance for process 0 and all subprocesses (before the first iteration step starts)
@@ -217,7 +191,7 @@ int main(int argc, char *argv[]) {
 		initCoveringThresh();
 		if(rank==0){ // hitbuffer_sum and histphys
 			//Save copies of the original loaded hitbuffer
-			//These copise will be used in process 0. The hitbuffers of all subprocesses will be add up and written in the hitbuffer_sum
+			//These copies will be used in process 0. The hitbuffers of all subprocesses will be add up and written in the hitbuffer_sum
 			//and then converted in the hitbuffer_phys
 
 
@@ -231,7 +205,6 @@ int main(int argc, char *argv[]) {
 
 			simHistory = new SimulationHistory (&hitbuffer, world_size);
 			//TODO: maybe add possibility of covering.txt file input
-			//simHistory->nbDesorbed_old = getnbDesorbed(&hitbuffer_sum); // added to constructor
 			initbufftozero(&hitbuffer);
 		}
 		else{
@@ -240,10 +213,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-//for loop to let the simulation run 'iterationNumber' times
-//will be replaced later by the time dependent mode to calculate the prediction of contamination
-	//int iterationNumber = 43200;
-	//for(int it=0;it<p->iterationNumber;it++){
+//----Simulation
 	int it = -1;
 	while(true){
 		it++;
@@ -267,9 +237,7 @@ int main(int argc, char *argv[]) {
 
 			MPI_Barrier(MPI_COMM_WORLD);
 
-			//Options: devide covering though (size-1) or keep covering and end simulation step at threshold (covering -covering/(size-1))
-			//-> difference in desorption and sticking
-			// currently 2nd ideo implemented as otherwise covering check is negative (-> adapt coveringphys?)
+			//End simulation step if covering reaches threshold (covering -covering/(size-1))
 			setCoveringThreshold(&hitbuffer, world_size, rank);
 
 			UpdateSticking(&hitbuffer);
@@ -298,14 +266,12 @@ int main(int argc, char *argv[]) {
 					p->outFile << "Simulation for process " << rank << " for iteration " << it << " finished."<< std::endl;
 				}
 			}
-			else{/*
-				std::cout <<"Wait for "<< p->simulationTime<<p->unit << std::endl;
-				p->outFile <<"Wait for "<< p->simulationTime <<p->unit << std::endl;*/
-				//record time needed
-
-				//t0 = GetTick();
+			else{
+				t0 = GetTick();
 				MPI_Barrier(MPI_COMM_WORLD);
-				//t1 = GetTick();
+				t1 = GetTick();
+				computedTime+=t1-t0;
+
 			}
 
 			//----iteratively add hitbuffer from subprocesses
@@ -321,13 +287,13 @@ int main(int argc, char *argv[]) {
 				} else if (rank == 0) {
 					//Process 0 receives hitbuffer from Process i
 					MPI_Recv(hitbuffer.buff, hitbuffer.size, MPI::BYTE, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-					//sleep(1);
 
-					//UpdateMCMainHits(&hitbuffer_sum, &hitbuffer, &hitbuffer_phys, 0);
 					UpdateMCMainHits(&hitbuffer_sum, &hitbuffer, simHistory ,0);
 					std::cout << "Updated hitbuffer with process " << i <<std::endl;
 					p->outFile << "Updated hitbuffer with process " << i <<std::endl;
 
+
+					// Calc flightTime and nParticles over all subprocesses -> still needed?
 					double old_flightTime=simHistory->flightTime;
 					int old_nParticles = simHistory->nParticles; //reset in UpdateCoveringPhys
 					MPI_Recv(&simHistory->flightTime, 1, MPI::DOUBLE, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -349,11 +315,8 @@ int main(int argc, char *argv[]) {
 			//----Update covering
 			if (rank == 0) {
 
-				//double time_step = estimateTmin_RudiTest(&hitbuffer);
-				UpdateErrorMain(&hitbuffer_sum);
+				UpdateErrorMain(&hitbuffer_sum); // !! If order changes, adapt "time" entry in errorList !!
 				UpdateCovering(&hitbuffer_sum);
-
-				//memcpy(hitbuffer.buff,hitbuffer_sum.buff,hitbuffer_sum.size); //Not needed, only covering copied in UpdateCoveringPhys
 
 				UpdateCoveringphys(&hitbuffer_sum, &hitbuffer);
 				simHistory->coveringList.print(std::cout, "Accumulative covering after iteration "+std::to_string(it));
@@ -362,12 +325,14 @@ int main(int argc, char *argv[]) {
 				//simHistory->hitList.print(std::cout,"Accumulative number hits after iteration "+std::to_string(it));
 				//simHistory->hitList.print(p->outFile,"Accumulative number hits after iteration "+std::to_string(it));
 
+				//simHistory->desorbedList.print(std::cout,"Accumulative number desorbed after iteration "+std::to_string(it));
+				//simHistory->desorbedList.print(p->outFile,"Accumulative number desorbed after iteration "+std::to_string(it));
+
 				//simHistory->errorList.print(std::cout,"Error after iteration "+std::to_string(it));
 				//simHistory->errorList.print(p->outFile,"Error after iteration "+std::to_string(it));
 
 			}
 
-			//UpdateDesorptionRate(&hitbuffer);//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes //already doing this at beginning of iteration
 			if (rank == 0) {std::cout << "ending iteration " << it <<std::endl;}
 
 			MPI_Barrier(MPI_COMM_WORLD);
@@ -376,7 +341,10 @@ int main(int argc, char *argv[]) {
 			if((int)(simHistory->lastTime+0.5) >= p->maxTimeS){
 				if(rank==0) {
 					std::cout <<"maximum simulation time reached: " <<simHistory->lastTime  <<" >= " <<p->maxTimeS <<std::endl;
-					p->outFile <<"maximum simulation time reached: " <<simHistory->lastTime  <<" >= " <<p->maxTimeS <<std::endl;}
+					p->outFile <<"maximum simulation time reached: " <<simHistory->lastTime  <<" >= " <<p->maxTimeS <<std::endl;
+					std::cout <<"Computation Time (Simulation only): " <<computedTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computedTime/1000.0) <<std::endl;
+					p->outFile <<"Computation Time (Simulation only): " <<computedTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computedTime/1000.0) <<std::endl;
+				}
 				break;
 			}
 

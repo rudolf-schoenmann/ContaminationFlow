@@ -1,0 +1,16 @@
+loadbufferPath	/home/van/Buffer/loadbuffer_alle_RT
+hitbufferPath	/home/van/Buffer/hitbuffer_0102
+simulationTime	0.5
+unit	s
+iterationNumber	50
+maxTime	4
+maxUnit	d
+sticking	0
+d	1
+E_de	1.6e-19
+H_vap	8e-20
+W_tr	1
+targetError	0.001
+targetParticles	1000
+hitRatioLimit	5e-06
+Tmin0.0001	

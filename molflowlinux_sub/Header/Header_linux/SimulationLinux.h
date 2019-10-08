@@ -27,6 +27,8 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/float128.hpp>
 
 static const char *year[]={"Years","years","Year","year","Yr","yr","Y","y"};
 static const char *month[]={"Months","months","Month","month","Mth","mth","mo","Mo"};
@@ -57,7 +59,7 @@ public:
 
 	void initCurrent(unsigned int numFacet){
 		for(unsigned int i=0; i<numFacet; i++){
-			currentList.push_back(0.0);
+			currentList.push_back(0);
 		}
 	}
 
@@ -127,7 +129,7 @@ public:
 
 			for(uint j=0; j<pointintime_list[i].second.size();j++)
 			{
-				out <<"\t" <<std::setw(14)<<std::right <<(double)pointintime_list[i].second[j];
+				out <<"\t" <<std::setw(14)<<std::right <<boost::multiprecision::float128(pointintime_list[i].second[j]);
 
 			}
 
@@ -161,7 +163,7 @@ public:
 					if(j==pointintime_list[i].second.size()-1)
 						out <<"\t" <<std::setw(14)<<std::right <<pointintime_list[i].second[j];
 					else
-						out <<"\t" <<std::setw(14)<<std::right <<(double)pointintime_list[i].second[j];
+						out <<"\t" <<std::setw(14)<<std::right <<boost::multiprecision::float128(pointintime_list[i].second[j]);
 
 				}
 				out<<"\t"<<std::setw(14)<<std::right<<totalvec[i];
@@ -177,16 +179,14 @@ public:
 
 		for(uint i=0;i<currentList.size();i++)
 		{
-				//std::cout <<"\t\t" <<pointintime_list[i].second[j];
-			tmpstream <<"\t" <<std::setw(12)<<std::right <<(double)currentList[i];
-
+			tmpstream <<"\t" <<std::setw(12)<<std::right <<boost::multiprecision::float128(currentList[i]);
 		}
 		tmpstream<<std::endl;
 		out<<tmpstream.str();
 	}
 
 	void write(std::string filename){
-		//std::string write = "/home/van/history"+std::to_string(num)+".txt";
+
 		std::ofstream out(filename,std::ofstream::out|std::ios::trunc);
 
 		out <<std::setw(9)<<std::right<<"Iteration\t";
@@ -218,8 +218,6 @@ public:
 	}
 	void read(std::string filename, Databuff *hitbuffer, Simulation *sHandle){//Rudi: Not ready yet.
 		pointintime_list.clear();
-		//pointintime_list_read.clear();
-		//std::string read = "/home/van/history"+std::to_string(num)+".txt";
 		std::string line;
 
 		std::ifstream input(filename,std::ifstream::in);
@@ -273,6 +271,7 @@ public:
 		pointintime_list.push_back(std::make_pair(time,tempvec));
 
 	}*/
+
 	//void setCurrent(SubprocessFacet *iFacet, T newValue){int covidx = getFacetIndex(iFacet);	pointintime_list.back().second[covidx]=newValue;}
 	void setCurrentList(SubprocessFacet *iFacet, T newValue){int covidx = getFacetIndex(iFacet);	currentList[covidx]=newValue;}
 	T getLast(int idx){return pointintime_list.back().second[idx];}
@@ -337,11 +336,10 @@ class SimulationHistory{
 public:
 	SimulationHistory(int);
 	SimulationHistory(Databuff *hitbuffer,int);
-	//std::vector< std::pair<double,std::vector<llong>> > pointintime_list;
-	//std::vector< std::pair<double,std::vector<double>> > pointintime_list_read;
 
-	HistoryList<llong> coveringList;
+	HistoryList<boost::multiprecision::uint128_t> coveringList;
 	HistoryList<double> hitList;
+	HistoryList<llong> desorbedList;
 	HistoryList<double> errorList;
 
 
@@ -413,12 +411,13 @@ void UpdateCovering(Databuff *hitbuffer_sum);
 void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer);
 
 void UpdateErrorMain(Databuff *hitbuffer_sum);
-std::tuple<std::vector<double>,std::vector<llong>>  CalcPerIteration();
+std::tuple<std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  CalcPerIteration();
 
 //-----------------------------------------------------------
 //SimulationCalc.cpp
 
 llong getnbDesorbed(Databuff *hitbuffer_sum);
+llong getnbDesorbed(SubprocessFacet *iFacet, Databuff *hitbuffer);
 llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
 double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer);
 
