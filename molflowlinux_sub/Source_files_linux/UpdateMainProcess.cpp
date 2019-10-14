@@ -91,19 +91,32 @@ double manageStepSize(bool updateCurrentStep){
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			if(f.sh.desorption==0||f.sh.temperature==0)continue;
 
+			int sizeList=simHistory->coveringList.pointintime_list.size();
 			boost::multiprecision::uint128_t covering_phys = simHistory->coveringList.getLast(&f);
-			//llong covering_sum = getCovering(&f, hitbuffer);
+			boost::multiprecision::uint128_t covering_phys_before = simHistory->coveringList.pointintime_list[sizeList-2].second[getFacetIndex(&f)];
 
-			if ((boost::multiprecision::uint128_t)((f.sh.desorption/(kb* f.sh.temperature))*step_size)>covering_phys){
+			if ((boost::multiprecision::uint128_t)((f.sh.desorption/(kb* f.sh.temperature))*step_size +0.5)>covering_phys){
 
 				boost::multiprecision::float128 test_size=boost::multiprecision::float128(covering_phys)/boost::multiprecision::float128(f.sh.desorption/(kb* f.sh.temperature));
-				step_size=0.9*test_size.convert_to<double>();
-				//std::cout <<"Desorption * step_size " <<(llong)(f.sh.desorption*step_size) <<std::endl;
-				//std::cout <<"Covering " <<covering_phys <<std::endl;
-				//std::cout<<"Decreased Tmin: "<<step_size <<std::endl;
-				//p->outFile<<"Decreased Tmin: "<<step_size <<std::endl;
+				step_size=test_size.convert_to<double>();
+
 				incrCurrentStep=false;
 			}
+
+			if(covering_phys < covering_phys_before && sizeList>1) //covering_pyhs-covering_phys_before < 0
+			{
+				boost::multiprecision::float128 CovDiff=static_cast<boost::multiprecision::float128>(covering_phys_before-covering_phys);
+				boost::multiprecision::float128 CurrTime= static_cast<boost::multiprecision::float128>(simHistory->coveringList.pointintime_list[sizeList-1].first-simHistory->coveringList.pointintime_list[sizeList-2].first);
+
+				std::cout <<"Facet" <<getFacetIndex(&f)<<":\t CovDiff = Cov_before - Cov_now = "<<covering_phys_before <<" - " <<covering_phys<<" = "<<CovDiff <<"\t time_now-time_before = " <<CurrTime<<"\t If clause : "<<CovDiff*boost::multiprecision::float128(step_size)/CurrTime<<" >? " <<covering_phys<<std::endl;
+				if(CovDiff*boost::multiprecision::float128(step_size)/CurrTime > static_cast<boost::multiprecision::float128>(covering_phys)){
+					//boost::multiprecision::float128 test_size = static_cast<boost::multiprecision::float128>(covering_phys) * CurrTime/CovDiff;
+					//step_size= 0.9 * test_size.convert_to<double>();
+					//incrCurrentStep=false;
+				}
+
+			}
+
 		}
 	}
 
@@ -113,7 +126,7 @@ double manageStepSize(bool updateCurrentStep){
 		p->outFile<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
 	}
 
-	return step_size;
+	return 0.9 * step_size;
 }
 
 // Function that adapts timestep if needed, to avoid negative covering
@@ -385,6 +398,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 	p->outFile << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*time_step << std::endl;
 	//std::cout <<"testing timestep: " <<time_step <<'\t' <<estimateAverageFlightTime() <<std::endl;
 
+	double rounding=1/simHistory->numFacet;
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 
@@ -401,15 +415,20 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 
 				if (covering_sum > covering_phys){
 					//+0.5 for rounding
-					boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (boost::multiprecision::float128(0.5) + boost::multiprecision::float128(covering_sum - covering_phys)*boost::multiprecision::float128(Krealvirt*time_step));
+					boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (boost::multiprecision::float128(rounding) + boost::multiprecision::float128(covering_sum - covering_phys)*boost::multiprecision::float128(Krealvirt*time_step));
 					covering_phys += covering_delta;
 					std::cout << "covering rises by " <<covering_delta << " = "<<boost::multiprecision::float128(covering_delta) << std::endl;
 					p->outFile << "covering rises by " <<covering_delta << " = "<<boost::multiprecision::float128(covering_delta) << std::endl;
 				}
 				else{
 					//+0.5 for rounding
-					boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (boost::multiprecision::float128(0.5) + boost::multiprecision::float128(covering_phys - covering_sum)*boost::multiprecision::float128(Krealvirt*time_step));
-					if(covering_phys<covering_delta){
+					boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (boost::multiprecision::float128(rounding) + boost::multiprecision::float128(covering_phys - covering_sum)*boost::multiprecision::float128(Krealvirt*time_step));
+					if(covering_phys+1==covering_delta || covering_phys+2==covering_delta || covering_phys+3==covering_delta){
+						std::cout<<"!!!-----Correct covering_delta: "<<covering_phys<<" - "<<covering_delta <<" because of rounding-----!!!"<<std::endl;
+						p->outFile<<"!!!-----Correct covering_delta: "<<covering_phys<<" - "<<covering_delta <<" because of rounding-----!!!"<<std::endl;
+						covering_delta=covering_phys;
+					}
+					else if(covering_phys<covering_delta){
 						std::cout<<"!!!-----Covering gets negative: "<<covering_phys<<" - "<<covering_delta <<"-----!!!"<<std::endl;
 						p->outFile<<"!!!-----Covering gets negative: "<<covering_phys<<" - "<<covering_delta <<"-----!!!"<<std::endl;
 					}

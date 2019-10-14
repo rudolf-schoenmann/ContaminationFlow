@@ -179,7 +179,7 @@ double GetMoleculesPerTP(Databuff *hitbuffer_sum, llong nbDesorbed_old) // Calcu
 	std::cout << "gHits->globalHits.hit.nbDesorbed [1] = " << nbDesorbed<< std::endl;
 	std::cout << "(wp.finalOutgassingRate + desrate)/gHits->globalHits.hit.nbDesorbed [1/s] = "<< (sHandle->wp.finalOutgassingRate + desrate)/nbDesorbed << std::endl;
 	*/
-	return (sHandle->wp.finalOutgassingRate+desrate) / nbDesorbed;
+	return (sHandle->wp.finalOutgassingRate+desrate) / double(nbDesorbed);
 	}
 
 /* //Wahrscheinlich brauchen wir das nicht.
@@ -217,7 +217,7 @@ void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates
 long double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This returns ((d'coverage')/dt)de. So to speak desorption rate in units of [1/s]
 	long double coverage;
 	double temperature;
-	long double desorption=0.0;
+	boost::multiprecision::float128 desorption(0.0);
 
 	coverage = calcCoverage(iFacet,hitbuffer);
 	temperature=iFacet->sh.temperature;
@@ -225,13 +225,14 @@ long double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This 
 	if(coverage==0||temperature==0){
 		return 0.0;
 	}
-	long double tau=(long double)(h/(kb*temperature));
 
-	long double energy_de=(long double) calcEnergy(iFacet,hitbuffer);
+	boost::multiprecision::float128 tau=static_cast<boost::multiprecision::float128>(h/(kb*temperature));
 
-	desorption= (long double)(1.0/tau) * powl(coverage,(long double)p->d) *expl(-energy_de/(long double)(kb*temperature));
+	boost::multiprecision::float128 energy_de=static_cast<boost::multiprecision::float128>(calcEnergy(iFacet,hitbuffer));
+
+	desorption = (boost::multiprecision::float128(1.0)/tau) * boost::multiprecision::pow(static_cast<boost::multiprecision::float128>(coverage),static_cast<boost::multiprecision::float128>(p->d)) *boost::multiprecision::exp(-energy_de/static_cast<boost::multiprecision::float128>(kb*temperature));
 	//if (Desorption Energy/Temperature) >~ 1.02E-20J/K, desorption will be zero
-	return desorption;
+	return desorption.convert_to<long double>();
 }
 
 long double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer) {//This returns ((d'coverage')/dt)de * (Nmono/dNSurf) * kb*T. So to speak desorption rate in units of [Pa m³/s]
