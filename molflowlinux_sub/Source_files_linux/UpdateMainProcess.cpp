@@ -98,7 +98,7 @@ double manageStepSize(bool updateCurrentStep){
 			if ((boost::multiprecision::uint128_t)((f.sh.desorption/(kb* f.sh.temperature))*step_size +0.5)>covering_phys){
 
 				boost::multiprecision::float128 test_size=boost::multiprecision::float128(covering_phys)/boost::multiprecision::float128(f.sh.desorption/(kb* f.sh.temperature));
-				step_size=test_size.convert_to<double>();
+				step_size=0.9 *test_size.convert_to<double>();
 
 				incrCurrentStep=false;
 			}
@@ -126,7 +126,7 @@ double manageStepSize(bool updateCurrentStep){
 		p->outFile<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
 	}
 
-	return 0.9 * step_size;
+	return step_size;
 }
 
 // Function that adapts timestep if needed, to avoid negative covering
