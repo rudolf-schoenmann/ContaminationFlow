@@ -58,13 +58,18 @@ void UpdateSticking(Databuff *hitbuffer){
 	//std::cout <<std::endl;
 }
 //desorption
-void UpdateDesorptionRate (Databuff *hitbuffer){
+bool UpdateDesorptionRate (Databuff *hitbuffer){
+	boost::multiprecision::float128 totaldes(0.0);
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			f.sh.desorption = (double)calcDesorptionRate(&f, hitbuffer); // TODO long double -> double here. Change f.sh.desorption to long double? bit need to adapt in Windows and new buffers
+			f.sh.desorption = calcDesorptionRate(&f, hitbuffer); // TODO long double -> double here. Change f.sh.desorption to long double? bit need to adapt in Windows and new buffers
+				if(f.sh.temperature==0) {continue;}
+				totaldes+= f.sh.desorption * boost::multiprecision::float128(sHandle->wp.latestMoment/ (1.38E-23*f.sh.temperature));
 		}
 	}
 
+	if((boost::multiprecision::float128(sHandle->wp.totalDesorbedMolecules)+totaldes)<boost::multiprecision::pow(boost::multiprecision::float128(10.),boost::multiprecision::float128(-50))){return false;}
+	else{return true;}
 }
 
 void UpdateSojourn(Databuff *hitbuffer){

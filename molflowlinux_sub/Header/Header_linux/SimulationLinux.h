@@ -27,8 +27,8 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <fstream>
 #include <sstream>
 #include <iomanip>
-#include <boost/multiprecision/cpp_int.hpp>
-#include <boost/multiprecision/float128.hpp>
+//#include <boost/multiprecision/cpp_int.hpp>
+//#include <boost/multiprecision/float128.hpp>
 
 static const char *year[]={"Years","years","Year","year","Yr","yr","Y","y"};
 static const char *month[]={"Months","months","Month","month","Mth","mth","mo","Mo"};
@@ -317,6 +317,7 @@ public:
 	//double E_ad;
 	double d;
 	double sticking;
+	int coveringLimit;
 
 	double H_vap;
 	double W_tr;
@@ -386,7 +387,7 @@ void printConsole(std::string str,std::ofstream outFile);
 //UpdateSubProcess.cpp
 
 void UpdateSticking(Databuff *hitbuffer);
-void UpdateDesorptionRate (Databuff *hitbuffer);
+bool UpdateDesorptionRate (Databuff *hitbuffer);
 void UpdateSojourn(Databuff *hitbuffer);
 double UpdateError();
 void UpdateErrorSub();
@@ -423,9 +424,9 @@ double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer);
 
 double calcEnergy(SubprocessFacet *iFacet, Databuff *hitbuffer);
 
-double GetMoleculesPerTP(Databuff *hitbuffer_sum, llong nbDesorbed_old);
+boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum, llong nbDesorbed_old);
 void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
-long double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
+boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
 
 
 //-----------------------------------------------------------

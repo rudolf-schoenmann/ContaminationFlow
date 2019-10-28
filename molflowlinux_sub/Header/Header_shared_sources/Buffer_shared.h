@@ -30,6 +30,9 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <cereal/cereal.hpp>
 #include <array>
 
+#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/float128.hpp>
+
 #ifdef MOLFLOW
 #include "MolflowTypes.h" //Texture Min Max of GlobalHitBuffer, anglemapparams
 #endif
@@ -173,7 +176,9 @@ public:
 							 // Molflow-specific facet parameters
 	double temperature;    // Facet temperature (Kelvin)                  - can be overridden by time-dependent parameter
 	double outgassing;           // (in units of Pa*m^3/s)                      - can be overridden by time-dependent parameter
-	double desorption; // (in units of Pa*m^3/s)
+	//double desorption; // (in units of Pa*m^3/s)
+	boost::multiprecision::float128 desorption;
+
 
 	int sticking_paramId;    // -1 if use constant value, 0 or more if referencing time-dependent parameter
 	int opacity_paramId;     // -1 if use constant value, 0 or more if referencing time-dependent parameter

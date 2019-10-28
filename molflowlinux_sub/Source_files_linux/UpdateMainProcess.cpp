@@ -95,10 +95,10 @@ double manageStepSize(bool updateCurrentStep){
 			boost::multiprecision::uint128_t covering_phys = simHistory->coveringList.getLast(&f);
 			boost::multiprecision::uint128_t covering_phys_before = simHistory->coveringList.pointintime_list[sizeList-2].second[getFacetIndex(&f)];
 
-			if ((boost::multiprecision::uint128_t)((f.sh.desorption/(kb* f.sh.temperature))*step_size +0.5)>covering_phys){
+			if ((boost::multiprecision::uint128_t)((f.sh.desorption/boost::multiprecision::float128(kb* f.sh.temperature))*boost::multiprecision::float128(step_size) +boost::multiprecision::float128(0.5))>covering_phys){
 
-				boost::multiprecision::float128 test_size=boost::multiprecision::float128(covering_phys)/boost::multiprecision::float128(f.sh.desorption/(kb* f.sh.temperature));
-				step_size=test_size.convert_to<double>();
+				boost::multiprecision::float128 test_size=boost::multiprecision::float128(covering_phys)/(f.sh.desorption/boost::multiprecision::float128(kb* f.sh.temperature));
+				step_size=0.9 *test_size.convert_to<double>();
 
 				incrCurrentStep=false;
 			}
@@ -126,7 +126,7 @@ double manageStepSize(bool updateCurrentStep){
 		p->outFile<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
 	}
 
-	return 0.9 * step_size;
+	return step_size;
 }
 
 // Function that adapts timestep if needed, to avoid negative covering
@@ -349,7 +349,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 	//Then the physical values are stored in the hitbuffer.
 	//simTime in ms
 
-	double Krealvirt = GetMoleculesPerTP(hitbuffer_sum, simHistory->nbDesorbed_old);
+	boost::multiprecision::float128 Krealvirt = GetMoleculesPerTP(hitbuffer_sum, simHistory->nbDesorbed_old);
 	llong nbDesorbed = getnbDesorbed(hitbuffer_sum)-simHistory->nbDesorbed_old;
 	//std::cout <<"nbDesorbed before and after:\t" << history->nbDesorbed_old <<'\t';
 	simHistory->nbDesorbed_old = getnbDesorbed(hitbuffer_sum);
@@ -364,7 +364,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 	//p->outFile << "Tmin = " << estimateAverageFlightTime() << " s."<< std::endl;
 
 	double time_step;
-	if(Krealvirt==0){ //if no Krealvirt(no desorption), do not increase currentStep, time_step=0
+	if(Krealvirt==boost::multiprecision::float128(0.0)){ //if no Krealvirt(no desorption), do not increase currentStep, time_step=0
 		time_step=0;
 	}
 	else{
@@ -392,13 +392,14 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 	}
 
 	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
-	std::cout << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*time_step << std::endl;
+	std::cout << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*boost::multiprecision::float128(time_step) << std::endl;
 
 	p->outFile <<"Krealvirt = " << Krealvirt << std::endl;
-	p->outFile << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*time_step << std::endl;
+	p->outFile << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*boost::multiprecision::float128(time_step) << std::endl;
 	//std::cout <<"testing timestep: " <<time_step <<'\t' <<estimateAverageFlightTime() <<std::endl;
 
-	double rounding=1/simHistory->numFacet;
+	//double rounding=1/simHistory->numFacet;
+	boost::multiprecision::float128 rounding(0.0);
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 
@@ -415,22 +416,28 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 
 				if (covering_sum > covering_phys){
 					//+0.5 for rounding
-					boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (boost::multiprecision::float128(rounding) + boost::multiprecision::float128(covering_sum - covering_phys)*boost::multiprecision::float128(Krealvirt*time_step));
+					boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (rounding + boost::multiprecision::float128(covering_sum - covering_phys)*Krealvirt*boost::multiprecision::float128(time_step));
 					covering_phys += covering_delta;
 					std::cout << "covering rises by " <<covering_delta << " = "<<boost::multiprecision::float128(covering_delta) << std::endl;
 					p->outFile << "covering rises by " <<covering_delta << " = "<<boost::multiprecision::float128(covering_delta) << std::endl;
 				}
 				else{
 					//+0.5 for rounding
-					boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (boost::multiprecision::float128(rounding) + boost::multiprecision::float128(covering_phys - covering_sum)*boost::multiprecision::float128(Krealvirt*time_step));
-					if(covering_phys+1==covering_delta || covering_phys+2==covering_delta || covering_phys+3==covering_delta){
-						std::cout<<"!!!-----Correct covering_delta: "<<covering_phys<<" - "<<covering_delta <<" because of rounding-----!!!"<<std::endl;
-						p->outFile<<"!!!-----Correct covering_delta: "<<covering_phys<<" - "<<covering_delta <<" because of rounding-----!!!"<<std::endl;
+					boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (rounding + boost::multiprecision::float128(covering_phys - covering_sum)*Krealvirt*boost::multiprecision::float128(time_step));
+					if(covering_phys+1==covering_delta){
+						std::cout<<"!!!-----Correct covering_delta by 1: "<<covering_phys<<" - "<<covering_delta <<" because of rounding-----!!!"<<std::endl;
+						p->outFile<<"!!!-----Correct covering_delta by 1: "<<covering_phys<<" - "<<covering_delta <<" because of rounding-----!!!"<<std::endl;
+						covering_delta=covering_phys;
+					}
+					else if(covering_phys<covering_delta && covering_phys+10>=covering_delta){
+						std::cout<<"!!!-----Correct covering_delta: "<<covering_phys<<" - "<<covering_delta <<" because of bad statistic-----!!!"<<std::endl;
+						p->outFile<<"!!!-----Correct covering_delta: "<<covering_phys<<" - "<<covering_delta <<" because of bad statistic-----!!!"<<std::endl;
 						covering_delta=covering_phys;
 					}
 					else if(covering_phys<covering_delta){
-						std::cout<<"!!!-----Covering gets negative: "<<covering_phys<<" - "<<covering_delta <<"-----!!!"<<std::endl;
-						p->outFile<<"!!!-----Covering gets negative: "<<covering_phys<<" - "<<covering_delta <<"-----!!!"<<std::endl;
+						std::cout<<"!!!-----Covering gets negative: "<<covering_phys<<" - "<<covering_delta <<". Correct Covering=0-----!!!"<<std::endl;
+						p->outFile<<"!!!-----Covering gets negative: "<<covering_phys<<" - "<<covering_delta <<". Correct Covering=0-----!!!"<<std::endl;
+						covering_delta=covering_phys;
 					}
 
 					covering_phys -= covering_delta;
