@@ -44,10 +44,10 @@ buffer = hitbuffer->buff;
 				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
 				llong covering = facetHitBuffer->hit.covering;
 				double v_avg_therm = 3*pow((3.14159265359/8),0.5)* pow((8.314472* f.sh.temperature/(sHandle->wp.gasMass*0.001)),0.5); //0.001 to convert MolarMass form g to kg
-				sum_v_avg += v_avg_therm * (f.sh.outgassing + f.sh.desorption);
-				normalization_factor_v += f.sh.outgassing + f.sh.desorption;
-				if ((f.sh.outgassing + f.sh.desorption) > 0){ //avoid division by 0
-					double ttemp= (double)(covering/((f.sh.outgassing + f.sh.desorption)/ (1.38E-23*f.sh.temperature)));
+				sum_v_avg += v_avg_therm * (f.sh.outgassing + f.sh.desorption.convert_to<double>());
+				normalization_factor_v += f.sh.outgassing + f.sh.desorption.convert_to<double>();
+				if ((f.sh.outgassing + f.sh.desorption.convert_to<double>()) > 0){ //avoid division by 0
+					double ttemp= (double)(covering/((f.sh.outgassing + f.sh.desorption.convert_to<double>())/ (1.38E-23*f.sh.temperature)));
 					if (!tmin_particles_out){
 						tmin_particles_out = (ttemp);
 					}

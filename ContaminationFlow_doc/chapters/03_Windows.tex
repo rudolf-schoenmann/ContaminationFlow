@@ -16,9 +16,16 @@ Add screenshot of GUI
 \subsubsection{New GUI elements}
 \begin{itemize}[noitemsep,topsep=0pt]
 \item "Particles out" renamed to Contamination level
-\begin{itemize}
+\begin{itemize}[noitemsep,topsep=0pt]
 \item Text field for covering
 \item Text field for coverage
+\end{itemize}
+\item New facet properties
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Effective surface factor
+\item Facet depth and facet volume
+\item Diffusion coefficient
+\item Concentration and gas mass
 \end{itemize}
 %\item Text field for new sticking coefficient
 \item Window for CoveringHistory (reworked to SimulationHistory in ContaminationFlow Linux)
@@ -30,8 +37,8 @@ Add screenshot of GUI
 	\end{itemize}
 \end{itemize}
 
-\section{Application}
-\subsection{Communication}
+%\section{Application}
+\section{Communication}
 \subsubsection{Import and export of buffer files via GUI}
 \begin{itemize}[noitemsep,topsep=0pt]
 \item New Databuff struct \code{typedef unsigned char BYTE;\\typedef struct {\\
@@ -42,12 +49,35 @@ Add screenshot of GUI
 \item New options in file menu: \codew{Export buffer} and \codew{Import buffer}
 \end{itemize}
 
-\subsection{New Quantities}
+\section{New Quantities}
 \subsubsection{New counter \codew{covering}}
 \begin{itemize}[noitemsep,topsep=0pt]
 \item Covering computed in \codew{SimulationMC.cpp} file in \codew{updatecovering($\cdot$)}
 \item Added covering counter to hitbuffer
 \item Added covering to GUI, can be defined through textfield
+\end{itemize}
+
+\subsubsection{New facet property \codew{effetiveSurfaceFactor}}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Defines increase of facet area due to texture
+\end{itemize}
+
+
+\subsubsection{New facet property \codew{facetDepth}}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Defines depth of facet
+\end{itemize}
+
+
+\subsubsection{New facet property \codew{diffusionCoefficient}}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Defines diffusion coefficient
+\end{itemize}
+
+
+\subsubsection{New facet property \codew{concentration}}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Defines concentration = mass of particles in volume
 \end{itemize}
 
 \subsubsection{Removal of irrelevant quantities}
@@ -57,11 +87,11 @@ Add screenshot of GUI
 \item Flow not needed for iterative Algorithm
 \end{itemize}
 
-\subsection{Iterative algorithm}
+\section{Iterative algorithm}
 \subsubsection{New class to store covering for all facets at any time} 
 \begin{itemize}[noitemsep,topsep=0pt]
 \item In \codew{HistoryWin.cpp} and \codew{HistoryWin.h} file
-\item \codew{std::vector< std::pair< double,std::vector<double> > > pointintime\_list} to store points in time and respective covering for all facets
+\item \codew{std::vector<std::pair<double,std::vector<double>\,>\,> pointintime\_list} to store points in time and respective covering for all facets
 \item New GUI option to add and remove entries for \codew{pointintime\_list}
 \item New GUI option to export or import a complete list
 \end{itemize}

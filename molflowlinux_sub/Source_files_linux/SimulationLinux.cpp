@@ -117,7 +117,7 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 	int num;
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 				for (SubprocessFacet& f : sHandle->structures[j].facets) {
-					if(f.sh.desorption==0.0) continue;
+					if(f.sh.desorption==0) continue;
 
 					num=getFacetIndex(&f);
 					if(f.tmpCounter[0].hit.covering==sHandle->coveringThreshold[num])
@@ -186,6 +186,7 @@ ProblemDef::ProblemDef(){
 	H_vap=0.8E-19;
 	W_tr=1.0;
 	sticking=0.0;
+	coveringLimit=0;
 
 	maxTime=10.0;
 	maxUnit="y";
@@ -274,6 +275,8 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn =="H_vap"){is >> doubleIn; H_vap=doubleIn;}
 		else if(stringIn =="W_tr"){is >> doubleIn; W_tr=doubleIn;}
 		else if(stringIn =="sticking"){is >> doubleIn; sticking=doubleIn;}
+		else if(stringIn =="coveringLimit"){is >> intIn; coveringLimit=intIn;}
+
 
 		else if(stringIn =="targetParticles"){is >> intIn; targetParticles=intIn;}
 		else if(stringIn == "targetError") {is >>doubleIn; targetError = doubleIn;}

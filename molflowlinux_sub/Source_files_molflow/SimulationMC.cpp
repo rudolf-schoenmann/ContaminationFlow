@@ -608,8 +608,8 @@ bool StartFromSource() {
 	bool reverse;
 	size_t mapPositionW, mapPositionH;
 	SubprocessFacet *src = NULL;
-	double srcRnd;
-	double sumA = 0.0;
+	boost::multiprecision::float128 srcRnd;
+	boost::multiprecision::float128 sumA(0.0);
 	int i = 0, j = 0;
 	int nbTry = 0;
 
@@ -620,21 +620,34 @@ bool StartFromSource() {
 			return false;
 		}
 	}
-
-	double totaldes=0.0;
+	/*bool test=false;
 	if(!sHandle->posCovering){return false;}
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				if(f.sh.temperature==0) {continue;}
-				totaldes+=sHandle->wp.latestMoment *f.sh.desorption/ (1.38E-23*f.sh.temperature);
+				if(f.tmpCounter[0].hit.covering<100 && f.sh.opacity!=0){
+					test=true; break;
+				}
+
+			}
+	}*/
+	boost::multiprecision::float128 totaldes=0.0;
+	if(!sHandle->posCovering){return false;}
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+			for (SubprocessFacet& f : sHandle->structures[s].facets) {
+				if(f.sh.temperature==0) {continue;}
+				/*if(test){
+					std::cout <<"totaldes: " <<totaldes <<" += "<<f.sh.desorption<<" * " <<boost::multiprecision::float128(sHandle->wp.latestMoment/ (1.38E-23*f.sh.temperature)) <<std::endl;
+				}*/
+				totaldes+= f.sh.desorption * boost::multiprecision::float128(sHandle->wp.latestMoment/ (1.38E-23*f.sh.temperature));
 
 			}
 	}
 
 	// Select source
+	srcRnd = boost::multiprecision::float128(rnd()) * (boost::multiprecision::float128(sHandle->wp.totalDesorbedMolecules)+totaldes);
+	if(srcRnd==boost::multiprecision::float128(0)){return false;}
 
-	srcRnd = rnd() * (sHandle->wp.totalDesorbedMolecules+totaldes);
-	if(srcRnd==0){return false;}
 	//std::cout <<srcRnd <<"\t" <<totaldes <<std::endl;
 
 	while (!found && j < (int)sHandle->sh.nbSuper) { //Go through superstructures
@@ -642,15 +655,16 @@ bool StartFromSource() {
 		while (!found && i < (int)sHandle->structures[j].facets.size()) { //Go through facets in a structure
 			SubprocessFacet& f = sHandle->structures[j].facets[i];
 			if(f.sh.temperature==0) {i++;continue;}
+			boost::multiprecision::float128 des=f.sh.desorption; //double des = sHandle->wp.latestMoment *calcDesorption(&f)/ (1.38E-23*f.sh.temperature); // TODO which one is right?
 
-			double des=f.sh.desorption; //double des = sHandle->wp.latestMoment *calcDesorption(&f)/ (1.38E-23*f.sh.temperature); // TODO which one is right?
-			if (f.sh.desorbType != DES_NONE || des>0.0) { //there is some kind of outgassing
+			if (f.sh.desorbType != DES_NONE || des>boost::multiprecision::float128(0.0)) { //there is some kind of outgassing
 				if (f.sh.useOutgassingFile) { //Using SynRad-generated outgassing map
-					if (f.sh.totalOutgassing +des > 0.0) {
-						found = (srcRnd >= sumA) && (srcRnd < (sumA + sHandle->wp.latestMoment * (f.sh.totalOutgassing+des) / (1.38E-23*f.sh.temperature)));
+					if (boost::multiprecision::float128(f.sh.totalOutgassing) +des > boost::multiprecision::float128(0.0)) {
+						found = (srcRnd >= sumA) && (srcRnd < (sumA + (boost::multiprecision::float128(f.sh.totalOutgassing)+des) * boost::multiprecision::float128(sHandle->wp.latestMoment /(1.38E-23*f.sh.temperature))));
+
 						if (found) {
 							//look for exact position in map
-							double rndRemainder = (srcRnd - sumA) / sHandle->wp.latestMoment*(1.38E-23*f.sh.temperature); //remainder, should be less than f.sh.totalOutgassing
+							boost::multiprecision::float128 rndRemainder = (srcRnd - sumA) / boost::multiprecision::float128(sHandle->wp.latestMoment)*boost::multiprecision::float128(1.38E-23*f.sh.temperature); //remainder, should be less than f.sh.totalOutgassing
 							/*double sumB = 0.0;
 							for (w = 0; w < f.sh.outgassingMapWidth && !foundInMap; w++) {
 								for (h = 0; h < f.sh.outgassingMapHeight && !foundInMap; h++) {
@@ -662,7 +676,7 @@ bool StartFromSource() {
 									}
 								}
 							}*/
-							double lookupValue = rndRemainder;
+							double lookupValue = rndRemainder.convert_to<double>();
 							int outgLowerIndex = my_lower_bound(lookupValue, f.outgassingMap); //returns line number AFTER WHICH LINE lookup value resides in ( -1 .. size-2 )
 							outgLowerIndex++;
 							mapPositionH = (size_t)((double)outgLowerIndex / (double)f.sh.outgassingMapWidth);
@@ -673,16 +687,17 @@ bool StartFromSource() {
 								return false;
 							}*/
 						}
-						sumA += sHandle->wp.latestMoment * (f.sh.totalOutgassing+des) / (1.38E-23*f.sh.temperature);
+						sumA += (boost::multiprecision::float128(f.sh.totalOutgassing)+des) * boost::multiprecision::float128(sHandle->wp.latestMoment / (1.38E-23*f.sh.temperature));
 					}
 				} //end outgassing file block
 				else { //constant or time-dependent outgassing
-					double facetOutgassing =
+					boost::multiprecision::float128 facetOutgassing =
 						(f.sh.outgassing_paramId >= 0)
-						? sHandle->IDs[f.sh.IDid].back().second / (1.38E-23*f.sh.temperature)
-						: sHandle->wp.latestMoment*(f.sh.outgassing+des) / (1.38E-23*f.sh.temperature);
+						? boost::multiprecision::float128(sHandle->IDs[f.sh.IDid].back().second / (1.38E-23*f.sh.temperature))
+						: (boost::multiprecision::float128(f.sh.outgassing)+des) * boost::multiprecision::float128(sHandle->wp.latestMoment / (1.38E-23*f.sh.temperature));
 					found = (srcRnd >= sumA) && (srcRnd < (sumA + facetOutgassing));
 					sumA += facetOutgassing;
+
 				} //end constant or time-dependent outgassing block
 			} //end 'there is some kind of outgassing'
 			if (!found) i++;
@@ -701,8 +716,8 @@ bool StartFromSource() {
 	bool desorbed_b=true; //determines whether particle created from outgassing or desorption; true desorbed, false outgassed
 	if(src->sh.desorbType != DES_NONE ){ //there is outgassing
 		desorbed_b=false;
-		double des=src->sh.desorption;
-		if(rnd()<des/(src->sh.outgassing+des) ){
+		boost::multiprecision::float128 des=src->sh.desorption;
+		if(boost::multiprecision::float128(rnd())<des/(boost::multiprecision::float128(src->sh.outgassing)+des) ){
 			desorbed_b=true;
 		}
 	}

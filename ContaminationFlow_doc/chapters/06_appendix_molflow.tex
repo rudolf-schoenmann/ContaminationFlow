@@ -66,7 +66,7 @@
 
 \subsubsection*{Sojourn}
 \begin{equation}
-	\label{eq:cov}
+	\label{eq:sojourn}
 	\begin{split}
 		Frequency&=\frac{K_b T}{h}\\
 		Energy&= E
@@ -82,7 +82,7 @@
 	des&=
 	\begin{cases}
 		\begin{split}
-		\frac{1}{\tau}\ \theta^d\ \exp\Big({-\frac{E}{K_b T}}\Big)\cdot \frac{N_{mono}}{\Delta N_{surf}}\cdot K_b T&, \text{\quad if}\ \theta^* \geq 100\\
+		\frac{1}{\tau}\ \theta^d\ \exp\Big({-\frac{E}{K_b T}}\Big)\cdot \frac{N_{mono}}{\Delta N_{surf}}\cdot K_b T&, \text{\quad if}\ \theta^* \geq \text{covering limit}\\
 		0&,  \text{\quad otherwise}
 		\end{split}
 	\end{cases}
@@ -111,7 +111,7 @@
 \begin{equation}
 	\label{eq:tstep}
 	\begin{split}
-	T_{min}&=0.0001\\
+	T_{min}&=\text{Tmin}\\
 	T_{i}&=T_{min} \cdot \exp\Big(\text{i}\cdot \ln(\text{max. simulation time}/T_{min})/\text{max. \# of steps})\Big)\\
 	T_{step}&=T_{currentStep+1}-T_{currentStep}\\
 	\end{split}
@@ -133,7 +133,7 @@
 \begin{equation}
 	\label{eq:error}
 	\begin{split}
-		error&=\Big( \frac{1}{\text{hits on facet}} \cdot \frac{1-\text{hits on facet}}{\text{total hits}} \Big)^{0.5}
+		error&=\Big( \frac{1}{\text{(hits + desorbed) on facet}} \cdot \frac{1-\text{(hits + desorbed) on facet}}{\text{total (hits + desorbed)}} \Big)^{0.5}
 	\end{split}
 \end{equation}
 
@@ -146,13 +146,17 @@
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}SimulationHistory}\\
 \hline
 \rule{0pt}{3ex} coveringList& of class HistoryList, stores covering history\\
+\rule{0pt}{3ex} errorList& of class HistoryList, stores error history\\
+\rule{0pt}{3ex} hitList& of class HistoryList, stores hits for each facet\\
+\rule{0pt}{3ex} desorbedList& of class HistoryList, stores desorbed particles for each facet\\
 \rule{0pt}{3ex} numFacet& number of Facets\\
+\rule{0pt}{3ex} numSubProcess& number of sub processes used for simulation\\
 \rule{0pt}{3ex} \multirow{2}{*}{nbDesorbed\_old}& number of total desorbed molecules of previous iteration\\
 &\qquad$\Rightarrow$ To calculate difference between consecutive iterations\\
 \rule{0pt}{3ex} flightTime& number of Facets\\
 \rule{0pt}{3ex} nParticles& Simulated flight time for iteration\\
 \rule{0pt}{3ex} numFacet& Simulated particles for iteration\\
-\rule{0pt}{3ex} lastTime& Total simulated time\\
+\rule{0pt}{3ex} lastTime& Total simulated time = last time in Lists\\
 \rule{0pt}{3ex} currentStep& step of logarithmic time step calculation in \codew{getStepSize()}\\
 \hline
 \rule{0pt}{3ex} updateHistory()& Reset and update from hitbuffer\\
@@ -160,45 +164,55 @@
 \rule{0pt}{3ex} print()& Print to terminal\\
 \rule{0pt}{3ex} write()& Write to file\\
 \hline
-\multicolumn{2}{l}{}\\[1ex]
-\hline
-\multicolumn{2}{|c|}{\rule{0pt}{3ex}HistoryList}\\
-\hline
-\rule{0pt}{3ex} pointintime\_list& list containing history of time steps and respective facet values\\
-\rule{0pt}{3ex} currentList& list containing facet values at current step\\
-\hline
-\rule{0pt}{3ex} reset()& Resets lists\\
-\rule{0pt}{3ex} initCurrent()& Initializes size of lists\\
-\rule{0pt}{3ex} print()& Print list as table to terminal, optional message\\
-\rule{0pt}{3ex} write()& Write to file\\
-\rule{0pt}{3ex} read()& Read from file\\
-\rule{0pt}{3ex} empty()& Checks if pointintime\_list is empty\\
-\rule{0pt}{3ex} setCurrentList()& Set value of desired facet in currentList\\
-\rule{0pt}{3ex} \multirow{2}{*}{getCurrent()}& Get value of desired facet from currentList, or\\
-& Get all facet values from last entry in pointintime\_list\\
-\hline
+
 \end{tabular}
 \end{center}
 
 \begin{center}
 \begin{tabular}{|l|l|}
 \hline
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}HistoryList}\\
+\hline
+\rule{0pt}{3ex} pointInTimeList& list containing history respective facet values\\
+\rule{0pt}{3ex} currentList& list containing facet values at current step\\
+\hline
+%\rule{0pt}{3ex} reset()& Resets lists\\
+%\rule{0pt}{3ex} initCurrent()& Initializes size of lists\\
+\rule{0pt}{3ex} appendCurrent()& Appends currentList to pointInTimeList\\
+\rule{0pt}{3ex} appendList()& Append input list to pointInTimeList\\
+\rule{0pt}{3ex} convertTime()& Converts time for better clarity\\
+\rule{0pt}{3ex} print()& Print pointInTimeList as table to terminal, optional message\\
+\rule{0pt}{3ex} printCurrent()& Print currentList as table to terminal, optional message\\
+\rule{0pt}{3ex} write(), read()& Write to file, read from file\\
+%\rule{0pt}{3ex} empty()& Checks if pointintime\_list is empty\\
+\rule{0pt}{3ex} setCurrentList()& Set value of desired facet in currentList\\
+\rule{0pt}{3ex} getCurrent()& Get value of desired facet from currentList\\
+\rule{0pt}{3ex} setLast()& Set value of desired facet from pointInTimeList\\
+\rule{0pt}{3ex} getLast()& Get value of desired facet from pointInTimeList\\
+\hline
+\multicolumn{2}{l}{}\\[1ex]
+\hline
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}ProblemDef}\\
 \hline
 \rule{0pt}{3ex} resultpath& Path of result folder\\
+\rule{0pt}{3ex} outFile& Path of file that contains terminal output\\
 \rule{0pt}{3ex} loadbufferPath& Path of loadbuffer file\\
 \rule{0pt}{3ex} hitbufferPath& Path of hitbuffer file\\
 \rule{0pt}{3ex} simulationTime, unit& \multirow{2}{*}{Computation time of each iteration in milliseconds}\\
-\quad$\Rightarrow$simulationTimeMS&\\
+\enskip$\Rightarrow$simulationTimeMS&\\
 \rule{0pt}{3ex} maxTime, maxUnit& \multirow{2}{*}{Maximal total simulated time in seconds}\\
-\quad$\Rightarrow$maxTimeS&\\
+\enskip$\Rightarrow$maxTimeS&\\
 \rule{0pt}{3ex} iterationNumber& Number of iterations\\
-\rule{0pt}{3ex}  E\_de, d& Parameters to calculate desorption rate, see equation \ref{eq:des}\\
+\rule{0pt}{3ex}  d& Parameter to calculate desorption rate, see equation \ref{eq:des}\\
+\rule{0pt}{3ex}  E\_de, H\_vap, W\_tr& Parameters to calculate binding energy, see equation \ref{eq:energy}\\
+\rule{0pt}{3ex}  sticking&  Sticking factor for all facets\\
+\rule{0pt}{3ex}  coveringLimit&  Covering limit for zero desorption \\
+\rule{0pt}{3ex}  targetParticles/-Error&  Target values for each iteration\\
+\rule{0pt}{3ex}  hitRatioLimit&  Limit of hitratio to ignore hits\\
+\rule{0pt}{3ex}  Tmin&  Minimum step size\\
 \hline
-\rule{0pt}{3ex} readArg()& Initialization from command line arguments\\
 \rule{0pt}{3ex} readInputfile()& Initialization from input file\\
 \rule{0pt}{3ex} printInputfile()& Print to terminal\\
-\rule{0pt}{3ex} writeInputfile()& Write to file\\
 \hline
 \end{tabular}
 \end{center}
@@ -210,32 +224,35 @@
 \hline
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}Preprocessing}\\
 \hline
-\rule{0pt}{3ex} \multirow{2}{*}{parametercheck()}& Checks input parameters from\\&command line or input file\\
+\rule{0pt}{3ex} \multirow{2}{*}{parametercheck()}& Checks validity of input parameters from input file\\& Defines values for ProblemDef object \codew{p} \\
 \rule{0pt}{3ex} importBuff()& Import load- and hitbuffer to main process\\
 \rule{0pt}{3ex} MPI\_Bcast()& Send loadbuffer to sub processes\\
 \rule{0pt}{3ex} LoadSimulation()& Load geometry from loadbuffer\\
 \rule{0pt}{3ex} initCoveringThresh()& Initialize covering threshold\\
-\rule{0pt}{3ex} simHistory=SimulationHistory()& Initialize simulation history\\
+\rule{0pt}{3ex} \codew{simHistory}& Initialize SimulationHistory object\\
 \hline
-\end{tabular}
-\end{center}
-
-\begin{center}
-\begin{tabular}{|l|l|}
+\multicolumn{2}{l}{}\\[1ex]
+%\end{tabular}
+%\end{center}
+%
+%\begin{center}
+%\begin{tabular}{|l|l|}
 \hline
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}Simulation Loop}\\
 \hline
-\rule{0pt}{3ex} initbufftozero()& Reset hitbuffer except covering\\
-\rule{0pt}{3ex} MPI\_Bcast()& Send hitbuffer to sub processes\\
+\rule{0pt}{3ex} initbufftozero()& Reset all hitbuffer counters except covering\\
+\rule{0pt}{3ex} \multirow{2}{*}{MPI\_Bcast()}& Send hitbuffer and \codew{simHistory$\rightarrow$currentStep}\\& to sub processes\\
 \rule{0pt}{3ex} setCoveringThreshold()& Sets covering threshold for each facet\\
+\rule{0pt}{3ex} UpdateDesorptionRate()& Sets desorption for each facet\\
+\rule{0pt}{3ex} UpdateSojourn()& Sets sojourn variables for each facet\\
 \rule{0pt}{3ex} simulateSub()& Simulation on sub processes\\
-\rule{0pt}{3ex} \multirow{2}{*}{MPI\_Send(), MPI\_Recv}& Send sub hitbuffer, simHistory$\rightarrow$flighttime and\\
-&simHistory$\rightarrow$nbParticles to main process\\
-\rule{0pt}{3ex} \multirow{2}{*}{UpdateMCMainHits()}& Add simulation results from sub hitbuffer\\&to main hitbuffer\\
+\rule{0pt}{3ex} MPI\_Send(), MPI\_Recv()& Send sub hitbuffer to main process\\
+\rule{0pt}{3ex} \multirow{2}{*}{UpdateMCMainHits()}& Add simulation results from sub hitbuffer\\& to main hitbuffer\\
+\rule{0pt}{3ex} UpdateErrorMain()& Calculate and save error of iteration to simHistory\\
 \rule{0pt}{3ex} UpdateCovering()& Calculate and save new covering to simHistory\\
 \rule{0pt}{3ex} UpdateCoveringphys()& Saves current covering to hitbuffer\\
 \hline
-\multicolumn{2}{|c|}{\rule{0pt}{2.5ex}End simulation if maximum iteration number or simulation time is reached}\\
+\multicolumn{2}{|c|}{\rule{0pt}{2.5ex}End simulation if maximum simulation time is reached}\\
 \hline
 \multicolumn{2}{l}{}\\[1ex]
 \hline
@@ -252,14 +269,13 @@
 \hline
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}simulateSub()}\\
 \hline
-\rule{0pt}{3ex} Input& hitbuffer, rank, simutime\\
-\rule{0pt}{3ex} \multirow{2}{*}{Output}& eos: indicates whether the simulation was ended early\\
-&facetNum: facets that have reached their covering threshold\\
-\hline
-\rule{0pt}{3ex} \multirow{4}{*}{Pipeline}& Update sticking and desorption rate from hitbuffer\\
-&Simulate until simutime or covering threshold reached\\
-&\qquad$\Rightarrow$ Avoid covering getting negative\\
-&Update hitbuffer from simulation\\
+\rule{0pt}{3ex}\multirow{2}{*}{targetParticles, targetError}& Calculate target values from overall target\\& and number sub processes\\
+\rule{0pt}{3ex}\multirow{2}{*}{\codew{simHistory->updateHistory()}}& Reset and Update SimulationHistory object\\& from hitbuffer\\
+%\rule{0pt}{3ex} StartSimulation()& Create first particle\\
+\rule{0pt}{3ex} SimulationRun()& Simulate for desired simulation time\\
+\rule{0pt}{3ex} \multirow{2}{*}{UpdateError()}& Calculate current error of sub process\\& End simulation if targets or covthresh reached\\
+\rule{0pt}{3ex} UpdateMCSubHits()& Save simulation results to hitbuffer\\
+%\rule{0pt}{3ex} ResetTmpCounters()& Reset simulation for next iteration\\
 \hline
 \end{tabular}
 \end{center}
@@ -284,13 +300,13 @@
 \rule{0pt}{3ex} GetMoleculesPerTP()& see equation \ref{eq:krealvirt} \\
 \rule{0pt}{3ex} \multirow{2}{*}{calctotalDesorption}& calculates desorption for\\
 &\codew{startFromSource()} \\
-\rule{0pt}{3ex} calcPressure(), calcParticleDensity()& has to be verified \\
+\rule{0pt}{3ex} calcPressure(), calcParticleDensity()& TODO has to be verified \\
 \hline
 \multicolumn{2}{l}{}\\[1ex]
 \hline
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}worker.cpp}\\
 \hline
-\rule{0pt}{3ex}\multirow{2}{*}{ CalcTotalOutgassingWorker()}& see equation \ref{eq:out}, calculates desorption\\
+\rule{0pt}{3ex}\multirow{2}{*}{CalcTotalOutgassingWorker()}& see equation \ref{eq:out}, calculates outgassing\\
 &for \codew{startFromSource()} \\
 \hline
 \multicolumn{2}{l}{}\\[1ex]
@@ -312,6 +328,7 @@
 \rule{0pt}{3ex} UpdateSticking()& Updates sticking\\
 \rule{0pt}{3ex} UpdateDesorptionRate()& Updates desorption rate \\
 \rule{0pt}{3ex} UpdateSojourn()& Updates sojourn freqency and energy \\
+\rule{0pt}{3ex} UpdateError()& Updates  error for current iteration, see equation \ref{eq:error}\\
 \hline
 \multicolumn{2}{l}{}\\[1ex]
 \hline
@@ -322,7 +339,7 @@
 \hline
 \end{tabular}
 \end{center}
-\newpage
+
 \subsection{UpdateMainProcess.cpp}
 \begin{center}
 \begin{tabular}{|l|l|}
@@ -337,9 +354,12 @@
 \hline
 \rule{0pt}{3ex} getStepSize()& Calculates step size for current step, see equation \ref{eq:tstep}\\
 \rule{0pt}{3ex} {manageStepSize()}&  Adapts step size if desorptionrate $\cdot$ step size $>$ than covering\\
-\rule{0pt}{3ex} \multirow{2}{*}{UpdateCovering()}& Uses time\_step and Krealvirt to calculate new covering\\
-& Saved to simHistory$\rightarrow$coveringList\\
+\rule{0pt}{3ex} \multirow{2}{*}{UpdateCovering()}& Uses step size and Krealvirt to calculate new covering\\
+& Saved to \codew{simHistory$\rightarrow$coveringList}\\
 \rule{0pt}{3ex} UpdateCoveringphys()& Saves current real covering to hitbuffer\\
+\rule{0pt}{3ex} \multirow{2}{*}{UpdateErrorMain()}& Calculates total error, see equation \ref{eq:error}\\
+& Saved to \codew{simHistory$\rightarrow$errorList}\\
+\rule{0pt}{3ex} {CalcPerIteration()}&  Calculates total error and covering over all facets per iteration\\
 \hline
 \end{tabular}
 \end{center}
@@ -363,3 +383,66 @@
 \end{tabular}
 \end{center}
 
+\subsection{Buffer.cpp}
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}Buffer functions}\\
+\hline
+\rule{0pt}{3ex}  \multirow{2}{*}{Databuff struct()}& signed int size \\& BYTE *buff\\
+\hline
+\rule{0pt}{3ex} checkReadable()& Checks if file can be opened for reading\\
+\rule{0pt}{3ex} checkWriteable()&  Checks if file can be openend or created for writing\\
+\rule{0pt}{3ex} importBuff()& Imports buffer file to Databuff struct\\
+\rule{0pt}{3ex} exportBuff()&  Exports Databuff struct to buffer file\\
+\hline
+\end{tabular}
+\end{center}
+
+%\chapter{Deprecated Functionalities}
+%
+%The following functionalities are deprecated. They can still be found in the code, but will not be updated or used as of now.
+%
+%\subsubsection{Application with standard parameters}
+%Call of ContaminationFlow Linux application with standard parameters in the command line:
+%
+%\code{
+%\$ module load mpi\\
+%\$ mpirun -n N ContaminationFlow loadbuffer hitbuffer save simulationtime unit}
+%\smallskip
+%with the following command line parameters:
+%\begin{itemize}[noitemsep,topsep=0pt]
+%\item n: desired number of worker processes; simulation on K=N-1 worker processes
+%\item MolflowLinux: path to application, e.g.\ \codew{\textasciitilde/MolflowLinux/Debug/MolflowLinux}
+%\item loadbuffer: path to loadbuffer file, contains geometry, e.g.\ \codew{\textasciitilde/loadbuffer}
+%\item hitbuffer: path to hitbuffer file, contains counters, etc., e.g.\ \codew{\textasciitilde/hitbuffer}
+%%\item resultbuffer: path to resultbuffer file, where the final hitbuffer is exported to,\\ e.g.\ \codew{\textasciitilde/resultbuffer}
+%\item save: determines whether result directory is created (1: true, 0:false), default:1
+%\item simulationtime: simulation time, e.g.\ \codew{2.5}
+%\item unit (optional): simulation time unit, e.g.\ \codew{min}; default: \codew{s}
+%\end{itemize}
+%
+%\subsubsection{Estimation of time step \codew{$T_{min}$}}
+%\begin{itemize}[noitemsep,topsep=0pt]
+%\item Determines minimum timestep for simulation, average time between outgassing/desorption and adsorption
+%\item $T_{min}$ computed in \codew{Iteration.cpp} file in \codew{estimateAverageFlightTime()} using simulationHistory: $\text{flightTime}/\text{nParticles}$ 
+%\end{itemize}
+%
+%\subsubsection{Management of time step \codew{$T_{min}$}}
+%\begin{itemize}[noitemsep,topsep=0pt]
+%\item Currently not used
+%\item Chooses larger value between \codew{estimateAverageFlightTime()} and \codew{getStepSize()}
+%\item Checks whether current time step would cause covering to get negative
+%\item Adapts time step if needed
+%\item Increments \codew{SimulationHistory::currentStep} if \codew{getStepSize()} chosen and not decreased
+%\item Management in \codew{UpdateMainProcess.cpp} file in \codew{manageTimeStep($\cdot$)}
+%\end{itemize}
+%
+%\subsubsection{Management of Simulation Time}
+%\begin{itemize}[noitemsep,topsep=0pt]
+%\item Increases simulation time (=computation time) per iteration if not enough particles desorbed
+%\item Adapts simulation time if needed
+%\item If enough desorption: compute maximum ratio $step size/computation time$
+%\item If not enough desorption: adapt computation time using ration $step size/computation time$
+%\item Management in \codew{UpdateMainProcess.cpp} file in \codew{manageSimulationTime($\cdot$)}
+%\end{itemize}

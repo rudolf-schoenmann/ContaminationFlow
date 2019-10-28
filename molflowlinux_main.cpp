@@ -219,6 +219,7 @@ int main(int argc, char *argv[]) {
 		it++;
 		// Start of Simulation
 		if (p->simulationTimeMS != 0) {
+			//usleep(1000);
 			MPI_Barrier(MPI_COMM_WORLD);
 
 			if(rank == 0){
@@ -241,8 +242,18 @@ int main(int argc, char *argv[]) {
 			setCoveringThreshold(&hitbuffer, world_size, rank);
 
 			UpdateSticking(&hitbuffer);
-			UpdateDesorptionRate(&hitbuffer);//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes
 			UpdateSojourn(&hitbuffer);
+			if(!UpdateDesorptionRate(&hitbuffer)){//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes
+				if(rank==0) {
+					std::cout <<"Desorption smaller than 1E-50. Ending Simulation." <<std::endl;
+					p->outFile <<"Desorption smaller than 1E-50. Ending Simulation." <<std::endl;
+					std::cout <<"Computation Time (Simulation only): " <<computedTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computedTime/1000.0) <<std::endl;
+					p->outFile <<"Computation Time (Simulation only): " <<computedTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computedTime/1000.0) <<std::endl;
+				}
+				break;
+			}
+
+
 			//----Simulation on subprocesses
 			if (rank != 0) {
 				/* do work in any remaining processes */
@@ -340,8 +351,8 @@ int main(int argc, char *argv[]) {
 			MPI_Bcast(&simHistory->lastTime, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
 			if((int)(simHistory->lastTime+0.5) >= p->maxTimeS){
 				if(rank==0) {
-					std::cout <<"maximum simulation time reached: " <<simHistory->lastTime  <<" >= " <<p->maxTimeS <<std::endl;
-					p->outFile <<"maximum simulation time reached: " <<simHistory->lastTime  <<" >= " <<p->maxTimeS <<std::endl;
+					std::cout <<"Maximum simulation time reached: " <<simHistory->lastTime  <<" >= " <<p->maxTimeS <<std::endl;
+					p->outFile <<"Maximum simulation time reached: " <<simHistory->lastTime  <<" >= " <<p->maxTimeS <<std::endl;
 					std::cout <<"Computation Time (Simulation only): " <<computedTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computedTime/1000.0) <<std::endl;
 					p->outFile <<"Computation Time (Simulation only): " <<computedTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computedTime/1000.0) <<std::endl;
 				}
