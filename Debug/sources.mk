@@ -31,5 +31,4 @@ molflowlinux_sub/Source_files_shared_sources \
 molflowlinux_sub/TruncatedGaussian \
 molflowlinux_sub/boost/asio/impl \
 molflowlinux_sub/boost/spirit/home/support/char_encoding/unicode \
-molflowlinux_sub \
 

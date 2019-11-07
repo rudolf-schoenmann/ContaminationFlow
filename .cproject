@@ -27,7 +27,6 @@
 									<listOptionValue builtIn="false" value="/usr/include/gsl"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MolflowLinux}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MolflowLinux/molflowlinux_sub/}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MolflowLinux/molflowlinux_sub/include1}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MolflowLinux/molflowlinux_sub/Header}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MolflowLinux/molflowlinux_sub/cereal/external/rapidjson}&quot;"/>
