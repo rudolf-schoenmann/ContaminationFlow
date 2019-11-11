@@ -399,7 +399,7 @@ void PerformTeleport(SubprocessFacet *iFacet) {
 	//Search destination
 	SubprocessFacet *destination;
 	bool found = false;
-	bool revert = false;
+	//bool revert = false;
 	int destIndex;
 	if (iFacet->sh.teleportDest == -1) {
 		destIndex = sHandle->currentParticle.teleportedFrom;
@@ -492,7 +492,7 @@ void PerformTeleport(SubprocessFacet *iFacet) {
 }
 
 // Perform nbStep simulation steps (a step is a bounce)
-bool SimulationMCStep(size_t nbStep, Databuff *hitbuffer) {
+bool SimulationMCStep(size_t nbStep) {
 	// Perform simulation steps
 	for (size_t i = 0; i < nbStep; i++) {
 
@@ -707,7 +707,8 @@ bool StartFromSource() {
 		if (!found) j++;
 	}
 	if (!found) {
-		SetErrorSub("No starting point, aborting");
+		//SetErrorSub("No starting point, aborting");
+		std::cout <<"No starting point, aborting" <<std::endl;
 		return false;
 	}
 
@@ -932,7 +933,8 @@ bool StartFromSource() {
 	if (src->sh.superIdx == -1) {
 		std::ostringstream out;
 		out << "Facet " << (src->globalId + 1) << " is in all structures, it shouldn't desorb.";
-		SetErrorSub(out.str().c_str());
+		//SetErrorSub(out.str().c_str());
+		std::cout <<out.str().c_str() <<std::endl;
 		return false;
 	}
 	sHandle->currentParticle.structureId = src->sh.superIdx;
@@ -1262,6 +1264,9 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 		if (/*iFacet->texture &&*/ iFacet->sh.countAbs) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, true, 2.0, 1.0); //was 2.0, 1.0
 		if (/*iFacet->direction &&*/ iFacet->sh.countDirection) RecordDirectionVector(iFacet, sHandle->currentParticle.flightTime);
 
+		//NEW: to detect whether new particle has to be created
+		sHandle->currentParticle.lastHitFacet=NULL;
+
 		return false;
 	}
 
@@ -1297,6 +1302,9 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 		ProfileFacet(iFacet, sHandle->currentParticle.flightTime, true, 1.0, 0.0); //was 2.0, 1.0
 		if (/*iFacet->texture &&*/ iFacet->sh.countAbs) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, true, 1.0, 0.0); //was 2.0, 1.0
 		if (iFacet->sh.anglemapParams.record) RecordAngleMap(iFacet);
+
+		//NEW: to detect whether new particle has to be created
+		sHandle->currentParticle.lastHitFacet=NULL;
 
 		return false;
 	}
@@ -1392,6 +1400,9 @@ void RecordAbsorb(SubprocessFacet *iFacet) {
 	if (iFacet->sh.anglemapParams.record) RecordAngleMap(iFacet);
 	if (/*iFacet->texture &&*/ iFacet->sh.countAbs) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, true, 2.0, 1.0); //was 2.0, 1.0
 	if (/*iFacet->direction &&*/ iFacet->sh.countDirection) RecordDirectionVector(iFacet, sHandle->currentParticle.flightTime);
+
+	//NEW: to detect whether new particle has to be created
+	sHandle->currentParticle.lastHitFacet=NULL;
 }
 
 void RecordHistograms(SubprocessFacet * iFacet)

@@ -15,7 +15,6 @@ RM := rm -rf
 -include molflowlinux_sub/Source_files_molflow/subdir.mk
 -include molflowlinux_sub/Source_files_linux/subdir.mk
 -include molflowlinux_sub/GLApp/subdir.mk
--include molflowlinux_sub/subdir.mk
 -include subdir.mk
 -include objects.mk
 

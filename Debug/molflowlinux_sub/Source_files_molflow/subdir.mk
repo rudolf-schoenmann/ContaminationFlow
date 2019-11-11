@@ -7,28 +7,22 @@ CPP_SRCS += \
 ../molflowlinux_sub/Source_files_molflow/MolflowTypes.cpp \
 ../molflowlinux_sub/Source_files_molflow/Parameter.cpp \
 ../molflowlinux_sub/Source_files_molflow/Simulation.cpp \
-../molflowlinux_sub/Source_files_molflow/SimulationAC.cpp \
 ../molflowlinux_sub/Source_files_molflow/SimulationControl.cpp \
-../molflowlinux_sub/Source_files_molflow/SimulationMC.cpp \
-../molflowlinux_sub/Source_files_molflow/molflowSub.cpp 
+../molflowlinux_sub/Source_files_molflow/SimulationMC.cpp 
 
 OBJS += \
 ./molflowlinux_sub/Source_files_molflow/MolflowTypes.o \
 ./molflowlinux_sub/Source_files_molflow/Parameter.o \
 ./molflowlinux_sub/Source_files_molflow/Simulation.o \
-./molflowlinux_sub/Source_files_molflow/SimulationAC.o \
 ./molflowlinux_sub/Source_files_molflow/SimulationControl.o \
-./molflowlinux_sub/Source_files_molflow/SimulationMC.o \
-./molflowlinux_sub/Source_files_molflow/molflowSub.o 
+./molflowlinux_sub/Source_files_molflow/SimulationMC.o 
 
 CPP_DEPS += \
 ./molflowlinux_sub/Source_files_molflow/MolflowTypes.d \
 ./molflowlinux_sub/Source_files_molflow/Parameter.d \
 ./molflowlinux_sub/Source_files_molflow/Simulation.d \
-./molflowlinux_sub/Source_files_molflow/SimulationAC.d \
 ./molflowlinux_sub/Source_files_molflow/SimulationControl.d \
-./molflowlinux_sub/Source_files_molflow/SimulationMC.d \
-./molflowlinux_sub/Source_files_molflow/molflowSub.d 
+./molflowlinux_sub/Source_files_molflow/SimulationMC.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
