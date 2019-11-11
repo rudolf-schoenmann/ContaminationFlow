@@ -329,7 +329,9 @@ public:
 
 	//TODO testing
 	int coveringLimit;
-	llong coveringMin;
+	//double coveringMinFactor;
+	//double coveringMaxFactor;
+	llong coveringMinThresh;
 
 	//These cannot be given, but are computed from other variables
 	int simulationTimeMS;
@@ -363,7 +365,7 @@ public:
 	void appendList(Databuff *hitbuffer, double time=-1.0);
 	void print(bool write=false);
 	void write(std::string path);
-	bool updateHistory(Databuff *hitbuffer);
+	std::tuple<bool, llong > updateHistory(Databuff *hitbuffer);
 
 
 };
@@ -423,6 +425,7 @@ llong getnbDesorbed(SubprocessFacet *iFacet, Databuff *hitbuffer);
 llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
 double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer);
 
+double calcStep(long double var, double start, double end, double step, double Wtr);
 double calcEnergy(SubprocessFacet *iFacet, Databuff *hitbuffer);
 
 boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum, llong nbDesorbed_old);

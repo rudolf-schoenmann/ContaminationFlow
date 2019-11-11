@@ -1264,6 +1264,9 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 		if (/*iFacet->texture &&*/ iFacet->sh.countAbs) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, true, 2.0, 1.0); //was 2.0, 1.0
 		if (/*iFacet->direction &&*/ iFacet->sh.countDirection) RecordDirectionVector(iFacet, sHandle->currentParticle.flightTime);
 
+		//NEW: to detect whether new particle has to be created
+		sHandle->currentParticle.lastHitFacet=NULL;
+
 		return false;
 	}
 
@@ -1299,6 +1302,9 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 		ProfileFacet(iFacet, sHandle->currentParticle.flightTime, true, 1.0, 0.0); //was 2.0, 1.0
 		if (/*iFacet->texture &&*/ iFacet->sh.countAbs) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, true, 1.0, 0.0); //was 2.0, 1.0
 		if (iFacet->sh.anglemapParams.record) RecordAngleMap(iFacet);
+
+		//NEW: to detect whether new particle has to be created
+		sHandle->currentParticle.lastHitFacet=NULL;
 
 		return false;
 	}
@@ -1394,6 +1400,9 @@ void RecordAbsorb(SubprocessFacet *iFacet) {
 	if (iFacet->sh.anglemapParams.record) RecordAngleMap(iFacet);
 	if (/*iFacet->texture &&*/ iFacet->sh.countAbs) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, true, 2.0, 1.0); //was 2.0, 1.0
 	if (/*iFacet->direction &&*/ iFacet->sh.countDirection) RecordDirectionVector(iFacet, sHandle->currentParticle.flightTime);
+
+	//NEW: to detect whether new particle has to be created
+	sHandle->currentParticle.lastHitFacet=NULL;
 }
 
 void RecordHistograms(SubprocessFacet * iFacet)
