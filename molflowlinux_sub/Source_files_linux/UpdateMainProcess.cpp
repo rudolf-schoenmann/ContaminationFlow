@@ -83,8 +83,12 @@ double manageStepSize(bool updateCurrentStep){
 				std::cout <<"Facet" <<getFacetIndex(&f)<<":\t CovDiff = Cov_before - Cov_now = "<<covering_phys_before <<" - " <<covering_phys<<" = "<<CovDiff <<"\t time_now-time_before = " <<CurrTime<<"\t If clause : "<<CovDiff*boost::multiprecision::float128(step_size)/CurrTime<<" >? " <<covering_phys<<std::endl;
 				if(CovDiff*boost::multiprecision::float128(step_size)/CurrTime > static_cast<boost::multiprecision::float128>(covering_phys)){
 					//boost::multiprecision::float128 test_size = static_cast<boost::multiprecision::float128>(covering_phys) * CurrTime/CovDiff;
-					//step_size= 0.9 * test_size.convert_to<double>();
+					//step_size= 0.1 * test_size.convert_to<double>();
 					//incrCurrentStep=false;
+					// Müssen uns hier noch was Gescheites überlegen. Rauschen und Oszillationen spielen eine Rolle bei langen Schritten,
+					// da bei gleicher Hitzahl die Zahl der Änderung von covering zurückgeht. Daher steigt Krealvirt. Somit wird Krealvirt größer.
+					// Der Zeitschritt wird auch größer. Die Coveringdifferenz wird multipliziert mit Krealwirt*Zeitschritt.
+					// Insofern werden Abweichungen vom theoretisch konvergierendem Wert immer mehr Verstärkt, je größer der Zeitschritt ist.
 				}
 
 			}*/
