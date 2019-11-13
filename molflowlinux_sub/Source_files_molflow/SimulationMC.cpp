@@ -496,6 +496,9 @@ bool SimulationMCStep(size_t nbStep) {
 	// Perform simulation steps
 	for (size_t i = 0; i < nbStep; i++) {
 
+		//Missing: Treat the case that particle flighttime is larger than time step (because of sojourn before desorption)
+		// => particle does not desorb => count as adsorbed. Start new particle.
+
 		//Prepare output values
 		bool found; SubprocessFacet *collidedFacet; double d;
 		std::tie(found, collidedFacet, d) = Intersect(sHandle, sHandle->currentParticle.position, sHandle->currentParticle.direction);
@@ -811,6 +814,13 @@ bool StartFromSource() {
 		}
 
 	}
+	//--------------------------------------Sojourn time begin----------------------------------------------
+		double flightTime=sHandle->currentParticle.flightTime;
+		if (src->sh.enableSojournTime) {
+			double A = exp(-src->sh.sojournE / (kb*src->sh.temperature));
+			sHandle->currentParticle.flightTime += -log(rnd()) / (A*src->sh.sojournFreq);
+		}
+	//----------------------------------------Sojourn time end----------------------------------------------
 
 	if (src->sh.isMoving && sHandle->wp.motionType) RecordHit(HIT_MOVING);
 	else RecordHit(HIT_DES); //create blue hit point for created particle
