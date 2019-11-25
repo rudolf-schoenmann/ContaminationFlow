@@ -208,9 +208,10 @@ int main(int argc, char *argv[]) {
 			initbufftozero(&hitbuffer);
 		}
 		else{
-
 			simHistory = new SimulationHistory(world_size);
 		}
+
+		MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 	}
 
 //----Simulation
@@ -231,7 +232,16 @@ int main(int argc, char *argv[]) {
 			// reset buffer (except covering) before sending to sub processes
 			initbufftozero(&hitbuffer);
 
-			MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
+			for(unsigned int i=0; i<simHistory->numFacet;i++){
+				MPI_Bcast(&simHistory->coveringList.currentList[i], 16, MPI::BYTE,0,MPI_COMM_WORLD);
+			}
+
+			for(int i=0; i<world_size;i++){
+				MPI_Barrier(MPI_COMM_WORLD);
+				if(rank==i)
+					simHistory->coveringList.printCurrent(std::to_string(rank)+": coveringList at beginning of iteration");}
+
+			//MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 
 			MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
 
@@ -239,11 +249,11 @@ int main(int argc, char *argv[]) {
 			MPI_Barrier(MPI_COMM_WORLD);
 
 			//End simulation step if covering reaches threshold (covering -covering/(size-1))
-			setCoveringThreshold(&hitbuffer, world_size, rank);
+			setCoveringThreshold(world_size, rank);
 
-			UpdateSticking(&hitbuffer);
-			UpdateSojourn(&hitbuffer);
-			if(!UpdateDesorptionRate(&hitbuffer)){//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes
+			UpdateSticking();
+			UpdateSojourn();
+			if(!UpdateDesorptionRate()){//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes
 				if(rank==0) {
 					std::cout <<"Desorption smaller than 1E-50. Ending Simulation." <<std::endl;
 					p->outFile <<"Desorption smaller than 1E-50. Ending Simulation." <<std::endl;
@@ -261,7 +271,7 @@ int main(int argc, char *argv[]) {
 
 				//Do the simulation
 				bool eos; std::vector<int> facetNum;
-				std::tie(eos, facetNum) = simulateSub(&hitbuffer, rank, p->simulationTimeMS);
+				std::tie(eos, facetNum) = simulateSub2(&hitbuffer, rank, p->simulationTimeMS);
 				MPI_Barrier(MPI_COMM_WORLD);
 				if (eos) {
 					if(sHandle->posCovering)
