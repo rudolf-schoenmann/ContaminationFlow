@@ -28,6 +28,43 @@ extern SimulationHistory* simHistory;
 extern Simulation *sHandle;
 
 //Estimation of Tmin
+double estimateTmin(){
+	double sum_v_ort=0;
+	double sum_1_v_ort=0;
+	double facetcounter=0;
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+				//sum_1_v_orth
+				//sum_1_v_ort+=f.tmpCounter[m].hit.sum_1_per_ort_velocity*f.sh.area;
+				sum_v_ort+=f.tmpCounter[0].hit.sum_v_ort;
+				sum_1_v_ort+=f.tmpCounter[0].hit.sum_1_per_velocity;
+				facetcounter++;
+		}
+	}
+	double dist_total=0.01*(double)sHandle->tmpGlobalResult.distTraveled_total; //factor 0.01 to convert distance from cm to m.
+	//Muss geändert werden, da diese Werte Null sind im Prozess Null.
+	//double hits= (double)sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;//Muss geändert werden, da diese Werte Null sind im Prozess Null.
+	double hits2= pow((double)sHandle->tmpGlobalResult.globalHits.hit.nbMCHit,2);//Muss geändert werden, da diese Werte Null sind im Prozess Null.
+	//double particlenumber = (double)sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed;//Muss geändert werden, da diese Werte Null sind im Prozess Null.
+	/*
+	std::cout << "_______________________________________________________________________________________________________"<< std::endl;
+	std::cout <<"Current version of estimate Tmin"<< std::endl;
+	std::cout <<"dist total [m]\t\t" << dist_total << std::endl;
+	std::cout <<"hits \t\t\t" << hits << std::endl;
+	std::cout <<"hits^2 \t\t\t" << hits2 << std::endl;
+	std::cout <<"sum_v_ort [m/s]\t\t" << sum_v_ort<< std::endl;
+	std::cout <<"<v_ort>[m/s]\t\t"<< sum_v_ort/hits << std::endl;
+	std::cout <<"1/<v_ort>[s/m]\t\t"<< hits/sum_v_ort<< std::endl;
+	std::cout <<"sum_1_v_ort [s/m]\t" << sum_1_v_ort << std::endl;
+	std::cout <<"<1/v_ort>[s/m]\t\t"<<sum_1_v_ort/hits << std::endl;
+	std::cout <<"Alternative 1 for Tmin\t (dist_total*1000)/sum_v_ort [ms]\t" <<dist_total*1000/sum_v_ort <<std::endl;
+	std::cout <<"Alternative 3 for Tmin\t(dist_total/hits^2)*1000*sum_1_v_ort [ms]\t" <<(dist_total/hits2)*1000*sum_1_v_ort <<std::endl;
+	std::cout << "Currently used: Alternative 3" << std::endl;
+	std::cout << "_______________________________________________________________________________________________________"<< std::endl;
+	*/
+	return (dist_total/hits2)*sum_1_v_ort*1000;
+}
+
 double estimateTmin_RudiTest(Databuff *hitbuffer){ //not ready yet => finish //TODO
 BYTE *buffer;
 buffer = hitbuffer->buff;
@@ -35,7 +72,7 @@ buffer = hitbuffer->buff;
 	double tmin=0;
 	double sum_v_avg = 0;
 	double normalization_factor_v = 0;
-	llong covering;
+	//llong covering;
 	//avarage of <v> (<v> is the average velocity on a single facet depending on temperature)
     // over all facets weighted with the rate of outgoing particles (outgassing + desorption) per facet
 	double tmin_particles_out = 0;
@@ -89,44 +126,6 @@ double estimateAverageFlightTime(){
 	return simHistory->flightTime/simHistory->nParticles;
 }
 
-
-double estimateTmin(){
-	double sum_v_ort=0;
-	double sum_1_v_ort=0;
-	double facetcounter=0;
-	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				//sum_1_v_orth
-				//sum_1_v_ort+=f.tmpCounter[m].hit.sum_1_per_ort_velocity*f.sh.area;
-				sum_v_ort+=f.tmpCounter[0].hit.sum_v_ort;
-				sum_1_v_ort+=f.tmpCounter[0].hit.sum_1_per_velocity;
-				facetcounter++;
-		}
-	}
-	double dist_total=0.01*(double)sHandle->tmpGlobalResult.distTraveled_total; //factor 0.01 to convert distance from cm to m.
-	//Muss geändert werden, da diese Werte Null sind im Prozess Null.
-	double hits= (double)sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;//Muss geändert werden, da diese Werte Null sind im Prozess Null.
-	double hits2= pow((double)sHandle->tmpGlobalResult.globalHits.hit.nbMCHit,2);//Muss geändert werden, da diese Werte Null sind im Prozess Null.
-	double particlenumber = (double)sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed;//Muss geändert werden, da diese Werte Null sind im Prozess Null.
-	/*
-	std::cout << "_______________________________________________________________________________________________________"<< std::endl;
-	std::cout <<"Current version of estimate Tmin"<< std::endl;
-	std::cout <<"dist total [m]\t\t" << dist_total << std::endl;
-	std::cout <<"hits \t\t\t" << hits << std::endl;
-	std::cout <<"hits^2 \t\t\t" << hits2 << std::endl;
-	std::cout <<"sum_v_ort [m/s]\t\t" << sum_v_ort<< std::endl;
-	std::cout <<"<v_ort>[m/s]\t\t"<< sum_v_ort/hits << std::endl;
-	std::cout <<"1/<v_ort>[s/m]\t\t"<< hits/sum_v_ort<< std::endl;
-	std::cout <<"sum_1_v_ort [s/m]\t" << sum_1_v_ort << std::endl;
-	std::cout <<"<1/v_ort>[s/m]\t\t"<<sum_1_v_ort/hits << std::endl;
-	std::cout <<"Alternative 1 for Tmin\t (dist_total*1000)/sum_v_ort [ms]\t" <<dist_total*1000/sum_v_ort <<std::endl;
-	std::cout <<"Alternative 3 for Tmin\t(dist_total/hits^2)*1000*sum_1_v_ort [ms]\t" <<(dist_total/hits2)*1000*sum_1_v_ort <<std::endl;
-	std::cout << "Currently used: Alternative 3" << std::endl;
-	std::cout << "_______________________________________________________________________________________________________"<< std::endl;
-	*/
-	return (dist_total/hits2)*sum_1_v_ort*1000;
-}
-
 //-----------------------------------------------------------
 //Functions for covering threshold
 
@@ -170,21 +169,6 @@ void setCoveringThreshold(Databuff *hitbuffer, int size, int rank){
 					{cov_sim=facetHitBuffer->hit.covering/num_sim;}
 
 				sHandle->coveringThreshold[getFacetIndex(&f)]=facetHitBuffer->hit.covering-cov_sim;
-			}
-	}
-}
-
-void setCoveringThreshold(int size, int rank){
-	llong num_sim=size-1;
-	llong cov_sim; //number of particles that can be desorbed from facet
-	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-			for (SubprocessFacet& f : sHandle->structures[j].facets) {
-				if(rank==1)
-					{cov_sim=simHistory->coveringList.getCurrent(&f).convert_to<llong>()/num_sim + simHistory->coveringList.getCurrent(&f).convert_to<llong>()%num_sim;}
-				else
-					{cov_sim=simHistory->coveringList.getCurrent(&f).convert_to<llong>()/num_sim;}
-
-				sHandle->coveringThreshold[getFacetIndex(&f)]=simHistory->coveringList.getCurrent(&f).convert_to<llong>()-cov_sim;
 			}
 	}
 }
