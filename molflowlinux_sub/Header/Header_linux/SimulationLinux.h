@@ -185,6 +185,19 @@ public:
 		out<<tmpstream.str();
 	}
 
+	void printCurrent(std::string msg= ""){
+		std::ostringstream tmpstream (std::ostringstream::app);
+
+		tmpstream<<"    " <<std::setw(12)<<std::left<<msg;
+
+		for(uint i=0;i<currentList.size();i++)
+		{
+			tmpstream <<"\t" <<std::setw(12)<<std::right <<currentList[i];
+		}
+		tmpstream<<std::endl;
+		std::cout<<tmpstream.str();
+	}
+
 	void write(std::string filename){
 
 		std::ofstream out(filename,std::ofstream::out|std::ios::trunc);
@@ -317,7 +330,6 @@ public:
 	//double E_ad;
 	double d;
 	double sticking;
-	int coveringLimit;
 
 	double H_vap;
 	double W_tr;
@@ -327,6 +339,15 @@ public:
 
 	double hitRatioLimit;
 	double Tmin;
+
+	//TODO testing
+	int coveringLimit;
+	//double coveringMinFactor;
+	//double coveringMaxFactor;
+	llong coveringMinThresh;
+
+	double maxStepSize;
+	int maxSimPerIt;
 
 	//These cannot be given, but are computed from other variables
 	int simulationTimeMS;
@@ -343,6 +364,8 @@ public:
 	HistoryList<llong> desorbedList;
 	HistoryList<double> errorList;
 
+	bool startNewParticle;
+
 
 	unsigned int numFacet;
 	int numSubProcess;
@@ -358,10 +381,12 @@ public:
 	//double StepSizeComputationTimeFactor;
 
 	void appendList(Databuff *hitbuffer, double time=-1.0);
+	void appendList(double time=-1.0);
+
 	void print(bool write=false);
 	void write(std::string path);
-	void updateHistory(Databuff *hitbuffer);
-
+	std::tuple<bool, llong > updateHistory(Databuff *hitbuffer);
+	std::tuple<bool, llong > updateHistory();
 
 };
 
@@ -377,6 +402,8 @@ public:
 //-----------------------------------------------------------
 //SimulationLinux.cpp
 std::tuple<bool, std::vector<int> >  simulateSub(Databuff *hitbuffer, int rank, int simutime);
+std::tuple<bool, std::vector<int> >  simulateSub2(Databuff *hitbuffer, int rank, int simutime);
+
 double convertunit(double simutime, std::string unit);
 
 void printConsole(std::string str,std::ofstream outFile);
@@ -387,8 +414,13 @@ void printConsole(std::string str,std::ofstream outFile);
 //UpdateSubProcess.cpp
 
 void UpdateSticking(Databuff *hitbuffer);
+void UpdateSticking();
+
 bool UpdateDesorptionRate (Databuff *hitbuffer);
+bool UpdateDesorptionRate();
+
 void UpdateSojourn(Databuff *hitbuffer);
+void UpdateSojourn();
 double UpdateError();
 void UpdateErrorSub();
 
@@ -399,8 +431,6 @@ void initbufftozero(Databuff *databuffer);
 
 //-----------------------------------------------------------
 //UpdateMainProcess.cpp
-
-//double manageSimulationTime(double computationTime, bool adaptStep);
 
 double manageStepSize(bool updateCurrentStep=false);
 
@@ -420,23 +450,30 @@ std::tuple<std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  C
 llong getnbDesorbed(Databuff *hitbuffer_sum);
 llong getnbDesorbed(SubprocessFacet *iFacet, Databuff *hitbuffer);
 llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
+boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet);
 double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer);
 
+double calcStep(long double var, double start, double end, double step, double Wtr);
 double calcEnergy(SubprocessFacet *iFacet, Databuff *hitbuffer);
+double calcEnergy(SubprocessFacet *iFacet);
 
 boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum, llong nbDesorbed_old);
 void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
+void calcStickingnew(SubprocessFacet *iFacet);
 boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
-
+boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet);
 
 //-----------------------------------------------------------
 //Iteration.cpp
+/*
 double estimateTmin();
 double estimateAverageFlightTime();
+*/
 double estimateTmin_RudiTest(Databuff *hitbuffer);
 
 //void allocateCovering(Databuff *hitbuffer, int size, int rank);
 void setCoveringThreshold(Databuff *hitbuffer, int size, int rank);
+void setCoveringThreshold(int size, int rank);
 void initCoveringThresh();
 
 //-----------------------------------------------------------

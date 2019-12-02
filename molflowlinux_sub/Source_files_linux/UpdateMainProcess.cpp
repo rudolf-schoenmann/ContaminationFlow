@@ -39,7 +39,7 @@ double getStepSize(){
 	double t_start = T_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/(T_min))/(double)p->iterationNumber));
 	double t_stop = T_min*exp((double)(simHistory->currentStep+1)*(log(p->maxTimeS/(T_min))/(double)p->iterationNumber));
 	double Delta = t_stop - t_start;
-	return Delta;
+	return Delta < p->maxStepSize ? Delta : p->maxStepSize;
 	/*if(simHistory->currentStep==0){
 		double T_min = estimateAverageFlightTime();
 		return T_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/T_min)/(double)p->iterationNumber));
@@ -385,7 +385,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 		simHistory->errorList.printCurrent(std::cout);
 
 		//if targetError not reached: do not update currentstep
-		if(error/area < /*1.05**/p->targetError)
+		if(error/area < /*1.05**/p->targetError && time_step < p->maxStepSize)
 			{time_step = manageStepSize(true);}
 		else
 			{time_step = manageStepSize(false);}
