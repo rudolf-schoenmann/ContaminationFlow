@@ -133,11 +133,27 @@ boost::multiprecision::float128 calctotalDesorption(){// desorptionrate as well 
 	return desrate;
 }
 
+double calcStep(long double var, double start, double end, double step, double Wtr){
+
+	if(start==end)
+		return start;
+	else if(start>end)
+		return (double)tanh((step-var) * (2*tuneE)/Wtr) * (start - end)/2 +(start+end)/2; //tanh(adjust width) * adjust height + adjust bias
+	else
+		return (-1.0)*(double)tanh((step-var) * (2*tuneE)/Wtr) * (start - end)/2 +(start+end)/2; //-tanh(adjust width) * adjust height + adjust bias
+}
+
 double calcEnergy(SubprocessFacet *iFacet, Databuff *hitbuffer){ //TODO verify
+	/*
 	long double coverage=calcCoverage(iFacet,hitbuffer);
 
-	return (double)tanh((1-coverage) * (2*tuneE)/p->W_tr) * (p->E_de - p->H_vap)/2 +(p->E_de+p->H_vap)/2; //tanh(adjust width) * adjust height + adjust bias
-
+	if(p->E_de>p->H_vap)
+		return (double)tanh((1-coverage) * (2*tuneE)/p->W_tr) * (p->E_de - p->H_vap)/2 +(p->E_de+p->H_vap)/2; //tanh(adjust width) * adjust height + adjust bias
+	else
+		return -1.0*(double)tanh((1-coverage) * (2*tuneE)/p->W_tr) * (p->E_de - p->H_vap)/2 +(p->E_de+p->H_vap)/2; //-tanh(adjust width) * adjust height + adjust bias
+		*/
+	long double coverage=calcCoverage(iFacet,hitbuffer);
+	return calcStep(coverage, p->E_de, p->H_vap,1, p->W_tr);
 }
 
 double calcEnergy(SubprocessFacet *iFacet){ //TODO verify
@@ -267,11 +283,12 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet, Databuff
 		//return boost::multiprecision::pow(boost::multiprecision::float128(10.),boost::multiprecision::float128(-100.));
 	}
 
-	boost::multiprecision::float128 tau_1=static_cast<boost::multiprecision::float128>(1.0/(h/(kb*temperature)));
+	boost::multiprecision::float128 d = boost::multiprecision::float128(calcStep((long double)(coverage), 1, 0, 1, p->W_tr));
+	boost::multiprecision::float128 tau_1=static_cast<boost::multiprecision::float128>(1.0)/static_cast<boost::multiprecision::float128>(h/(kb*temperature));
 
 	boost::multiprecision::float128 energy_de=static_cast<boost::multiprecision::float128>(calcEnergy(iFacet,hitbuffer));
 
-	desorption = tau_1 * boost::multiprecision::pow(coverage,static_cast<boost::multiprecision::float128>(p->d)) *boost::multiprecision::exp(-energy_de/static_cast<boost::multiprecision::float128>(kb*temperature));
+	desorption = tau_1 * boost::multiprecision::pow(coverage,static_cast<boost::multiprecision::float128>(d)) *boost::multiprecision::exp(-energy_de/static_cast<boost::multiprecision::float128>(kb*temperature));
 	//if (Desorption Energy/Temperature) >~ 1.02E-20J/K, desorption will be zero
 
 	/*if(desorption.convert_to<long double>()==0.0 || desorption.convert_to<double>()==0.0){

@@ -467,9 +467,9 @@ boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet);
 //Iteration.cpp
 /*
 double estimateTmin();
-double estimateAverageFlightTime();
-*/
 double estimateTmin_RudiTest(Databuff *hitbuffer);
+*/
+double estimateAverageFlightTime();
 
 //void allocateCovering(Databuff *hitbuffer, int size, int rank);
 void setCoveringThreshold(Databuff *hitbuffer, int size, int rank);

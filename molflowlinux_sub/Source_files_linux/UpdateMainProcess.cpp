@@ -49,39 +49,6 @@ double getStepSize(){
 		}*/
 
 }
-/*
-double manageSimulationTime(double computationTime, bool adaptStep){
-	if(adaptStep){
-		double newtime=manageStepSize(false)/simHistory->StepSizeComputationTimeFactor;
-
-		std::cout <<"Stepsize in ms " <<manageStepSize(false) <<std::endl;
-		std::cout <<"New Time " <<1.2*newtime <<std::endl;
-
-		p->outFile <<"Stepsize in ms " <<manageStepSize(false) <<std::endl;
-		p->outFile <<"new Time " <<1.2*newtime <<std::endl;
-
-
-		if(0.9*newtime>p->simulationTimeMS&&0.9*newtime<1.5*p->simulationTimeMS){
-			p->simulationTimeMS=0.9*newtime;
-		}
-		else{
-			p->simulationTimeMS*=1.1;
-		}
-
-		return 1.2*newtime;
-
-	}
-	else{
-		double factor= manageStepSize(false)/computationTime;
-		if(factor>simHistory->StepSizeComputationTimeFactor){simHistory->StepSizeComputationTimeFactor=factor;}
-		std::cout <<"Factor for comp time " <<computationTime <<" and stepSize " <<manageStepSize(false) <<" " <<simHistory->StepSizeComputationTimeFactor <<std::endl;
-		std::cout <<"Mock Time " <<manageStepSize(false)/simHistory->StepSizeComputationTimeFactor <<std::endl;
-
-		p->outFile <<"Factor for comp time " <<computationTime <<" and stepSize " <<manageStepSize(false) <<" " <<simHistory->StepSizeComputationTimeFactor <<std::endl;
-		p->outFile <<"Mock Time " <<manageStepSize(false)/simHistory->StepSizeComputationTimeFactor <<std::endl;
-		return p->simulationTimeMS;
-	}
-}*/
 
 double manageStepSize(bool updateCurrentStep){
 	double step_size = getStepSize();
@@ -95,6 +62,11 @@ double manageStepSize(bool updateCurrentStep){
 			boost::multiprecision::uint128_t covering_phys = simHistory->coveringList.getLast(&f);
 			boost::multiprecision::uint128_t covering_phys_before = simHistory->coveringList.pointintime_list[sizeList-2].second[getFacetIndex(&f)];
 
+			if(updateCurrentStep){
+				std::cout <<"Facet "<<getFacetIndex(&f) <<": " <<(f.sh.desorption/boost::multiprecision::float128(kb* f.sh.temperature))*boost::multiprecision::float128(step_size) +boost::multiprecision::float128(0.5) <<" >? " <<boost::multiprecision::float128(covering_phys) <<std::endl;
+				p->outFile<<"Facet "<<getFacetIndex(&f) <<": " <<(f.sh.desorption/boost::multiprecision::float128(kb* f.sh.temperature))*boost::multiprecision::float128(step_size) +boost::multiprecision::float128(0.5) <<" >? " <<boost::multiprecision::float128(covering_phys) <<std::endl;
+			}
+
 			if ((boost::multiprecision::uint128_t)((f.sh.desorption/boost::multiprecision::float128(kb* f.sh.temperature))*boost::multiprecision::float128(step_size) +boost::multiprecision::float128(0.5))>covering_phys){
 
 				boost::multiprecision::float128 test_size=boost::multiprecision::float128(covering_phys)/(f.sh.desorption/boost::multiprecision::float128(kb* f.sh.temperature));
@@ -102,7 +74,7 @@ double manageStepSize(bool updateCurrentStep){
 
 				incrCurrentStep=false;
 			}
-
+			/*
 			if(covering_phys < covering_phys_before && sizeList>1) //covering_pyhs-covering_phys_before < 0
 			{
 				boost::multiprecision::float128 CovDiff=static_cast<boost::multiprecision::float128>(covering_phys_before-covering_phys);
@@ -111,11 +83,15 @@ double manageStepSize(bool updateCurrentStep){
 				std::cout <<"Facet" <<getFacetIndex(&f)<<":\t CovDiff = Cov_before - Cov_now = "<<covering_phys_before <<" - " <<covering_phys<<" = "<<CovDiff <<"\t time_now-time_before = " <<CurrTime<<"\t If clause : "<<CovDiff*boost::multiprecision::float128(step_size)/CurrTime<<" >? " <<covering_phys<<std::endl;
 				if(CovDiff*boost::multiprecision::float128(step_size)/CurrTime > static_cast<boost::multiprecision::float128>(covering_phys)){
 					//boost::multiprecision::float128 test_size = static_cast<boost::multiprecision::float128>(covering_phys) * CurrTime/CovDiff;
-					//step_size= 0.9 * test_size.convert_to<double>();
+					//step_size= 0.1 * test_size.convert_to<double>();
 					//incrCurrentStep=false;
+					// Müssen uns hier noch was Gescheites überlegen. Rauschen und Oszillationen spielen eine Rolle bei langen Schritten,
+					// da bei gleicher Hitzahl die Zahl der Änderung von covering zurückgeht. Daher steigt Krealvirt. Somit wird Krealvirt größer.
+					// Der Zeitschritt wird auch größer. Die Coveringdifferenz wird multipliziert mit Krealwirt*Zeitschritt.
+					// Insofern werden Abweichungen vom theoretisch konvergierendem Wert immer mehr Verstärkt, je größer der Zeitschritt ist.
 				}
 
-			}
+			}*/
 
 		}
 	}
