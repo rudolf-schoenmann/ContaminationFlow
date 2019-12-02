@@ -492,7 +492,7 @@ void PerformTeleport(SubprocessFacet *iFacet) {
 }
 
 // Perform nbStep simulation steps (a step is a bounce)
-bool SimulationMCStep(size_t nbStep, Databuff *hitbuffer) {
+bool SimulationMCStep(size_t nbStep) {
 	// Perform simulation steps
 	for (size_t i = 0; i < nbStep; i++) {
 
@@ -500,96 +500,96 @@ bool SimulationMCStep(size_t nbStep, Databuff *hitbuffer) {
 		// => particle does not desorb => count as adsorbed. Start new particle.
 
 		if(simHistory->startNewParticle){
-					simHistory->startNewParticle=false;
+			simHistory->startNewParticle=false;
+			if (!StartFromSource())
+				// desorptionLimit reached
+				return false;
+		}
+		else{
+			//Prepare output values
+			bool found; SubprocessFacet *collidedFacet; double d;
+			std::tie(found, collidedFacet, d) = Intersect(sHandle, sHandle->currentParticle.position, sHandle->currentParticle.direction);
+
+			if (found) {
+
+				// Move particle to intersection point
+				sHandle->currentParticle.position = sHandle->currentParticle.position + d * sHandle->currentParticle.direction;
+				//sHandle->currentParticle.distanceTraveled += d;
+
+				double lastFLightTime = sHandle->currentParticle.flightTime; //memorize for partial hits
+				sHandle->currentParticle.flightTime += d / 100.0 / sHandle->currentParticle.velocity; //conversion from cm to m
+
+				if ((!sHandle->wp.calcConstantFlow && (sHandle->currentParticle.flightTime > sHandle->wp.latestMoment))
+					|| (sHandle->wp.enableDecay && (sHandle->currentParticle.expectedDecayMoment < sHandle->currentParticle.flightTime))) {
+					//hit time over the measured period - we create a new particle
+					//OR particle has decayed
+					double remainderFlightPath = sHandle->currentParticle.velocity*100.0*
+						Min(sHandle->wp.latestMoment - lastFLightTime, sHandle->currentParticle.expectedDecayMoment - lastFLightTime); //distance until the point in space where the particle decayed
+					sHandle->tmpGlobalResult.distTraveled_total += remainderFlightPath * sHandle->currentParticle.oriRatio;
+					RecordHit(HIT_LAST);
+					//sHandle->distTraveledSinceUpdate += sHandle->currentParticle.distanceTraveled;
 					if (!StartFromSource())
 						// desorptionLimit reached
 						return false;
 				}
-				else{
-					//Prepare output values
-					bool found; SubprocessFacet *collidedFacet; double d;
-					std::tie(found, collidedFacet, d) = Intersect(sHandle, sHandle->currentParticle.position, sHandle->currentParticle.direction);
-
-					if (found) {
-
-						// Move particle to intersection point
-						sHandle->currentParticle.position = sHandle->currentParticle.position + d * sHandle->currentParticle.direction;
-						//sHandle->currentParticle.distanceTraveled += d;
-
-						double lastFLightTime = sHandle->currentParticle.flightTime; //memorize for partial hits
-						sHandle->currentParticle.flightTime += d / 100.0 / sHandle->currentParticle.velocity; //conversion from cm to m
-
-						if ((!sHandle->wp.calcConstantFlow && (sHandle->currentParticle.flightTime > sHandle->wp.latestMoment))
-								|| (sHandle->wp.enableDecay && (sHandle->currentParticle.expectedDecayMoment < sHandle->currentParticle.flightTime))) {
-							//hit time over the measured period - we create a new particle
-							//OR particle has decayed
-							double remainderFlightPath = sHandle->currentParticle.velocity*100.0*
-									Min(sHandle->wp.latestMoment - lastFLightTime, sHandle->currentParticle.expectedDecayMoment - lastFLightTime); //distance until the point in space where the particle decayed
-							sHandle->tmpGlobalResult.distTraveled_total += remainderFlightPath * sHandle->currentParticle.oriRatio;
-							RecordHit(HIT_LAST);
-							//sHandle->distTraveledSinceUpdate += sHandle->currentParticle.distanceTraveled;
-							if (!StartFromSource())
-							// desorptionLimit reached
-							return false;
-						}
-						else { //hit within measured time, particle still alive
-							if (collidedFacet->sh.teleportDest != 0) { //Teleport
-								IncreaseDistanceCounters(d * sHandle->currentParticle.oriRatio);
-								PerformTeleport(collidedFacet);
-								}
+				else { //hit within measured time, particle still alive
+					if (collidedFacet->sh.teleportDest != 0) { //Teleport
+						IncreaseDistanceCounters(d * sHandle->currentParticle.oriRatio);
+						PerformTeleport(collidedFacet);
+					}
 					/*else if ((GetOpacityAt(collidedFacet, sHandle->currentParticle.flightTime) < 1.0) && (rnd() > GetOpacityAt(collidedFacet, sHandle->currentParticle.flightTime))) {
 						//Transparent pass
 						sHandle->tmpGlobalResult.distTraveled_total += d;
 						PerformTransparentPass(collidedFacet);
 					}*/
-							else { //Not teleport
-								IncreaseDistanceCounters(d * sHandle->currentParticle.oriRatio);
-								double stickingProbability = GetStickingAt(collidedFacet, sHandle->currentParticle.flightTime);
-								if (!sHandle->ontheflyParams.lowFluxMode) { //Regular stick or bounce
-									if (stickingProbability == 1.0 || ((stickingProbability > 0.0) && (rnd() < (stickingProbability)))) {
-										//Absorbed
-										RecordAbsorb(collidedFacet);
-										//sHandle->distTraveledSinceUpdate += sHandle->currentParticle.distanceTraveled;
-										if (!StartFromSource())
-											// desorptionLimit reached
-											return false;
-									}
-									else {
-										//Reflected
-										if(!PerformBounce(collidedFacet)){
-											//if not bounce but "absorb"
-											if (!StartFromSource())
-												// desorptionLimit reached
-												return false;
-										}
-									}
-								}
-								else { //Low flux mode
-									if (stickingProbability > 0.0) {
-										double oriRatioBeforeCollision = sHandle->currentParticle.oriRatio; //Local copy
-										sHandle->currentParticle.oriRatio *= (stickingProbability); //Sticking part
-										RecordAbsorb(collidedFacet);
-										sHandle->currentParticle.oriRatio = oriRatioBeforeCollision * (1.0 - stickingProbability); //Reflected part
-									}
-									else
-										sHandle->currentParticle.oriRatio *= (1.0 - stickingProbability);
-									if (sHandle->currentParticle.oriRatio > sHandle->ontheflyParams.lowFluxCutoff) {
-										if(!PerformBounce(collidedFacet)){
+					else { //Not teleport
+						IncreaseDistanceCounters(d * sHandle->currentParticle.oriRatio);
+						double stickingProbability = GetStickingAt(collidedFacet, sHandle->currentParticle.flightTime);
+						if (!sHandle->ontheflyParams.lowFluxMode) { //Regular stick or bounce
+							if (stickingProbability == 1.0 || ((stickingProbability > 0.0) && (rnd() < (stickingProbability)))) {
+								//Absorbed
+								RecordAbsorb(collidedFacet);
+								//sHandle->distTraveledSinceUpdate += sHandle->currentParticle.distanceTraveled;
+								if (!StartFromSource())
+									// desorptionLimit reached
+									return false;
+							}
+							else {
+								//Reflected
+								if(!PerformBounce(collidedFacet)){
 									//if not bounce but "absorb"
-											if (!StartFromSource())
-												// desorptionLimit reached
-												return false;
-										}
-									}
-									else { //eliminate remainder and create new particle
-										if (!StartFromSource())
-											// desorptionLimit reached
-											return false;
-									}
+									if (!StartFromSource())
+										// desorptionLimit reached
+										return false;
 								}
 							}
-						} //end hit within measured time
-					} //end intersection found
+						}
+						else { //Low flux mode
+							if (stickingProbability > 0.0) {
+								double oriRatioBeforeCollision = sHandle->currentParticle.oriRatio; //Local copy
+								sHandle->currentParticle.oriRatio *= (stickingProbability); //Sticking part
+								RecordAbsorb(collidedFacet);
+								sHandle->currentParticle.oriRatio = oriRatioBeforeCollision * (1.0 - stickingProbability); //Reflected part
+							}
+							else
+								sHandle->currentParticle.oriRatio *= (1.0 - stickingProbability);
+							if (sHandle->currentParticle.oriRatio > sHandle->ontheflyParams.lowFluxCutoff) {
+								if(!PerformBounce(collidedFacet)){
+									//if not bounce but "absorb"
+									if (!StartFromSource())
+										// desorptionLimit reached
+										return false;
+								}
+							}
+							else { //eliminate remainder and create new particle
+								if (!StartFromSource())
+									// desorptionLimit reached
+									return false;
+							}
+						}
+					}
+				} //end hit within measured time
+			} //end intersection found
 			else {
 				// No intersection found: Leak
 				sHandle->tmpGlobalResult.nbLeakTotal++;
@@ -718,7 +718,8 @@ bool StartFromSource() {
 		if (!found) j++;
 	}
 	if (!found) {
-		SetErrorSub("No starting point, aborting");
+		//SetErrorSub("No starting point, aborting");
+		std::cout <<"No starting point, aborting" <<std::endl;
 		return false;
 	}
 
@@ -821,7 +822,6 @@ bool StartFromSource() {
 		}
 
 	}
-
 	//--------------------------------------Sojourn time begin----------------------------------------------
 		double flightTime=sHandle->currentParticle.flightTime;
 		if (src->sh.enableSojournTime) {
@@ -984,7 +984,8 @@ bool StartFromSource() {
 	if (src->sh.superIdx == -1) {
 		std::ostringstream out;
 		out << "Facet " << (src->globalId + 1) << " is in all structures, it shouldn't desorb.";
-		SetErrorSub(out.str().c_str());
+		//SetErrorSub(out.str().c_str());
+		std::cout <<out.str().c_str() <<std::endl;
 		return false;
 	}
 	sHandle->currentParticle.structureId = src->sh.superIdx;
@@ -1314,6 +1315,9 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 		if (/*iFacet->texture &&*/ iFacet->sh.countAbs) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, true, 2.0, 1.0); //was 2.0, 1.0
 		if (/*iFacet->direction &&*/ iFacet->sh.countDirection) RecordDirectionVector(iFacet, sHandle->currentParticle.flightTime);
 
+		//NEW: to detect whether new particle has to be created
+		sHandle->currentParticle.lastHitFacet=NULL;
+
 		return false;
 	}
 	//--------------------------------------Sojourn time begin----------------------------------------------
@@ -1337,6 +1341,9 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 		if (/*iFacet->texture &&*/ iFacet->sh.countAbs) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, true, 1.0, 0.0); //was 2.0, 1.0
 		if (iFacet->sh.anglemapParams.record) RecordAngleMap(iFacet);
 		if (/*iFacet->direction &&*/ iFacet->sh.countDirection) RecordDirectionVector(iFacet, sHandle->currentParticle.flightTime);
+
+		//NEW: to detect whether new particle has to be created
+		sHandle->currentParticle.lastHitFacet=NULL;
 
 		return false;
 	}
@@ -1444,6 +1451,9 @@ void RecordAbsorb(SubprocessFacet *iFacet) {
 	if (iFacet->sh.anglemapParams.record) RecordAngleMap(iFacet);
 	if (/*iFacet->texture &&*/ iFacet->sh.countAbs) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, true, 2.0, 1.0); //was 2.0, 1.0
 	if (/*iFacet->direction &&*/ iFacet->sh.countDirection) RecordDirectionVector(iFacet, sHandle->currentParticle.flightTime);
+
+	//NEW: to detect whether new particle has to be created
+	sHandle->currentParticle.lastHitFacet=NULL;
 }
 
 void RecordHistograms(SubprocessFacet * iFacet)
