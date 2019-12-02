@@ -96,7 +96,10 @@ double manageStepSize(bool updateCurrentStep){
 		}
 	}
 
-	if(incrCurrentStep&&updateCurrentStep){//needed here?  => JEIN
+	if(step_size > p->maxStepSize){
+		step_size=p->maxStepSize;
+	}
+	else if(incrCurrentStep&&updateCurrentStep){//needed here?  => JEIN
 		simHistory->currentStep+=1;
 		std::cout<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
 		p->outFile<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
@@ -361,7 +364,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 		simHistory->errorList.printCurrent(std::cout);
 
 		//if targetError not reached: do not update currentstep
-		if(error/area < /*1.05**/p->targetError && time_step < p->maxStepSize)
+		if(error/area < p->targetError)
 			{time_step = manageStepSize(true);}
 		else
 			{time_step = manageStepSize(false);}

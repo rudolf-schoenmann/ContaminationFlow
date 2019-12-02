@@ -94,12 +94,12 @@ public:
 			int months=divresult.rem;
 			int years=divresult.quot;
 
-			if(years!=0) {final=final+std::to_string(years)+"y";}else{final=final+"   ";}//3
-			if(months!=0) {final=(months>9)?final+std::to_string(months)+"mo":final+" "+std::to_string(months)+"mo";}else{final=final+"    ";}//4
-			if(days!=0) {final=(days>9)?final+std::to_string(days)+"d":final+" "+std::to_string(days)+"d";}else{final=final+"   ";}//3
-			if(hours!=0) {final=(hours>9)?final+std::to_string(hours)+"h":final+" "+std::to_string(hours)+"h";}else{final=final+"   ";}//3
-			if(minutes!=0) {final=(minutes>9)?final+std::to_string(minutes)+"min":final+" "+std::to_string(minutes)+"min";}else{final=final+"     ";}//5
-			if(seconds!=0) {final=(seconds>9)?final+std::to_string(seconds)+"s":final+" "+std::to_string(seconds)+"s";}else{final=final+"   ";}//3
+			if(years!=0) {final=final+std::to_string(years)+"y";}else{final=final+"---";}//3
+			if(months!=0) {final=(months>9)?final+std::to_string(months)+"mo":final+"0"+std::to_string(months)+"mo";}else{final=final+"----";}//4
+			if(days!=0) {final=(days>9)?final+std::to_string(days)+"d":final+"0"+std::to_string(days)+"d";}else{final=final+"---";}//3
+			if(hours!=0) {final=(hours>9)?final+std::to_string(hours)+"h":final+"0"+std::to_string(hours)+"h";}else{final=final+"---";}//3
+			if(minutes!=0) {final=(minutes>9)?final+std::to_string(minutes)+"min":final+"0"+std::to_string(minutes)+"min";}else{final=final+"-----";}//5
+			if(seconds!=0) {final=(seconds>9)?final+std::to_string(seconds)+"s":final+"0"+std::to_string(seconds)+"s";}else{final=final+"---";}//3
 		}
 		if(final==""){
 			final=std::to_string((int)(time+0.5))+"s";
@@ -147,10 +147,10 @@ public:
 			{
 				if(i==0){
 					for(uint j=0; j<pointintime_list[i].second.size();j++){
-						out <<"\t" <<std::setw(6)<<std::right <<"Facet " <<std::setw(8)<<std::right <<j;
+						out <<"\t" <<std::setw(6)<<std::right <<"Facet-" <<std::setw(8)<<std::setfill('-')<<std::right <<j;
 						}
 
-					out <<"\t" <<std::setw(14)<<std::right<<"Total";
+					out <<"\t" <<std::setw(14)<<std::setfill(' ')<<std::right<<"Total";
 				}
 				out<<std::endl;
 
@@ -210,12 +210,12 @@ public:
 			if(i==0){
 				for(uint j=0; j<pointintime_list[i].second.size();j++)
 						{
-					out <<"\t" <<std::setw(6)<<std::right <<"Facet " <<std::setw(8)<<std::right <<j;
+					out <<"\t" <<std::setw(6)<<std::right <<"Facet-" <<std::setw(8)<<std::setfill('-')<<std::right <<j;
 						}
 			}
 			out<<std::endl;
 
-			out<<std::setw(9)<<std::right <<i<<"\t";
+			out<<std::setw(9)<<std::setfill(' ')<<std::right <<i<<"\t";
 			out<<std::setw(11)<<std::right <<pointintime_list[i].first ;
 			out<<std::setw(22)<<std::right <<convertTime(pointintime_list[i].first);
 
@@ -407,6 +407,8 @@ std::tuple<bool, std::vector<int> >  simulateSub2(Databuff *hitbuffer, int rank,
 double convertunit(double simutime, std::string unit);
 
 void printConsole(std::string str,std::ofstream outFile);
+std::tuple<bool, llong > checkSmallCovering(Databuff *hitbuffer_sum);
+void UndoSmallCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor);
 //ProblemDef
 //SimulationHistory
 
