@@ -222,6 +222,7 @@ int main(int argc, char *argv[]) {
 		if (p->simulationTimeMS != 0) {
 			//usleep(1000);
 			MPI_Barrier(MPI_COMM_WORLD);
+			bool smallCovering; llong smallCoveringFactor;
 
 			if(rank == 0){
 			std::cout <<std::endl <<"----------------Starting iteration " <<it <<"----------------"<<std::endl;
@@ -236,11 +237,12 @@ int main(int argc, char *argv[]) {
 				MPI_Bcast(&simHistory->coveringList.currentList[i], 16, MPI::BYTE,0,MPI_COMM_WORLD);
 			}
 
+			/*
 			for(int i=0; i<world_size;i++){
 				MPI_Barrier(MPI_COMM_WORLD);
 				if(rank==i)
 					simHistory->coveringList.printCurrent(std::to_string(rank)+": coveringList at beginning of iteration");}
-
+			*/
 			//MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 
 			MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
@@ -289,6 +291,7 @@ int main(int argc, char *argv[]) {
 			}
 			else{
 				t0 = GetTick();
+				std::tie(smallCovering,smallCoveringFactor) = checkSmallCovering(&hitbuffer_sum);
 				MPI_Barrier(MPI_COMM_WORLD);
 				t1 = GetTick();
 				computedTime+=t1-t0;
@@ -335,6 +338,11 @@ int main(int argc, char *argv[]) {
 
 			//----Update covering
 			if (rank == 0) {
+
+				if(smallCovering){
+					std::cout <<"Small covering: divide covering by " <<smallCoveringFactor <<std::endl;
+					UndoSmallCovering(&hitbuffer_sum, smallCoveringFactor);
+				}
 
 				UpdateErrorMain(&hitbuffer_sum); // !! If order changes, adapt "time" entry in errorList !!
 				UpdateCovering(&hitbuffer_sum);
