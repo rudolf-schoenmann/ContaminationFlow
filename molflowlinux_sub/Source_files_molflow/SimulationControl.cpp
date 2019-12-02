@@ -654,7 +654,7 @@ void RecordLeakPos() {
 	}
 }
 
-std::pair<bool,double> SimulationRun(double time) {
+std::pair<bool,double> SimulationRun(double time, Databuff *hitbuffer) {
 
 	// 1s step
 	double t0, t1;
@@ -679,7 +679,7 @@ std::pair<bool,double> SimulationRun(double time) {
 	switch (sHandle->wp.sMode) {
 	case MC_MODE:
 
-		goOn = SimulationMCStep(nbStep);
+		goOn = SimulationMCStep(nbStep, hitbuffer);
 		break;
 	case AC_MODE:
 		//goOn = SimulationACStep(nbStep); (my) no AC_MODE
@@ -775,8 +775,7 @@ bool SubprocessFacet::InitializeDirectionTexture()
 			direction = std::vector<std::vector<DirectionCell>>(1 + sHandle->moments.size(), std::vector<DirectionCell>(sh.texWidth*sh.texHeight));
 		}
 		catch (...) {
-			//SetErrorSub("Not enough memory to load direction textures");
-			std::cout <<"Not enough memory to load direction textures" <<std::endl;
+			SetErrorSub("Not enough memory to load direction textures");
 			return false;
 		}
 		sHandle->dirTotalSize += directionSize * (1 + sHandle->moments.size());
@@ -794,8 +793,7 @@ bool SubprocessFacet::InitializeProfile()
 			profile = std::vector<std::vector<ProfileSlice>>(1 + sHandle->moments.size(), std::vector<ProfileSlice>(PROFILE_SIZE));
 		}
 		catch (...) {
-			//SetErrorSub("Not enough memory to load profiles");
-			std::cout <<"Not enough memory to load profiles" <<std::endl;
+			SetErrorSub("Not enough memory to load profiles");
 			return false;
 		}
 		sHandle->profTotalSize += profileSize * (1 + sHandle->moments.size());
@@ -815,8 +813,7 @@ bool SubprocessFacet::InitializeTexture()
 			texture = std::vector<std::vector<TextureCell>>(1 + sHandle->moments.size(), std::vector<TextureCell>(nbE));
 		}
 		catch (...) {
-			//SetErrorSub("Not enough memory to load textures");
-			std::cout <<"Not enough memory to load textures" <<std::endl;
+			SetErrorSub("Not enough memory to load textures");
 			return false;
 		}
 		fullSizeInc = 1E30;
@@ -851,24 +848,21 @@ bool SubprocessFacet::InitializeAngleMap()
 				angleMap.phi_CDFsums.resize(sh.anglemapParams.thetaLowerRes + sh.anglemapParams.thetaHigherRes);
 			}
 			catch (...) {
-				//SetErrorSub("Not enough memory to load incident angle map (phi CDF line sums)");
-				std::cout <<"Not enough memory to load incident angle map (phi CDF line sums)" <<std::endl;
+				SetErrorSub("Not enough memory to load incident angle map (phi CDF line sums)");
 				return false;
 			}
 			try {
 				angleMap.theta_CDF.resize(sh.anglemapParams.thetaLowerRes + sh.anglemapParams.thetaHigherRes);
 			}
 			catch (...) {
-				//SetErrorSub("Not enough memory to load incident angle map (line sums, CDF)");
-				std::cout <<"Not enough memory to load incident angle map (line sums, CDF)" <<std::endl;
+				SetErrorSub("Not enough memory to load incident angle map (line sums, CDF)");
 				return false;
 			}
 			try {
 				angleMap.phi_CDFs.resize(sh.anglemapParams.phiWidth * (sh.anglemapParams.thetaLowerRes + sh.anglemapParams.thetaHigherRes));
 			}
 			catch (...) {
-				//SetErrorSub("Not enough memory to load incident angle map (CDF)");
-				std::cout <<"Not enough memory to load incident angle map (CDF)" <<std::endl;
+				SetErrorSub("Not enough memory to load incident angle map (CDF)");
 				return false;
 			}
 
@@ -883,8 +877,7 @@ bool SubprocessFacet::InitializeAngleMap()
 			}
 			if (!angleMap.theta_CDFsum) {
 				std::stringstream err; err << "Facet " << globalId + 1 << " has all-zero recorded angle map.";
-				//SetErrorSub(err.str().c_str());
-				std::cout <<err.str().c_str() <<std::endl;
+				SetErrorSub(err.str().c_str());
 				return false;
 			}
 
@@ -964,8 +957,7 @@ bool SubprocessFacet::InitializeLinkAndVolatile(const size_t & id)
 			//ReleaseDataport(loader);
 			std::ostringstream err;
 			err << "Invalid structure (wrong link on F#" << id + 1 << ")";
-			//SetErrorSub(err.str().c_str());
-			std::cout <<err.str().c_str() <<std::endl;
+			SetErrorSub(err.str().c_str());
 			return false;
 		}
 	}

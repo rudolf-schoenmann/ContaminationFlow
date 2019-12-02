@@ -315,8 +315,9 @@ public:
 	//double s2;
 	double E_de;
 	//double E_ad;
-	//double d;
+	double d;
 	double sticking;
+	int coveringLimit;
 
 	double H_vap;
 	double W_tr;
@@ -326,12 +327,6 @@ public:
 
 	double hitRatioLimit;
 	double Tmin;
-
-	//TODO testing
-	int coveringLimit;
-	//double coveringMinFactor;
-	//double coveringMaxFactor;
-	llong coveringMinThresh;
 
 	//These cannot be given, but are computed from other variables
 	int simulationTimeMS;
@@ -365,7 +360,7 @@ public:
 	void appendList(Databuff *hitbuffer, double time=-1.0);
 	void print(bool write=false);
 	void write(std::string path);
-	std::tuple<bool, llong > updateHistory(Databuff *hitbuffer);
+	void updateHistory(Databuff *hitbuffer);
 
 
 };
@@ -405,6 +400,8 @@ void initbufftozero(Databuff *databuffer);
 //-----------------------------------------------------------
 //UpdateMainProcess.cpp
 
+//double manageSimulationTime(double computationTime, bool adaptStep);
+
 double manageStepSize(bool updateCurrentStep=false);
 
 void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, Databuff *physbuffer,int rank);
@@ -425,7 +422,6 @@ llong getnbDesorbed(SubprocessFacet *iFacet, Databuff *hitbuffer);
 llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
 double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer);
 
-double calcStep(long double var, double start, double end, double step, double Wtr);
 double calcEnergy(SubprocessFacet *iFacet, Databuff *hitbuffer);
 
 boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum, llong nbDesorbed_old);
@@ -435,11 +431,9 @@ boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet, Data
 
 //-----------------------------------------------------------
 //Iteration.cpp
-/*
 double estimateTmin();
-double estimateTmin_RudiTest(Databuff *hitbuffer);
-*/
 double estimateAverageFlightTime();
+double estimateTmin_RudiTest(Databuff *hitbuffer);
 
 //void allocateCovering(Databuff *hitbuffer, int size, int rank);
 void setCoveringThreshold(Databuff *hitbuffer, int size, int rank);
