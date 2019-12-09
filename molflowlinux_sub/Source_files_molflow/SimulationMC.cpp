@@ -827,6 +827,9 @@ bool StartFromSource() {
 		if (src->sh.enableSojournTime) {
 			double A = exp(-src->sh.sojournE / (kb*src->sh.temperature));
 			sHandle->currentParticle.flightTime += -log(rnd()) / (A*src->sh.sojournFreq);
+			if(sHandle->currentParticle.flightTime < std::numeric_limits<double>::infinity()){
+				flightTime=sHandle->currentParticle.flightTime;
+			}
 		}
 
 		if(sHandle->currentParticle.flightTime>simHistory->stepSize && src->sh.opacity!=0){ //TODO maybe other parts from recordAbsorb()?
@@ -1325,6 +1328,9 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 	if (iFacet->sh.enableSojournTime) {
 		double A = exp(-iFacet->sh.sojournE / (kb*iFacet->sh.temperature));
 		sHandle->currentParticle.flightTime += -log(rnd()) / (A*iFacet->sh.sojournFreq);
+		if(sHandle->currentParticle.flightTime < std::numeric_limits<double>::infinity()){
+			flightTime=sHandle->currentParticle.flightTime;
+		}
 	}
 	if(sHandle->currentParticle.flightTime>simHistory->stepSize && iFacet->sh.opacity!=0){ //TODO maybe other parts from recordAbsorb()?
 		sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv += sHandle->currentParticle.oriRatio;
@@ -1744,3 +1750,4 @@ void SubprocessFacet::RegisterTransparentPass()
 		true, 2.0, 2.0);
 	if (this->sh.anglemapParams.record) RecordAngleMap(this);
 }
+
