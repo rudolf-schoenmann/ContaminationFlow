@@ -378,7 +378,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 	//std::cout <<"testing timestep: " <<time_step <<'\t' <<estimateAverageFlightTime() <<std::endl;
 
 	//double rounding=1/simHistory->numFacet;
-	boost::multiprecision::float128 rounding(0.0);
+	boost::multiprecision::float128 rounding(0.5);
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 
@@ -483,7 +483,7 @@ std::tuple<std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  C
 	std::vector<boost::multiprecision::uint128_t> covPerIt;
 	covPerIt =std::vector<boost::multiprecision::uint128_t> ();
 
-	for(int it=0; it<simHistory->errorList.pointintime_list.size();it++){
+	for(unsigned int it=0; it<simHistory->errorList.pointintime_list.size();it++){
 		// Total error/covering for each iteration
 		double error=0.0;
 		double area=0.0;

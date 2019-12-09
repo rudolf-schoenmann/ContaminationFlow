@@ -27,6 +27,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <limits>
 //#include <boost/multiprecision/cpp_int.hpp>
 //#include <boost/multiprecision/float128.hpp>
 
@@ -47,14 +48,17 @@ public:
 	HistoryList(){
 		pointintime_list = std::vector< std::pair<double,std::vector<T>> >();
 		currentList=std::vector<T>();
+		currIt=0;
 	}
 
 	std::vector< std::pair<double,std::vector<T>> > pointintime_list;
 	std::vector<T> currentList;
+	unsigned int currIt;
 
 	void reset(unsigned int numFacet=0){
 		pointintime_list.clear();
 		currentList.clear();
+		currIt=0;
 	}
 
 	void initCurrent(unsigned int numFacet){
@@ -64,18 +68,19 @@ public:
 	}
 
 	void appendCurrent(double time=-1){
+		if(time==-1.0) //one step
+				time=pointintime_list.back().first+1.0;
+		pointintime_list.push_back(std::make_pair(time,currentList));
+		currIt+=1;
 
-			if(time==-1.0) //one step
-					time=pointintime_list.back().first+1.0;
-			pointintime_list.push_back(std::make_pair(time,currentList));
-
-		}
+	}
 
 	void appendList(std::vector<T> List, double time=-1){
 
 		if(time==-1.0) //One step
 				time=pointintime_list.back().first+1.0;
 		pointintime_list.push_back(std::make_pair(time,List));
+		currIt+=1;
 
 	}
 	std::string convertTime(double time){
@@ -107,7 +112,13 @@ public:
 
 		return final;
 	}
-	void print(std::ostream& out, std::string msg= ""){
+	void print(std::ostream& out, std::string msg= "", int histSize = std::numeric_limits<int>::infinity()){
+
+		uint offset_table=0;
+		if(histSize != std::numeric_limits<int>::infinity() && currIt > histSize+1){
+			offset_table=currIt - uint(histSize)-1;
+		}
+
 		out<<std::endl <<msg <<std::endl;
 
 		out <<std::setw(9)<<std::right<<"Iteration\t";
@@ -122,8 +133,7 @@ public:
 						}
 			}
 			out<<std::endl;
-
-			out<<std::setw(9)<<std::right <<i<<"\t";
+			out<<std::setw(9)<<std::right <<i+offset_table*(i>0?1:0)<<"\t";
 			out<<std::setw(11)<<std::right <<pointintime_list[i].first ;
 			out<<std::setw(22)<<std::right <<convertTime(pointintime_list[i].first);
 
@@ -137,40 +147,45 @@ public:
 		out<<std::endl<<std::endl;
 	}
 
-	void print(std::ostream& out, std::vector<T> totalvec, std::string msg= ""){
-			out<<std::endl <<msg <<std::endl;
+	void print(std::ostream& out, std::vector<T> totalvec, std::string msg= "", int histSize = std::numeric_limits<int>::infinity()){
 
-			out <<std::setw(9)<<std::right<<"Iteration\t";
-			out <<std::setw(11)<<std::right<<"Time[s]";
-			out <<std::setw(22)<<std::right<<"Time";
-			for(uint i=0;i<pointintime_list.size();i++)
+		uint offset_table=0;
+		if(histSize != std::numeric_limits<int>::infinity()&& currIt > histSize+1){
+			offset_table=currIt - uint(histSize)-1;
+		}
+		out<<std::endl <<msg <<std::endl;
+
+		out <<std::setw(9)<<std::right<<"Iteration\t";
+		out <<std::setw(11)<<std::right<<"Time[s]";
+		out <<std::setw(22)<<std::right<<"Time";
+		for(uint i=0;i<pointintime_list.size();i++)
+		{
+			if(i==0){
+				for(uint j=0; j<pointintime_list[i].second.size();j++){
+					out <<"\t" <<std::setw(6)<<std::right <<"Facet-" <<std::setw(8)<<std::setfill('-')<<std::right <<j;
+					}
+
+				out <<"\t" <<std::setw(14)<<std::setfill(' ')<<std::right<<"Total";
+			}
+			out<<std::endl;
+
+			out<<std::setw(9)<<std::right <<i+offset_table*(i>0?1:0)<<"\t";
+			out<<std::setw(11)<<std::right <<pointintime_list[i].first ;
+			out<<std::setw(22)<<std::right <<convertTime(pointintime_list[i].first);
+
+			for(uint j=0; j<pointintime_list[i].second.size();j++)
 			{
-				if(i==0){
-					for(uint j=0; j<pointintime_list[i].second.size();j++){
-						out <<"\t" <<std::setw(6)<<std::right <<"Facet-" <<std::setw(8)<<std::setfill('-')<<std::right <<j;
-						}
-
-					out <<"\t" <<std::setw(14)<<std::setfill(' ')<<std::right<<"Total";
-				}
-				out<<std::endl;
-
-				out<<std::setw(9)<<std::right <<i<<"\t";
-				out<<std::setw(11)<<std::right <<pointintime_list[i].first ;
-				out<<std::setw(22)<<std::right <<convertTime(pointintime_list[i].first);
-
-				for(uint j=0; j<pointintime_list[i].second.size();j++)
-				{
-					if(j==pointintime_list[i].second.size()-1)
-						out <<"\t" <<std::setw(14)<<std::right <<pointintime_list[i].second[j];
-					else
-						out <<"\t" <<std::setw(14)<<std::right <<boost::multiprecision::float128(pointintime_list[i].second[j]);
-
-				}
-				out<<"\t"<<std::setw(14)<<std::right<<totalvec[i];
+				if(j==pointintime_list[i].second.size()-1)
+					out <<"\t" <<std::setw(14)<<std::right <<pointintime_list[i].second[j];
+				else
+					out <<"\t" <<std::setw(14)<<std::right <<boost::multiprecision::float128(pointintime_list[i].second[j]);
 
 			}
-			out<<std::endl<<std::endl;
+			out<<"\t"<<std::setw(14)<<std::right<<totalvec[i];
+
 		}
+		out<<std::endl<<std::endl;
+	}
 
 	void printCurrent(std::ostream& out, std::string msg= ""){
 		std::ostringstream tmpstream (std::ostringstream::app);
@@ -198,7 +213,12 @@ public:
 		std::cout<<tmpstream.str();
 	}
 
-	void write(std::string filename){
+	void write(std::string filename, int histSize = std::numeric_limits<int>::infinity()){
+
+		uint offset_table=0;
+		if(histSize != std::numeric_limits<int>::infinity()&& currIt > histSize+1){
+			offset_table=currIt - uint(histSize)-1;
+		}
 
 		std::ofstream out(filename,std::ofstream::out|std::ios::trunc);
 
@@ -215,7 +235,7 @@ public:
 			}
 			out<<std::endl;
 
-			out<<std::setw(9)<<std::setfill(' ')<<std::right <<i<<"\t";
+			out<<std::setw(9)<<std::setfill(' ')<<std::right <<i+offset_table*(i>0?1:0)<<"\t";
 			out<<std::setw(11)<<std::right <<pointintime_list[i].first ;
 			out<<std::setw(22)<<std::right <<convertTime(pointintime_list[i].first);
 
@@ -348,6 +368,7 @@ public:
 
 	double maxStepSize;
 	int maxSimPerIt;
+	int histSize;
 
 	//These cannot be given, but are computed from other variables
 	int simulationTimeMS;

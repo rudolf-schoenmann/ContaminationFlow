@@ -30,7 +30,6 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <libgen.h>
 #include <time.h>
 #include <sys/stat.h>
-#include <limits>
 
 extern SimulationHistory* simHistory;
 extern Simulation *sHandle;
@@ -329,6 +328,7 @@ ProblemDef::ProblemDef(){
 
 	maxStepSize=std::numeric_limits<double>::infinity();
 	maxSimPerIt=std::numeric_limits<int>::infinity();
+	histSize=std::numeric_limits<int>::infinity();
 
 }
 
@@ -417,6 +417,7 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 
 		else if(stringIn =="maxStepSize"){is >>doubleIn; maxStepSize=doubleIn;}
 		else if(stringIn =="maxSimPerIt"){is >> intIn; maxSimPerIt=intIn;}
+		else if(stringIn =="histSize"){is >> intIn; histSize=intIn; histSize=histSize>1?histSize:1;}
 
 		else{std::cout <<stringIn <<" not a valid argument." <<std::endl;}
 
@@ -466,6 +467,7 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 
 	outfile <<"maxStepSize" <<"\t" <<maxStepSize<<std::endl;
 	outfile <<"maxSimPerIt" <<"\t" <<maxSimPerIt<<std::endl;
+	outfile <<"histSize" <<"\t" <<histSize<<std::endl;
 	//outfile <<"coveringMinFactor" <<"\t" <<coveringMinFactor;
 	//outfile <<"coveringMaxFactor" <<"\t" <<coveringMaxFactor;
 
@@ -509,6 +511,7 @@ void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 	//out <<"coveringMaxFactor" <<"\t" <<coveringMaxFactor;
 	out <<"maxStepSize" <<"\t" <<maxStepSize<<std::endl;
 	out <<"maxSimPerIt" <<"\t" <<maxSimPerIt<<std::endl;
+	out <<"histSize" <<"\t" <<histSize<<std::endl;
 
 	out  << "Simulation time " << simulationTime << unit << " converted to " << simulationTimeMS << "ms" << std::endl;
 	out  << "Maximum simulation time " << maxTime << maxUnit << " converted to " << maxTimeS << "s" << std::endl<<std::endl;
@@ -823,21 +826,21 @@ void SimulationHistory::print(bool write){
 	std::vector<boost::multiprecision::uint128_t> covPerIt;
 	std::tie(errorPerIt,covPerIt) = CalcPerIteration();
 
-	coveringList.print(std::cout,covPerIt, "Accumulative covering");
-	hitList.print(std::cout, "Accumulative number hits");
-	desorbedList.print(std::cout, "Accumulative number desorbed");
-	errorList.print(std::cout,errorPerIt, "Error per iteration");
+	coveringList.print(std::cout,covPerIt, "Accumulative covering", p->histSize);
+	hitList.print(std::cout, "Accumulative number hits", p->histSize);
+	desorbedList.print(std::cout, "Accumulative number desorbed", p->histSize);
+	errorList.print(std::cout,errorPerIt, "Error per iteration", p->histSize);
 
 	if(write){
-		coveringList.print(p->outFile,covPerIt, "Accumulative covering");
-		hitList.print(p->outFile, "Accumulative number hits");
-		desorbedList.print(p->outFile, "Accumulative number desorbed");
-		errorList.print(p->outFile,errorPerIt, "Error per iteration");
+		coveringList.print(p->outFile,covPerIt, "Accumulative covering", p->histSize);
+		hitList.print(p->outFile, "Accumulative number hits", p->histSize);
+		desorbedList.print(p->outFile, "Accumulative number desorbed", p->histSize);
+		errorList.print(p->outFile,errorPerIt, "Error per iteration", p->histSize);
 	}
 }
 
 void SimulationHistory::write(std::string path){
-	coveringList.write(path+"/covering.txt");
+	coveringList.write(path+"/covering.txt", p->histSize);
 }
 
 

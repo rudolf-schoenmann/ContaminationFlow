@@ -225,8 +225,8 @@ int main(int argc, char *argv[]) {
 			bool smallCovering; llong smallCoveringFactor;
 
 			if(rank == 0){
-			std::cout <<std::endl <<"----------------Starting iteration " <<it <<"----------------"<<std::endl;
-			p->outFile <<std::endl <<"----------------Starting iteration " <<it <<"----------------"<<std::endl;
+			std::cout <<std::endl <<"----------------Starting iteration " <<it+1 <<"----------------"<<std::endl;
+			p->outFile <<std::endl <<"----------------Starting iteration " <<it+1 <<"----------------"<<std::endl;
 			}
 
 			//----Send hitbuffer content to all subprocesses
@@ -285,8 +285,8 @@ int main(int argc, char *argv[]) {
 						}
 					}
 				} else {
-					std::cout << "Simulation for process " << rank << " for iteration " << it << " finished."<< std::endl;
-					p->outFile << "Simulation for process " << rank << " for iteration " << it << " finished."<< std::endl;
+					std::cout << "Simulation for process " << rank << " for iteration " << it+1 << " finished."<< std::endl;
+					p->outFile << "Simulation for process " << rank << " for iteration " << it+1 << " finished."<< std::endl;
 				}
 			}
 			else{
@@ -348,8 +348,15 @@ int main(int argc, char *argv[]) {
 				UpdateCovering(&hitbuffer_sum);
 
 				UpdateCoveringphys(&hitbuffer_sum, &hitbuffer);
-				simHistory->coveringList.print(std::cout, "Accumulative covering after iteration "+std::to_string(it));
-				simHistory->coveringList.print(p->outFile,"Accumulative covering after iteration "+std::to_string(it));
+
+				//std::cout <<p->histSize<<"\t"<<simHistory->coveringList.pointintime_list.size()<<"\t"<<simHistory->coveringList.currIt<<std::endl;
+				if(p->histSize != std::numeric_limits<int>::infinity() && simHistory->coveringList.pointintime_list.size() > uint(p->histSize+1)){
+						simHistory->coveringList.pointintime_list.erase(simHistory->coveringList.pointintime_list.begin()+1);
+						simHistory->errorList.pointintime_list.erase(simHistory->errorList.pointintime_list.begin()+1);
+				}
+
+				simHistory->coveringList.print(std::cout, "Accumulative covering after iteration "+std::to_string(it), p->histSize);
+				simHistory->coveringList.print(p->outFile,"Accumulative covering after iteration "+std::to_string(it),p->histSize);
 
 				//simHistory->hitList.print(std::cout,"Accumulative number hits after iteration "+std::to_string(it));
 				//simHistory->hitList.print(p->outFile,"Accumulative number hits after iteration "+std::to_string(it));
@@ -362,7 +369,7 @@ int main(int argc, char *argv[]) {
 
 			}
 
-			if (rank == 0) {std::cout << "ending iteration " << it <<std::endl;}
+			if (rank == 0) {std::cout << "ending iteration " << it+1 <<std::endl;}
 
 			MPI_Barrier(MPI_COMM_WORLD);
 
