@@ -208,9 +208,10 @@ int main(int argc, char *argv[]) {
 			initbufftozero(&hitbuffer);
 		}
 		else{
-
 			simHistory = new SimulationHistory(world_size);
 		}
+
+		MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 	}
 
 //----Simulation
@@ -221,17 +222,28 @@ int main(int argc, char *argv[]) {
 		if (p->simulationTimeMS != 0) {
 			//usleep(1000);
 			MPI_Barrier(MPI_COMM_WORLD);
+			bool smallCovering; llong smallCoveringFactor;
 
 			if(rank == 0){
-			std::cout <<std::endl <<"----------------Starting iteration " <<it <<"----------------"<<std::endl;
-			p->outFile <<std::endl <<"----------------Starting iteration " <<it <<"----------------"<<std::endl;
+			std::cout <<std::endl <<"----------------Starting iteration " <<it+1 <<"----------------"<<std::endl;
+			p->outFile <<std::endl <<"----------------Starting iteration " <<it+1 <<"----------------"<<std::endl;
 			}
 
 			//----Send hitbuffer content to all subprocesses
 			// reset buffer (except covering) before sending to sub processes
 			initbufftozero(&hitbuffer);
 
-			MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
+			for(unsigned int i=0; i<simHistory->numFacet;i++){
+				MPI_Bcast(&simHistory->coveringList.currentList[i], 16, MPI::BYTE,0,MPI_COMM_WORLD);
+			}
+
+			/*
+			for(int i=0; i<world_size;i++){
+				MPI_Barrier(MPI_COMM_WORLD);
+				if(rank==i)
+					simHistory->coveringList.printCurrent(std::to_string(rank)+": coveringList at beginning of iteration");}
+			*/
+			//MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 
 			MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
 
@@ -239,11 +251,11 @@ int main(int argc, char *argv[]) {
 			MPI_Barrier(MPI_COMM_WORLD);
 
 			//End simulation step if covering reaches threshold (covering -covering/(size-1))
-			setCoveringThreshold(&hitbuffer, world_size, rank);
+			setCoveringThreshold(world_size, rank);
 
-			UpdateSticking(&hitbuffer);
-			UpdateSojourn(&hitbuffer);
-			if(!UpdateDesorptionRate(&hitbuffer)){//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes
+			UpdateSticking();
+			UpdateSojourn();
+			if(!UpdateDesorptionRate()){//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes
 				if(rank==0) {
 					std::cout <<"Desorption smaller than 1E-50. Ending Simulation." <<std::endl;
 					p->outFile <<"Desorption smaller than 1E-50. Ending Simulation." <<std::endl;
@@ -261,7 +273,7 @@ int main(int argc, char *argv[]) {
 
 				//Do the simulation
 				bool eos; std::vector<int> facetNum;
-				std::tie(eos, facetNum) = simulateSub(&hitbuffer, rank, p->simulationTimeMS);
+				std::tie(eos, facetNum) = simulateSub2(&hitbuffer, rank, p->simulationTimeMS);
 				MPI_Barrier(MPI_COMM_WORLD);
 				if (eos) {
 					if(sHandle->posCovering)
@@ -273,12 +285,13 @@ int main(int argc, char *argv[]) {
 						}
 					}
 				} else {
-					std::cout << "Simulation for process " << rank << " for iteration " << it << " finished."<< std::endl;
-					p->outFile << "Simulation for process " << rank << " for iteration " << it << " finished."<< std::endl;
+					std::cout << "Simulation for process " << rank << " for iteration " << it+1 << " finished."<< std::endl;
+					p->outFile << "Simulation for process " << rank << " for iteration " << it+1 << " finished."<< std::endl;
 				}
 			}
 			else{
 				t0 = GetTick();
+				std::tie(smallCovering,smallCoveringFactor) = checkSmallCovering(&hitbuffer_sum);
 				MPI_Barrier(MPI_COMM_WORLD);
 				t1 = GetTick();
 				computedTime+=t1-t0;
@@ -326,12 +339,24 @@ int main(int argc, char *argv[]) {
 			//----Update covering
 			if (rank == 0) {
 
+				if(smallCovering){
+					std::cout <<"Small covering: divide covering by " <<smallCoveringFactor <<std::endl;
+					UndoSmallCovering(&hitbuffer_sum, smallCoveringFactor);
+				}
+
 				UpdateErrorMain(&hitbuffer_sum); // !! If order changes, adapt "time" entry in errorList !!
 				UpdateCovering(&hitbuffer_sum);
 
 				UpdateCoveringphys(&hitbuffer_sum, &hitbuffer);
-				simHistory->coveringList.print(std::cout, "Accumulative covering after iteration "+std::to_string(it));
-				simHistory->coveringList.print(p->outFile,"Accumulative covering after iteration "+std::to_string(it));
+
+				//std::cout <<p->histSize<<"\t"<<simHistory->coveringList.pointintime_list.size()<<"\t"<<simHistory->coveringList.currIt<<std::endl;
+				if(p->histSize != std::numeric_limits<int>::infinity() && simHistory->coveringList.pointintime_list.size() > uint(p->histSize+1)){
+						simHistory->coveringList.pointintime_list.erase(simHistory->coveringList.pointintime_list.begin()+1);
+						simHistory->errorList.pointintime_list.erase(simHistory->errorList.pointintime_list.begin()+1);
+				}
+
+				simHistory->coveringList.print(std::cout, "Accumulative covering after iteration "+std::to_string(it), p->histSize);
+				simHistory->coveringList.print(p->outFile,"Accumulative covering after iteration "+std::to_string(it),p->histSize);
 
 				//simHistory->hitList.print(std::cout,"Accumulative number hits after iteration "+std::to_string(it));
 				//simHistory->hitList.print(p->outFile,"Accumulative number hits after iteration "+std::to_string(it));
@@ -344,7 +369,7 @@ int main(int argc, char *argv[]) {
 
 			}
 
-			if (rank == 0) {std::cout << "ending iteration " << it <<std::endl;}
+			if (rank == 0) {std::cout << "ending iteration " << it+1 <<std::endl;}
 
 			MPI_Barrier(MPI_COMM_WORLD);
 
