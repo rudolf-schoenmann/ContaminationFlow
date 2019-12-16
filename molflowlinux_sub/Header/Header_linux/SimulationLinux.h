@@ -348,7 +348,7 @@ public:
 	//double s2;
 	double E_de;
 	//double E_ad;
-	//double d;
+	double d;
 	double sticking;
 
 	double H_vap;
