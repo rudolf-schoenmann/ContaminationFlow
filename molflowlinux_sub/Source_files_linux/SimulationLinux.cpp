@@ -326,9 +326,9 @@ ProblemDef::ProblemDef(){
 	//coveringMinFactor=100.0;
 	//coveringMaxFactor=1000.0;
 
-	maxStepSize=std::numeric_limits<double>::infinity();
-	maxSimPerIt=std::numeric_limits<int>::infinity();
-	histSize=std::numeric_limits<int>::infinity();
+	maxStepSize=std::numeric_limits<double>::max();
+	maxSimPerIt=std::numeric_limits<int>::max();
+	histSize=std::numeric_limits<int>::max();
 
 }
 
