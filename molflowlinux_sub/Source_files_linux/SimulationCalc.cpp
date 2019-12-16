@@ -277,11 +277,6 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet, Databuff
 		return 0.0;
 	}
 	boost::multiprecision::float128 factor(1.0);
-	if(covering<llong(p->coveringLimit)){
-		factor= boost::multiprecision::float128(0.8);
-		//return boost::multiprecision::float128(0.0);
-		//return boost::multiprecision::pow(boost::multiprecision::float128(10.),boost::multiprecision::float128(-100.));
-	}
 
 	boost::multiprecision::float128 d = boost::multiprecision::float128(calcStep((long double)(coverage), 1, 0, 1, p->W_tr));
 	boost::multiprecision::float128 tau_1=static_cast<boost::multiprecision::float128>(1.0)/static_cast<boost::multiprecision::float128>(h/(kb*temperature));
@@ -312,11 +307,6 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 		return 0.0;
 	}
 	boost::multiprecision::float128 factor(1.0);
-	if(covering<boost::multiprecision::uint128_t(p->coveringLimit)){
-		factor= boost::multiprecision::float128(0.8);
-		//return boost::multiprecision::float128(0.0);
-		//return boost::multiprecision::pow(boost::multiprecision::float128(10.),boost::multiprecision::float128(-100.));
-	}
 
 	boost::multiprecision::float128 d = boost::multiprecision::float128(calcStep((long double)(coverage), 1, 0, 1, p->W_tr));
 	boost::multiprecision::float128 tau_1=static_cast<boost::multiprecision::float128>(1.0)/static_cast<boost::multiprecision::float128>(h/(kb*temperature));
@@ -347,7 +337,7 @@ boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet) {//T
 }
 
 double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f){
-	double scaleY = 1.0 / (f->sh.area * 1E-4); //0.01: Pa->mbar
+	double scaleY = 1.0 / (f->sh.area * 1E-4); //1E4 is conversion from m2 to cm2
 	//TODO is this correct?
 	return scaleY *GetMoleculesPerTP(hitbuffer_sum,0).convert_to<double>() * f->tmpCounter[0].hit.sum_1_per_ort_velocity;
 }

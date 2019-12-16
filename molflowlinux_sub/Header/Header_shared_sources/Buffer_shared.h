@@ -144,6 +144,7 @@ public:
 	bool   isProfile;    // Profile facet
 	bool   isTextured;   // texture
 	bool   isVolatile;   // Volatile facet (absorbtion facet which does not affect particule trajectory)
+	bool   isVipFacet = false;
 
 						 // Geometry
 	size_t nbIndex;   // Number of index/vertex
