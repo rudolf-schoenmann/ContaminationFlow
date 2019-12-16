@@ -27,6 +27,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <limits>
 //#include <boost/multiprecision/cpp_int.hpp>
 //#include <boost/multiprecision/float128.hpp>
 
@@ -47,14 +48,17 @@ public:
 	HistoryList(){
 		pointintime_list = std::vector< std::pair<double,std::vector<T>> >();
 		currentList=std::vector<T>();
+		currIt=0;
 	}
 
 	std::vector< std::pair<double,std::vector<T>> > pointintime_list;
 	std::vector<T> currentList;
+	unsigned int currIt;
 
 	void reset(unsigned int numFacet=0){
 		pointintime_list.clear();
 		currentList.clear();
+		currIt=0;
 	}
 
 	void initCurrent(unsigned int numFacet){
@@ -64,18 +68,19 @@ public:
 	}
 
 	void appendCurrent(double time=-1){
+		if(time==-1.0) //one step
+				time=pointintime_list.back().first+1.0;
+		pointintime_list.push_back(std::make_pair(time,currentList));
+		currIt+=1;
 
-			if(time==-1.0) //one step
-					time=pointintime_list.back().first+1.0;
-			pointintime_list.push_back(std::make_pair(time,currentList));
-
-		}
+	}
 
 	void appendList(std::vector<T> List, double time=-1){
 
 		if(time==-1.0) //One step
 				time=pointintime_list.back().first+1.0;
 		pointintime_list.push_back(std::make_pair(time,List));
+		currIt+=1;
 
 	}
 	std::string convertTime(double time){
@@ -94,12 +99,12 @@ public:
 			int months=divresult.rem;
 			int years=divresult.quot;
 
-			if(years!=0) {final=final+std::to_string(years)+"y";}else{final=final+"   ";}//3
-			if(months!=0) {final=(months>9)?final+std::to_string(months)+"mo":final+" "+std::to_string(months)+"mo";}else{final=final+"    ";}//4
-			if(days!=0) {final=(days>9)?final+std::to_string(days)+"d":final+" "+std::to_string(days)+"d";}else{final=final+"   ";}//3
-			if(hours!=0) {final=(hours>9)?final+std::to_string(hours)+"h":final+" "+std::to_string(hours)+"h";}else{final=final+"   ";}//3
-			if(minutes!=0) {final=(minutes>9)?final+std::to_string(minutes)+"min":final+" "+std::to_string(minutes)+"min";}else{final=final+"     ";}//5
-			if(seconds!=0) {final=(seconds>9)?final+std::to_string(seconds)+"s":final+" "+std::to_string(seconds)+"s";}else{final=final+"   ";}//3
+			if(years!=0) {final=final+std::to_string(years)+"y";}else{final=final+"---";}//3
+			if(months!=0) {final=(months>9)?final+std::to_string(months)+"mo":final+"0"+std::to_string(months)+"mo";}else{final=final+"----";}//4
+			if(days!=0) {final=(days>9)?final+std::to_string(days)+"d":final+"0"+std::to_string(days)+"d";}else{final=final+"---";}//3
+			if(hours!=0) {final=(hours>9)?final+std::to_string(hours)+"h":final+"0"+std::to_string(hours)+"h";}else{final=final+"---";}//3
+			if(minutes!=0) {final=(minutes>9)?final+std::to_string(minutes)+"min":final+"0"+std::to_string(minutes)+"min";}else{final=final+"-----";}//5
+			if(seconds!=0) {final=(seconds>9)?final+std::to_string(seconds)+"s":final+"0"+std::to_string(seconds)+"s";}else{final=final+"---";}//3
 		}
 		if(final==""){
 			final=std::to_string((int)(time+0.5))+"s";
@@ -107,7 +112,13 @@ public:
 
 		return final;
 	}
-	void print(std::ostream& out, std::string msg= ""){
+	void print(std::ostream& out, std::string msg= "", int histSize = std::numeric_limits<int>::infinity()){
+
+		uint offset_table=0;
+		if(histSize != std::numeric_limits<int>::infinity() && currIt > histSize+1){
+			offset_table=currIt - uint(histSize)-1;
+		}
+
 		out<<std::endl <<msg <<std::endl;
 
 		out <<std::setw(9)<<std::right<<"Iteration\t";
@@ -122,8 +133,7 @@ public:
 						}
 			}
 			out<<std::endl;
-
-			out<<std::setw(9)<<std::right <<i<<"\t";
+			out<<std::setw(9)<<std::right <<i+offset_table*(i>0?1:0)<<"\t";
 			out<<std::setw(11)<<std::right <<pointintime_list[i].first ;
 			out<<std::setw(22)<<std::right <<convertTime(pointintime_list[i].first);
 
@@ -137,40 +147,45 @@ public:
 		out<<std::endl<<std::endl;
 	}
 
-	void print(std::ostream& out, std::vector<T> totalvec, std::string msg= ""){
-			out<<std::endl <<msg <<std::endl;
+	void print(std::ostream& out, std::vector<T> totalvec, std::string msg= "", int histSize = std::numeric_limits<int>::infinity()){
 
-			out <<std::setw(9)<<std::right<<"Iteration\t";
-			out <<std::setw(11)<<std::right<<"Time[s]";
-			out <<std::setw(22)<<std::right<<"Time";
-			for(uint i=0;i<pointintime_list.size();i++)
+		uint offset_table=0;
+		if(histSize != std::numeric_limits<int>::infinity()&& currIt > histSize+1){
+			offset_table=currIt - uint(histSize)-1;
+		}
+		out<<std::endl <<msg <<std::endl;
+
+		out <<std::setw(9)<<std::right<<"Iteration\t";
+		out <<std::setw(11)<<std::right<<"Time[s]";
+		out <<std::setw(22)<<std::right<<"Time";
+		for(uint i=0;i<pointintime_list.size();i++)
+		{
+			if(i==0){
+				for(uint j=0; j<pointintime_list[i].second.size();j++){
+					out <<"\t" <<std::setw(6)<<std::right <<"Facet-" <<std::setw(8)<<std::setfill('-')<<std::right <<j;
+					}
+
+				out <<"\t" <<std::setw(14)<<std::setfill(' ')<<std::right<<"Total";
+			}
+			out<<std::endl;
+
+			out<<std::setw(9)<<std::right <<i+offset_table*(i>0?1:0)<<"\t";
+			out<<std::setw(11)<<std::right <<pointintime_list[i].first ;
+			out<<std::setw(22)<<std::right <<convertTime(pointintime_list[i].first);
+
+			for(uint j=0; j<pointintime_list[i].second.size();j++)
 			{
-				if(i==0){
-					for(uint j=0; j<pointintime_list[i].second.size();j++){
-						out <<"\t" <<std::setw(6)<<std::right <<"Facet " <<std::setw(8)<<std::right <<j;
-						}
-
-					out <<"\t" <<std::setw(14)<<std::right<<"Total";
-				}
-				out<<std::endl;
-
-				out<<std::setw(9)<<std::right <<i<<"\t";
-				out<<std::setw(11)<<std::right <<pointintime_list[i].first ;
-				out<<std::setw(22)<<std::right <<convertTime(pointintime_list[i].first);
-
-				for(uint j=0; j<pointintime_list[i].second.size();j++)
-				{
-					if(j==pointintime_list[i].second.size()-1)
-						out <<"\t" <<std::setw(14)<<std::right <<pointintime_list[i].second[j];
-					else
-						out <<"\t" <<std::setw(14)<<std::right <<boost::multiprecision::float128(pointintime_list[i].second[j]);
-
-				}
-				out<<"\t"<<std::setw(14)<<std::right<<totalvec[i];
+				if(j==pointintime_list[i].second.size()-1)
+					out <<"\t" <<std::setw(14)<<std::right <<pointintime_list[i].second[j];
+				else
+					out <<"\t" <<std::setw(14)<<std::right <<boost::multiprecision::float128(pointintime_list[i].second[j]);
 
 			}
-			out<<std::endl<<std::endl;
+			out<<"\t"<<std::setw(14)<<std::right<<totalvec[i];
+
 		}
+		out<<std::endl<<std::endl;
+	}
 
 	void printCurrent(std::ostream& out, std::string msg= ""){
 		std::ostringstream tmpstream (std::ostringstream::app);
@@ -185,7 +200,25 @@ public:
 		out<<tmpstream.str();
 	}
 
-	void write(std::string filename){
+	void printCurrent(std::string msg= ""){
+		std::ostringstream tmpstream (std::ostringstream::app);
+
+		tmpstream<<"    " <<std::setw(12)<<std::left<<msg;
+
+		for(uint i=0;i<currentList.size();i++)
+		{
+			tmpstream <<"\t" <<std::setw(12)<<std::right <<currentList[i];
+		}
+		tmpstream<<std::endl;
+		std::cout<<tmpstream.str();
+	}
+
+	void write(std::string filename, int histSize = std::numeric_limits<int>::infinity()){
+
+		uint offset_table=0;
+		if(histSize != std::numeric_limits<int>::infinity()&& currIt > histSize+1){
+			offset_table=currIt - uint(histSize)-1;
+		}
 
 		std::ofstream out(filename,std::ofstream::out|std::ios::trunc);
 
@@ -197,12 +230,12 @@ public:
 			if(i==0){
 				for(uint j=0; j<pointintime_list[i].second.size();j++)
 						{
-					out <<"\t" <<std::setw(6)<<std::right <<"Facet " <<std::setw(8)<<std::right <<j;
+					out <<"\t" <<std::setw(6)<<std::right <<"Facet-" <<std::setw(8)<<std::setfill('-')<<std::right <<j;
 						}
 			}
 			out<<std::endl;
 
-			out<<std::setw(9)<<std::right <<i<<"\t";
+			out<<std::setw(9)<<std::setfill(' ')<<std::right <<i+offset_table*(i>0?1:0)<<"\t";
 			out<<std::setw(11)<<std::right <<pointintime_list[i].first ;
 			out<<std::setw(22)<<std::right <<convertTime(pointintime_list[i].first);
 
@@ -333,6 +366,10 @@ public:
 	//double coveringMaxFactor;
 	llong coveringMinThresh;
 
+	double maxStepSize;
+	int maxSimPerIt;
+	int histSize;
+
 	//These cannot be given, but are computed from other variables
 	int simulationTimeMS;
 	double maxTimeS;
@@ -347,6 +384,8 @@ public:
 	HistoryList<double> hitList;
 	HistoryList<llong> desorbedList;
 	HistoryList<double> errorList;
+
+	bool startNewParticle;
 
 
 	unsigned int numFacet;
@@ -363,10 +402,12 @@ public:
 	//double StepSizeComputationTimeFactor;
 
 	void appendList(Databuff *hitbuffer, double time=-1.0);
+	void appendList(double time=-1.0);
+
 	void print(bool write=false);
 	void write(std::string path);
 	std::tuple<bool, llong > updateHistory(Databuff *hitbuffer);
-
+	std::tuple<bool, llong > updateHistory();
 
 };
 
@@ -382,9 +423,13 @@ public:
 //-----------------------------------------------------------
 //SimulationLinux.cpp
 std::tuple<bool, std::vector<int> >  simulateSub(Databuff *hitbuffer, int rank, int simutime);
+std::tuple<bool, std::vector<int> >  simulateSub2(Databuff *hitbuffer, int rank, int simutime);
+
 double convertunit(double simutime, std::string unit);
 
 void printConsole(std::string str,std::ofstream outFile);
+std::tuple<bool, llong > checkSmallCovering(Databuff *hitbuffer_sum);
+void UndoSmallCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor);
 //ProblemDef
 //SimulationHistory
 
@@ -392,8 +437,13 @@ void printConsole(std::string str,std::ofstream outFile);
 //UpdateSubProcess.cpp
 
 void UpdateSticking(Databuff *hitbuffer);
+void UpdateSticking();
+
 bool UpdateDesorptionRate (Databuff *hitbuffer);
+bool UpdateDesorptionRate();
+
 void UpdateSojourn(Databuff *hitbuffer);
+void UpdateSojourn();
 double UpdateError();
 void UpdateErrorSub();
 
@@ -423,15 +473,18 @@ std::tuple<std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  C
 llong getnbDesorbed(Databuff *hitbuffer_sum);
 llong getnbDesorbed(SubprocessFacet *iFacet, Databuff *hitbuffer);
 llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
+boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet);
 double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer);
 
 double calcStep(long double var, double start, double end, double step, double Wtr);
 double calcEnergy(SubprocessFacet *iFacet, Databuff *hitbuffer);
+double calcEnergy(SubprocessFacet *iFacet);
 
 boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum, llong nbDesorbed_old);
 void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
+void calcStickingnew(SubprocessFacet *iFacet);
 boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
-
+boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet);
 
 //-----------------------------------------------------------
 //Iteration.cpp
@@ -443,6 +496,7 @@ double estimateAverageFlightTime();
 
 //void allocateCovering(Databuff *hitbuffer, int size, int rank);
 void setCoveringThreshold(Databuff *hitbuffer, int size, int rank);
+void setCoveringThreshold(int size, int rank);
 void initCoveringThresh();
 
 //-----------------------------------------------------------

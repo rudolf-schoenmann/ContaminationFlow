@@ -39,7 +39,7 @@ double getStepSize(){
 	double t_start = T_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/(T_min))/(double)p->iterationNumber));
 	double t_stop = T_min*exp((double)(simHistory->currentStep+1)*(log(p->maxTimeS/(T_min))/(double)p->iterationNumber));
 	double Delta = t_stop - t_start;
-	return Delta;
+	return Delta < p->maxStepSize ? Delta : p->maxStepSize;
 	/*if(simHistory->currentStep==0){
 		double T_min = estimateAverageFlightTime();
 		return T_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/T_min)/(double)p->iterationNumber));
@@ -96,7 +96,10 @@ double manageStepSize(bool updateCurrentStep){
 		}
 	}
 
-	if(incrCurrentStep&&updateCurrentStep){//needed here?  => JEIN
+	if(step_size > p->maxStepSize){
+		step_size=p->maxStepSize;
+	}
+	else if(incrCurrentStep&&updateCurrentStep){//needed here?  => JEIN
 		simHistory->currentStep+=1;
 		std::cout<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
 		p->outFile<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
@@ -326,7 +329,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 	//simTime in ms
 
 	boost::multiprecision::float128 Krealvirt = GetMoleculesPerTP(hitbuffer_sum, simHistory->nbDesorbed_old);
-	llong nbDesorbed = getnbDesorbed(hitbuffer_sum)-simHistory->nbDesorbed_old;
+	//llong nbDesorbed = getnbDesorbed(hitbuffer_sum)-simHistory->nbDesorbed_old;
 	//std::cout <<"nbDesorbed before and after:\t" << history->nbDesorbed_old <<'\t';
 	simHistory->nbDesorbed_old = getnbDesorbed(hitbuffer_sum);
 	//std::cout << history->nbDesorbed_old <<std::endl;
@@ -361,7 +364,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 		simHistory->errorList.printCurrent(std::cout);
 
 		//if targetError not reached: do not update currentstep
-		if(error/area < /*1.05**/p->targetError)
+		if(error/area < p->targetError)
 			{time_step = manageStepSize(true);}
 		else
 			{time_step = manageStepSize(false);}
@@ -375,7 +378,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 	//std::cout <<"testing timestep: " <<time_step <<'\t' <<estimateAverageFlightTime() <<std::endl;
 
 	//double rounding=1/simHistory->numFacet;
-	boost::multiprecision::float128 rounding(0.0);
+	boost::multiprecision::float128 rounding(0.5);
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 
@@ -480,7 +483,7 @@ std::tuple<std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  C
 	std::vector<boost::multiprecision::uint128_t> covPerIt;
 	covPerIt =std::vector<boost::multiprecision::uint128_t> ();
 
-	for(int it=0; it<simHistory->errorList.pointintime_list.size();it++){
+	for(unsigned int it=0; it<simHistory->errorList.pointintime_list.size();it++){
 		// Total error/covering for each iteration
 		double error=0.0;
 		double area=0.0;
