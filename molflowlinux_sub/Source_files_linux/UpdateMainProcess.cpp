@@ -352,7 +352,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				if(simHistory->errorList.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0)//ignore facet if no hits (=inf error)
+				if(simHistory->errorList.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0 || f.sh.isVipFacet)//ignore facet if no hits (=inf error)
 					continue;
 
 				error+=simHistory->errorList.getCurrent(&f)*f.sh.area;
@@ -360,11 +360,22 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 			}
 		}
 		// Print total error and error per facet of this iteration
-		std::cout <<"Total Error "<<error/area <<std::endl;
-		simHistory->errorList.printCurrent(std::cout);
+		std::ostringstream tmpstream (std::ostringstream::app);
+		tmpstream <<"Total Error "<<error/area <<std::endl;
+		simHistory->errorList.printCurrent(tmpstream);
+
+		if(!p->vipFacets.empty()){
+			tmpstream <<"Vip Facets:"<<std::endl;
+			for(unsigned int i = 0; i < p->vipFacets.size(); i++){
+				tmpstream <<"\t"<<p->vipFacets[i].first <<"\t" << simHistory->errorList.getCurrent(p->vipFacets[i].first)<<std::endl;
+			}
+			tmpstream <<std::endl;
+		}
+		std::cout <<tmpstream.str();
+		p->outFile<<tmpstream.str();
 
 		//if targetError not reached: do not update currentstep
-		if(error/area < p->targetError)
+		if(checkErrorSub(p->targetError, error/area, 1.0))
 			{time_step = manageStepSize(true);}
 		else
 			{time_step = manageStepSize(false);}

@@ -75,7 +75,7 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 
 
 	// Run Simulation for timestep milliseconds
-	for(int j=0; j<p->maxSimPerIt && !(j>0 && simHistory->nParticles>targetParticles && totalError<targetError)&& !eos; j++){
+	for(int j=0; j<p->maxSimPerIt && !(j>0 && simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))&& !eos; j++){
 
 		for(i=0; i<(double)(simutime) && !eos;i+=realtimestep){
 
@@ -96,12 +96,12 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 
 		totalError=UpdateError();
 
-		if(j%(int)(30000/simutime)==0 || (simHistory->nParticles>targetParticles && totalError<targetError)|| eos){
+		if(j%(int)(30000/simutime)==0 || (simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))|| eos){
 			// Print information every 30s or if target reached
 			std::ostringstream tmpstream (std::ostringstream::app);
 			tmpstream <<"  "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Desorbed particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
 
-			if(totalError>targetError){
+			if(!checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5))){
 				simHistory->hitList.printCurrent(tmpstream, std::to_string(rank)+": hitlist");
 				simHistory->desorbedList.printCurrent(tmpstream, std::to_string(rank)+": desorbedlist");
 				simHistory->errorList.printCurrent(tmpstream, std::to_string(rank)+": errorlist");
@@ -180,7 +180,7 @@ std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, i
 
 
 	// Run Simulation for timestep milliseconds
-	for(int j=0; j<p->maxSimPerIt && !(j>0 && simHistory->nParticles>targetParticles && totalError<targetError)&& !eos; j++){
+	for(int j=0; j<p->maxSimPerIt && !(j>0 && simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))&& !eos; j++){
 
 		for(i=0; i<(double)(simutime) && !eos;i+=realtimestep){
 
@@ -201,12 +201,12 @@ std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, i
 
 		totalError=UpdateError();
 
-		if(j%(int)(30000/simutime)==0 || (simHistory->nParticles>targetParticles && totalError<targetError)|| eos || j >= p->maxSimPerIt-1){
+		if(j%(int)(30000/simutime)==0 || (simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))|| eos || j >= p->maxSimPerIt-1){
 			// Print information every 30s or if target reached
 			std::ostringstream tmpstream (std::ostringstream::app);
 			tmpstream <<"  "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Desorbed particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
 
-			if(totalError>targetError){
+			if(!checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5))){
 				simHistory->hitList.printCurrent(tmpstream, std::to_string(rank)+": hitlist");
 				simHistory->desorbedList.printCurrent(tmpstream, std::to_string(rank)+": desorbedlist");
 				simHistory->coveringList.printCurrent(tmpstream, std::to_string(rank)+": coveringlist");
@@ -305,7 +305,7 @@ ProblemDef::ProblemDef(){
 	H_vap=0.8E-19;
 	W_tr=1.0;
 	sticking=0.0;
-	coveringLimit=0;
+	//coveringLimit=0;
 
 	maxTime=10.0;
 	maxUnit="y";
@@ -329,6 +329,9 @@ ProblemDef::ProblemDef(){
 	maxStepSize=std::numeric_limits<double>::max();
 	maxSimPerIt=std::numeric_limits<int>::max();
 	histSize=std::numeric_limits<int>::max();
+
+	vipFacets = std::vector< std::pair<int,double> >();
+
 
 }
 
@@ -386,7 +389,7 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 
 		is >> stringIn;
 
-		if(stringIn == "loadbufferPath") {if(rank==0) {std::cout <<line <<std::endl;}is >> stringIn; loadbufferPath=stringIn;}
+		if(stringIn == "loadbufferPath") {is >> stringIn; loadbufferPath=stringIn;}
 		else if(stringIn == "hitbufferPath") {is >> stringIn; hitbufferPath=stringIn;}
 		//else if(stringIn=="resultbufferPath"){is >> stringIn; resultbufferPath=stringIn;} //deprecated
 		else if(stringIn == "simulationTime") {is >>doubleIn; simulationTime = doubleIn;}
@@ -410,7 +413,7 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn == "hitRatioLimit") {is >>doubleIn; hitRatioLimit = doubleIn;}
 		else if(stringIn == "Tmin") {is >>doubleIn; Tmin = doubleIn;}
 
-		else if(stringIn =="coveringLimit"){is >> llongIn; coveringLimit=llongIn;}
+		//else if(stringIn =="coveringLimit"){is >> llongIn; coveringLimit=llongIn;}
 		else if(stringIn == "coveringMinThresh") {is >>llongIn; coveringMinThresh = llongIn;}
 		//else if(stringIn == "coveringMinFactor") {is >>doubleIn; coveringMinFactor = doubleIn;}
 		//else if(stringIn == "coveringMaxFactor") {is >>doubleIn; coveringMaxFactor = doubleIn;}
@@ -419,7 +422,35 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn =="maxSimPerIt"){is >> intIn; maxSimPerIt=intIn;}
 		else if(stringIn =="histSize"){is >> intIn; histSize=intIn; histSize=histSize>1?histSize:1;}
 
-		else{std::cout <<stringIn <<" not a valid argument." <<std::endl;}
+		else if(stringIn=="vipFacets"){
+			int vipf = 0; double vipe=0.0;
+			unsigned int vipfacet=0;
+			while(is>>doubleIn){
+				if(vipfacet%2==0){
+					if(rint(doubleIn)==doubleIn){
+						vipf=rint(doubleIn);
+					}
+					else{
+						break;
+					}
+				}
+				else{
+					vipe = doubleIn;
+					vipFacets.push_back(std::make_pair(vipf,vipe));
+				}
+
+
+				vipfacet+=1;
+			}
+			if(rank==0) {
+				std::cout <<vipFacets.size()<<" vip facet(s)" <<std::endl;
+				for(vipfacet=0; vipfacet<vipFacets.size(); vipfacet++){
+					std::cout <<"\t"<<vipFacets[vipfacet].first <<"\t" <<vipFacets[vipfacet].second <<std::endl;
+				}
+			}
+		}
+
+		else{if(rank==0) std::cout <<stringIn <<" not a valid argument." <<std::endl;}
 
 
 
@@ -462,12 +493,21 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 	outfile <<"hitRatioLimit" <<'\t' <<hitRatioLimit <<std::endl;
 	outfile <<"Tmin" <<Tmin <<'\t' <<std::endl;
 
-	outfile <<"coveringLimit" <<"\t" <<coveringLimit<<std::endl;
+	//outfile <<"coveringLimit" <<"\t" <<coveringLimit<<std::endl;
 	outfile <<"coveringMinThresh" <<"\t" <<coveringMinThresh<<std::endl;
 
 	outfile <<"maxStepSize" <<"\t" <<maxStepSize<<std::endl;
 	outfile <<"maxSimPerIt" <<"\t" <<maxSimPerIt<<std::endl;
 	outfile <<"histSize" <<"\t" <<histSize<<std::endl;
+
+	if(!vipFacets.empty()){
+		outfile <<"vipFacets";
+		for(unsigned int i=0; i<vipFacets.size();i++){
+			outfile <<"\t" <<vipFacets[i].first <<"\t" <<vipFacets[i].second;
+		}
+		outfile <<std::endl;
+	}
+
 	//outfile <<"coveringMinFactor" <<"\t" <<coveringMinFactor;
 	//outfile <<"coveringMaxFactor" <<"\t" <<coveringMaxFactor;
 
@@ -505,13 +545,21 @@ void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 	out <<"hitRatioLimit" <<'\t' <<hitRatioLimit <<std::endl;
 	out <<"Tmin" <<'\t' <<Tmin <<std::endl;
 
-	out <<"coveringLimit" <<"\t" <<coveringLimit <<std::endl;
+	//out <<"coveringLimit" <<"\t" <<coveringLimit <<std::endl;
 	out <<"coveringMinThresh" <<"\t" <<coveringMinThresh <<std::endl;
 	//out <<"coveringMinFactor" <<"\t" <<coveringMinFactor;
 	//out <<"coveringMaxFactor" <<"\t" <<coveringMaxFactor;
 	out <<"maxStepSize" <<"\t" <<maxStepSize<<std::endl;
 	out <<"maxSimPerIt" <<"\t" <<maxSimPerIt<<std::endl;
 	out <<"histSize" <<"\t" <<histSize<<std::endl;
+
+	if(!vipFacets.empty()){
+		out <<"vipFacets";
+		for(unsigned int i=0; i<vipFacets.size();i++){
+			out <<"\t" <<vipFacets[i].first <<"\t" <<vipFacets[i].second;
+		}
+		out <<std::endl;
+	}
 
 	out  << "Simulation time " << simulationTime << unit << " converted to " << simulationTimeMS << "ms" << std::endl;
 	out  << "Maximum simulation time " << maxTime << maxUnit << " converted to " << maxTimeS << "s" << std::endl<<std::endl;
@@ -545,6 +593,10 @@ std::tuple<bool, llong > checkSmallCovering(Databuff *hitbuffer_sum){
 
 	if(smallCovering && llong(mincov) < p->coveringMinThresh){
 		smallCoveringFactor=llong(1.0+1.1*double(p->coveringMinThresh)/(double(mincov)));
+
+		std::cout <<"Small covering: multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
+		p->outFile<<"Small covering: multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
+
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 				for (SubprocessFacet& f : sHandle->structures[s].facets) {
 					FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
@@ -585,8 +637,20 @@ SimulationHistory::SimulationHistory(int world_size){
 	numSubProcess=world_size-1;
 	startNewParticle=false;
 
+	normalFacets = std::vector<unsigned int>();
+
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			if(!p->vipFacets.empty()){
+				for(unsigned int i =0; i< p->vipFacets.size(); i++ ){
+					if(int(numFacet)==p->vipFacets[i].first){
+						f.sh.isVipFacet=true;
+						break;
+					}
+				}
+			}
+			if(!f.sh.isVipFacet)
+				normalFacets.push_back(numFacet);
 			numFacet+=1;
 		}
 	}
@@ -616,6 +680,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 	lastTime=0.0;
 
 	nbDesorbed_old= getnbDesorbed(hitbuffer);
+	normalFacets = std::vector<unsigned int>();
 
 	double numHit;
 	llong numDes;
@@ -631,6 +696,17 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 				desorbedList.currentList.push_back(numDes);
 
 				f.tmpCounter[0].hit.covering=(llong)covering;
+
+				if(!p->vipFacets.empty()){
+					for(unsigned int i =0; i< p->vipFacets.size(); i++ ){
+						if(int(numFacet)==p->vipFacets[i].first){
+							f.sh.isVipFacet=true;
+							break;
+						}
+					}
+				}
+				if(!f.sh.isVipFacet)
+					normalFacets.push_back(numFacet);
 				numFacet+=1;
 			}
 	}
@@ -649,6 +725,12 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 
 	numSubProcess=world_size-1;
 	startNewParticle=false;
+
+	std::cout<<"Normal facets: ";
+	for (unsigned int i =0; i< normalFacets.size(); i++){
+		std::cout <<"\t" << normalFacets[i];
+	}
+	std::cout <<std::endl;
 
 }
 
@@ -706,14 +788,10 @@ std::tuple<bool, llong > SimulationHistory::updateHistory(Databuff *hitbuffer){
 	stepSize=manageStepSize(false);
 
 	if(smallCovering && llong(mincov) < p->coveringMinThresh){
-		//long double minCov(p->coveringMinFactor); long double threshCov(p->coveringMinThresh); long double maxCov(p->coveringMaxFactor);
-		//smallCoveringFactor=p->coveringMaxFactor - llong(((maxCov-minCov)/threshCov)*(avg/avgFacet));
-		//smallCoveringFactor=llong(calcStep((long double)(avg/avgFacet), 2*p->coveringMaxFactor-p->coveringMinFactor, p->coveringMinFactor, 0, 0.1*double(p->coveringMinThresh)));
-
 		smallCoveringFactor=llong(1.0+1.1*double(p->coveringMinThresh)/(double(mincov)));
 
-		std::cout <<"Small covering: multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
-		p->outFile<<"Small covering: multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
+		//std::cout <<"Small covering: multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
+		//p->outFile<<"Small covering: multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
 
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
@@ -777,8 +855,8 @@ std::tuple<bool, llong > SimulationHistory::updateHistory(){
 	if(smallCovering && llong(mincov) < p->coveringMinThresh){
 		smallCoveringFactor=llong(1.0+1.1*double(p->coveringMinThresh)/(double(mincov)));
 
-		std::cout <<"Small covering: multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
-		p->outFile<<"Small covering: multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
+		//std::cout <<"Small covering: multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
+		//p->outFile<<"Small covering: multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
 
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {

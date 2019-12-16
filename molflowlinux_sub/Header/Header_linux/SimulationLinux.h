@@ -84,6 +84,7 @@ public:
 
 	}
 	std::string convertTime(double time){
+		bool empty=true;
 		std::string final="";
 		std::div_t divresult;
 		if(time/60.0>1){
@@ -99,12 +100,12 @@ public:
 			int months=divresult.rem;
 			int years=divresult.quot;
 
-			if(years!=0) {final=final+std::to_string(years)+"y";}else{final=final+"---";}//3
-			if(months!=0) {final=(months>9)?final+std::to_string(months)+"mo":final+"0"+std::to_string(months)+"mo";}else{final=final+"----";}//4
-			if(days!=0) {final=(days>9)?final+std::to_string(days)+"d":final+"0"+std::to_string(days)+"d";}else{final=final+"---";}//3
-			if(hours!=0) {final=(hours>9)?final+std::to_string(hours)+"h":final+"0"+std::to_string(hours)+"h";}else{final=final+"---";}//3
-			if(minutes!=0) {final=(minutes>9)?final+std::to_string(minutes)+"min":final+"0"+std::to_string(minutes)+"min";}else{final=final+"-----";}//5
-			if(seconds!=0) {final=(seconds>9)?final+std::to_string(seconds)+"s":final+"0"+std::to_string(seconds)+"s";}else{final=final+"---";}//3
+			if(years!=0) {final=final+std::to_string(years)+"y"; empty=false;}else{final=empty?final+"   ":final+"---";}//3
+			if(months!=0) {final=(months>9)?final+std::to_string(months)+"mo":final+"0"+std::to_string(months)+"mo";empty=false;}else{final=empty?final+"    ":final+"----";}//4
+			if(days!=0) {final=(days>9)?final+std::to_string(days)+"d":final+"0"+std::to_string(days)+"d";empty=false;}else{final=empty?final+"   ":final+"---";}//3
+			if(hours!=0) {final=(hours>9)?final+std::to_string(hours)+"h":final+"0"+std::to_string(hours)+"h";empty=false;}else{final=empty?final+"   ":final+"---";}//3
+			if(minutes!=0) {final=(minutes>9)?final+std::to_string(minutes)+"min":final+"0"+std::to_string(minutes)+"min";empty=false;}else{final=empty?final+"     ":final+"-----";}//5
+			if(seconds!=0) {final=(seconds>9)?final+std::to_string(seconds)+"s":final+"0"+std::to_string(seconds)+"s";empty=false;}else{final=empty?final+"   ":final+"---";}//3
 		}
 		if(final==""){
 			final=std::to_string((int)(time+0.5))+"s";
@@ -348,7 +349,7 @@ public:
 	//double s2;
 	double E_de;
 	//double E_ad;
-	double d;
+	//double d;
 	double sticking;
 
 	double H_vap;
@@ -361,7 +362,7 @@ public:
 	double Tmin;
 
 	//TODO testing
-	int coveringLimit;
+	//int coveringLimit;
 	//double coveringMinFactor;
 	//double coveringMaxFactor;
 	llong coveringMinThresh;
@@ -369,6 +370,8 @@ public:
 	double maxStepSize;
 	int maxSimPerIt;
 	int histSize;
+
+	std::vector< std::pair<int,double> > vipFacets;
 
 	//These cannot be given, but are computed from other variables
 	int simulationTimeMS;
@@ -384,6 +387,8 @@ public:
 	HistoryList<double> hitList;
 	HistoryList<llong> desorbedList;
 	HistoryList<double> errorList;
+
+	std::vector<unsigned int> normalFacets;
 
 	bool startNewParticle;
 
@@ -446,6 +451,7 @@ void UpdateSojourn(Databuff *hitbuffer);
 void UpdateSojourn();
 double UpdateError();
 void UpdateErrorSub();
+bool checkErrorSub(double targetError, double currentError, double factor);
 
 
 void UpdateMCSubHits(Databuff *databuffer, int rank);
