@@ -1,0 +1,3 @@
+add readme file?
+remove deprecated funtions from code (hitbuffer_phys functions, time step functions etc)
+rename variables (e.g. maxstepsize -> Tmax)
