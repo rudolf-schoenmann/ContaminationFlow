@@ -189,28 +189,6 @@ public:
 	CurrentParticleStatus currentParticle;
 
 
-	// Angular coefficient (opaque facets)
-	//size_t     nbAC; //in unused functions of SimulationAC.cpp, commented out in ResetSimulation (SimulationControl), commented out in GetSimuStatus
-	//ACFLOAT *acMatrix; //in unused functions of SimulationAC.cpp
-	//ACFLOAT *acDensity; //in unused functions of SimulationAC.cpp, commented out in ResetSimulation (SimulationControl)
-	//ACFLOAT *acDesorb; //in unused functions of SimulationAC.cpp
-	//ACFLOAT *acAbsorb; //in unused functions of SimulationAC.cpp
-	//ACFLOAT *acRho; //in unused functions of SimulationAC.cpp
-	//ACFLOAT *acArea; //in unused functions of SimulationAC.cpp
-	//double  *acLines; //in unused functions of SimulationAC.cpp
-	//size_t     prgAC; //in unused functions of SimulationAC.cpp, commented in SetState GetSimuStatus StartSimulation
-
-	// Angular coefficient (transparent facets)
-	//size_t     nbACT; //in unused functions of SimulationAC.cpp
-	//ACFLOAT *acTMatrix; //in unused functions of SimulationAC.cpp
-	//ACFLOAT *acTDensity; //in unused functions of SimulationAC.cpp
-	//ACFLOAT *acTArea; //in unused functions of SimulationAC.cpp
-	//double  *acTLines; //in unused functions of SimulationAC.cpp
-
-/*#ifdef JACOBI_ITERATION
-	ACFLOAT *acDensityTmp; //in unused functions of SimulationAC.cpp
-#endif*/
-
 };
 // -- Methods ---------------------------------------------------
 
@@ -224,15 +202,12 @@ void ClearSimulation();
 void SetState(size_t state, const char *status, bool changeState = true, bool changeStatus = true);
 void SetReady();
 void SetErrorSub(const char *msg);
-//void ClearACMatrix();
 bool LoadSimulation(Databuff *databuffer);
-//bool UpdateOntheflySimuParams(Dataport *loader); // (Rudi) I don't think, I need that.
 bool StartSimulation();
 void ResetSimulation();
 std::pair<bool,double> SimulationRun(double time=1000.0);
 bool SimulationMCStep(size_t nbStep);
 void IncreaseDistanceCounters(double d);
-//bool SimulationACStep(int nbStep);
 void RecordHit(const int& type);
 void RecordLeakPos();
 bool StartFromSource();
@@ -242,14 +217,11 @@ void RecordHistograms(SubprocessFacet * iFacet);
 void PerformTeleport(SubprocessFacet *iFacet);
 void PerformTransparentPass(SubprocessFacet *iFacet);
 void UpdateHits(Databuff *databuffer, int rank); // (Rudi) Je nachdem, wie die Kommunikation via MPI dann läuft, ist 'int rank' ggf. überflüssig.
-//void UpdateLog(Dataport *dpLog, DWORD timeout); // (Rudi) Don't need that.
 void UpdateMCHits(Databuff *databuffer, int rank, size_t nbMoments);
-//void UpdateACHits(Dataport *dpHit, int prIdx, DWORD timeout); // (Rudi) Don't need that.
 void ResetTmpCounters();
 
 double GetTick();
 size_t   GetHitsSize();
-//bool ComputeACMatrix(SHELEM_OLD *mesh);
 
 int GetIDId(int paramId);
 
@@ -260,16 +232,5 @@ double GetStickingAt(SubprocessFacet *src, double time);
 double GetOpacityAt(SubprocessFacet *src, double time);
 void   IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t desorb, size_t absorb, double sum_1_per_v, double sum_v_ort, bool desorbed = false);
 void   TreatMovingFacet();
-
-/*
- * We should not need the following definitions.
-double calcCoveringUpdate(SubprocessFacet *iFacet);
-double calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer);
-double calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
-double calcCovering(SubprocessFacet *iFacet);
-void CalcTotalOutgassingWorker();
-double GetMoleculesPerTP(Databuff *hitbuffer);
-void UpdateCovering(Databuff *hitbuffer_phys, Databuff *hitbuffer_sum, double time_step);
-*/
 
 int getFacetIndex(SubprocessFacet *iFacet);

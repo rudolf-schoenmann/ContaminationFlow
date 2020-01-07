@@ -31,32 +31,6 @@ extern SimulationHistory* simHistory;
 //-----------------------------------------------------------
 //----Update values of subprocess
 //sticking
-void UpdateSticking(Databuff *hitbuffer){
-	//std::cout <<"    Facet information:" <<std::endl;
-	int i = 0;
-	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			calcStickingnew(&f, hitbuffer);
-			/*if(i==1){
-			std::cout <<"    (Just for Facet " << i << " to have less output in console.)" << std::endl;
-			std::cout <<"    Facet " <<i <<":" <<std::endl;
-			std::cout <<"\t Facet area [cm²]\t\t\t"<< f.sh.area << std::endl;
-			std::cout <<"\t Facet temperature [K] \t\t\t" << f.sh.temperature << std::endl;
-			std::cout <<"\t Sticking [1]\t\t\t\t" <<f.sh.sticking <<std::endl;
-			std::cout <<"\t Outgassing [Pa m³/s]\t\t\t" <<f.sh.outgassing <<std::endl;
-			std::cout <<"\t Desorption rate [1/s]\t\t\t" <<calcDesorption(&f, hitbuffer) <<std::endl;
-			std::cout <<"\t Desorption rate [Pa m³/s]\t\t" <<calcDesorptionRate(&f, hitbuffer) << std::endl;
-			std::cout <<"\t Outgassing + Desorption rate [Pa m³/s]\t" <<f.sh.outgassing + calcDesorptionRate(&f, hitbuffer)<<std::endl;
-			std::cout <<"\t Covering [Number of particles]\t\t" <<calcCovering(&f) <<std::endl;
-			std::cout <<"\t Coverage [1 = Monolayer]\t\t" << calcCovering(&f) / (calcNmono(&f)/calcdNsurf())<< std::endl;
-			//std::cout <<"\t real covering\t\t\t\t" <<calcRealCovering(&f) <<std::endl; // Das macht hier gar keinen Sinn. Erst wenn alle Subprozesse ihre Counter
-			// zum Prozess 0 geschickt haben und alle Counter addiert wurden, wird Krealvirt berechnet. Dann kann man ein real Covering ausgeben.
-			}*/
-			i+=1;
-		}
-	}
-	//std::cout <<std::endl;
-}
 void UpdateSticking(){
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
@@ -66,20 +40,6 @@ void UpdateSticking(){
 }
 
 //desorption
-bool UpdateDesorptionRate (Databuff *hitbuffer){
-	boost::multiprecision::float128 totaldes(0.0);
-	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			f.sh.desorption = calcDesorptionRate(&f, hitbuffer); // TODO long double -> double here. Change f.sh.desorption to long double? bit need to adapt in Windows and new buffers
-				if(f.sh.temperature==0) {continue;}
-				totaldes+= f.sh.desorption * boost::multiprecision::float128(sHandle->wp.latestMoment/ (1.38E-23*f.sh.temperature));
-		}
-	}
-
-	if((boost::multiprecision::float128(sHandle->wp.totalDesorbedMolecules)+totaldes)<boost::multiprecision::pow(boost::multiprecision::float128(10.),boost::multiprecision::float128(-50))){return false;}
-	else{return true;}
-}
-
 bool UpdateDesorptionRate (){
 	boost::multiprecision::float128 totaldes(0.0);
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
@@ -92,16 +52,6 @@ bool UpdateDesorptionRate (){
 
 	if((boost::multiprecision::float128(sHandle->wp.totalDesorbedMolecules)+totaldes)<boost::multiprecision::pow(boost::multiprecision::float128(10.),boost::multiprecision::float128(-50))){return false;}
 	else{return true;}
-}
-
-void UpdateSojourn(Databuff *hitbuffer){
-	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			f.sh.enableSojournTime = true;
-			f.sh.sojournFreq = (kb*f.sh.temperature)/h;
-			f.sh.sojournE = calcEnergy(&f, hitbuffer);
-		}
-	}
 }
 
 void UpdateSojourn(){
@@ -133,14 +83,14 @@ void UpdateErrorSub(){
 				num_hit_f=0;
 			}
 
-			if(f.sh.opacity==0){simHistory->errorList.setCurrentList(&f, 0.0);}
+			if(f.sh.opacity==0){simHistory->errorList.setCurrent(&f, 0.0);}
 			else{
 				double error=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
 
-				simHistory->errorList.setCurrentList(&f, error);
+				simHistory->errorList.setCurrent(&f, error);
 			}
-			simHistory->hitList.setCurrentList(&f,f.tmpCounter[0].hit.nbHitEquiv);
-			simHistory->desorbedList.setCurrentList(&f,f.tmpCounter[0].hit.nbDesorbed);
+			simHistory->hitList.setCurrent(&f,f.tmpCounter[0].hit.nbHitEquiv);
+			simHistory->desorbedList.setCurrent(&f,f.tmpCounter[0].hit.nbDesorbed);
 		}
 	}
 
@@ -178,7 +128,6 @@ bool checkErrorSub(double targetError, double currentError, double factor){
 
 	return vipCheck;
 }
-
 
 //-----------------------------------------------------------
 // copy sHandle values to buffer of sub process
@@ -368,103 +317,7 @@ void UpdateMCSubHits(Databuff *databuffer, int rank) {
 
 					}
 
-			} // End if(hitted)
-			/*
-			else // if not hitted, initialize to zero
-			{
-				for (unsigned int m = 0; m < (1 + nbMoments); m++) {//hits
-					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
-					facetHitBuffer->hit.nbAbsEquiv = 0.0;
-					facetHitBuffer->hit.nbDesorbed = 0;
-					facetHitBuffer->hit.nbMCHit = 0;
-					facetHitBuffer->hit.nbHitEquiv = 0.0;
-					facetHitBuffer->hit.sum_1_per_ort_velocity = 0.0;
-					facetHitBuffer->hit.sum_v_ort = 0.0;
-					facetHitBuffer->hit.sum_1_per_velocity = 0.0;
-					//facetHitBuffer->hit.covering= 0.0; //If a facet is not hit, its covering stays the same instead ob being zero!
-				}
-
-				if (f.sh.isProfile) {//profile
-					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-						ProfileSlice *shProfile = (ProfileSlice *)(buffer + f.sh.hitOffset + facetHitsSize + m * f.profileSize);
-						for (j = 0; j < (int)PROFILE_SIZE; j++) {
-							shProfile[j].countEquiv=0.0; shProfile[j].sum_1_per_ort_velocity=0.0; shProfile[j].sum_v_ort=0.0;
-						}
-					}
-				}
-
-				if (f.sh.isTextured) {//texture
-					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-						TextureCell *shTexture = (TextureCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
-
-						for (y = 0; y < (int)f.sh.texHeight; y++) {
-							for (x = 0; x < (int)f.sh.texWidth; x++) {
-								size_t add = x + y * f.sh.texWidth;
-
-								//temporary hit counts
-								shTexture[add].countEquiv=0.0; shTexture[add].sum_1_per_ort_velocity=0.0; shTexture[add].sum_v_ort_per_area=0.0;
-
-							}
-						}
-					}
-				}
-
-				if (f.sh.countDirection) {//
-					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-						DirectionCell *shDir = (DirectionCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*m));
-						for (y = 0; y < (int)f.sh.texHeight; y++) {
-							for (x = 0; x < (int)f.sh.texWidth; x++) {
-								size_t add = x + y * f.sh.texWidth;
-								shDir[add].dir.x = 0.0;
-								shDir[add].dir.y = 0.0;
-								shDir[add].dir.z = 0.0;
-								//shDir[add].sumSpeed += f.direction[m][add].sumSpeed;
-								shDir[add].count = 0;
-							}
-						}
-					}
-				}
-
-				if (f.sh.anglemapParams.record) {//
-					size_t *shAngleMap = (size_t *)(buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments));
-					for (y = 0; y < (int)(f.sh.anglemapParams.thetaLowerRes + f.sh.anglemapParams.thetaHigherRes); y++) {
-						for (x = 0; x < (int)f.sh.anglemapParams.phiWidth; x++) {
-							size_t add = x + y * f.sh.anglemapParams.phiWidth;
-							shAngleMap[add] = 0;
-						}
-					}
-				}
-
-				//Facet histograms
-
-					for (unsigned int m = 0; m < (1 + nbMoments); m++) {//facet histograms
-						BYTE *histCurrentMoment = buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments) + f.sh.anglemapParams.GetRecordedDataSize() + m * f.sh.facetHistogramParams.GetDataSize();
-
-						if (f.sh.facetHistogramParams.recordBounce) {
-							double* nbHitsHistogram = (double*)histCurrentMoment;
-							for (size_t i = 0; i < f.sh.facetHistogramParams.GetBounceHistogramSize(); i++) {
-								nbHitsHistogram[i] = 0.0;
-							}
-						}
-
-
-						if (f.sh.facetHistogramParams.recordDistance) {
-							double* distanceHistogram = (double*)(histCurrentMoment + f.sh.facetHistogramParams.GetBouncesDataSize());
-							for (size_t i = 0; i < (f.sh.facetHistogramParams.GetDistanceHistogramSize()); i++) {
-								distanceHistogram[i] = 0.0;
-							}
-						}
-
-						if (f.sh.facetHistogramParams.recordTime) {
-							double* timeHistogram = (double*)(histCurrentMoment + f.sh.facetHistogramParams.GetBouncesDataSize() + f.sh.facetHistogramParams.GetDistanceDataSize());
-							for (size_t i = 0; i < (f.sh.facetHistogramParams.GetTimeHistogramSize()); i++) {
-								timeHistogram[i] = 0.0;
-							}
-						}
-
-					}
-			}//end else
-			*/
+			}
 		} // End nbFacet
 	} // End nbSuper
 
@@ -700,3 +553,37 @@ void initbufftozero(Databuff *databuffer){
 
 	return;
 }
+
+//----------deprecated functions because hitbuffer not sent to sub processes anymore
+/*
+void UpdateSticking(Databuff *hitbuffer){
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			calcStickingnew(&f, hitbuffer);
+		}
+	}
+}
+
+bool UpdateDesorptionRate (Databuff *hitbuffer){
+	boost::multiprecision::float128 totaldes(0.0);
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			f.sh.desorption = calcDesorptionRate(&f, hitbuffer); // TODO long double -> double here. Change f.sh.desorption to long double? bit need to adapt in Windows and new buffers
+				if(f.sh.temperature==0) {continue;}
+				totaldes+= f.sh.desorption * boost::multiprecision::float128(sHandle->wp.latestMoment/ (1.38E-23*f.sh.temperature));
+		}
+	}
+
+	if((boost::multiprecision::float128(sHandle->wp.totalDesorbedMolecules)+totaldes)<boost::multiprecision::pow(boost::multiprecision::float128(10.),boost::multiprecision::float128(-50))){return false;}
+	else{return true;}
+}
+
+void UpdateSojourn(Databuff *hitbuffer){
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			f.sh.enableSojournTime = true;
+			f.sh.sojournFreq = (kb*f.sh.temperature)/h;
+			f.sh.sojournE = calcEnergy(&f, hitbuffer);
+		}
+	}
+}*/

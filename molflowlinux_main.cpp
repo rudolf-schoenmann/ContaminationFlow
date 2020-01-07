@@ -39,11 +39,6 @@ ProblemDef* p;
 //This function checks if the correct number of arguments has been passed
 //does not check their validity, e.g. right type such as double/string, correct filename, etc
 
-
-
-
-
-
 bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 	int i;
 	if(rank==0){
@@ -94,9 +89,6 @@ int main(int argc, char *argv[]) {
 
 	Databuff hitbuffer_sum; //Hitbuffer to sum up all of the subprocesses' data
 	hitbuffer_sum.buff=NULL;
-
-	//Databuff hitbuffer_phys; //Hitbuffer where 'covering' is converted from test particle number dependent to real physical values
-	//hitbuffer_phys.buff=NULL;
 
 	Databuff loadbuffer; //Loadbuffer to read in data of geometry and physical parameters
 	loadbuffer.buff=NULL;
@@ -199,10 +191,6 @@ int main(int argc, char *argv[]) {
 			memcpy(hitbuffer_sum.buff,hitbuffer.buff,hitbuffer.size);
 			hitbuffer_sum.size =hitbuffer.size;
 
-			//hitbuffer_phys.buff = new BYTE[hitbuffer.size];
-			//memcpy(hitbuffer_phys.buff,hitbuffer.buff,hitbuffer.size);
-			//hitbuffer_phys.size =hitbuffer.size;
-
 			simHistory = new SimulationHistory (&hitbuffer, world_size);
 			//TODO: maybe add possibility of covering.txt file input
 			initbufftozero(&hitbuffer);
@@ -229,7 +217,7 @@ int main(int argc, char *argv[]) {
 			p->outFile <<std::endl <<"----------------Starting iteration " <<it+1 <<"----------------"<<std::endl;
 			}
 
-			//----Send hitbuffer content to all subprocesses
+			//----Send coveringList content to all subprocesses
 			// reset buffer (except covering) before sending to sub processes
 			initbufftozero(&hitbuffer);
 
@@ -243,8 +231,6 @@ int main(int argc, char *argv[]) {
 				if(rank==i)
 					simHistory->coveringList.printCurrent(std::to_string(rank)+": coveringList at beginning of iteration");}
 			*/
-			//MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
-
 			MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
 
 

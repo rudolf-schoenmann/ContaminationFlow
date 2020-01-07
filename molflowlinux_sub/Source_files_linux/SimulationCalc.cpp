@@ -114,22 +114,16 @@ boost::multiprecision::float128 calcCoverage(SubprocessFacet *iFacet){ // calcul
 	return coverage;
 }
 
-//std::tuple<boost::multiprecision::float128, boost::multiprecision::float128> calctotalDesorption(){// desorptionrate as well as total Number of desorbed particles
 boost::multiprecision::float128 calctotalDesorption(){// desorptionrate as well as total Number of desorbed particles
 	boost::multiprecision::float128 desrate(0.0);
-	//boost::multiprecision::float128 totaldes(0.0);
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				if(f.sh.temperature==0) {continue;}
 
 				boost::multiprecision::float128 facetdes = f.sh.desorption;
-				//std::cout<< "f.sh.desorption = " << f.sh.desorption << std::endl;
 				desrate+=facetdes/ boost::multiprecision::float128(1.38E-23*f.sh.temperature);
-				//std::cout<< "desrate = " << desrate << std::endl;
-				//totaldes+= facetdes * boost::multiprecision::float128(sHandle->wp.latestMoment/(1.38E-23*f.sh.temperature));
 			}
 	}
-	//return {std::make_tuple(desrate, totaldes)};
 	return desrate;
 }
 
@@ -143,56 +137,11 @@ double calcStep(long double var, double start, double end, double step, double W
 		return (-1.0)*(double)tanh((step-var) * (2*tuneE)/Wtr) * (start - end)/2 +(start+end)/2; //-tanh(adjust width) * adjust height + adjust bias
 }
 
-double calcEnergy(SubprocessFacet *iFacet, Databuff *hitbuffer){ //TODO verify
-	/*
-	long double coverage=calcCoverage(iFacet,hitbuffer);
-
-	if(p->E_de>p->H_vap)
-		return (double)tanh((1-coverage) * (2*tuneE)/p->W_tr) * (p->E_de - p->H_vap)/2 +(p->E_de+p->H_vap)/2; //tanh(adjust width) * adjust height + adjust bias
-	else
-		return -1.0*(double)tanh((1-coverage) * (2*tuneE)/p->W_tr) * (p->E_de - p->H_vap)/2 +(p->E_de+p->H_vap)/2; //-tanh(adjust width) * adjust height + adjust bias
-		*/
-	long double coverage=calcCoverage(iFacet,hitbuffer);
-	return calcStep(coverage, p->E_de, p->H_vap,1, p->W_tr);
-}
-
 double calcEnergy(SubprocessFacet *iFacet){ //TODO verify
 	long double coverage=calcCoverage(iFacet).convert_to<long double>();
 	return calcStep(coverage, p->E_de, p->H_vap,1, p->W_tr);
 }
 
-
-//Brauchen wir nicht, weil wir CaclTotalOutgassing haben.
-/*
-std::tuple<double, double> calctotalOutgassing(){
-	double outgassrate, totalout=0.0;
-	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-			for (SubprocessFacet& f : sHandle->structures[j].facets) {
-					double facetoutgassrate = f.sh.outgassing;
-					outgassrate+=facetoutgassrate/ (1.38E-23*f.sh.temperature);
-					totalout+=sHandle->wp.latestMoment * facetoutgassrate / (1.38E-23*f.sh.temperature);;
-			}
-	}
-	return {std::make_tuple(outgassrate, totalout)};
-}
-*/
-
-
-//Brauchen wir wahrscheinlich nicht.
-/*
-std::tuple<double, double> calctotalParticles_out(Databuff *hitbuffer){
-	std::tuple<double,double> particles_outDes = calctotalDesorption(hitbuffer);
-	double desrate = std::get<0>(particles_outDes);
-	double totaldes = std::get<1>(particles_outDes);
-	std::tuple<double,double> particles_outOut = calctotalOutgassing();
-	double outgassrate = std::get<0>(particles_outOut);
-	double totalout = std::get<1>(particles_outOut);
-	double sum_rate = desrate + outgassrate;
-	double sum_total = totaldes + totalout;
-
-	return{std::make_tuple(sum_rate, sum_total)};
-}
-*/
 
 //-----------------------------------------------------------
 // calculation of used values
@@ -204,7 +153,6 @@ boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum, llong
 	if (nbDesorbed == 0) return 0; //avoid division by 0
 
 	boost::multiprecision::float128 desrate(0.0);
-	//boost::multiprecision::float128 totaldes(0.0);
 	desrate=calctotalDesorption();
 
 	CalcTotalOutgassingWorker();
@@ -220,37 +168,6 @@ boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum, llong
 	return (boost::multiprecision::float128(sHandle->wp.finalOutgassingRate) +desrate) / boost::multiprecision::float128(nbDesorbed);
 	}
 
-/* //Wahrscheinlich brauchen wir das nicht.
-double calcRealCovering(SubprocessFacet *iFacet){
-
-	double covering= ((double)iFacet->tmpCounter[0].hit.covering)*GetMoleculesPerTP(0); // only one moment used; one moment means stationary simulation, first moment is moment 0
-	return covering;
-}
-
-*/
-
-// Brauchen wir eigentlich auch nicht.
-/*
-double calcCoveringUpdate(SubprocessFacet *iFacet)
-{
-	double N_mono= calcNmono(iFacet);
-	double dN_surf=calcdNsurf();
-	//return dN_surf/N_mono;
-	return 1; //Das ist natürlich falsch und nur zu Testzwecken eingebaut.
-
-}*/
-
-void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates sticking coefficient dependent on covering.
-
-	llong covering=getCovering(iFacet,hitbuffer);
-
-	if (covering>=0){
-		iFacet->sh.sticking = p->sticking;}
-	else{
-		iFacet->sh.sticking = 0.0;
-	}
-
-}
 
 void calcStickingnew(SubprocessFacet *iFacet) {//Calculates sticking coefficient dependent on covering.
 
@@ -262,6 +179,66 @@ void calcStickingnew(SubprocessFacet *iFacet) {//Calculates sticking coefficient
 		iFacet->sh.sticking = 0.0;
 	}
 
+}
+
+boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This returns ((d'coverage')/dt)de. So to speak desorption rate in units of [1/s]
+	boost::multiprecision::float128 coverage;
+	double temperature;
+	boost::multiprecision::float128 desorption(0.0);
+
+	coverage = calcCoverage(iFacet);
+	temperature=iFacet->sh.temperature;
+
+	if(coverage==0 || temperature==0){
+		return 0.0;
+	}
+	boost::multiprecision::float128 factor(1.0);
+
+	boost::multiprecision::float128 d = boost::multiprecision::float128(calcStep((long double)(coverage), 1, 0, 1, p->W_tr));
+	boost::multiprecision::float128 tau_1=static_cast<boost::multiprecision::float128>(1.0)/static_cast<boost::multiprecision::float128>(h/(kb*temperature));
+
+	boost::multiprecision::float128 energy_de=static_cast<boost::multiprecision::float128>(calcEnergy(iFacet));
+
+	desorption = tau_1 * boost::multiprecision::pow(coverage,static_cast<boost::multiprecision::float128>(d)) *boost::multiprecision::exp(-energy_de/static_cast<boost::multiprecision::float128>(kb*temperature));
+	//if (Desorption Energy/Temperature) >~ 1.02E-20J/K, desorption will be zero
+
+	return factor * desorption;
+}
+
+boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet) {//This returns ((d'coverage')/dt)de * (Nmono/dNSurf) * kb*T. So to speak desorption rate in units of [Pa m³/s]
+	boost::multiprecision::float128 desorption = calcDesorption(iFacet);
+	boost::multiprecision::float128 desorptionRate = desorption * boost::multiprecision::float128(kb* iFacet->sh.temperature * calcNmono(iFacet) /calcdNsurf());
+	return desorptionRate;
+}
+
+double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f){
+	double scaleY = 1.0 / (f->sh.area * 1E-4); //1E4 is conversion from m2 to cm2
+	//TODO is this correct?
+	return scaleY *GetMoleculesPerTP(hitbuffer_sum,0).convert_to<double>() * f->tmpCounter[0].hit.sum_1_per_ort_velocity;
+}
+
+double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f){
+	double scaleY = 1.0 / (f->sh.area  * 1E-4)* sHandle->wp.gasMass / 1000 / 6E23 * 0.0100; //0.01: Pa->mbar;  //1E4 is conversion from m2 to cm2, 0.01: Pa->mbar
+	return f->tmpCounter[0].hit.sum_1_per_ort_velocity*scaleY * GetMoleculesPerTP(hitbuffer_sum,0).convert_to<double>();
+}
+
+
+//----------deprecated functions because hitbuffer not sent to sub processes anymore
+/*
+double calcEnergy(SubprocessFacet *iFacet, Databuff *hitbuffer){ //TODO verify
+
+	long double coverage=calcCoverage(iFacet,hitbuffer);
+	return calcStep(coverage, p->E_de, p->H_vap,1, p->W_tr);
+}
+void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer) {//Calculates sticking coefficient dependent on covering.
+
+	llong covering=getCovering(iFacet,hitbuffer);
+
+	if (covering>=0){
+		iFacet->sh.sticking = p->sticking;}
+	else{
+		iFacet->sh.sticking = 0.0;
+	}
 }
 
 boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet, Databuff *hitbuffer){//This returns ((d'coverage')/dt)de. So to speak desorption rate in units of [1/s]
@@ -286,41 +263,6 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet, Databuff
 	desorption = tau_1 * boost::multiprecision::pow(coverage,static_cast<boost::multiprecision::float128>(d)) *boost::multiprecision::exp(-energy_de/static_cast<boost::multiprecision::float128>(kb*temperature));
 	//if (Desorption Energy/Temperature) >~ 1.02E-20J/K, desorption will be zero
 
-	/*if(desorption.convert_to<long double>()==0.0 || desorption.convert_to<double>()==0.0){
-		std::cout <<"Facet "<<getFacetIndex(iFacet)<<": Desorption double = 0.0. Desorption long double = "<<desorption.convert_to<long double>()<<". Desorption float128 = "<<desorption <<std::endl;
-		p->outFile <<"Facet "<<getFacetIndex(iFacet)<<": Desorption double = 0.0. Desorption long double = "<<desorption.convert_to<long double>()<<". Desorption float128 = "<<desorption <<std::endl;
-	}*/
-
-	return factor * desorption;
-}
-
-boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This returns ((d'coverage')/dt)de. So to speak desorption rate in units of [1/s]
-	boost::multiprecision::float128 coverage;
-	boost::multiprecision::uint128_t covering=getCovering(iFacet);
-	double temperature;
-	boost::multiprecision::float128 desorption(0.0);
-
-	coverage = calcCoverage(iFacet);
-	temperature=iFacet->sh.temperature;
-
-	if(coverage==0 || temperature==0){
-		return 0.0;
-	}
-	boost::multiprecision::float128 factor(1.0);
-
-	boost::multiprecision::float128 d = boost::multiprecision::float128(calcStep((long double)(coverage), 1, 0, 1, p->W_tr));
-	boost::multiprecision::float128 tau_1=static_cast<boost::multiprecision::float128>(1.0)/static_cast<boost::multiprecision::float128>(h/(kb*temperature));
-
-	boost::multiprecision::float128 energy_de=static_cast<boost::multiprecision::float128>(calcEnergy(iFacet));
-
-	desorption = tau_1 * boost::multiprecision::pow(coverage,static_cast<boost::multiprecision::float128>(d)) *boost::multiprecision::exp(-energy_de/static_cast<boost::multiprecision::float128>(kb*temperature));
-	//if (Desorption Energy/Temperature) >~ 1.02E-20J/K, desorption will be zero
-
-	/*if(desorption.convert_to<long double>()==0.0 || desorption.convert_to<double>()==0.0){
-		std::cout <<"Facet "<<getFacetIndex(iFacet)<<": Desorption double = 0.0. Desorption long double = "<<desorption.convert_to<long double>()<<". Desorption float128 = "<<desorption <<std::endl;
-		p->outFile <<"Facet "<<getFacetIndex(iFacet)<<": Desorption double = 0.0. Desorption long double = "<<desorption.convert_to<long double>()<<". Desorption float128 = "<<desorption <<std::endl;
-	}*/
-
 	return factor * desorption;
 }
 
@@ -328,21 +270,4 @@ boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet, Data
 	boost::multiprecision::float128 desorption = calcDesorption(iFacet, hitbuffer);
 	boost::multiprecision::float128 desorptionRate = desorption * boost::multiprecision::float128(kb* iFacet->sh.temperature * calcNmono(iFacet) /calcdNsurf());
 	return desorptionRate;
-}
-
-boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet) {//This returns ((d'coverage')/dt)de * (Nmono/dNSurf) * kb*T. So to speak desorption rate in units of [Pa m³/s]
-	boost::multiprecision::float128 desorption = calcDesorption(iFacet);
-	boost::multiprecision::float128 desorptionRate = desorption * boost::multiprecision::float128(kb* iFacet->sh.temperature * calcNmono(iFacet) /calcdNsurf());
-	return desorptionRate;
-}
-
-double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f){
-	double scaleY = 1.0 / (f->sh.area * 1E-4); //1E4 is conversion from m2 to cm2
-	//TODO is this correct?
-	return scaleY *GetMoleculesPerTP(hitbuffer_sum,0).convert_to<double>() * f->tmpCounter[0].hit.sum_1_per_ort_velocity;
-}
-
-double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f){
-	double scaleY = 1.0 / (f->sh.area  * 1E-4)* sHandle->wp.gasMass / 1000 / 6E23 * 0.0100; //0.01: Pa->mbar;  //1E4 is conversion from m2 to cm2, 0.01: Pa->mbar
-	return f->tmpCounter[0].hit.sum_1_per_ort_velocity*scaleY * GetMoleculesPerTP(hitbuffer_sum,0).convert_to<double>();
-}
+}*/
