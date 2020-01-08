@@ -46,17 +46,4 @@ Simulation::Simulation()
 	memset(&tmpGlobalResult, 0, sizeof(GlobalHitBuffer));
 
 	sh.nbSuper = 0;
-	//acDensity =
-		//acMatrix =
-		//acDensity =
-		//acDesorb =
-		//acAbsorb =
-		//acTArea =
-		//acRho =
-		//acTMatrix =
-		//acTDensity = acArea =
-		//NULL;
-		
-		//acLines =
-		//acTLines = NULL;
 }

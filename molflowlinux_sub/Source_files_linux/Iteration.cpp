@@ -28,44 +28,7 @@ extern SimulationHistory* simHistory;
 extern Simulation *sHandle;
 
 //Estimation of Tmin
-double estimateTmin(){
-	double sum_v_ort=0;
-	double sum_1_v_ort=0;
-	double facetcounter=0;
-	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				//sum_1_v_orth
-				//sum_1_v_ort+=f.tmpCounter[m].hit.sum_1_per_ort_velocity*f.sh.area;
-				sum_v_ort+=f.tmpCounter[0].hit.sum_v_ort;
-				sum_1_v_ort+=f.tmpCounter[0].hit.sum_1_per_velocity;
-				facetcounter++;
-		}
-	}
-	double dist_total=0.01*(double)sHandle->tmpGlobalResult.distTraveled_total; //factor 0.01 to convert distance from cm to m.
-	//Muss geändert werden, da diese Werte Null sind im Prozess Null.
-	//double hits= (double)sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;//Muss geändert werden, da diese Werte Null sind im Prozess Null.
-	double hits2= pow((double)sHandle->tmpGlobalResult.globalHits.hit.nbMCHit,2);//Muss geändert werden, da diese Werte Null sind im Prozess Null.
-	//double particlenumber = (double)sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed;//Muss geändert werden, da diese Werte Null sind im Prozess Null.
-	/*
-	std::cout << "_______________________________________________________________________________________________________"<< std::endl;
-	std::cout <<"Current version of estimate Tmin"<< std::endl;
-	std::cout <<"dist total [m]\t\t" << dist_total << std::endl;
-	std::cout <<"hits \t\t\t" << hits << std::endl;
-	std::cout <<"hits^2 \t\t\t" << hits2 << std::endl;
-	std::cout <<"sum_v_ort [m/s]\t\t" << sum_v_ort<< std::endl;
-	std::cout <<"<v_ort>[m/s]\t\t"<< sum_v_ort/hits << std::endl;
-	std::cout <<"1/<v_ort>[s/m]\t\t"<< hits/sum_v_ort<< std::endl;
-	std::cout <<"sum_1_v_ort [s/m]\t" << sum_1_v_ort << std::endl;
-	std::cout <<"<1/v_ort>[s/m]\t\t"<<sum_1_v_ort/hits << std::endl;
-	std::cout <<"Alternative 1 for Tmin\t (dist_total*1000)/sum_v_ort [ms]\t" <<dist_total*1000/sum_v_ort <<std::endl;
-	std::cout <<"Alternative 3 for Tmin\t(dist_total/hits^2)*1000*sum_1_v_ort [ms]\t" <<(dist_total/hits2)*1000*sum_1_v_ort <<std::endl;
-	std::cout << "Currently used: Alternative 3" << std::endl;
-	std::cout << "_______________________________________________________________________________________________________"<< std::endl;
-	*/
-	return (dist_total/hits2)*sum_1_v_ort*1000;
-}
-
-double estimateTmin_RudiTest(Databuff *hitbuffer){ //not ready yet => finish //TODO
+double estimateTmin(Databuff *hitbuffer){ //not ready yet => finish //TODO
 BYTE *buffer;
 buffer = hitbuffer->buff;
 //Ich muss der Funktion noch einen Hitbuffer übergeben. Ich brauche ja 'covering'.
@@ -104,17 +67,15 @@ buffer = hitbuffer->buff;
 	//Time step information for developing
 
 	std::cout << "Time step information for developing" << std::endl;
-	std::cout << "estimateTmin_RudiTest: tmin = " <<tmin<< "ms"<< std::endl;
-	std::cout << "estimateTmin_RudiTest: tmin_particles_out = " <<tmin_particles_out<< "ms"<< std::endl;
-	std::cout << "estimateTmin: tmin would be " << estimateTmin() << "ms" << std::endl;
-
+	std::cout << "estimateTmin: tmin = " <<tmin<< "ms"<< std::endl;
+	std::cout << "estimateTmin: tmin_particles_out = " <<tmin_particles_out<< "ms"<< std::endl;
 	/*We don't need that anymore because we solved the problem of too much desorbed particles via a threshold value.
 	if (tmin < tmin_particles_out){
-		std::cout << "estimateTmin_RudiTest: tmin = " <<tmin<< "ms is chosen."<< std::endl;
+		std::cout << "estimateTmin: tmin = " <<tmin<< "ms is chosen."<< std::endl;
 	 	return tmin;
 		}
 	else{
-		std::cout << "estimateTmin_RudiTest: tmin_particles_out = " <<tmin_particles_out<< "ms is chosen."<< std::endl;
+		std::cout << "estimateTmin: tmin_particles_out = " <<tmin_particles_out<< "ms is chosen."<< std::endl;
 		return tmin_particles_out;
 		}
 	*/
@@ -148,7 +109,7 @@ void allocateCovering(Databuff *hitbuffer, int size, int rank){
 void initCoveringThresh(){
 	sHandle->coveringThreshold=std::vector<llong> ();
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-				for (SubprocessFacet& f : sHandle->structures[j].facets) {
+				for(uint i=0; i<sHandle->structures[j].facets.size(); i++){
 					sHandle->coveringThreshold.push_back(0);
 				}
 		}

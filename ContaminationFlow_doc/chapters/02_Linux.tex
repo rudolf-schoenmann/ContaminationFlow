@@ -3,7 +3,7 @@
 
 \chapter{ContaminationFlow Linux}\label{chapter:Linux}
 %\AddToShipoutPicture*{\ShowFramePicture}
-\begin{itemize}[noitemsep,topsep=0pt]
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Parallel simulation on several sub processes
 \item Processing and control of data in main process
 \item Update and accumulation of hit counters and other information such as profiles
@@ -169,17 +169,17 @@
 \section{Call of Application from Command line}
 
 \subsubsection{New class ProblemDef}
-\begin{itemize}[noitemsep,topsep=0pt]
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Defines parameters used for simulation
 \item Possible adaptation of default paramaters through input file
-\item Conducts some intern conversions
+%\item Conducts some intern conversions
 \item Creates result folder for simulation if desired
-	\begin{itemize}[noitemsep,topsep=0pt]
+	\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 	\item Final resultbuffer
 	\item Final covering, input file and console output as text files
 	\end{itemize}
 \end{itemize}
-\bigskip
+%\bigskip
 
 \subsubsection{Application with custom parameters using input file}
 Call of ContaminationFlow Linux application in the command line:
@@ -188,16 +188,16 @@ Call of ContaminationFlow Linux application in the command line:
 \$ mpirun -n N\ MolflowLinux inputfile save}
 \smallskip
 with the following command line parameters:
-\begin{itemize}[noitemsep,topsep=0pt]
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item \codew{N}: desired number of worker processes; simulation on K=N-1 worker processes
 \item \codew{MolflowLinux}: path to application, e.g.\ \codew{\textasciitilde/MolflowLinux/Debug/MolflowLinux}
 \item \codew{inputfile}: path to file that defines simulation parameters
 \item \codew{save}: determines whether result directory is created (1: true, 0:false); default:\codew{1}
 \end{itemize}
-\bigskip
+\smallskip
 
 and the input file defining the following parameters:
-\begin{itemize}[noitemsep,topsep=0pt]
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item \codew{$loadbufferPath$}: path to loadbuffer file, contains geometry, e.g.\ \codew{\textasciitilde/loadbuffer}
 \item \codew{$hitbufferPath$}: path to hitbuffer file, contains counters, etc., e.g.\ \codew{\textasciitilde/hitbuffer}
 %\item resultbufferPath: path to resultbuffer file, where the final hitbuffer is exported to,\\ e.g.\ \codew{\textasciitilde/resultbuffer}
@@ -209,34 +209,39 @@ and the input file defining the following parameters:
 %\item \codew{$s_1$}, coefficient used for calculation of sticking coefficient; default:\codew{1}
 %\item \codew{$s_2$}, coefficient used for calculation of sticking coefficient; default:\codew{0.2}
 %\item \codew{$E_{ad}$}, energy used for calculation of sticking coefficient; default:\codew{1\text{E}-21}
-\item\codew{$d$}: power for base of coverage used for calculation of desorption; default:\codew{1}
+%\item\codew{$d$}: power for base of coverage used for calculation of desorption; default:\codew{1}
 \item \codew{$E_{de}$}: maximum energy used for calculation of desorption; default:\codew{1\text{E}-21}
 \item \codew{$H_{vap}$}: minimum energy used for calculation of desorption; default:\codew{1\text{E}-21}
 \item \codew{$W_{tr}$}: window width used for calculation of desorption; default:\codew{1\text{E}-21}
 \item \codew{$sticking$}: constant sticking coefficient for all facets; default:\codew{0.8\text{E}-19}
-\item \codew{$coveringLimit$}: threshold for zero desoprtion; default:\codew{0}
-\item \codew{$targetPaticles$}: Minimum number of desorbed particles per iteration; default: \codew{1000}
+%\item \codew{$coveringLimit$}: threshold for zero desoprtion; default:\codew{0}
+\item \codew{$targetPaticles$}: Minimum number of desorbed particles per iter.; default: \codew{1000}
 \item \codew{$targetError$}: Maximum error per iteration; default: \codew{0.001}
 \item \codew{$hitRatioLimit$}: Ratio at which hits are ignored, default: \codew{1\text{E}-5}
 \item \codew{$Tmin$}: minimum time for step size; default:\codew{1\text{E}-4}
+\item \codew{$maxStepSize$}: maximum time for step size; default:\codew{max}
+\item \codew{$maxSimPerIt$}: maximum simulation steps per iteration; default:\codew{max}
+\item \codew{$coveringMinThresh$}: minimum covering (through multiplication); default:\codew{10000}
+\item \codew{$histsize$}: Size of history lists; default:\codew{max}
+\item \codew{$vipFacets$}: vip facets, alterning facet number and target error; default:\codew{[]}
 \end{itemize}
 \newpage
 %\section{General Changes}
 %
 %\subsubsection{Replacement/removal of Windows libraries/functions}
-%\begin{itemize}[noitemsep,topsep=0pt]
+%\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 %\item Databuff struct with import/export instead of using Dataports
 %\item Replacements of libraries, e.g.\ \codew{\#include <time.h>} with \codew{\#include <sys/time.h>}
 %\end{itemize}
 %
 %\subsubsection{Removal of functions used in \codew{AC\_MODE}}
-%\begin{itemize}[noitemsep,topsep=0pt]
+%\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 %\item Only \codew{MC\_MODE} used
 %\item Removal of \codew{AC\_MODE} cases and functions
 %\end{itemize}
 
 \subsubsection{Terminology}
-\begin{itemize}[noitemsep,topsep=0pt]
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Simulation time: desired computation time until check if target is reached for iteration
 \item Maximum simulation time: desired total simulated time
 \item Step size: desired simulated time per particle for iteration
@@ -244,7 +249,7 @@ and the input file defining the following parameters:
 
 \section{Communication}
 \subsubsection{Import and export of buffer files}
-\begin{itemize}[noitemsep,topsep=0pt]
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item New Databuff struct that replaces Dataport struct from MolFlow Windows \code{typedef unsigned char BYTE;\\typedef struct \{\\
 	\hphantom{\quad}signed int size;\\
 	\hphantom{\quad}BYTE *buff;\\
@@ -254,87 +259,83 @@ and the input file defining the following parameters:
 \end{itemize}
 
 \subsubsection{Communication between worker processes via MPI}
-\begin{itemize}[noitemsep,topsep=0pt]
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Main process 0 sends Databuff struct containing loadbuffer and Databuff struct containing hitbuffer and required simulationHistory values to sub processes using \codew{MPI\_Bcast($\cdot$)}
 \item Sub processes send updated Databuff struct containing hitbuffer and required simulationHistory values to main process 0 using \codew{MPI\_Send($\cdot$)} and \codew{MPI\_Recv($\cdot$)}
 \end{itemize}
 
 \section{Usage of $boost$ Library}
 \subsubsection{Multiprecision}
-\begin{itemize}[noitemsep,topsep=0pt]
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Increase precision for variables if required
-\item Avoid underflow for integer and underflow for floating point numbers
+\item Avoid overflow for integer and underflow for floating point numbers
 \end{itemize}
-\newpage
+%\newpage
 \section{New Quantities}
 \label{sub:quant}
 \subsubsection{New counter \codew{covering}}
-\begin{itemize}[noitemsep,topsep=0pt]
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Number of carbon equivalent particles on facet
-\item Added covering counter to hitbuffer
-\item Extracted from hitbuffer from \codew{Simulationcalc.cpp} file in \codew{getCovering($\cdot$)}
-\item Covering increases with adsorption, decreases with desorption
+\item Increases with adsorption, decreases with desorption
+\item Extracted from new hitbuffer counter from \codew{Simulationcalc.cpp} file in \codew{getCovering($\cdot$)}
 \end{itemize}
 
 \subsubsection{Coverage}
-\begin{itemize}[noitemsep,topsep=0pt]
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Number of carbon equivalent particles per monolayer on facet
 \item Calculated from covering, gas mass and facet area
 \item Coverage computed from \codew{Simulationcalc.cpp} file in \codew{calcCoverage($\cdot$)}
 \end{itemize}
 
 \subsubsection{Sticking factor}
-\begin{itemize}[noitemsep,topsep=0pt]
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Ratio adsorbed particles to impinging particles
 \item Set to 0, can be adapted for all facets through input file
-%\item Calculated from coverage (and temperature)
-%\item Sticking factor computed from \codew{Simulationcalc.cpp} file in \codew{calcStickingnew($\cdot$)}
-%\item Updated and fixed before each interation
 \end{itemize}
 
 \subsubsection{Binding energy}
-\begin{itemize}[noitemsep,topsep=0pt]
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Calculated from \codew{$E_{de}$}, \codew{$H_{vap}$} and \codew{$W_{tr}$}
-\item Desorption computed from \codew{Simulationcalc.cpp} file in \codew{calcEnergy($\cdot$)}
+\item Energy computed from \codew{Simulationcalc.cpp} file in \codew{calcEnergy($\cdot$)}
 \end{itemize}
 
 \subsubsection{Desorption $[1/\text{s}]$}
-\begin{itemize}[noitemsep,topsep=0pt]
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Calculated from binding energy, covering and temperature
 \item Desorption computed from \codew{Simulationcalc.cpp} file in \codew{calcDesorption($\cdot$)}
 \end{itemize}
 
 \subsubsection{Desorption Rate $[\text{Pa m}^3/\text{s}]$}
-\begin{itemize}[noitemsep,topsep=0pt]
-\item Calculated from desorption, gas mass and facet area
-\item Desorption rate computed from \codew{Simulationcalc.cpp} file in \codew{calcDesorptionRate($\cdot$)}
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item Calculated from desorption, gas mass and facet area before each iteration
 \item Used to determine starting point for new particle
-\item Updated and fixed before each interation
+\item Desorption rate computed from \codew{Simulationcalc.cpp} file in \codew{calcDesorptionRate($\cdot$)}
+%\item Updated and fixed before each interation
 \end{itemize}
 
-%\subsubsection{\codew{Worker} class for Worker processes}
-%\begin{itemize}[noitemsep,topsep=0pt]
-%\item Reduced \codew{Worker} class
-%\item Only use of functions \codew{GetCDFId($\cdot$)}, \codew{GenerateNewCDF($\cdot$)}, \codew{Generate\_CDF($\cdot$)}, \codew{CalcTotalOutgassing()}
-%\end{itemize}
 \subsubsection{Outgassing Rate}
-\begin{itemize}[noitemsep,topsep=0pt]
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Calculated from facet outgassing and temerature defined in sHandle
 \item Outgassing rate computed from \codew{Worker.cpp} file in \codew{CalcTotalOutgassingWorker()}
 \end{itemize}
 
 \subsubsection{$\text{K}_{\text{real}/\text{virtual}}$}
-\begin{itemize}[noitemsep,topsep=0pt]
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Number of real particles represented by test particles
-\item Calculated from desorption rate, outgassing rate and number of desorbed molecules
+\item Calculated from desorption \& outgassing rate and number of desorbed molecules
 \item $\text{K}_{\text{real}/\text{virtual}}$ computed from \codew{Simulationcalc.cpp} file in \codew{GetMoleculesPerTP($\cdot$)}
 \end{itemize}
 
+\subsubsection{Statistical Error}
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item Calculated from hits and desorbed particles (of facet and total)
+\item Used to determine significance of simulation results of iteration
+\end{itemize}
 %\newpage
 \section{Iterative Algorithm}
 
 \subsection{Initialization of simulation}
-\begin{figure}[!h]
+\begin{figure}[!htb]
 \centering
 \begin{tikzpicture}[node distance=2cm, font=\footnotesize]
 	\tikzstyle{condition} = [diamond, draw, minimum width= 4cm, align=center,  aspect=1.5]
@@ -359,7 +360,7 @@ and the input file defining the following parameters:
 \end{figure}
 
 \subsubsection{New class to store Simulation History}
-\begin{itemize}[noitemsep,topsep=0pt]
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item SimulationHistory class \code{class SimulationHistory \{\\
 	public:\\
 	\hphantom{\enskip}SimulationHistory();\\
@@ -382,7 +383,7 @@ and the input file defining the following parameters:
 \item In \codew{SimulationLinux.h} and \codew{SimulationLinux.cpp} file
 \item SimulationHistory updated after each iteration in \codew{UpdateCovering($\cdot$)} from \codew{UpdateMainProcess.cpp} file
 \item Currently recorded quantities: covering and error for each facet for each iteration, total hits and desorbed particles for each facet
-\item Time: simulated time (accumulated time steps) instead of computation time 
+\item lastTime: simulated time (accumulated time steps) instead of computation time 
 \end{itemize}
 
  \subsection{Simulation on subprocesses}
@@ -394,69 +395,107 @@ and the input file defining the following parameters:
 	\tikzstyle{neuron}= [rectangle,draw, minimum width= 4cm, align=center, aspect=1.5]
 
 	\node[module](start)  at (0,-0.2) {Start simulation\\sub process};
-	\node[neuron](preprocess) at (5,-0.2) {Calculate desorption,\\sojourn variables,\\cov. thresh., step size};
+	\node[neuron](preprocess) at (6,-0.2) {Calculate desorption,\\sojourn variables,\\cov. thresh. \& step size;\\multiply cov. if small};
 	\draw let \p1=(start.east), \p2=(preprocess.west) in [->, line width=0.04cm] (\p1) -- (\p2);
 
-	\node[neuron](nbSteps) at (5,-1.9) {Calculate steps for \\desired simulation time};
-	\draw let \p1=(preprocess.south), \p2=(nbSteps.north) in [->, line width=0.04cm] (\p1) -- (\p2);
+	\node[neuron](nbSteps) at (1,-1.9) {Calculate steps for \\desired simulation time};
+	\draw let \p1=(preprocess.south), \p2=(nbSteps.east) in [->, line width=0.04cm] (\p1) --  (\x1,\y2)-- (\p2);
 
-	\node[neuron](particle) at (5,-3.5) {Create particle};
-	\draw let \p1=(nbSteps.south), \p2=(particle.north) in [->, line width=0.04cm] (\p1) -- (\p2);
+	\node[condition, aspect=1.5](exist) at (1,-3.8){Particle\\exists?};
+	\draw let \p1=(nbSteps.south), \p2=(exist.north) in [->, line width=0.04cm] (\p1) -- (\p2);
 
-	\node[condition, aspect=1.5](covthresh) at (5,-5.8){Cov. thresh.\\reached?};
-	\draw let \p1=(particle.south), \p2=(covthresh.north) in [->, line width=0.04cm] (\p1) -- (\p2);
+	\node[neuron](particle) at (1,-5.8) {Create particle};
+	\draw let \p1=(exist.south), \p2=(particle.north) in [->, line width=0.04cm] (\p1) -- (\p2)node[midway, right]{false};
 
-	\node[neuron](facet) at (5,-8.1) {Find next facet};
-	\draw let \p1=(covthresh.south), \p2=(facet.north) in [->, line width=0.04cm] (\p1) -- (\p2) node[midway, right]{false};
+	\node[condition, aspect=1.5](covthresh) at (6,-5.8){Cov. thresh.\\reached?};
+	\draw let \p1=(particle.east), \p2=(covthresh.west) in [->, line width=0.04cm] (\p1) -- (\p2);
+	\draw let \p1=(exist.east), \p2=(covthresh.north) in [->, line width=0.04cm] (\p1) --(\x1+1cm,\y1)node[midway, above]{true}--(\x2,\y1)-- (\p2);
 
-	\node[condition, aspect=1.5](time1) at (5,-10.1){flight time>\\step size?};
+	\node[neuron](facet) at (1,-7.7) {Find next facet};
+	\draw let \p1=(covthresh.south), \p2=(facet.east) in [->, line width=0.04cm] (\p1) -- (\x1,\y2) node[midway, right]{false} --(\p2);
+
+	\node[condition, aspect=1.5](time1) at (1,-9.7){flight time>\\step size?};
 	\draw let \p1=(facet.south), \p2=(time1.north) in [->, line width=0.04cm] (\p1) -- (\p2);
 
-	\node[neuron](sojourn) at (10,-10.1) {Add sojourn time};
+	\node[neuron](sojourn) at (6,-9.7) {Add sojourn time};
 	\draw let \p1=(time1.east), \p2=(sojourn.west) in [->, line width=0.04cm] (\p1) -- (\p2) node[midway, above]{false};
 
-	\node[condition, aspect=1.5](time2) at (10,-12.5){flight time>\\step size?};
+	\node[condition, aspect=1.5](time2) at (6,-12.0){flight time>\\step size?};
 	\draw let \p1=(sojourn.south), \p2=(time2.north) in [->, line width=0.04cm] (\p1) -- (\p2);
 
-	\node[neuron](hit) at (10,-14.8) {Record hit};
+	\node[neuron](hit) at (6,-14.3) {Record hit};
 	\draw let \p1=(time2.south), \p2=(hit.north) in [->, line width=0.04cm] (\p1) -- (\p2) node[midway, right]{false};
 
-	\node[neuron](absorb) at (5,-12.5) {Record absorb};
+	\node[neuron](absorb) at (1,-12.0) {Record absorb};
 	\draw let \p1=(time1.south), \p2=(absorb.north) in [->, line width=0.04cm] (\p1) -- (\p2) node[midway, right]{true};
 	\draw let \p1=(time2.west), \p2=(absorb.east) in [->, line width=0.04cm] (\p1) -- (\p2) node[midway, above]{true};
 
-	\node[condition, aspect=1.5](steps) at (5,-14.8){No.steps\\reached?};
+	\node[condition, aspect=1.5](steps) at (1,-14.3){No.steps\\reached?};
 	\draw let \p1=(absorb.south), \p2=(steps.north) in [->, line width=0.04cm] (\p1) -- (\p2);
-	\draw let \p1=(hit.west), \p2=(steps.east) in [->, line width=0.04cm] (\p1) -- (\p2);
-	\draw let \p1=(steps.west), \p2=(particle.west) in [->, line width=0.04cm] (\p1) --node[midway, above]{false}(\x1-1cm,\y1)-- (\x1-1cm,\y2) -- (\p2);
+	\draw let \p1=(steps.west), \p2=(particle.west) in [->, line width=0.04cm] (\p1) --(\x1-0.5cm,\y1)-- node[midway, right]{false}(\x1-0.5cm,\y1+1cm)-- (\x1-0.5cm,\y2) -- (\p2);
 
-	\node[condition, aspect=1.5](target) at (5,-17.5){Target error\\reached?};
-	\draw let \p1=(steps.south), \p2=(target.north) in [->, line width=0.04cm] (\p1) -- (\p2) node[midway, right]{true};
-	\draw let \p1=(target.west), \p2=(nbSteps.west) in [->, line width=0.04cm] (\p1) --node[midway, above]{false}(\x1-1cm, \y1)--(\x1-2cm,\y1)-- (\x1-2cm,\y2) -- (\p2);
+	\node[condition, aspect=1.5](steps2) at (11,-14.3){No.steps\\reached?};
+	\draw let \p1=(hit.east), \p2=(steps2.west) in [->, line width=0.04cm] (\p1) -- (\p2);
+	\draw let \p1=(steps2.north), \p2=(facet.east) in [ line width=0.04cm] (\p1) --node[midway, right]{false}(\x1,\y1+1cm)-- (\x1,\y2) -- (6, \y2);
 
-	\node[neuron](hitbuffer) at (10,-5.8) {Update hitbuffer};
+	\node[condition, aspect=1.5](target) at (6,-17.2){Target error\\reached?};
+	\draw let \p1=(steps.south), \p2=(target.north) in [->, line width=0.04cm] (\p1) --(\x1,\y1-0.3cm) --node[midway, above]{true}(\x1+2cm,\y1-0.3cm)--(\x2,\y1-0.3cm)-- (\p2);
+	\draw let \p1=(steps2.south), \p2=(target.north) in [ line width=0.04cm] (\p1) --(\x1,\y1-0.3cm) --node[midway, above]{true}(\x1-2cm,\y1-0.3cm)--(\x2,\y1-0.3cm);
+	\draw let \p1=(target.west), \p2=(nbSteps.west) in [->, line width=0.04cm] (\p1) --node[midway, above]{false}(\x1-1cm, \y1)--(\x1-6cm,\y1)-- (\x1-6cm,\y2) -- (\p2);
+
+	\node[neuron](hitbuffer) at (11,-5.8) {Update hitbuffer};
 	\draw let \p1=(target.east), \p2=(hitbuffer.east) in [->, line width=0.04cm] (\p1) -- (\x1+1cm,\y1) node[midway, above]{true}--(\x1+6cm,\y1)--(\x1+6cm,\y2) -- (\p2);
 	\draw let \p1=(covthresh.east), \p2=(hitbuffer.west) in [->, line width=0.04cm] (\p1) -- (\p2) node[midway, above]{true};
 
 	\node[module](end)  at (12,-0.2) {End simulation\\sub process};
-	\draw let \p1=(hitbuffer.north), \p2=(end.west) in [->, line width=0.04cm] ([xshift=-1cm]\p1) --(\x1-1cm,\y2)-- (\p2);
+	\draw let \p1=(hitbuffer.north), \p2=(end.south) in [->, line width=0.04cm] (\x2,\y1) -- (\p2);
 
 \end{tikzpicture}
 \caption{Overview: simulation on sub processes}
 \end{figure}
 
-\subsubsection{Set Covering Threshold}
-\begin{itemize}[noitemsep,topsep=0pt]
+\subsubsection{Calculate Step Size}
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item Use \codew{simHistory$\rightarrow$currentStep} to calculate logarithmic step size
+\item Duration between outgassing/desorption and adsorption
+\item Calculation in \codew{UpdateMainProcess.cpp} file in \codew{getStepSize()}
+\end{itemize}
+
+\subsubsection{Multiply small covering}
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item Multiply covering to reach \codew{ProblemDef::coveringThreshMin}
+\item Adapt covering threshold and \codew{simHistory$\rightarrow$coveringList}
+\item Calculation in \codew{checkSmallCovering($\cdot$)} from \codew{SimulationLinux.cpp} file
+\end{itemize}
+
+\subsubsection{Calculate desorption}
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item Desorption rate calculated from current covering values
+\item Calculation in \codew{UpdateDesorptionRate($\cdot$)}  from \codew{UpdateSubProcess.cpp} file
+\end{itemize}
+
+\subsubsection{Calculate Sojourn variables}
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item Sojourn time of bounce calculated from energy and frequency
+\item Sojourn energy equal to binding energy
+\item Sojourn frequency calculated from temperature
+\item Calculation in \codew{UpdateSojourn($\cdot$)}  from \codew{UpdateSubProcess.cpp} file
+\end{itemize}
+
+\subsubsection{Calculate Covering Threshold}
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Set lower threshold for covering for each facet to prevent covering getting negative
 \item Stop simulation once threshold is reached
 \item Threshold set in \codew{setCoveringThreshold($\cdot$)}  from \codew{Iteration.cpp} file
 \end{itemize}
 
-\subsubsection{Sojourn}
-\begin{itemize}[noitemsep,topsep=0pt]
-\item Sojourn time of bounce calculated from energy and frequency
-\item Sojourn energy equal to binding energy
-\item Sojourn frequency calculated from temperature
+\subsubsection{Target error reached?}
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item Calculate statistical error in \codew{UpdateError()} from \codew{UpdateSubProcess.cpp} file
+\item Check if vip facets reached their own target error
+\item Check if normal facets combined reached target error
+\item Neglect normal facets that reached \codew{ProblemDef::hitRatioLimit}
+\item Check in \codew{checkErrorSub($\cdot$)} from \codew{UpdateSubProcess.cpp} file
 \end{itemize}
 
 \section{Update main buffer}
@@ -467,9 +506,13 @@ and the input file defining the following parameters:
 	\tikzstyle{module} = [ellipse,draw, minimum width= 4cm, align=center, aspect=1.5]
 	\tikzstyle{neuron}= [rectangle,draw, minimum width= 4cm, align=center, aspect=1.5]
 
-	\node[module](start)  at (0,0) {Start update\\main process};
-	\node[neuron](error) at (0,-2.5) {Calculate error of\\current iteration};
-	\draw let \p1=(start.south), \p2=(error.north) in [->, line width=0.04cm] (\p1) -- (\p2);
+	\node[module](start)  at (0,-0.5) {Start update\\main process};
+
+	\node[neuron](small) at (0,-2.2) {Divide cov. if\\previously multiplied};
+	\draw let \p1=(start.south), \p2=(small.north) in [->, line width=0.04cm] (\p1) -- (\p2);
+
+	\node[neuron](error) at (0,-3.7) {Calculate error of\\current iteration};
+	\draw let \p1=(small.south), \p2=(error.north) in [->, line width=0.04cm] (\p1) -- (\p2);
 
 	\node[neuron](stepsize) at (0,-5) {Calculate step size\\from $currentStep$};
 	\draw let \p1=(error.south), \p2=(stepsize.north) in [->, line width=0.04cm] (\p1) -- (\p2);
@@ -488,31 +531,41 @@ and the input file defining the following parameters:
 	\draw let \p1=(target.north), \p2=(update.south) in [->, line width=0.04cm] (\p1) -- (\x1,\y2) node[midway, right] {false};
 	\draw let \p1=(increase.west), \p2=(update.east) in [->, line width=0.04cm] (\p1) -- (\p2);
 
-	\node[module](end)  at (12,0) {End update\\main process};
+	\node[module](end)  at (12,-0.5) {End update\\main process};
 	\draw let \p1=(update.north), \p2=(end.west) in [->, line width=0.04cm] (\p1) -- (\x1,\y2) --(\p2);
 \end{tikzpicture}
 \caption{Overview: update of covering in hitbuffer}
 \end{figure}
 
-\subsubsection{Error Calculation}
-\begin{itemize}[noitemsep,topsep=0pt]
-\item Calculate statistical error
-\item Facet error calculated from hits of facet and total hits, hits weighted with opacity of facet
-\item Total error calculated from summing facet error weighted with facet area
+\subsubsection{Divide small covering}
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item Divide covering if multiplied this iteration
+\item Adapt hitbuffer and \codew{simHistory$\rightarrow$coveringList}
+\item Calculation in \codew{UndoSmallCovering($\cdot$)} from \codew{SimulationLinux.cpp}
 \end{itemize}
 
-\subsubsection{Calculate Step Size}
-\begin{itemize}[noitemsep,topsep=0pt]
-\item Use \codew{SimulationHistory::currentStep} to calculate logarithmic step size
-\item Duration between outgassing/desorption and adsorption
+\subsubsection{Error Calculation}
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item Calculate statistical error of normal facets
+\item Facet error calculated from hits and desorbed particles, weighted with opacity
+\item Total error calculated from summing facet error weighted with facet area
+\item Save error in \codew{simHistory$\rightarrow$errorList}
+\item Management in \codew{UpdateErrorMain($\cdot$)} from \codew{UpdateMainProcess.cpp} file
 \end{itemize}
 
 \subsubsection{Management of Step Size}
-\begin{itemize}[noitemsep,topsep=0pt]
-\item Check whether current step size would cause desorption to be larger than covering 
-\item Adapt step size if required
-\item Increment \codew{SimulationHistory::currentStep} if step size not decreased and \codew{ProblemDef::targetError} reached
-\item Management in \codew{UpdateMainProcess.cpp} file in \codew{manageStepSize($\cdot$)}
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item Adapt step size if desorption would be larger than covering 
+\item Increase \codew{simHistory$\rightarrow$currentStep} if no adaptation \& target errors reached
+\item Management in \codew{manageStepSize($\cdot$)} from \codew{UpdateMainProcess.cpp} file
+\end{itemize}
+
+\subsubsection{Update Covering}
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item Use step size and $K_{real/virt}$ to calculate new covering
+%\item Save new covering in \codew{simHistory$\rightarrow$coveringList} and hitbuffer
+\item Calculation in \codew{UpdateCovering($\cdot$)} from \codew{UpdateMainProcess.cpp} file
+%\item Update buffers in \codew{UpdateCoveringPhys($\cdot$)} from \codew{UpdateMainProcess.cpp} file
 \end{itemize}
 
 \section{Summary}
@@ -527,10 +580,10 @@ and the input file defining the following parameters:
 	\node[neuron](smpi) at (0,-1.6) {Initialize MPI};
 	\draw let \p1=(start.south), \p2=(smpi.north) in [->, line width=0.04cm] (\p1) -- (\p2);
 
-	\node[module](preprocess) at (0,-3.7) {Initialization};
+	\node[module](preprocess) at (0,-2.9) {Initialization};
 	\draw let \p1=(smpi.south), \p2=(preprocess.north) in [->, line width=0.04cm] (\p1) -- (\p2);
 
-	\node[neuron](bcast) at (0,-6) {Main process:\\broadcast hitbuffer\\ and $currentStep$};
+	\node[neuron](bcast) at (0,-4.8) {Main process:\\broadcast\\ simHistory$\rightarrow$coveringList\\ and $currentStep$};
 	\draw let \p1=(preprocess.south), \p2=(bcast.north) in [->, line width=0.04cm] (\p1) -- (\p2);
 
 	\path let \p1=(bcast.east) in node[module](sim1) at (4.5,\y1+1.2cm) {Simulation\\sub process};
@@ -542,16 +595,16 @@ and the input file defining the following parameters:
 	\foreach \i in{-1,0,1}
 		\draw[fill] let \p1=(sim1.south), \p2=(sim2.north) in (\x1,0.5*\y1+0.5*\y2+0.25cm*\i) circle [radius=0.06];
 
-	\node[neuron, rotate=90, minimum height=1.4cm](sum) at (7.8,-6){Summarize results\\in main hitbuffer};
+	\node[neuron, rotate=90, minimum height=1.4cm](sum) at (7.8,-4.8){Summarize results\\in main hitbuffer};
 	\draw let \p1=(sim1.east), \p2=(sum.north) in [->, line width=0.04cm] (\p1) -- (\x2,\y1);
 	\draw let \p1=(sim2.east), \p2=(sum.north) in [->, line width=0.04cm] (\p1) -- (\x2,\y1);
 
 	\node[module](update) at (11,-6) {Update\\main process};
-	\draw let \p1=(sum.south), \p2=(update.west) in [->, line width=0.04cm] (\p1) -- (\p2);
+	\draw let \p1=(sum.south), \p2=(update.west) in [->, line width=0.04cm] (\x1,\y2) -- (\p2);
 
-	\node[condition](max) at (11, -3.7) {Max. time\\reached?};
+	\node[condition](max) at (11, -3.6) {Max. time\\reached?};
 	\draw let \p1=(update.north), \p2=(max.south) in [->, line width=0.04cm] (\p1) -- (\p2);
-	\draw let \p1=(max.east), \p2=(bcast.south) in [->, line width=0.04cm] (\p1) --(\x1+1cm, \y1) node[midway,above]{false} --(\x1+1cm, \y2-2cm) --(\x2, \y2-2cm)-- (\p2);
+	\draw let \p1=(max.east), \p2=(bcast.south) in [->, line width=0.04cm] (\p1) --(\x1+1cm, \y1) node[midway,above]{false} --(\x1+1cm, \y2-1.5cm) --(\x2, \y2-1.5cm)-- (\p2);
 
 	\node[neuron](save) at (11,-1.6) {Save results};
 	\draw let \p1=(max.north), \p2=(save.south) in [->, line width=0.04cm] (\p1) -- (\p2) node[midway,right]{true};
@@ -566,21 +619,21 @@ and the input file defining the following parameters:
 \caption{Overview: ContaminationFlow application}
 \end{figure}
 
-
 \subsubsection{General Pipeline}
-\begin{itemize}[noitemsep,topsep=0pt]
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Initialize MPI, \codew{ProblemDef p} and \codew{SimulationHistory simHistory}
 \item Load geometry into \codew{Simulation sHandle} using \codew{LoadSimulation()}
 \item Iteration until desired maximum simulation time is reached: \smallskip
-	\begin{itemize}[noitemsep,topsep=0pt]
-	\item[$\bullet$] Reset hitbuffer counters using \codew{initbufftotero($\cdot$)}, broadcast using \codew{MPI\_Bcast($\cdot$)}
+	\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+	\item[$\bullet$] Reset hitbuffer counters using \codew{initbufftotero($\cdot$)}
+	\item[$\bullet$] Broadcast \codew{simHistory$\rightarrow$coveringList} using \codew{MPI\_Bcast($\cdot$)}
 	\item[$\bullet$] Simulation in sub processes
-	\begin{itemize}[noitemsep,topsep=0pt]
+	\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 	\item[--] Simulate until \codew{targetParticles} and \codew{targetError} or \codew{covthresh} reached
-	\item[--] Update hitbuffer of sub processes from \codew{sHandle} using \codew{UpdateSubHits($\cdot$)} from \codew{UpdateSubProcess.cpp}
+	\item[--] Update hitbuffers of sub processes from \codew{sHandle} using \codew{UpdateSubHits($\cdot$)} from \codew{UpdateSubProcess.cpp}
 	\end{itemize}
 	\item[$\bullet$] Update Main process:
-		\begin{itemize}[noitemsep,topsep=0pt]
+		\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 		\item[--] Send hitbuffer to main process using \codew{MPI\_Send($\cdot$)} and \codew{MPI\_Recv($\cdot$)}
 		\item[--] Update of hitbuffer in \codew{UpdateMainHits($\cdot$)} from \codew{UpdateMainProcess.cpp}
 		\end{itemize}
@@ -597,7 +650,7 @@ and the input file defining the following parameters:
 
 
 %\subsubsection{Thats changed}
-%\begin{itemize}[noitemsep,topsep=0pt]
+%\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 %\item use this for 
 %\item list
 %\end{itemize}

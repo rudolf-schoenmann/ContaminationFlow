@@ -36,111 +36,6 @@ extern Simulation *sHandle;
 extern ProblemDef* p;
 
 // Simulation on subprocess
-std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, int simutime){
-
-	//Calculate target values for error and desorbed particles
-	int targetParticles=p->targetParticles/simHistory->numSubProcess;
-	double targetError=p->targetError*pow(simHistory->numSubProcess,0.5);
-
-	//Replaced constructor with update function
-	bool smallCovering; llong smallCoveringFactor;
-	std::tie(smallCovering,smallCoveringFactor) = simHistory->updateHistory(hitbuffer);
-	if(rank==1){
-		std::cout <<std::endl <<"Currentstep: " << simHistory->currentStep <<". Step size: " <<simHistory->stepSize <<std::endl;
-		std::cout <<"Target Particles: " << targetParticles <<". Target Error: " <<targetError <<std::endl <<std::endl;
-
-		p->outFile <<std::endl <<"Currentstep: " << simHistory->currentStep <<". Step size: " <<simHistory->stepSize <<std::endl;
-		p->outFile <<"Target Particles: " << targetParticles <<". Target Error: " <<targetError <<std::endl <<std::endl;
-	}
-
-	//Values for simulation
-	double timestep=1000; // desired length per iteration for simulation, here hardcoded to 1 second
-	double realtimestep; // actual time elapsed for iteration step
-	double i;			// Time elapsed between checking of targets
-	double totalTime=0.0;	//Total simulated time
-	bool eos=false;		// Set end of simulation flag
-	double totalError=1.;//Total error
-
-	// Facets that have reached the covering threshold
-	std::vector<int> facetNum;
-	facetNum =std::vector<int> ();
-
-	//----Simulation
-
-	// Start Simulation = create first particle
-	if(!sHandle->currentParticle.lastHitFacet){
-		if(!StartSimulation())
-			return {std::make_tuple(true,facetNum)};
-	}
-
-
-	// Run Simulation for timestep milliseconds
-	for(int j=0; j<p->maxSimPerIt && !(j>0 && simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))&& !eos; j++){
-
-		for(i=0; i<(double)(simutime) && !eos;i+=realtimestep){
-
-			if(i>=(double(simutime)*0.99)){break;}
-			if(simHistory->coveringList.empty()){
-				simHistory->appendList(hitbuffer,i); //append list with initial covering
-				}
-
-			if(i+timestep>=(double)(simutime)){ //last timestep
-				std::tie(eos,realtimestep) = SimulationRun((double)simutime-i); // Some additional simulation, as iteration step  does not run for exactly timestep ms
-				}
-			else{
-				std::tie(eos, realtimestep) = SimulationRun(timestep);      // Run during timestep ms, performs MC steps
-			}
-
-		}
-		totalTime+=i;
-
-		totalError=UpdateError();
-
-		if(j%(int)(30000/simutime)==0 || (simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))|| eos){
-			// Print information every 30s or if target reached
-			std::ostringstream tmpstream (std::ostringstream::app);
-			tmpstream <<"  "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Desorbed particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
-
-			if(!checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5))){
-				simHistory->hitList.printCurrent(tmpstream, std::to_string(rank)+": hitlist");
-				simHistory->desorbedList.printCurrent(tmpstream, std::to_string(rank)+": desorbedlist");
-				simHistory->errorList.printCurrent(tmpstream, std::to_string(rank)+": errorlist");
-				tmpstream <<std::endl;
-			}
-
-			std::cout <<tmpstream.str();
-			p->outFile <<tmpstream.str();
-		}
-	}
-
-	// Find Facets that have reached the covering threshold
-	int num;
-	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			if(f.sh.desorption==0) continue;
-
-			num=getFacetIndex(&f);
-			/*
-			if(smallCovering){
-				f.tmpCounter[0].hit.covering/=smallCoveringFactor;
-				sHandle->coveringThreshold[num]/=smallCoveringFactor;
-			}*/
-
-			if(f.tmpCounter[0].hit.covering<=sHandle->coveringThreshold[num])
-				{facetNum.push_back(num);}
-		}
-	}
-
-	// Save simulation results in hitbuffer
-	UpdateMCSubHits(hitbuffer, rank);
-
-	if(!facetNum.empty())
-		eos=true;
-
-	ResetTmpCounters(); //resets counter in sHandle
-	return {std::make_tuple(eos,facetNum)};
-}
-
 std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, int simutime){
 
 	//Calculate target values for error and desorbed particles
@@ -297,15 +192,10 @@ ProblemDef::ProblemDef(){
 	hitbufferPath="/home/van/Buffer/hitbuffer_allee-6";
 
 	iterationNumber = 43200;
-	//s1=1;
-	//s2=0.2;
 	E_de=1E-21;
-	//E_ad=1E-21;
-	//d=1;
 	H_vap=0.8E-19;
 	W_tr=1.0;
 	sticking=0.0;
-	//coveringLimit=0;
 
 	maxTime=10.0;
 	maxUnit="y";
@@ -322,13 +212,11 @@ ProblemDef::ProblemDef(){
 	hitRatioLimit=0;
 	Tmin=1E-4;
 
-	coveringMinThresh=10000;
-	//coveringMinFactor=100.0;
-	//coveringMaxFactor=1000.0;
-
-	maxStepSize=std::numeric_limits<double>::max();
+	Tmax=std::numeric_limits<double>::max();
 	maxSimPerIt=std::numeric_limits<int>::max();
 	histSize=std::numeric_limits<int>::max();
+
+	coveringMinThresh=10000;
 
 	vipFacets = std::vector< std::pair<int,double> >();
 
@@ -377,10 +265,8 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 
 	std::string line;
 	std::ifstream input(filename,std::ifstream::in);
-	//if (rank==0) {std::cout <<"Test to read input arguments from " <<filename <<std::endl;}
 
 	while(std::getline(input,line)){
-		//if(rank==0) {std::cout <<line <<std::endl;}
 		std::string stringIn;
 		double doubleIn;
 		int intIn;
@@ -391,7 +277,6 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 
 		if(stringIn == "loadbufferPath") {is >> stringIn; loadbufferPath=stringIn;}
 		else if(stringIn == "hitbufferPath") {is >> stringIn; hitbufferPath=stringIn;}
-		//else if(stringIn=="resultbufferPath"){is >> stringIn; resultbufferPath=stringIn;} //deprecated
 		else if(stringIn == "simulationTime") {is >>doubleIn; simulationTime = doubleIn;}
 		else if(stringIn == "unit"){is >> stringIn; unit=stringIn;}
 
@@ -399,11 +284,7 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn == "maxTime") {is >>doubleIn; maxTime = doubleIn;}
 		else if(stringIn == "maxUnit"){is >> stringIn; maxUnit=stringIn;}
 
-		//else if(stringIn =="s2"){is >> doubleIn; s2=doubleIn;} //deprecated
-		//else if(stringIn =="s1"){is >> doubleIn; s1=doubleIn;} //deprecated
-		//else if(stringIn =="d"){is >> doubleIn; d=doubleIn;} //deprecated
 		else if(stringIn =="E_de"){is >> doubleIn; E_de=doubleIn;}
-		//else if(stringIn =="E_ad"){is >> doubleIn; E_ad=doubleIn;} //deprecated
 		else if(stringIn =="H_vap"){is >> doubleIn; H_vap=doubleIn;}
 		else if(stringIn =="W_tr"){is >> doubleIn; W_tr=doubleIn;}
 		else if(stringIn =="sticking"){is >> doubleIn; sticking=doubleIn;}
@@ -413,12 +294,9 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn == "hitRatioLimit") {is >>doubleIn; hitRatioLimit = doubleIn;}
 		else if(stringIn == "Tmin") {is >>doubleIn; Tmin = doubleIn;}
 
-		//else if(stringIn =="coveringLimit"){is >> llongIn; coveringLimit=llongIn;}
 		else if(stringIn == "coveringMinThresh") {is >>llongIn; coveringMinThresh = llongIn;}
-		//else if(stringIn == "coveringMinFactor") {is >>doubleIn; coveringMinFactor = doubleIn;}
-		//else if(stringIn == "coveringMaxFactor") {is >>doubleIn; coveringMaxFactor = doubleIn;}
 
-		else if(stringIn =="maxStepSize"){is >>doubleIn; maxStepSize=doubleIn;}
+		else if(stringIn =="maxStepSize" || stringIn =="Tmax"){is >>doubleIn; Tmax=doubleIn;}
 		else if(stringIn =="maxSimPerIt"){is >> intIn; maxSimPerIt=intIn;}
 		else if(stringIn =="histSize"){is >> intIn; histSize=intIn; histSize=histSize>1?histSize:1;}
 
@@ -470,7 +348,6 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 
 	outfile <<"loadbufferPath" <<'\t' <<loadbufferPath <<std::endl;
 	outfile <<"hitbufferPath" <<'\t' <<hitbufferPath <<std::endl;
-	//outfile <<"resultbufferPath" <<'\t' <<resultbufferPath <<std::endl; //deprecated
 	outfile <<"simulationTime" <<'\t' <<simulationTime <<std::endl;
 	outfile <<"unit" <<'\t' <<unit <<std::endl;
 
@@ -479,11 +356,7 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 	outfile <<"maxUnit" <<'\t' <<maxUnit <<std::endl;
 
 	outfile <<"sticking" <<'\t' <<sticking<<std::endl;
-	//outfile <<"s1" <<'\t' <<s1<<std::endl; //deprecated
-	//outfile <<"s2" <<'\t' <<s2<<std::endl; //deprecated
-	//outfile <<"d" <<'\t' <<d<<std::endl;
 	outfile <<"E_de" <<'\t' <<E_de<<std::endl;
-	//outfile <<"E_ad" <<'\t' <<E_ad<<std::endl; //deprecated
 
 	outfile <<"H_vap" <<'\t' <<H_vap <<std::endl;
 	outfile <<"W_tr" <<'\t' <<W_tr <<std::endl;
@@ -493,11 +366,11 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 	outfile <<"hitRatioLimit" <<'\t' <<hitRatioLimit <<std::endl;
 	outfile <<"Tmin" <<Tmin <<'\t' <<std::endl;
 
-	//outfile <<"coveringLimit" <<"\t" <<coveringLimit<<std::endl;
+	outfile <<"Tmax" <<"\t" <<Tmax<<std::endl;
+	outfile <<"maxSimPerIt" <<"\t" <<maxSimPerIt<<std::endl;
+
 	outfile <<"coveringMinThresh" <<"\t" <<coveringMinThresh<<std::endl;
 
-	outfile <<"maxStepSize" <<"\t" <<maxStepSize<<std::endl;
-	outfile <<"maxSimPerIt" <<"\t" <<maxSimPerIt<<std::endl;
 	outfile <<"histSize" <<"\t" <<histSize<<std::endl;
 
 	if(!vipFacets.empty()){
@@ -507,9 +380,6 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 		}
 		outfile <<std::endl;
 	}
-
-	//outfile <<"coveringMinFactor" <<"\t" <<coveringMinFactor;
-	//outfile <<"coveringMaxFactor" <<"\t" <<coveringMaxFactor;
 
 	}
 
@@ -531,12 +401,8 @@ void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 	out  <<"maxTime" <<'\t' <<maxTime <<std::endl;
 	out  <<"maxUnit" <<'\t' <<maxUnit <<std::endl<<std::endl;
 
-	//out  <<"s1" <<'\t' <<s1<<std::endl; //deprecated
-	//out  <<"s2" <<'\t' <<s2<<std::endl; //deprecated
 	out <<"sticking" <<'\t' <<sticking <<std::endl;
-	//out  <<"d" <<'\t' <<d<<std::endl;
 	out  <<"E_de" <<'\t' <<E_de<<std::endl;
-	//out  <<"E_ad" <<'\t' <<E_ad<<std::endl<<std::endl; //deprecated
 	out <<"H_vap" <<'\t' <<H_vap <<std::endl;
 	out <<"W_tr" <<'\t' <<W_tr <<std::endl;
 
@@ -545,12 +411,11 @@ void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 	out <<"hitRatioLimit" <<'\t' <<hitRatioLimit <<std::endl;
 	out <<"Tmin" <<'\t' <<Tmin <<std::endl;
 
-	//out <<"coveringLimit" <<"\t" <<coveringLimit <<std::endl;
-	out <<"coveringMinThresh" <<"\t" <<coveringMinThresh <<std::endl;
-	//out <<"coveringMinFactor" <<"\t" <<coveringMinFactor;
-	//out <<"coveringMaxFactor" <<"\t" <<coveringMaxFactor;
-	out <<"maxStepSize" <<"\t" <<maxStepSize<<std::endl;
+	out <<"Tmax" <<"\t" <<Tmax<<std::endl;
 	out <<"maxSimPerIt" <<"\t" <<maxSimPerIt<<std::endl;
+
+	out <<"coveringMinThresh" <<"\t" <<coveringMinThresh <<std::endl;
+
 	out <<"histSize" <<"\t" <<histSize<<std::endl;
 
 	if(!vipFacets.empty()){
@@ -617,8 +482,6 @@ void UndoSmallCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
 				facetHitSum->hit.covering/=smallCoveringFactor;
-				//boost::multiprecision::float128 LastCov = boost::multiprecision::float128(simHistory->coveringList.getLast(&f));
-				//facetHitSum->hit.covering = llong(LastCov+(boost::multiprecision::float128(facetHitSum->hit.covering)-LastCov)/boost::multiprecision::float128(smallCoveringFactor));
 				simHistory->coveringList.setLast(&f, simHistory->coveringList.getLast(&f)/boost::multiprecision::uint128_t(smallCoveringFactor));
 			}
 	}
@@ -663,17 +526,6 @@ SimulationHistory::SimulationHistory(int world_size){
 }
 
 SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
-	/*
-	std::vector<boost::multiprecision::uint128_t> currentCov;
-	currentCov =std::vector<boost::multiprecision::uint128_t> ();
-
-	std::vector<llong> currentDes;
-	currentDes =std::vector<llong> ();
-
-	std::vector<double> currentHits;
-	currentHits =std::vector<double> ();
-	*/
-
 	numFacet=0;
 	nParticles=0;
 	flightTime=0.0;
@@ -712,11 +564,8 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 	}
 
 	coveringList.appendCurrent(0);
-	//coveringList.initCurrent(numFacet);
 	hitList.appendCurrent(0);
-	//hitList.initCurrent(numFacet);
 	desorbedList.appendCurrent(0);
-	//desorbedList.initCurrent(numFacet);
 	errorList.initCurrent(numFacet);
 	errorList.appendCurrent(0.0);
 
@@ -757,9 +606,9 @@ std::tuple<bool, llong > SimulationHistory::updateHistory(Databuff *hitbuffer){
 			numHit=getHits(&f, hitbuffer);
 			numDes=getnbDesorbed(&f, hitbuffer);
 
-			coveringList.setCurrentList(&f, covering);
-			hitList.setCurrentList(&f, numHit);
-			desorbedList.setCurrentList(&f, numDes);
+			coveringList.setCurrent(&f, covering);
+			hitList.setCurrent(&f, numHit);
+			desorbedList.setCurrent(&f, numDes);
 
 			f.tmpCounter[0].hit.covering=covering.convert_to<llong>();
 
@@ -921,4 +770,104 @@ void SimulationHistory::write(std::string path){
 	coveringList.write(path+"/covering.txt", p->histSize);
 }
 
+//----------deprecated functions because hitbuffer not sent to sub processes anymore
+/*
+std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, int simutime){
 
+	//Calculate target values for error and desorbed particles
+	int targetParticles=p->targetParticles/simHistory->numSubProcess;
+	double targetError=p->targetError*pow(simHistory->numSubProcess,0.5);
+
+	//Replaced constructor with update function
+	bool smallCovering; llong smallCoveringFactor;
+	std::tie(smallCovering,smallCoveringFactor) = simHistory->updateHistory(hitbuffer);
+	if(rank==1){
+		std::cout <<std::endl <<"Currentstep: " << simHistory->currentStep <<". Step size: " <<simHistory->stepSize <<std::endl;
+		std::cout <<"Target Particles: " << targetParticles <<". Target Error: " <<targetError <<std::endl <<std::endl;
+
+		p->outFile <<std::endl <<"Currentstep: " << simHistory->currentStep <<". Step size: " <<simHistory->stepSize <<std::endl;
+		p->outFile <<"Target Particles: " << targetParticles <<". Target Error: " <<targetError <<std::endl <<std::endl;
+	}
+
+	//Values for simulation
+	double timestep=1000; // desired length per iteration for simulation, here hardcoded to 1 second
+	double realtimestep; // actual time elapsed for iteration step
+	double i;			// Time elapsed between checking of targets
+	double totalTime=0.0;	//Total simulated time
+	bool eos=false;		// Set end of simulation flag
+	double totalError=1.;//Total error
+
+	// Facets that have reached the covering threshold
+	std::vector<int> facetNum;
+	facetNum =std::vector<int> ();
+
+	//----Simulation
+
+	// Start Simulation = create first particle
+	if(!sHandle->currentParticle.lastHitFacet){
+		if(!StartSimulation())
+			return {std::make_tuple(true,facetNum)};
+	}
+
+
+	// Run Simulation for timestep milliseconds
+	for(int j=0; j<p->maxSimPerIt && !(j>0 && simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))&& !eos; j++){
+
+		for(i=0; i<(double)(simutime) && !eos;i+=realtimestep){
+
+			if(i>=(double(simutime)*0.99)){break;}
+			if(simHistory->coveringList.empty()){
+				simHistory->appendList(hitbuffer,i); //append list with initial covering
+				}
+
+			if(i+timestep>=(double)(simutime)){ //last timestep
+				std::tie(eos,realtimestep) = SimulationRun((double)simutime-i); // Some additional simulation, as iteration step  does not run for exactly timestep ms
+				}
+			else{
+				std::tie(eos, realtimestep) = SimulationRun(timestep);      // Run during timestep ms, performs MC steps
+			}
+
+		}
+		totalTime+=i;
+
+		totalError=UpdateError();
+
+		if(j%(int)(30000/simutime)==0 || (simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))|| eos){
+			// Print information every 30s or if target reached
+			std::ostringstream tmpstream (std::ostringstream::app);
+			tmpstream <<"  "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Desorbed particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
+
+			if(!checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5))){
+				simHistory->hitList.printCurrent(tmpstream, std::to_string(rank)+": hitlist");
+				simHistory->desorbedList.printCurrent(tmpstream, std::to_string(rank)+": desorbedlist");
+				simHistory->errorList.printCurrent(tmpstream, std::to_string(rank)+": errorlist");
+				tmpstream <<std::endl;
+			}
+
+			std::cout <<tmpstream.str();
+			p->outFile <<tmpstream.str();
+		}
+	}
+
+	// Find Facets that have reached the covering threshold
+	int num;
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			if(f.sh.desorption==0) continue;
+
+			num=getFacetIndex(&f);
+
+			if(f.tmpCounter[0].hit.covering<=sHandle->coveringThreshold[num])
+				{facetNum.push_back(num);}
+		}
+	}
+
+	// Save simulation results in hitbuffer
+	UpdateMCSubHits(hitbuffer, rank);
+
+	if(!facetNum.empty())
+		eos=true;
+
+	ResetTmpCounters(); //resets counter in sHandle
+	return {std::make_tuple(eos,facetNum)};
+}*/

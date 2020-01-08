@@ -293,21 +293,7 @@ public:
 
 	bool empty(){return pointintime_list.empty();}
 
-	/*
-	void newLine(unsigned int numFacet, double time=-1){
-		if(time==-1){
-			time=pointintime_list.back().first+1.0;
-		}
-		std::vector<T> tempvec; tempvec = std::vector<T>();
-		for(unsigned int i=0; i<numFacet; i++){
-			tempvec.push_back(0.0);
-		}
-		pointintime_list.push_back(std::make_pair(time,tempvec));
-
-	}*/
-
-	//void setCurrent(SubprocessFacet *iFacet, T newValue){int covidx = getFacetIndex(iFacet);	pointintime_list.back().second[covidx]=newValue;}
-	void setCurrentList(SubprocessFacet *iFacet, T newValue){int covidx = getFacetIndex(iFacet);	currentList[covidx]=newValue;}
+	void setCurrent(SubprocessFacet *iFacet, T newValue){int covidx = getFacetIndex(iFacet);	currentList[covidx]=newValue;}
 	T getLast(int idx){return pointintime_list.back().second[idx];}
 	T getLast(SubprocessFacet *iFacet){int covidx = getFacetIndex(iFacet);return pointintime_list.back().second[covidx];}
 	T getCurrent(int idx){return currentList[idx];}
@@ -345,11 +331,7 @@ public:
 	double maxTime;
 	std::string maxUnit;
 
-	//double s1;
-	//double s2;
 	double E_de;
-	//double E_ad;
-	//double d;
 	double sticking;
 
 	double H_vap;
@@ -361,14 +343,11 @@ public:
 	double hitRatioLimit;
 	double Tmin;
 
-	//TODO testing
-	//int coveringLimit;
-	//double coveringMinFactor;
-	//double coveringMaxFactor;
+	double Tmax;
+	int maxSimPerIt;
+
 	llong coveringMinThresh;
 
-	double maxStepSize;
-	int maxSimPerIt;
 	int histSize;
 
 	std::vector< std::pair<int,double> > vipFacets;
@@ -402,9 +381,6 @@ public:
 	double lastTime;
 	int currentStep;
 	double stepSize;
-	//double currentStepSizeFactor;
-
-	//double StepSizeComputationTimeFactor;
 
 	void appendList(Databuff *hitbuffer, double time=-1.0);
 	void appendList(double time=-1.0);
@@ -427,7 +403,7 @@ public:
 
 //-----------------------------------------------------------
 //SimulationLinux.cpp
-std::tuple<bool, std::vector<int> >  simulateSub(Databuff *hitbuffer, int rank, int simutime);
+//std::tuple<bool, std::vector<int> >  simulateSub(Databuff *hitbuffer, int rank, int simutime);
 std::tuple<bool, std::vector<int> >  simulateSub2(Databuff *hitbuffer, int rank, int simutime);
 
 double convertunit(double simutime, std::string unit);
@@ -441,13 +417,13 @@ void UndoSmallCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor);
 //-----------------------------------------------------------
 //UpdateSubProcess.cpp
 
-void UpdateSticking(Databuff *hitbuffer);
+//void UpdateSticking(Databuff *hitbuffer);
 void UpdateSticking();
 
-bool UpdateDesorptionRate (Databuff *hitbuffer);
+//bool UpdateDesorptionRate (Databuff *hitbuffer);
 bool UpdateDesorptionRate();
 
-void UpdateSojourn(Databuff *hitbuffer);
+//void UpdateSojourn(Databuff *hitbuffer);
 void UpdateSojourn();
 double UpdateError();
 void UpdateErrorSub();
@@ -463,10 +439,8 @@ void initbufftozero(Databuff *databuffer);
 
 double manageStepSize(bool updateCurrentStep=false);
 
-void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, Databuff *physbuffer,int rank);
 void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHistory *history,int rank);
 
-void UpdateCovering(Databuff *hitbuffer, Databuff *hitbuffer_original, double time_step);
 void UpdateCovering(Databuff *hitbuffer_sum);
 void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer);
 
@@ -483,20 +457,19 @@ boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet);
 double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer);
 
 double calcStep(long double var, double start, double end, double step, double Wtr);
-double calcEnergy(SubprocessFacet *iFacet, Databuff *hitbuffer);
+//double calcEnergy(SubprocessFacet *iFacet, Databuff *hitbuffer);
 double calcEnergy(SubprocessFacet *iFacet);
 
 boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum, llong nbDesorbed_old);
-void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
+//void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
 void calcStickingnew(SubprocessFacet *iFacet);
-boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
+//boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
 boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet);
 
 //-----------------------------------------------------------
 //Iteration.cpp
 /*
-double estimateTmin();
-double estimateTmin_RudiTest(Databuff *hitbuffer);
+double estimateTmin(Databuff *hitbuffer);
 */
 double estimateAverageFlightTime();
 
