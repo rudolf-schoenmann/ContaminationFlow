@@ -68,10 +68,9 @@ std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, i
 	//----Simulation
 
 	// Start Simulation = create first particle
-	if(!sHandle->currentParticle.lastHitFacet){
-		if(!StartSimulation())
-			return {std::make_tuple(true,facetNum)};
-	}
+	if(!StartSimulation())
+		return {std::make_tuple(true,facetNum)};
+
 
 
 	// Run Simulation for timestep milliseconds
