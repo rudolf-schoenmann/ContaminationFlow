@@ -192,6 +192,7 @@ ProblemDef::ProblemDef(){
 	hitbufferPath="/home/van/Buffer/hitbuffer_allee-6";
 
 	iterationNumber = 43200;
+	particleDia=carbondiameter;
 	E_de=1E-21;
 	H_vap=0.8E-19;
 	W_tr=1.0;
@@ -210,9 +211,9 @@ ProblemDef::ProblemDef(){
 	targetParticles=1000;
 	targetError=0.001;
 	hitRatioLimit=0;
-	Tmin=1E-4;
+	t_min=1E-4;
 
-	Tmax=std::numeric_limits<double>::max();
+	t_max=std::numeric_limits<double>::max();
 	maxSimPerIt=std::numeric_limits<int>::max();
 	histSize=std::numeric_limits<int>::max();
 
@@ -283,6 +284,7 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn == "maxTime") {is >>doubleIn; maxTime = doubleIn;}
 		else if(stringIn == "maxUnit"){is >> stringIn; maxUnit=stringIn;}
 
+		else if(stringIn =="particleDia"){is >> doubleIn; particleDia=doubleIn;}
 		else if(stringIn =="E_de"){is >> doubleIn; E_de=doubleIn;}
 		else if(stringIn =="H_vap"){is >> doubleIn; H_vap=doubleIn;}
 		else if(stringIn =="W_tr"){is >> doubleIn; W_tr=doubleIn;}
@@ -291,11 +293,11 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn =="targetParticles"){is >> intIn; targetParticles=intIn;}
 		else if(stringIn == "targetError") {is >>doubleIn; targetError = doubleIn;}
 		else if(stringIn == "hitRatioLimit") {is >>doubleIn; hitRatioLimit = doubleIn;}
-		else if(stringIn == "Tmin") {is >>doubleIn; Tmin = doubleIn;}
+		else if(stringIn == "t_min") {is >>doubleIn; t_min = doubleIn;}
+		else if(stringIn =="maxStepSize" || stringIn =="t_max"){is >>doubleIn; t_max=doubleIn;}
 
 		else if(stringIn == "coveringMinThresh") {is >>llongIn; coveringMinThresh = llongIn;}
 
-		else if(stringIn =="maxStepSize" || stringIn =="Tmax"){is >>doubleIn; Tmax=doubleIn;}
 		else if(stringIn =="maxSimPerIt"){is >> intIn; maxSimPerIt=intIn;}
 		else if(stringIn =="histSize"){is >> intIn; histSize=intIn; histSize=histSize>1?histSize:1;}
 
@@ -355,6 +357,8 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 	outfile <<"maxUnit" <<'\t' <<maxUnit <<std::endl;
 
 	outfile <<"sticking" <<'\t' <<sticking<<std::endl;
+	outfile <<"particleDia" <<'\t' <<particleDia<<std::endl;
+
 	outfile <<"E_de" <<'\t' <<E_de<<std::endl;
 
 	outfile <<"H_vap" <<'\t' <<H_vap <<std::endl;
@@ -363,9 +367,9 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 	outfile <<"targetError" <<'\t' <<targetError <<std::endl;
 	outfile <<"targetParticles" <<'\t' <<targetParticles <<std::endl;
 	outfile <<"hitRatioLimit" <<'\t' <<hitRatioLimit <<std::endl;
-	outfile <<"Tmin" <<Tmin <<'\t' <<std::endl;
+	outfile <<"t_min" <<t_min <<'\t' <<std::endl;
 
-	outfile <<"Tmax" <<"\t" <<Tmax<<std::endl;
+	outfile <<"t_max" <<"\t" <<t_max<<std::endl;
 	outfile <<"maxSimPerIt" <<"\t" <<maxSimPerIt<<std::endl;
 
 	outfile <<"coveringMinThresh" <<"\t" <<coveringMinThresh<<std::endl;
@@ -401,6 +405,7 @@ void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 	out  <<"maxUnit" <<'\t' <<maxUnit <<std::endl<<std::endl;
 
 	out <<"sticking" <<'\t' <<sticking <<std::endl;
+	out <<"particleDia" <<'\t' <<particleDia<<std::endl;
 	out  <<"E_de" <<'\t' <<E_de<<std::endl;
 	out <<"H_vap" <<'\t' <<H_vap <<std::endl;
 	out <<"W_tr" <<'\t' <<W_tr <<std::endl;
@@ -408,9 +413,9 @@ void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 	out <<"targetError" <<'\t' <<targetError <<std::endl;
 	out <<"targetParticles" <<'\t' <<targetParticles <<std::endl;
 	out <<"hitRatioLimit" <<'\t' <<hitRatioLimit <<std::endl;
-	out <<"Tmin" <<'\t' <<Tmin <<std::endl;
+	out <<"t_min" <<'\t' <<t_min <<std::endl;
 
-	out <<"Tmax" <<"\t" <<Tmax<<std::endl;
+	out <<"t_max" <<"\t" <<t_max<<std::endl;
 	out <<"maxSimPerIt" <<"\t" <<maxSimPerIt<<std::endl;
 
 	out <<"coveringMinThresh" <<"\t" <<coveringMinThresh <<std::endl;

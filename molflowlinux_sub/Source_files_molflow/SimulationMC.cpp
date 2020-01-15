@@ -494,7 +494,8 @@ void PerformTeleport(SubprocessFacet *iFacet) {
 // Perform nbStep simulation steps (a step is a bounce)
 bool SimulationMCStep(size_t nbStep) {
 	// Perform simulation steps
-	for (size_t i = 0; i < nbStep; i++) {
+	bool lastWasHit=false;
+	for (size_t i = 0; i < nbStep || lastWasHit; i++) {
 
 		//Missing: Treat the case that particle flighttime is larger than time step (because of sojourn before desorption)
 		// => particle does not desorb => count as adsorbed. Start new particle.
@@ -549,6 +550,7 @@ bool SimulationMCStep(size_t nbStep) {
 							if (stickingProbability == 1.0 || ((stickingProbability > 0.0) && (rnd() < (stickingProbability)))) {
 								//Absorbed
 								RecordAbsorb(collidedFacet);
+								lastWasHit=false;
 								//sHandle->distTraveledSinceUpdate += sHandle->currentParticle.distanceTraveled;
 								if (!StartFromSource())
 									// desorptionLimit reached
@@ -558,9 +560,15 @@ bool SimulationMCStep(size_t nbStep) {
 								//Reflected
 								if(!PerformBounce(collidedFacet)){
 									//if not bounce but "absorb"
+
+									lastWasHit=false;
 									if (!StartFromSource())
 										// desorptionLimit reached
 										return false;
+								}
+								else{
+									//if actually hit
+									lastWasHit=true;
 								}
 							}
 						}
@@ -569,6 +577,7 @@ bool SimulationMCStep(size_t nbStep) {
 								double oriRatioBeforeCollision = sHandle->currentParticle.oriRatio; //Local copy
 								sHandle->currentParticle.oriRatio *= (stickingProbability); //Sticking part
 								RecordAbsorb(collidedFacet);
+								lastWasHit=false;
 								sHandle->currentParticle.oriRatio = oriRatioBeforeCollision * (1.0 - stickingProbability); //Reflected part
 							}
 							else
@@ -576,9 +585,14 @@ bool SimulationMCStep(size_t nbStep) {
 							if (sHandle->currentParticle.oriRatio > sHandle->ontheflyParams.lowFluxCutoff) {
 								if(!PerformBounce(collidedFacet)){
 									//if not bounce but "absorb"
+									lastWasHit=false;
 									if (!StartFromSource())
 										// desorptionLimit reached
 										return false;
+								}
+								else{
+									//if actually hit
+									lastWasHit=true;
 								}
 							}
 							else { //eliminate remainder and create new particle
