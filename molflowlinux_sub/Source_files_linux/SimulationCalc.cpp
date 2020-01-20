@@ -90,7 +90,7 @@ llong getnbDesorbed(Databuff *hitbuffer_sum){
 
 //----calculation of useful intermediate values
 double calcNmono(SubprocessFacet *iFacet){//Calculates the Number of (carbon equivalent) particles of one monolayer
-	return (iFacet->sh.area*1E-4)/(pow(carbondiameter, 2));
+	return (iFacet->sh.area*1E-4)/(pow(p->particleDia, 2));
 }
 
 double calcdNsurf(){//Calculates the (carbon equivalent relative) mass factor

@@ -122,7 +122,7 @@ bool checkErrorSub(double targetError, double currentError, double factor){
 			if(simHistory->errorList.getCurrent(p->vipFacets[i].first)== std::numeric_limits<double>::infinity())
 				continue;
 
-			vipCheck = vipCheck && (simHistory->errorList.getCurrent(p->vipFacets[i].first) <= p->vipFacets[i].second * factor);
+			vipCheck = vipCheck && (simHistory->errorList.getCurrent(p->vipFacets[i].first)== std::numeric_limits<double>::infinity() || simHistory->errorList.getCurrent(p->vipFacets[i].first) <= p->vipFacets[i].second * factor);
 		}
 	}
 
