@@ -497,8 +497,6 @@ bool SimulationMCStep(size_t nbStep) {
 	bool lastWasHit=false;
 	for (size_t i = 0; i < nbStep || lastWasHit; i++) {
 
-		//Missing: Treat the case that particle flighttime is larger than time step (because of sojourn before desorption)
-		// => particle does not desorb => count as adsorbed. Start new particle.
 
 		if(simHistory->startNewParticle){
 			simHistory->startNewParticle=false;
@@ -748,7 +746,7 @@ bool StartFromSource() {
 		}
 	}
 
-	//check if covering would get negative
+	//check if covering got negative
 	//size_t nbMoments = sHandle->moments.size();
 	//for (size_t m = 0; m <= nbMoments; m++) {
 	//	if (m == 0 || abs((double)sHandle->currentParticle.flightTime - (double)sHandle->moments[m - 1]) < sHandle->wp.timeWindowSize / 2.0) {
