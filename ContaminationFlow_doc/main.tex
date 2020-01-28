@@ -4,25 +4,26 @@
 \documentclass[headsepline,footsepline,footinclude=false,oneside,fontsize=12pt,paper=a4,listof=totoc,bibliography=totoc]{scrbook} % one-sided
 
 % TODO: change citation style in settings
-\input{settings}
+%\input{settings}
 \usepackage[margin=2.5cm]{geometry}
 	%\addtolength{\oddsidemargin}{-.5cm}
 	%\addtolength{\evensidemargin}{-.5cm}
 	%\addtolength{\textwidth}{1cm}
 \renewcommand*{\chapterheadstartvskip}%
     {\vspace*{\baselineskip}}% Originalwert 2.3\baselineskip
-
+\usepackage{xcolor}
 \definecolor{light-gray}{gray}{0.95}
 \newcommand{\codew}[1]{\colorbox{light-gray}{\texttt{#1}}}
 \usepackage{tcolorbox}
 \tcbuselibrary{breakable}
 \newcommand{\code}[1]{\texttt{\begin{tcolorbox}[breakable,colframe=light-gray,arc=0pt,outer arc=0pt]#1\end{tcolorbox}}}
 
+\usepackage{hyperref}
 \usepackage{pbox}
 \usepackage{enumitem}% http://ctan.org/pkg/enumitem
 \usepackage{tikz}
 \usetikzlibrary{positioning,shapes,arrows,calc}
-
+\usepackage{microtype}
 \usepackage{amsmath}
 \usepackage{multirow}
 \hypersetup{backref=true,       
@@ -37,7 +38,7 @@
 %\newcommand*{\getFaculty}{Neuroscientific System Theory}
 \newcommand*{\getTitle}{ContaminationFlow\par\medskip on Linux and Windows}
 %\newcommand*{\getTitleGer}{Muskelbasierte Roboter in der Neurorobotics Platform}
-\newcommand*{\getAuthor}{Hoai My Van}
+\newcommand*{\getAuthor}{Hoai My Van, Rudolf Sch\"onmann}
 \newcommand*{\getDoctype}{Documentation}
 %\newcommand*{\getSupervisor}{Prof. Dr. Jörg Conradt}
 %\newcommand*{\getAdvisor}{M.Sc. Alexander Kuhn}
