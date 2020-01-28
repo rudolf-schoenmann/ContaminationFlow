@@ -32,14 +32,14 @@ extern SimulationHistory* simHistory;
 
 // Step size for intervals
 double getStepSize(){
-	double T_min = p->Tmin;//set minimal time resolution to 1E-4 seconds.
+	double T_min = p->t_min;//set minimal time resolution to 1E-4 seconds.
 
 	//Dynamical calculation of min_time is not straight forward, since 'manageTimeStep()' can change it.
 	//Dynamical calculation can be done later, if it is regarded as useful.
 	double t_start = T_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/(T_min))/(double)p->iterationNumber));
 	double t_stop = T_min*exp((double)(simHistory->currentStep+1)*(log(p->maxTimeS/(T_min))/(double)p->iterationNumber));
 	double Delta = t_stop - t_start;
-	return Delta < p->Tmax ? Delta : p->Tmax;
+	return Delta < p->t_max ? Delta : p->t_max;
 	/*if(simHistory->currentStep==0){
 		double T_min = estimateAverageFlightTime();
 		return T_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/T_min)/(double)p->iterationNumber));
@@ -96,8 +96,8 @@ double manageStepSize(bool updateCurrentStep){
 		}
 	}
 
-	if(step_size > p->Tmax){
-		step_size=p->Tmax;
+	if(step_size > p->t_max){
+		step_size=p->t_max;
 	}
 	else if(incrCurrentStep&&updateCurrentStep){//needed here?  => JEIN
 		simHistory->currentStep+=1;

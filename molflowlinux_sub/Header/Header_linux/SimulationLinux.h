@@ -331,6 +331,8 @@ public:
 	double maxTime;
 	std::string maxUnit;
 
+	double particleDia;
+
 	double E_de;
 	double sticking;
 
@@ -341,9 +343,9 @@ public:
 	double targetError;
 
 	double hitRatioLimit;
-	double Tmin;
+	double t_min;
 
-	double Tmax;
+	double t_max;
 	int maxSimPerIt;
 
 	llong coveringMinThresh;

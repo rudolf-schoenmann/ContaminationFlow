@@ -50,7 +50,7 @@
 	\end{split}
 \end{equation}
 
-\subsubsection*{Energy $E$}
+\subsubsection*{Binding Energy $E$}
 \begin{equation}
 	\label{eq:energy}
 	\begin{split}
@@ -65,6 +65,16 @@
 	\begin{split}
 		Frequency&=\frac{K_b T}{h}\\
 		Energy&= E
+	\end{split}
+\end{equation}
+
+
+\subsubsection*{Sojourn Time}
+\begin{equation}
+	\label{eq:sojourntime}
+	\begin{split}
+		A&=\exp\Big( - Energy/(K_b T)\big)\\
+		sojourn time&= -\text{log}(\frac{\text{rnd()}}{A \cdot Frequency})
 	\end{split}
 \end{equation}
 
@@ -111,10 +121,46 @@
 \subsubsection*{Error}
 \begin{equation}
 	\label{eq:error}
+	error=
+	\begin{cases}
 	\begin{split}
-		error&=\Big( \frac{1}{\text{(hits + desorbed) on facet}} \cdot \frac{1-\text{(hits + desorbed) on facet}}{\text{total (hits + desorbed)}} \Big)^{0.5}
+		inf\quad,\text{ if (hits+desorbed) on facet =0}\\
+		\\
+		\Big( \frac{1}{\text{(hits + desorbed) on facet}} \cdot \frac{1-\text{(hits + desorbed) on facet}}{\text{total (hits + desorbed)}} \Big)^{0.5}\quad,\text{else}
 	\end{split}
+	\end{cases}
 \end{equation}
+
+\chapter{Datatypes}
+\section{Class Members}
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+Name&Datatype&Alias\\
+\hline
+SimulationHistory::coveringList&boost::multiprecision::uint\_128t&covBoost\\
+FacetHitBuffer::covering&llong&covLlong\\
+FacetProperties::desorption&boost::multiprecision::float128&desBoost\\
+Simulation::coveringThreshold&llong&\\
+\hline
+\end{tabular}
+\end{center}
+\section{Functions}
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+Function&Output Datatype&Relevant Input\\
+\hline
+getCovering()&boost::multiprecision::float128&covBoost\\
+getCovering()&llong&covLlong\\
+calcCoverage()&boost::multiprecision::float128 or llong&getCovering()\\
+calcDesorption()&boost::multiprecision::float128&calcCoverage()\\
+calcDesorptionRate()&boost::multiprecision::float128&calcDesorption()\\
+calctotalDesorption()&boost::multiprecision::float128&desBoost\\
+GetMoleculesPerTP()&boost::multiprecision::float128&desBoost\\
+\hline
+\end{tabular}
+\end{center}
 
 \chapter{Overview of new Classes and Functions}
 
@@ -168,8 +214,7 @@
 \rule{0pt}{3ex} print()& Print pointInTimeList as table to terminal, optional msg\\
 \rule{0pt}{3ex} write(), read()& Write to file, read from file\\
 %\rule{0pt}{3ex} empty()& Checks if pointintime\_list is empty\\
-\rule{0pt}{3ex} setCurrentList()& Set value of desired facet in currentList\\
-\rule{0pt}{3ex} getCurrent()& Get value of desired facet from currentList\\
+\rule{0pt}{3ex} set/getCurrent()& Set/get value of desired facet in currentList\\
 \rule{0pt}{3ex} setLast(), getLast()& Set/get value of desired facet from pointInTimeList\\
 \hline
 \multicolumn{2}{l}{}\\
@@ -185,6 +230,7 @@
 \rule{0pt}{3ex} maxTime, maxUnit& \multirow{2}{*}{Maximal total simulated time in seconds}\\
 \enskip$\Rightarrow$maxTimeS&\\
 \rule{0pt}{3ex} iterationNumber& Number of iterations\\
+\rule{0pt}{3ex} particleDia& Diameter of particles\\
 %\rule{0pt}{3ex}  d& Parameter to calculate desorption rate, see equation \ref{eq:des}\\
 \rule{0pt}{3ex}  E\_de, H\_vap, W\_tr& Parameters to calculate binding energy, see equation \ref{eq:energy}\\
 \rule{0pt}{3ex}  sticking&  Sticking factor for all facets\\

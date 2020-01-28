@@ -210,20 +210,21 @@ and the input file defining the following parameters:
 %\item \codew{$s_2$}, coefficient used for calculation of sticking coefficient; default:\codew{0.2}
 %\item \codew{$E_{ad}$}, energy used for calculation of sticking coefficient; default:\codew{1\text{E}-21}
 %\item\codew{$d$}: power for base of coverage used for calculation of desorption; default:\codew{1}
+\item \codew{$particleDia$}: diameter of particles; default:\codew{2$ \cdot $76\text{E}-12}
 \item \codew{$E_{de}$}: maximum energy used for calculation of desorption; default:\codew{1\text{E}-21}
-\item \codew{$H_{vap}$}: minimum energy used for calculation of desorption; default:\codew{1\text{E}-21}
-\item \codew{$W_{tr}$}: window width used for calculation of desorption; default:\codew{1\text{E}-21}
-\item \codew{$sticking$}: constant sticking coefficient for all facets; default:\codew{0.8\text{E}-19}
+\item \codew{$H_{vap}$}: minimum energy used for calculation of desorption; default:\codew{0.8\text{E}-19}
+\item \codew{$W_{tr}$}: window width used for calculation of desorption; default:\codew{1}
+\item \codew{$sticking$}: constant sticking coefficient for all facets; default:\codew{0}
 %\item \codew{$coveringLimit$}: threshold for zero desoprtion; default:\codew{0}
 \item \codew{$targetPaticles$}: Minimum number of desorbed particles per iter.; default: \codew{1000}
 \item \codew{$targetError$}: Maximum error per iteration; default: \codew{0.001}
 \item \codew{$hitRatioLimit$}: Ratio at which hits are ignored, default: \codew{1\text{E}-5}
-\item \codew{$Tmin$}: minimum time for step size; default:\codew{1\text{E}-4}
-\item \codew{$maxStepSize$}: maximum time for step size; default:\codew{max}
+\item \codew{$Tmin$} or \codew{$t\_min$}: minimum time for step size; default:\codew{1\text{E}-4}
+\item \codew{$maxStepSize$} or \codew{$t\_max$}: maximum time for step size; default:\codew{max}
 \item \codew{$maxSimPerIt$}: maximum simulation steps per iteration; default:\codew{max}
 \item \codew{$coveringMinThresh$}: minimum covering (through multiplication); default:\codew{10000}
 \item \codew{$histsize$}: Size of history lists; default:\codew{max}
-\item \codew{$vipFacets$}: vip facets, alterning facet number and target error; default:\codew{[]}
+\item \codew{$vipFacets$}: vip facets: alternate facet number and its target error; default:\codew{[]}
 \end{itemize}
 \newpage
 %\section{General Changes}
@@ -243,6 +244,7 @@ and the input file defining the following parameters:
 \subsubsection{Terminology}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Simulation time: desired computation time until check if target is reached for iteration
+\item Simulated time: Time in the simulation, e.g.\ flight time of a particle
 \item Maximum simulation time: desired total simulated time
 \item Step size: desired simulated time per particle for iteration
 \end{itemize}
@@ -404,18 +406,21 @@ and the input file defining the following parameters:
 	\node[condition, aspect=1.5](exist) at (1,-3.8){Particle\\exists?};
 	\draw let \p1=(nbSteps.south), \p2=(exist.north) in [->, line width=0.04cm] (\p1) -- (\p2);
 
-	\node[neuron](particle) at (1,-5.8) {Create particle};
+	\node[neuron](particle) at (1,-5.8) {Create particle\\Add sojourn time};
 	\draw let \p1=(exist.south), \p2=(particle.north) in [->, line width=0.04cm] (\p1) -- (\p2)node[midway, right]{false};
 
-	\node[condition, aspect=1.5](covthresh) at (6,-5.8){Cov. thresh.\\reached?};
-	\draw let \p1=(particle.east), \p2=(covthresh.west) in [->, line width=0.04cm] (\p1) -- (\p2);
+	\node[condition, aspect=1.5](time3) at (6,-5.8){flight time>\\step size?};
+	\draw let \p1=(particle.east), \p2=(time3.west) in [->, line width=0.04cm] (\p1) -- (\p2);
+
+	\node[condition, aspect=1.5](covthresh) at (11,-5.8){Cov. thresh.\\reached?};
+	\draw let \p1=(time3.east), \p2=(covthresh.west) in [->, line width=0.04cm] (\p1) -- (\p2)node[midway, above]{false};
 	\draw let \p1=(exist.east), \p2=(covthresh.north) in [->, line width=0.04cm] (\p1) --(\x1+1cm,\y1)node[midway, above]{true}--(\x2,\y1)-- (\p2);
 
-	\node[neuron](facet) at (1,-7.7) {Find next facet};
+	\node[neuron](facet) at (6,-7.9) {Find next facet};
 	\draw let \p1=(covthresh.south), \p2=(facet.east) in [->, line width=0.04cm] (\p1) -- (\x1,\y2) node[midway, right]{false} --(\p2);
 
 	\node[condition, aspect=1.5](time1) at (1,-9.7){flight time>\\step size?};
-	\draw let \p1=(facet.south), \p2=(time1.north) in [->, line width=0.04cm] (\p1) -- (\p2);
+	\draw let \p1=(facet.west), \p2=(time1.north) in [->, line width=0.04cm] (\p1) --  (\x2,\y1)--(\p2);
 
 	\node[neuron](sojourn) at (6,-9.7) {Add sojourn time};
 	\draw let \p1=(time1.east), \p2=(sojourn.west) in [->, line width=0.04cm] (\p1) -- (\p2) node[midway, above]{false};
@@ -425,27 +430,29 @@ and the input file defining the following parameters:
 
 	\node[neuron](hit) at (6,-14.3) {Record hit};
 	\draw let \p1=(time2.south), \p2=(hit.north) in [->, line width=0.04cm] (\p1) -- (\p2) node[midway, right]{false};
+	\draw let \p1=(hit.east), \p2=(facet.east) in [ line width=0.04cm] (\p1) -- (11,\y1) -- (11,\y2) ;
 
 	\node[neuron](absorb) at (1,-12.0) {Record absorb};
 	\draw let \p1=(time1.south), \p2=(absorb.north) in [->, line width=0.04cm] (\p1) -- (\p2) node[midway, right]{true};
 	\draw let \p1=(time2.west), \p2=(absorb.east) in [->, line width=0.04cm] (\p1) -- (\p2) node[midway, above]{true};
+	\draw let \p1=(time3.south),\p2=(absorb.west) in [->, line width=0.04cm](\p1) --(\x1,\y1-0.2cm) --node[midway, above]{true}(\x1-1.5cm,\y1-0.2cm)--(\x2-0.33cm,\y1-0.2cm)--(\x2-0.33cm,\y2)--(\p2);
 
 	\node[condition, aspect=1.5](steps) at (1,-14.3){No.steps\\reached?};
 	\draw let \p1=(absorb.south), \p2=(steps.north) in [->, line width=0.04cm] (\p1) -- (\p2);
-	\draw let \p1=(steps.west), \p2=(particle.west) in [->, line width=0.04cm] (\p1) --(\x1-0.5cm,\y1)-- node[midway, right]{false}(\x1-0.5cm,\y1+1cm)-- (\x1-0.5cm,\y2) -- (\p2);
+	\draw let \p1=(steps.west), \p2=(particle.west) in [->, line width=0.04cm] (\p1) --(\x1-0.66cm,\y1)-- node[midway, right]{false}(\x1-0.66cm,\y1+1cm)-- (\x1-0.66cm,\y2) -- (\p2);
 
-	\node[condition, aspect=1.5](steps2) at (11,-14.3){No.steps\\reached?};
-	\draw let \p1=(hit.east), \p2=(steps2.west) in [->, line width=0.04cm] (\p1) -- (\p2);
-	\draw let \p1=(steps2.north), \p2=(facet.east) in [ line width=0.04cm] (\p1) --node[midway, right]{false}(\x1,\y1+1cm)-- (\x1,\y2) -- (6, \y2);
+	%\node[condition, aspect=1.5](steps2) at (11,-14.3){No.steps\\reached?};
+	%\draw let \p1=(hit.east), \p2=(steps2.west) in [->, line width=0.04cm] (\p1) -- (\p2);
+	%\draw let \p1=(steps2.north), \p2=(facet.east) in [ line width=0.04cm] (\p1) --node[midway, right]{false}(\x1,\y1+1cm)-- (\x1,\y2) -- (6, \y2);
 
 	\node[condition, aspect=1.5](target) at (6,-17.2){Target error\\reached?};
 	\draw let \p1=(steps.south), \p2=(target.north) in [->, line width=0.04cm] (\p1) --(\x1,\y1-0.3cm) --node[midway, above]{true}(\x1+2cm,\y1-0.3cm)--(\x2,\y1-0.3cm)-- (\p2);
-	\draw let \p1=(steps2.south), \p2=(target.north) in [ line width=0.04cm] (\p1) --(\x1,\y1-0.3cm) --node[midway, above]{true}(\x1-2cm,\y1-0.3cm)--(\x2,\y1-0.3cm);
+	%\draw let \p1=(steps2.south), \p2=(target.north) in [ line width=0.04cm] (\p1) --(\x1,\y1-0.3cm) --node[midway, above]{true}(\x1-2cm,\y1-0.3cm)--(\x2,\y1-0.3cm);
 	\draw let \p1=(target.west), \p2=(nbSteps.west) in [->, line width=0.04cm] (\p1) --node[midway, above]{false}(\x1-1cm, \y1)--(\x1-6cm,\y1)-- (\x1-6cm,\y2) -- (\p2);
 
-	\node[neuron](hitbuffer) at (11,-5.8) {Update hitbuffer};
+	\node[neuron](hitbuffer) at (11,-1.9) {Update hitbuffer};
 	\draw let \p1=(target.east), \p2=(hitbuffer.east) in [->, line width=0.04cm] (\p1) -- (\x1+1cm,\y1) node[midway, above]{true}--(\x1+6cm,\y1)--(\x1+6cm,\y2) -- (\p2);
-	\draw let \p1=(covthresh.east), \p2=(hitbuffer.west) in [->, line width=0.04cm] (\p1) -- (\p2) node[midway, above]{true};
+	\draw let \p1=(covthresh.east) in [ line width=0.04cm] (\p1) -- (\x1+1cm,\y1) node[midway, above]{true};
 
 	\node[module](end)  at (12,-0.2) {End simulation\\sub process};
 	\draw let \p1=(hitbuffer.north), \p2=(end.south) in [->, line width=0.04cm] (\x2,\y1) -- (\p2);
@@ -461,9 +468,17 @@ and the input file defining the following parameters:
 \item Calculation in \codew{UpdateMainProcess.cpp} file in \codew{getStepSize()}
 \end{itemize}
 
+\subsubsection{Calculate Covering Threshold}
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item Set lower threshold for covering for each facet to prevent covering getting negative
+\item Stop simulation once threshold is reached
+\item Threshold set in \codew{setCoveringThreshold($\cdot$)}  from \codew{Iteration.cpp} file
+\end{itemize}
+
 \subsubsection{Multiply small covering}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Multiply covering to reach \codew{ProblemDef::coveringThreshMin}
+\item Multiply covering so that smallest covering $\geq$ \codew{ProblemDef::coveringThreshMin}
+\item Multiply covering threshold with same factor
 \item Adapt covering threshold and \codew{simHistory$\rightarrow$coveringList}
 \item Calculation in \codew{checkSmallCovering($\cdot$)} from \codew{SimulationLinux.cpp} file
 \end{itemize}
@@ -482,19 +497,19 @@ and the input file defining the following parameters:
 \item Calculation in \codew{UpdateSojourn($\cdot$)}  from \codew{UpdateSubProcess.cpp} file
 \end{itemize}
 
-\subsubsection{Calculate Covering Threshold}
-\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Set lower threshold for covering for each facet to prevent covering getting negative
-\item Stop simulation once threshold is reached
-\item Threshold set in \codew{setCoveringThreshold($\cdot$)}  from \codew{Iteration.cpp} file
-\end{itemize}
-
 \subsubsection{Target error reached?}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Calculate statistical error in \codew{UpdateError()} from \codew{UpdateSubProcess.cpp} file
 \item Check if vip facets reached their own target error
-\item Check if normal facets combined reached target error
-\item Neglect normal facets that reached \codew{ProblemDef::hitRatioLimit}
+\item Check if normal facets total error reached target error
+\item Total error calculated from summing facet error weighted with facet area
+\item Set error of facets that reached \codew{ProblemDef::hitRatioLimit} to $inf$
+\item Set error of facets with no hits and desorption to $inf$
+\item Facets with error=$inf$ are not considered
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item if vip facet: target automatically reached
+\item if normal facet: facet error and area not used for calculation
+\end{itemize}
 \item Check in \codew{checkErrorSub($\cdot$)} from \codew{UpdateSubProcess.cpp} file
 \end{itemize}
 
@@ -537,9 +552,16 @@ and the input file defining the following parameters:
 \caption{Overview: update of covering in hitbuffer}
 \end{figure}
 
-\subsubsection{Divide small covering}
+\subsubsection{Multiply small covering before summation of subprocesses}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Divide covering if multiplied this iteration
+\item Only if covering was multiplied in subprocesses
+\item Multiply covering in \codew{hitbuffer} and \codew{simHistory} of main process before simulation using same factor
+\end{itemize}
+
+\subsubsection{Divide small covering after  summation of subprocesses}
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item Only if covering was multiplied in subprocesses
+\item Divide covering in \codew{hitbuffer} and \codew{simHistory} of main process before simulation using same factor
 \item Adapt hitbuffer and \codew{simHistory$\rightarrow$coveringList}
 \item Calculation in \codew{UndoSmallCovering($\cdot$)} from \codew{SimulationLinux.cpp}
 \end{itemize}
@@ -549,6 +571,13 @@ and the input file defining the following parameters:
 \item Calculate statistical error of normal facets
 \item Facet error calculated from hits and desorbed particles, weighted with opacity
 \item Total error calculated from summing facet error weighted with facet area
+\item Set error of facets that reached \codew{ProblemDef::hitRatioLimit} to $inf$
+\item Set error of facets with no hits and desorption to $inf$
+\item Facets with error=$inf$ are not used for calculation of total error
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item if vip facet: target automatically reached
+\item if normal facet: facet error and area not used for calculation
+\end{itemize}
 \item Save error in \codew{simHistory$\rightarrow$errorList}
 \item Management in \codew{UpdateErrorMain($\cdot$)} from \codew{UpdateMainProcess.cpp} file
 \end{itemize}
