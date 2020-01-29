@@ -244,7 +244,7 @@ void UpdateErrorMain(Databuff *hitbuffer_sum){
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			num_hit_it+=f.sh.opacity * (getHits(&f,hitbuffer_sum)-simHistory->hitList.getLast(&f) + getnbDesorbed(&f, hitbuffer_sum) - simHistory->desorbedList.getLast(&f));
-		}
+		}//Counter in hitbuffer_sum will never be set to zero. But llong will not overflow sinc its a 64bit integer (Range until 10^19).
 	}
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
