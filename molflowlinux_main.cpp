@@ -259,6 +259,7 @@ int main(int argc, char *argv[]) {
 
 				//Do the simulation
 				bool eos; std::vector<int> facetNum;
+				std::tie(smallCovering,smallCoveringFactor) = checkSmallCovering(&hitbuffer);
 				std::tie(eos, facetNum) = simulateSub2(&hitbuffer, rank, p->simulationTimeMS);
 				MPI_Barrier(MPI_COMM_WORLD);
 				if (eos) {
