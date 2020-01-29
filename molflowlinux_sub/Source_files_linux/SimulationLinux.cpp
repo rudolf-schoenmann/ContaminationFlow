@@ -460,7 +460,7 @@ std::tuple<bool, llong > checkSmallCovering(Databuff *hitbuffer_sum){
 		}
 	}
 
-	if(smallCovering && llong(mincov) < p->coveringMinThresh){
+	if(smallCovering /*&& llong(mincov) < p->coveringMinThresh This is automatically fulfilled... */){
 		smallCoveringFactor=llong(1.0+1.1*double(p->coveringMinThresh)/(double(mincov)));
 
 		std::cout <<"Small covering: multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
