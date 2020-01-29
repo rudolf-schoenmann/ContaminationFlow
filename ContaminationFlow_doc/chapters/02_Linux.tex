@@ -195,7 +195,7 @@ with the following command line parameters:
 \item \codew{save}: determines whether result directory is created (1: true, 0:false); default:\codew{1}
 \end{itemize}
 \smallskip
-
+\smallskip
 and the input file defining the following parameters:
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item \codew{$loadbufferPath$}: path to loadbuffer file, contains geometry, e.g.\ \codew{\textasciitilde/loadbuffer}
@@ -211,20 +211,20 @@ and the input file defining the following parameters:
 %\item \codew{$E_{ad}$}, energy used for calculation of sticking coefficient; default:\codew{1\text{E}-21}
 %\item\codew{$d$}: power for base of coverage used for calculation of desorption; default:\codew{1}
 \item \codew{$particleDia$}: diameter of particles; default:\codew{2$ \cdot $76\text{E}-12}
-\item \codew{$E_{de}$}: maximum energy used for calculation of desorption; default:\codew{1\text{E}-21}
-\item \codew{$H_{vap}$}: minimum energy used for calculation of desorption; default:\codew{0.8\text{E}-19}
-\item \codew{$W_{tr}$}: window width used for calculation of desorption; default:\codew{1}
-\item \codew{$sticking$}: constant sticking coefficient for all facets; default:\codew{0}
+\item \codew{$E_{de}$}: binding energy of a particle on pure substrate; default:\codew{1\text{E}-21}
+\item \codew{$H_{vap}$}: vaporization enthalpy of a particle in case of multilayer contamination; default:\codew{0.8\text{E}-19}
+\item \codew{$W_{tr}$}: transition width between monolayer and multilayer properties; default:\codew{1}
+\item \codew{$sticking$}: constant sticking coefficient for all facets, set to zero, not used at the moment; default:\codew{0}
 %\item \codew{$coveringLimit$}: threshold for zero desoprtion; default:\codew{0}
-\item \codew{$targetPaticles$}: Minimum number of desorbed particles per iter.; default: \codew{1000}
-\item \codew{$targetError$}: Maximum error per iteration; default: \codew{0.001}
+\item \codew{$targetPaticles$}: minimum number of desorbed particles per iter.; default: \codew{1000}
+\item \codew{$targetError$}: average statistical uncertainty (error) to be achieved for each iteration, calculated as the average (weighted with the facets area) of the normalized standard deviation of events per facet; default: \codew{0.001}
 \item \codew{$hitRatioLimit$}: Ratio at which hits are ignored, default: \codew{1\text{E}-5}
 \item \codew{$Tmin$} or \codew{$t\_min$}: minimum time for step size; default:\codew{1\text{E}-4}
 \item \codew{$maxStepSize$} or \codew{$t\_max$}: maximum time for step size; default:\codew{max}
 \item \codew{$maxSimPerIt$}: maximum simulation steps per iteration; default:\codew{max}
 \item \codew{$coveringMinThresh$}: minimum covering (through multiplication); default:\codew{10000}
 \item \codew{$histsize$}: Size of history lists; default:\codew{max}
-\item \codew{$vipFacets$}: vip facets: alternate facet number and its target error; default:\codew{[]}
+\item \codew{$vipFacets$}: very important facets: facets with have their own target error. input in inputfile as alternating sequence of facet numbers and respective target errors seperated via blanks; default:\codew{[]}
 \end{itemize}
 \newpage
 %\section{General Changes}
@@ -244,7 +244,7 @@ and the input file defining the following parameters:
 \subsubsection{Terminology}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Simulation time: desired computation time until check if target is reached for iteration
-\item Simulated time: Time in the simulation, e.g.\ flight time of a particle
+\item Simulated time: physical time in the simulated system, e.g.\ flight time or residence time of a particle
 \item Maximum simulation time: desired total simulated time
 \item Step size: desired simulated time per particle for iteration
 \end{itemize}
@@ -284,8 +284,8 @@ and the input file defining the following parameters:
 
 \subsubsection{Coverage}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Number of carbon equivalent particles per monolayer on facet
-\item Calculated from covering, gas mass and facet area
+\item Number of monolayers of adsorbed particles
+\item Calculated from covering, particle diamieter (previously gas mass) and facet area
 \item Coverage computed from \codew{Simulationcalc.cpp} file in \codew{calcCoverage($\cdot$)}
 \end{itemize}
 
@@ -303,6 +303,7 @@ and the input file defining the following parameters:
 
 \subsubsection{Desorption $[1/\text{s}]$}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item number of particles desorbing per second
 \item Calculated from binding energy, covering and temperature
 \item Desorption computed from \codew{Simulationcalc.cpp} file in \codew{calcDesorption($\cdot$)}
 \end{itemize}
@@ -464,7 +465,6 @@ and the input file defining the following parameters:
 \subsubsection{Calculate Step Size}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Use \codew{simHistory$\rightarrow$currentStep} to calculate logarithmic step size
-\item Duration between outgassing/desorption and adsorption
 \item Calculation in \codew{UpdateMainProcess.cpp} file in \codew{getStepSize()}
 \end{itemize}
 
@@ -489,11 +489,11 @@ and the input file defining the following parameters:
 \item Calculation in \codew{UpdateDesorptionRate($\cdot$)}  from \codew{UpdateSubProcess.cpp} file
 \end{itemize}
 
-\subsubsection{Calculate Sojourn variables}
+\subsubsection{Calculate residence time and binding energy}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Sojourn time of bounce calculated from energy and frequency
-\item Sojourn energy equal to binding energy
-\item Sojourn frequency calculated from temperature
+\item residence time of a particle on a surface calculated from binding energy, coverage and thermal oscillation frequency
+\item binding energy calculated using binding energy on pure substrate, vaporization enthalpy and coverage
+\item thermal oscillation frequency calculated using temperature, Boltzmann constant and Planck's constant
 \item Calculation in \codew{UpdateSojourn($\cdot$)}  from \codew{UpdateSubProcess.cpp} file
 \end{itemize}
 
@@ -584,7 +584,7 @@ and the input file defining the following parameters:
 
 \subsubsection{Management of Step Size}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Adapt step size if desorption would be larger than covering 
+\item Adapt step size if desorption $\times$ time step was larger than covering 
 \item Increase \codew{simHistory$\rightarrow$currentStep} if no adaptation \& target errors reached
 \item Management in \codew{manageStepSize($\cdot$)} from \codew{UpdateMainProcess.cpp} file
 \end{itemize}
