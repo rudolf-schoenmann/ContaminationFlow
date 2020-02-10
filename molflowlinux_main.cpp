@@ -210,7 +210,7 @@ int main(int argc, char *argv[]) {
 		if (p->simulationTimeMS != 0) {
 			usleep(100);
 			MPI_Barrier(MPI_COMM_WORLD);
-			bool smallCovering; llong smallCoveringFactor;
+			bool smallCovering; llong smallCoveringFactor = 1;
 
 			if(rank == 0){
 			std::cout <<std::endl <<"----------------Starting iteration " <<it+1 <<"----------------"<<std::endl;
@@ -326,13 +326,14 @@ int main(int argc, char *argv[]) {
 			//----Update covering
 			if (rank == 0) {
 
-				if(smallCovering){
+				/*Nicht mehr benötigt. Der smallCoveringFactor wird jetzt in UpdateCovering als Divisor wieder herausgerechnet.
+				 * if(smallCovering){
 					std::cout <<"Small covering: divide covering by " <<smallCoveringFactor <<std::endl;
 					UndoSmallCovering(&hitbuffer_sum, smallCoveringFactor);
-				}
+				}*/
 
 				UpdateErrorMain(&hitbuffer_sum); // !! If order changes, adapt "time" entry in errorList !!
-				UpdateCovering(&hitbuffer_sum);
+				UpdateCovering(&hitbuffer_sum, smallCoveringFactor);
 
 				UpdateCoveringphys(&hitbuffer_sum, &hitbuffer);
 

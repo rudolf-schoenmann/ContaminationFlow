@@ -440,7 +440,7 @@ std::tuple<bool, llong > checkSmallCovering(Databuff *hitbuffer_sum){
 	BYTE *buffer_sum;
 	buffer_sum = hitbuffer_sum->buff;
 
-	llong smallCoveringFactor=0;
+	llong smallCoveringFactor=1;
 	boost::multiprecision::uint128_t covering;
 
 	boost::multiprecision::uint128_t mincov = boost::multiprecision::uint128_t(p->coveringMinThresh);
@@ -477,7 +477,8 @@ std::tuple<bool, llong > checkSmallCovering(Databuff *hitbuffer_sum){
 
 	return {std::make_tuple(smallCovering,smallCoveringFactor)};
 }
-
+/*
+ * Is not needed anymore.
 void UndoSmallCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){
 	BYTE *buffer_sum;
 	buffer_sum = hitbuffer_sum->buff;
@@ -490,6 +491,7 @@ void UndoSmallCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){
 			}
 	}
 }
+*/
 
 //----SimulationHistory class
 

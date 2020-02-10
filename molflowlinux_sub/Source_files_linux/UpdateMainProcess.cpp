@@ -110,10 +110,9 @@ double manageStepSize(bool updateCurrentStep){
 //-----------------------------------------------------------
 //Update Covering
 //Simhistory version
-void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iteration using Krealvirt, resets other counters
-	//If one wants to read out pressure and particle density, this must be done before calling UpdateCovering.
+void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){//Updates Covering after one Iteration using Krealvirt,
+	//the current time step (of the iteration step) and the smallCoveringFactor,
 	//Calculates with the summed up counters of hitbuffer_sum how many test particles are equivalent to one physical particle.
-	//Then the physical values are stored in the hitbuffer.
 	//simTime in ms
 
 	boost::multiprecision::float128 Krealvirt = GetMoleculesPerTP(hitbuffer_sum, simHistory->nbDesorbed_old);
@@ -123,8 +122,9 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 	//std::cout << history->nbDesorbed_old <<std::endl;
 
 	boost::multiprecision::uint128_t covering_phys;
-	boost::multiprecision::uint128_t covering_sum;
-	boost::multiprecision::float128 covering_check;
+	boost::multiprecision::uint128_t covering_sum;//covering as it is summed up of all subprocesses. In case, it is multiplied by smallCoveringFactor
+	boost::multiprecision::float128 covering_sum_netto ;//used to devide covering_sum by the smallCoveringFactor; float;
+	//boost::multiprecision::float128 covering_check;
 
 	double time_step;
 	if(Krealvirt==boost::multiprecision::float128(0.0)){ //if no Krealvirt(no desorption), do not increase currentStep, time_step=0
@@ -166,10 +166,10 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 	}
 
 	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
-	std::cout << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*boost::multiprecision::float128(time_step) << std::endl;
+	std::cout << "Covering difference will be multiplied by Krealvirt*(time step)/smallCoveringFactor: " << Krealvirt*boost::multiprecision::float128(time_step/smallCoveringFactor) << std::endl;
 
 	p->outFile <<"Krealvirt = " << Krealvirt << std::endl;
-	p->outFile << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*boost::multiprecision::float128(time_step) << std::endl;
+	p->outFile << "Covering difference will be multiplied by Krealvirt*(time step)/smallCoveringFactor: " << Krealvirt*boost::multiprecision::float128(time_step/smallCoveringFactor) << std::endl;
 	//std::cout <<"testing timestep: " <<time_step <<'\t' <<estimateAverageFlightTime() <<std::endl;
 
 	//double rounding=1/simHistory->numFacet;
@@ -179,6 +179,8 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after one Iterat
 
 				covering_phys = simHistory->coveringList.getLast(&f);
 				covering_sum = boost::multiprecision::uint128_t(getCovering(&f, hitbuffer_sum));
+				covering_sum_netto = boost::multiprecision::float128( static_cast < boost::multiprecision::float128 >(covering_sum)/smallCoveringFactor);
+				covering_sum = static_cast <boost::multiprecision::uint128_t>(covering_sum_netto);
 
 				std::cout<<std::endl << "Facet " << getFacetIndex(&f)<< std::endl;
 				std::cout << "covering_sum = " << covering_sum  << " = "<< boost::multiprecision::float128(covering_sum) << std::endl;
