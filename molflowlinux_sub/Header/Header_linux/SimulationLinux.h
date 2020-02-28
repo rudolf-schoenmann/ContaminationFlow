@@ -390,7 +390,7 @@ public:
 	void print(bool write=false);
 	void write(std::string path);
 	std::tuple<bool, llong > updateHistory(Databuff *hitbuffer);
-	std::tuple<bool, llong > updateHistory();
+	void updateHistory();
 
 };
 
