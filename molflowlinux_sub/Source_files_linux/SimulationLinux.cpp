@@ -469,7 +469,6 @@ std::tuple<bool, llong > checkSmallCovering(Databuff *hitbuffer_sum){
 				for (SubprocessFacet& f : sHandle->structures[s].facets) {
 					FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
 					facetHitSum->hit.covering*=smallCoveringFactor;
-					simHistory->coveringList.setLast(&f, simHistory->coveringList.getLast(&f)*boost::multiprecision::uint128_t(smallCoveringFactor));
 				}
 		}
 	}

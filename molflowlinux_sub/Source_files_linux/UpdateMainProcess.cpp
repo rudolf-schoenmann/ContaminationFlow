@@ -99,7 +99,7 @@ double manageStepSize(bool updateCurrentStep){
 	/*if(step_size > p->t_max){
 		step_size=p->t_max;
 	}*/
-	else if(incrCurrentStep&&updateCurrentStep){//needed here?  => JEIN
+	if(incrCurrentStep&&updateCurrentStep){//needed here?  => JEIN
 		simHistory->currentStep+=1;
 		std::cout<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
 		p->outFile<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
@@ -180,7 +180,7 @@ void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){//Update
 				covering_phys = simHistory->coveringList.getLast(&f);
 				covering_sum = boost::multiprecision::uint128_t(getCovering(&f, hitbuffer_sum));
 				covering_sum_netto = boost::multiprecision::float128( static_cast < boost::multiprecision::float128 >(covering_sum)/smallCoveringFactor);
-				covering_sum = static_cast <boost::multiprecision::uint128_t>(covering_sum_netto);
+				covering_sum = boost::multiprecision::uint128_t (static_cast <boost::multiprecision::uint128_t>(covering_sum_netto));
 
 				std::cout<<std::endl << "Facet " << getFacetIndex(&f)<< std::endl;
 				std::cout << "covering_sum = " << covering_sum  << " = "<< boost::multiprecision::float128(covering_sum) << std::endl;
