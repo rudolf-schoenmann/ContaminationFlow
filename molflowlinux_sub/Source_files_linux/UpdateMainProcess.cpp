@@ -70,7 +70,7 @@ double manageStepSize(bool updateCurrentStep){
 			if ((boost::multiprecision::uint128_t)((f.sh.desorption/boost::multiprecision::float128(kb* f.sh.temperature))*boost::multiprecision::float128(step_size) +boost::multiprecision::float128(0.5))>covering_phys){
 
 				boost::multiprecision::float128 test_size=boost::multiprecision::float128(covering_phys)/(f.sh.desorption/boost::multiprecision::float128(kb* f.sh.temperature));
-				step_size=0.9 *test_size.convert_to<double>();
+				//step_size=0.9 *test_size.convert_to<double>();
 
 				incrCurrentStep=false;
 			}
@@ -96,9 +96,9 @@ double manageStepSize(bool updateCurrentStep){
 		}
 	}
 
-	if(step_size > p->t_max){
+	/*if(step_size > p->t_max){
 		step_size=p->t_max;
-	}
+	}*/
 	else if(incrCurrentStep&&updateCurrentStep){//needed here?  => JEIN
 		simHistory->currentStep+=1;
 		std::cout<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
