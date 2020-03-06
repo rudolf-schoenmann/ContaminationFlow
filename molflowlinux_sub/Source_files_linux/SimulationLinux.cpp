@@ -74,7 +74,6 @@ std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, i
 
 	// Run Simulation for timestep milliseconds
 	for(int j=0; j<p->maxSimPerIt && !(j>0 && simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))&& !eos; j++){
-
 		for(i=0; i<(double)(simutime) && !eos;i+=realtimestep){
 
 			if(i>=(double(simutime)*0.99)){break;}
@@ -225,7 +224,7 @@ ProblemDef::ProblemDef(){
 	maxSimPerIt=std::numeric_limits<int>::max();
 	histSize=std::numeric_limits<int>::max();
 
-	coveringMinThresh=10000;
+	coveringMinThresh=100000;
 
 	vipFacets = std::vector< std::pair<int,double> >();
 
