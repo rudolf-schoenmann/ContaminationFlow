@@ -97,9 +97,19 @@ std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, i
 		if(j%(int)(30000/simutime)==0 || (simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))|| eos || j >= p->maxSimPerIt-1){
 			// Print information every 30s or if target reached
 			std::ostringstream tmpstream (std::ostringstream::app);
-			tmpstream <<"  "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Desorbed particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
+			tmpstream <<" Subprocess "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Desorbed particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
+			tmpstream << std::endl;
 
 			if(!checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5))){
+				tmpstream << "Facet" << std::setw(15)<<std::right<< " ";
+				int num;
+				for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+						for (SubprocessFacet& f : sHandle->structures[j].facets) {
+								num=getFacetIndex(&f);
+								tmpstream << std::setw(16)<<std::right << num;
+						}
+				}
+				tmpstream << std::endl;
 				simHistory->hitList.printCurrent(tmpstream, std::to_string(rank)+": hitlist");
 				simHistory->desorbedList.printCurrent(tmpstream, std::to_string(rank)+": desorbedlist");
 				simHistory->coveringList.printCurrent(tmpstream, std::to_string(rank)+": coveringlist");

@@ -192,7 +192,6 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 	if(coverage==0 || temperature==0){
 		return 0.0;
 	}
-	boost::multiprecision::float128 factor(1.0);
 
 	boost::multiprecision::float128 d = boost::multiprecision::float128(calcStep((long double)(coverage), 1, 0, 1, p->W_tr));
 	boost::multiprecision::float128 tau_1=static_cast<boost::multiprecision::float128>(1.0)/static_cast<boost::multiprecision::float128>(h/(kb*temperature));
@@ -202,7 +201,7 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 	desorption = tau_1 * boost::multiprecision::pow(coverage,static_cast<boost::multiprecision::float128>(d)) *boost::multiprecision::exp(-energy_de/static_cast<boost::multiprecision::float128>(kb*temperature));
 	//if (Desorption Energy/Temperature) >~ 1.02E-20J/K, desorption will be zero
 
-	return factor * desorption;
+	return desorption;
 }
 
 boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet) {//This returns ((d'coverage')/dt)de * (Nmono/dNSurf) * kb*T. So to speak desorption rate in units of [Pa m³/s]
