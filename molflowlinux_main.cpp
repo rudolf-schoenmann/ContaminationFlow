@@ -255,7 +255,7 @@ int main(int argc, char *argv[]) {
 			//----Simulation on subprocesses
 			if (rank != 0) {
 				/* do work in any remaining processes */
-				sHandle->posCovering=true;//assumption that negative covering has been resolved before: implemented though covering threshold in sub processes and manageTimeStep()
+				sHandle->posCovering=true;//assumption that negative covering has been resolved before: implemented through covering threshold in sub processes and manageTimeStep() and smallCovering workaoround
 
 				//Do the simulation
 				bool eos; std::vector<int> facetNum;
