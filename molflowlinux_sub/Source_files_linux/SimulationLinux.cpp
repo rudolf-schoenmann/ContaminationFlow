@@ -30,6 +30,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <libgen.h>
 #include <time.h>
 #include <sys/stat.h>
+#include <mpi.h>
 
 extern SimulationHistory* simHistory;
 extern Simulation *sHandle;
@@ -43,7 +44,7 @@ std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, i
 	double targetError=p->targetError*pow(simHistory->numSubProcess,0.5);
 
 	//Replaced constructor with update function
-	simHistory->updateHistory();
+	simHistory->updateHistory();//here the current covering value gets written in the tmpcounters.
 	if(rank==1){
 		std::cout <<std::endl <<"Currentstep: " << simHistory->currentStep <<". Step size: " <<simHistory->stepSize <<std::endl;
 		std::cout <<"Target Particles: " << targetParticles <<". Target Error: " <<targetError <<std::endl <<std::endl;
@@ -444,7 +445,7 @@ void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 }
 
 //-----------------------------------------------------------
-std::tuple<bool, llong > checkSmallCovering(Databuff *hitbuffer_sum){
+std::tuple<bool, llong > checkSmallCovering(int rank, Databuff *hitbuffer_sum){
 	BYTE *buffer_sum;
 	buffer_sum = hitbuffer_sum->buff;
 
@@ -477,10 +478,24 @@ std::tuple<bool, llong > checkSmallCovering(Databuff *hitbuffer_sum){
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 				for (SubprocessFacet& f : sHandle->structures[s].facets) {
 					FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
-					facetHitSum->hit.covering*=smallCoveringFactor;
+					facetHitSum->hit.covering *=smallCoveringFactor;
+					llong cv = f.tmpCounter[0].hit.covering;
+					if (getFacetIndex(&f) != 0){
+						std::cout <<"Facet " << getFacetIndex(&f) <<" rank " << rank << ": covering before multiplication: f.tmpCounter[0].hit.covering = " <<cv <<std::endl;
+						p->outFile<<"Facet " << getFacetIndex(&f) <<" rank " << rank << ": covering before multiplication: f.tmpCounter[0].hit.covering = " <<cv <<std::endl;
+					}
+					f.tmpCounter[0].hit.covering *=smallCoveringFactor;
 					sHandle->coveringThreshold[getFacetIndex(&f)] *= smallCoveringFactor;
+
+					cv = f.tmpCounter[0].hit.covering;
+					if (getFacetIndex(&f) != 0){
+						std::cout <<"Facet " << getFacetIndex(&f) <<" rank " << rank << ": covering after multiplication: f.tmpCounter[0].hit.covering = " <<cv <<std::endl;
+						p->outFile<<"Facet " << getFacetIndex(&f) <<" rank " << rank << ": covering after multiplication: f.tmpCounter[0].hit.covering = " <<cv <<std::endl;
+					}
 				}
 		}
+
+
 	}
 
 	return {std::make_tuple(smallCovering,smallCoveringFactor)};

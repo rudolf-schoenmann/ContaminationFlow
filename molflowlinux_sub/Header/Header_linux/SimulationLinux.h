@@ -411,7 +411,7 @@ std::tuple<bool, std::vector<int> >  simulateSub2(Databuff *hitbuffer, int rank,
 double convertunit(double simutime, std::string unit);
 
 void printConsole(std::string str,std::ofstream outFile);
-std::tuple<bool, llong > checkSmallCovering(Databuff *hitbuffer_sum);
+std::tuple<bool, llong > checkSmallCovering(int rank, Databuff *hitbuffer_sum);
 void UndoSmallCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor);
 //ProblemDef
 //SimulationHistory

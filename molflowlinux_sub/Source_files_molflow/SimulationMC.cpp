@@ -34,6 +34,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 extern Simulation *sHandle; //delcared in molflowSub.cpp
 extern SimulationHistory* simHistory;
+extern ProblemDef* p;
 
 // Compute area of all the desorption facet
 
@@ -655,7 +656,12 @@ bool StartFromSource() {
 			}
 	}*/
 	boost::multiprecision::float128 totaldes=0.0;
-	if(!sHandle->posCovering){return false;}
+	if(!sHandle->posCovering){
+								std::cout <<"StartFromSource function has ended simulation due to some facet having reached threshold. "  <<std::endl;
+								p->outFile <<"StartFromSource function has ended simulation due to some facet having reached threshold. " <<std::endl;
+
+								return false;
+								}
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				if(f.sh.temperature==0) {continue;}
@@ -1717,7 +1723,13 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 					f->tmpCounter[m].hit.covering -= 1;
 					//std::cout <<"Desorption from facet " <<getFacetIndex(f) <<std::endl;
 					}
-				else{sHandle->posCovering=false;}
+				else{
+					int num = getFacetIndex(f);
+					llong cv = f->tmpCounter[m].hit.covering;
+					llong cvth = sHandle->coveringThreshold[num];
+					std::cout << "Facet: "  << num << " covering = " << cv <<"; sHandle->coveringThreshold = " << cvth << std::endl;
+					p->outFile << "Facet: "  << num << " covering = " << cv <<"; sHandle->coveringThreshold = " << cvth << std::endl;
+					sHandle->posCovering=false;}
 
 				}
 			//Für den Fall,

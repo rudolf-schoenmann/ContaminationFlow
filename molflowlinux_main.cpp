@@ -259,7 +259,7 @@ int main(int argc, char *argv[]) {
 
 				//Do the simulation
 				bool eos; std::vector<int> facetNum;
-				std::tie(smallCovering,smallCoveringFactor) = checkSmallCovering(&hitbuffer);
+				std::tie(smallCovering,smallCoveringFactor) = checkSmallCovering(rank, &hitbuffer);
 				std::tie(eos, facetNum) = simulateSub2(&hitbuffer, rank, p->simulationTimeMS);
 				MPI_Barrier(MPI_COMM_WORLD);
 				if (eos) {
@@ -278,7 +278,7 @@ int main(int argc, char *argv[]) {
 			}
 			else{
 				t0 = GetTick();
-				std::tie(smallCovering,smallCoveringFactor) = checkSmallCovering(&hitbuffer_sum);
+				std::tie(smallCovering,smallCoveringFactor) = checkSmallCovering(rank, &hitbuffer_sum);
 				MPI_Barrier(MPI_COMM_WORLD);
 				t1 = GetTick();
 				computedTime+=t1-t0;
@@ -343,8 +343,8 @@ int main(int argc, char *argv[]) {
 						simHistory->errorList.pointintime_list.erase(simHistory->errorList.pointintime_list.begin()+1);
 				}
 
-				simHistory->coveringList.print(std::cout, "Accumulative covering after iteration "+std::to_string(it), p->histSize);
-				simHistory->coveringList.print(p->outFile,"Accumulative covering after iteration "+std::to_string(it),p->histSize);
+				simHistory->coveringList.print(std::cout, "Accumulative covering after iteration "+std::to_string(it+1), p->histSize);
+				simHistory->coveringList.print(p->outFile,"Accumulative covering after iteration "+std::to_string(it+1),p->histSize);
 
 				//simHistory->hitList.print(std::cout,"Accumulative number hits after iteration "+std::to_string(it));
 				//simHistory->hitList.print(p->outFile,"Accumulative number hits after iteration "+std::to_string(it));

@@ -47,7 +47,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 // Global handles
 extern Simulation* sHandle; //Declared at molflowSub.cpp
-
+//extern ProblemDef* p;
 // Timing stuff
 
 #ifdef WIN
