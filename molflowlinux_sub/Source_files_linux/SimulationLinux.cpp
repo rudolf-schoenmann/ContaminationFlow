@@ -44,7 +44,7 @@ std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, i
 	double targetError=p->targetError*pow(simHistory->numSubProcess,0.5);
 
 	//Replaced constructor with update function
-	simHistory->updateHistory();//here the current covering value gets written in the tmpcounters.
+	//simHistory->updateHistory();//here the current covering value gets written in the tmpcounters.=> Will be done in in SmallCoveringCheck
 	if(rank==1){
 		std::cout <<std::endl <<"Currentstep: " << simHistory->currentStep <<". Step size: " <<simHistory->stepSize <<std::endl;
 		std::cout <<"Target Particles: " << targetParticles <<". Target Error: " <<targetError <<std::endl <<std::endl;
@@ -453,6 +453,9 @@ std::tuple<bool, llong > checkSmallCovering(int rank, Databuff *hitbuffer_sum){
 	boost::multiprecision::uint128_t covering;
 
 	boost::multiprecision::uint128_t mincov = boost::multiprecision::uint128_t(p->coveringMinThresh);
+	if(rank!=0){
+				simHistory->updateHistory();//here the current covering value gets written in the tmpcounters.
+	}
 
 	bool smallCovering=false;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
@@ -481,16 +484,20 @@ std::tuple<bool, llong > checkSmallCovering(int rank, Databuff *hitbuffer_sum){
 					facetHitSum->hit.covering *=smallCoveringFactor;
 					llong cv = f.tmpCounter[0].hit.covering;
 					if (getFacetIndex(&f) != 0){
+						if(rank!=0){
 						std::cout <<"Facet " << getFacetIndex(&f) <<" rank " << rank << ": covering before multiplication: f.tmpCounter[0].hit.covering = " <<cv <<std::endl;
 						p->outFile<<"Facet " << getFacetIndex(&f) <<" rank " << rank << ": covering before multiplication: f.tmpCounter[0].hit.covering = " <<cv <<std::endl;
+						}
 					}
 					f.tmpCounter[0].hit.covering *=smallCoveringFactor;
 					sHandle->coveringThreshold[getFacetIndex(&f)] *= smallCoveringFactor;
 
 					cv = f.tmpCounter[0].hit.covering;
 					if (getFacetIndex(&f) != 0){
+						if(rank!=0){
 						std::cout <<"Facet " << getFacetIndex(&f) <<" rank " << rank << ": covering after multiplication: f.tmpCounter[0].hit.covering = " <<cv <<std::endl;
 						p->outFile<<"Facet " << getFacetIndex(&f) <<" rank " << rank << ": covering after multiplication: f.tmpCounter[0].hit.covering = " <<cv <<std::endl;
+						}
 					}
 				}
 		}
