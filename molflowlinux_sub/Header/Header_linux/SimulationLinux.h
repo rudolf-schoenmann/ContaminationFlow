@@ -441,7 +441,7 @@ void initbufftozero(Databuff *databuffer);
 
 double manageStepSize(bool updateCurrentStep=false);
 
-void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHistory *history,int rank);
+void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHistory *history,int rank, llong smallCoveringFactor);
 
 void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor);
 void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer);

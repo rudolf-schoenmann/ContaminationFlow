@@ -63,8 +63,10 @@ double manageStepSize(bool updateCurrentStep){
 			//boost::multiprecision::uint128_t covering_phys_before = simHistory->coveringList.pointintime_list[sizeList-2].second[getFacetIndex(&f)];
 
 			if(updateCurrentStep){
+				/* Just Output messages...
 				std::cout <<"Facet "<<getFacetIndex(&f) <<": " <<(f.sh.desorption/boost::multiprecision::float128(kb* f.sh.temperature))*boost::multiprecision::float128(step_size) +boost::multiprecision::float128(0.5) <<" >? " <<boost::multiprecision::float128(covering_phys) <<std::endl;
 				p->outFile<<"Facet "<<getFacetIndex(&f) <<": " <<(f.sh.desorption/boost::multiprecision::float128(kb* f.sh.temperature))*boost::multiprecision::float128(step_size) +boost::multiprecision::float128(0.5) <<" >? " <<boost::multiprecision::float128(covering_phys) <<std::endl;
+				*/
 			}
 
 			if ((boost::multiprecision::uint128_t)((f.sh.desorption/boost::multiprecision::float128(kb* f.sh.temperature))*boost::multiprecision::float128(step_size) +boost::multiprecision::float128(0.5))>covering_phys){
@@ -166,10 +168,10 @@ void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){//Update
 	}
 
 	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
-	std::cout << "Covering difference will be multiplied by Krealvirt*(time step)/smallCoveringFactor: " << Krealvirt*boost::multiprecision::float128(time_step/smallCoveringFactor) << std::endl;
+	std::cout << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*boost::multiprecision::float128(time_step) << std::endl;
 
 	p->outFile <<"Krealvirt = " << Krealvirt << std::endl;
-	p->outFile << "Covering difference will be multiplied by Krealvirt*(time step)/smallCoveringFactor: " << Krealvirt*boost::multiprecision::float128(time_step/smallCoveringFactor) << std::endl;
+	p->outFile << "Covering difference will be multiplied by Krealvirt*(time step): " << Krealvirt*boost::multiprecision::float128(time_step) << std::endl;
 	//std::cout <<"testing timestep: " <<time_step <<'\t' <<estimateAverageFlightTime() <<std::endl;
 
 	//double rounding=1/simHistory->numFacet;
@@ -179,7 +181,11 @@ void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){//Update
 
 				covering_phys = simHistory->coveringList.getLast(&f);
 				covering_sum = boost::multiprecision::uint128_t(getCovering(&f, hitbuffer_sum));
-				covering_sum_netto = boost::multiprecision::float128( static_cast < boost::multiprecision::float128 >(covering_sum)/smallCoveringFactor);
+				std::cout << "covering_sum_brutto " << covering_sum << std::endl;
+				p->outFile << "covering_sum_brutto " << covering_sum << std::endl;
+				covering_sum_netto = boost::multiprecision::float128( (static_cast < boost::multiprecision::float128 >(covering_sum))/smallCoveringFactor);
+				std::cout << "covering_sum_netto " << covering_sum_netto << std::endl;
+				p->outFile << "covering_sum_netto " << covering_sum_netto << std::endl;
 				covering_sum = boost::multiprecision::uint128_t (static_cast <boost::multiprecision::uint128_t>(covering_sum_netto));
 
 				std::cout<<std::endl << "Facet " << getFacetIndex(&f)<< std::endl;
@@ -332,7 +338,7 @@ void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
 // Update Buffer of main process using buffer of sub process
 //Simhistory version
 
-void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHistory *history,int rank) {
+void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHistory *history,int rank, llong smallCoveringFactor) {
 	BYTE *buffer, *subbuff;
 	GlobalHitBuffer *gHits, *subHits;
 	TEXTURE_MIN_MAX texture_limits_old[3];
@@ -464,7 +470,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) { // Add hits
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 					FacetHitBuffer *facetHitSub = (FacetHitBuffer *)(subbuff + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
-					llong covering_phys= history->coveringList.getLast(&f).convert_to<llong>();
+					llong covering_phys= smallCoveringFactor * history->coveringList.getLast(&f).convert_to<llong>();
 					llong covering_sum = facetHitSub->hit.covering;
 /*
 					std::cout <<sizeof(GlobalHitBuffer) <<std::endl;

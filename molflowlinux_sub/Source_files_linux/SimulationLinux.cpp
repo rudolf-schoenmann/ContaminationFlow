@@ -135,6 +135,12 @@ std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, i
 				sHandle->coveringThreshold[num]/=smallCoveringFactor;
 			}*/
 
+			/* Just output stuff
+			llong cv = f.tmpCounter[0].hit.covering;
+			std::cout << "At the end of the calculation rank " << rank << " f.tmpCounter[0].hit.covering = " << cv << std::endl;
+			p->outFile << "At the end of the calculation rank " << rank << " f.tmpCounter[0].hit.covering = " << cv << std::endl;
+			*/
+
 			if(f.tmpCounter[0].hit.covering<=sHandle->coveringThreshold[num])
 				{facetNum.push_back(num);}
 		}
@@ -475,30 +481,16 @@ std::tuple<bool, llong > checkSmallCovering(int rank, Databuff *hitbuffer_sum){
 	if(smallCovering /*&& llong(mincov) < p->coveringMinThresh This is automatically fulfilled... */){
 		smallCoveringFactor=llong(1.0+1.1*double(p->coveringMinThresh)/(double(mincov)));
 
-		std::cout <<"Small covering: multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
-		p->outFile<<"Small covering: multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
+		std::cout <<"Small covering found for rank " << rank << ": multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
+		p->outFile<<"Small covering found for rank " << rank << ": multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
 
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 				for (SubprocessFacet& f : sHandle->structures[s].facets) {
 					FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
 					facetHitSum->hit.covering *=smallCoveringFactor;
-					llong cv = f.tmpCounter[0].hit.covering;
-					if (getFacetIndex(&f) != 0){
-						if(rank!=0){
-						std::cout <<"Facet " << getFacetIndex(&f) <<" rank " << rank << ": covering before multiplication: f.tmpCounter[0].hit.covering = " <<cv <<std::endl;
-						p->outFile<<"Facet " << getFacetIndex(&f) <<" rank " << rank << ": covering before multiplication: f.tmpCounter[0].hit.covering = " <<cv <<std::endl;
-						}
-					}
 					f.tmpCounter[0].hit.covering *=smallCoveringFactor;
+					llong cv = f.tmpCounter[0].hit.covering;
 					sHandle->coveringThreshold[getFacetIndex(&f)] *= smallCoveringFactor;
-
-					cv = f.tmpCounter[0].hit.covering;
-					if (getFacetIndex(&f) != 0){
-						if(rank!=0){
-						std::cout <<"Facet " << getFacetIndex(&f) <<" rank " << rank << ": covering after multiplication: f.tmpCounter[0].hit.covering = " <<cv <<std::endl;
-						p->outFile<<"Facet " << getFacetIndex(&f) <<" rank " << rank << ": covering after multiplication: f.tmpCounter[0].hit.covering = " <<cv <<std::endl;
-						}
-					}
 				}
 		}
 
