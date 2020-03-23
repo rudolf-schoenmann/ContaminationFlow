@@ -321,7 +321,7 @@ int main(int argc, char *argv[]) {
 			}
 
 
-			//Start
+			/* Just Output stuff
 			MPI_Barrier(MPI_COMM_WORLD);
 			int num;
 			if(rank == 0){
@@ -337,7 +337,7 @@ int main(int argc, char *argv[]) {
 										}
 									}
 				}
-			/*else{
+			else{
 				for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 					for (SubprocessFacet& f : sHandle->structures[j].facets) {
 						num=getFacetIndex(&f);
@@ -346,11 +346,11 @@ int main(int argc, char *argv[]) {
 						p->outFile << "After Summation rank " << rank << " has a covering of = " << cv << " for Facet " << num <<"." << std::endl;
 						}
 					}
-			}*/
-
+			}
+			*/
 			MPI_Barrier(MPI_COMM_WORLD);
 
-			// Start of region (probably), where error occurs ______________________________________________________________________________________________________________
+
 			//----Update covering
 			if (rank == 0) {
 
@@ -361,7 +361,7 @@ int main(int argc, char *argv[]) {
 				}*/
 
 				UpdateErrorMain(&hitbuffer_sum); // !! If order changes, adapt "time" entry in errorList !!
-				// End of region, where error occurs ______________________________________________________________________________________________________________
+
 				UpdateCovering(&hitbuffer_sum, smallCoveringFactor);
 
 				UpdateCoveringphys(&hitbuffer_sum, &hitbuffer);

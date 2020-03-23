@@ -181,11 +181,11 @@ void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){//Update
 
 				covering_phys = simHistory->coveringList.getLast(&f);
 				covering_sum = boost::multiprecision::uint128_t(getCovering(&f, hitbuffer_sum));
-				std::cout << "covering_sum_brutto " << covering_sum << std::endl;
-				p->outFile << "covering_sum_brutto " << covering_sum << std::endl;
+				//std::cout << "covering_sum_brutto " << covering_sum << std::endl;
+				//p->outFile << "covering_sum_brutto " << covering_sum << std::endl;
 				covering_sum_netto = boost::multiprecision::float128( (static_cast < boost::multiprecision::float128 >(covering_sum))/smallCoveringFactor);
-				std::cout << "covering_sum_netto " << covering_sum_netto << std::endl;
-				p->outFile << "covering_sum_netto " << covering_sum_netto << std::endl;
+				//std::cout << "covering_sum_netto " << covering_sum_netto << std::endl;
+				//p->outFile << "covering_sum_netto " << covering_sum_netto << std::endl;
 				covering_sum = boost::multiprecision::uint128_t (static_cast <boost::multiprecision::uint128_t>(covering_sum_netto));
 
 				std::cout<<std::endl << "Facet " << getFacetIndex(&f)<< std::endl;
