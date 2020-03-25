@@ -113,7 +113,7 @@ std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, i
 				simHistory->hitList.printCurrent(tmpstream, std::to_string(rank)+": hitlist");
 				simHistory->desorbedList.printCurrent(tmpstream, std::to_string(rank)+": desorbedlist");
 				simHistory->coveringList.printCurrent(tmpstream, std::to_string(rank)+": coveringlist");
-				simHistory->errorList.printCurrent(tmpstream, std::to_string(rank)+": errorlist");
+				simHistory->errorList_event.printCurrent(tmpstream, std::to_string(rank)+": errorlist");
 				tmpstream <<std::endl;
 			}
 
@@ -489,7 +489,6 @@ std::tuple<bool, llong > checkSmallCovering(int rank, Databuff *hitbuffer_sum){
 					FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
 					facetHitSum->hit.covering *=smallCoveringFactor;
 					f.tmpCounter[0].hit.covering *=smallCoveringFactor;
-					llong cv = f.tmpCounter[0].hit.covering;
 					sHandle->coveringThreshold[getFacetIndex(&f)] *= smallCoveringFactor;
 				}
 		}
@@ -548,7 +547,7 @@ SimulationHistory::SimulationHistory(int world_size){
 	coveringList.initCurrent(numFacet);
 	hitList.initCurrent(numFacet);
 	desorbedList.initCurrent(numFacet);
-	errorList.initCurrent(numFacet);
+	errorList_event.initCurrent(numFacet);
 
 
 }
@@ -594,8 +593,8 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 	coveringList.appendCurrent(0);
 	hitList.appendCurrent(0);
 	desorbedList.appendCurrent(0);
-	errorList.initCurrent(numFacet);
-	errorList.appendCurrent(0.0);
+	errorList_event.initCurrent(numFacet);
+	errorList_event.appendCurrent(0.0);
 
 	currentStep=0;
 	stepSize=0.0;
@@ -659,8 +658,8 @@ std::tuple<bool, llong > SimulationHistory::updateHistory(Databuff *hitbuffer){
 	desorbedList.reset();
 	desorbedList.appendCurrent(0);
 
-	errorList.reset();
-	errorList.initCurrent(numFacet);
+	errorList_event.reset();
+	errorList_event.initCurrent(numFacet);
 
 	stepSize=manageStepSize(false);
 
@@ -712,8 +711,8 @@ void SimulationHistory::updateHistory(){
 	desorbedList.initCurrent(numFacet);
 	desorbedList.appendCurrent(0);
 
-	errorList.reset();
-	errorList.initCurrent(numFacet);
+	errorList_event.reset();
+	errorList_event.initCurrent(numFacet);
 
 	stepSize=manageStepSize(false);
 
@@ -756,13 +755,13 @@ void SimulationHistory::print(bool write){
 	coveringList.print(std::cout,covPerIt, "Accumulative covering", p->histSize);
 	hitList.print(std::cout, "Accumulative number hits", p->histSize);
 	desorbedList.print(std::cout, "Accumulative number desorbed", p->histSize);
-	errorList.print(std::cout,errorPerIt, "Error per iteration", p->histSize);
+	errorList_event.print(std::cout,errorPerIt, "Error per iteration", p->histSize);
 
 	if(write){
 		coveringList.print(p->outFile,covPerIt, "Accumulative covering", p->histSize);
 		hitList.print(p->outFile, "Accumulative number hits", p->histSize);
 		desorbedList.print(p->outFile, "Accumulative number desorbed", p->histSize);
-		errorList.print(p->outFile,errorPerIt, "Error per iteration", p->histSize);
+		errorList_event.print(p->outFile,errorPerIt, "Error per iteration", p->histSize);
 	}
 }
 

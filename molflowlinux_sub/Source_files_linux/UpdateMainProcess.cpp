@@ -139,22 +139,22 @@ void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){//Update
 
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				if(simHistory->errorList.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0 || f.sh.isVipFacet)//ignore facet if no hits (=inf error)
+				if(simHistory->errorList_event.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0 || f.sh.isVipFacet)//ignore facet if no hits (=inf error)
 					continue;
 
-				error+=simHistory->errorList.getCurrent(&f)*f.sh.area;
+				error+=simHistory->errorList_event.getCurrent(&f)*f.sh.area;
 				area+=f.sh.area;
 			}
 		}
 		// Print total error and error per facet of this iteration
 		std::ostringstream tmpstream (std::ostringstream::app);
 		tmpstream <<"Total Error "<<error/area <<std::endl;
-		simHistory->errorList.printCurrent(tmpstream);
+		simHistory->errorList_event.printCurrent(tmpstream);
 
 		if(!p->vipFacets.empty()){
 			tmpstream <<"Vip Facets:"<<std::endl;
 			for(unsigned int i = 0; i < p->vipFacets.size(); i++){
-				tmpstream <<"\t"<<p->vipFacets[i].first <<"\t" << simHistory->errorList.getCurrent(p->vipFacets[i].first)<<std::endl;
+				tmpstream <<"\t"<<p->vipFacets[i].first <<"\t" << simHistory->errorList_event.getCurrent(p->vipFacets[i].first)<<std::endl;
 			}
 			tmpstream <<std::endl;
 		}
@@ -239,7 +239,7 @@ void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){//Update
 	simHistory->coveringList.appendCurrent(simHistory->lastTime+time_step);
 	simHistory->lastTime+=time_step;
 	simHistory->hitList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-	simHistory->errorList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+	simHistory->errorList_event.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 	simHistory->desorbedList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 
 	simHistory->stepSize=time_step;
@@ -264,17 +264,17 @@ void UpdateErrorMain(Databuff *hitbuffer_sum){
 				num_hit_f=0;
 			}
 
-			if(f.sh.opacity==0){simHistory->errorList.setCurrent(&f, 0.0);}
+			if(f.sh.opacity==0){simHistory->errorList_event.setCurrent(&f, 0.0);}
 			else{
 				double error=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
-				simHistory->errorList.setCurrent(&f, error);
+				simHistory->errorList_event.setCurrent(&f, error);
 			}
 			simHistory->hitList.setLast(&f,getHits(&f,hitbuffer_sum));
 			simHistory->desorbedList.setLast(&f,getnbDesorbed(&f,hitbuffer_sum));
 		}
 	}
 
-	simHistory->errorList.appendCurrent(simHistory->lastTime);
+	simHistory->errorList_event.appendCurrent(simHistory->lastTime);
 	//simHistory->hitList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
 	//simHistory->desorbedList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
 
@@ -287,7 +287,7 @@ std::tuple<std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  C
 	std::vector<boost::multiprecision::uint128_t> covPerIt;
 	covPerIt =std::vector<boost::multiprecision::uint128_t> ();
 
-	for(unsigned int it=0; it<simHistory->errorList.pointintime_list.size();it++){
+	for(unsigned int it=0; it<simHistory->errorList_event.pointintime_list.size();it++){
 		// Total error/covering for each iteration
 		double error=0.0;
 		double area=0.0;
@@ -298,7 +298,7 @@ std::tuple<std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  C
 				int idx=getFacetIndex(&f);
 				covering+=simHistory->coveringList.pointintime_list[it].second[idx];
 
-				double err=simHistory->errorList.pointintime_list[it].second[idx];
+				double err=simHistory->errorList_event.pointintime_list[it].second[idx];
 				if(err== std::numeric_limits<double>::infinity()||f.sh.opacity==0)//ignore facet if no hits (=inf error)
 					continue;
 

@@ -369,7 +369,7 @@ int main(int argc, char *argv[]) {
 				//std::cout <<p->histSize<<"\t"<<simHistory->coveringList.pointintime_list.size()<<"\t"<<simHistory->coveringList.currIt<<std::endl;
 				if(p->histSize != std::numeric_limits<int>::infinity() && simHistory->coveringList.pointintime_list.size() > uint(p->histSize+1)){
 						simHistory->coveringList.pointintime_list.erase(simHistory->coveringList.pointintime_list.begin()+1);
-						simHistory->errorList.pointintime_list.erase(simHistory->errorList.pointintime_list.begin()+1);
+						simHistory->errorList_event.pointintime_list.erase(simHistory->errorList_event.pointintime_list.begin()+1);
 				}
 
 				simHistory->coveringList.print(std::cout, "Accumulative covering after iteration "+std::to_string(it+1), p->histSize);

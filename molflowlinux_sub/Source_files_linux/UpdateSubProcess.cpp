@@ -83,11 +83,11 @@ void UpdateErrorSub(){
 				num_hit_f=0;
 			}
 
-			if(f.sh.opacity==0){simHistory->errorList.setCurrent(&f, 0.0);}
+			if(f.sh.opacity==0){simHistory->errorList_event.setCurrent(&f, 0.0);}
 			else{
 				double error=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
 
-				simHistory->errorList.setCurrent(&f, error);
+				simHistory->errorList_event.setCurrent(&f, error);
 			}
 			simHistory->hitList.setCurrent(&f,f.tmpCounter[0].hit.nbHitEquiv);
 			simHistory->desorbedList.setCurrent(&f,f.tmpCounter[0].hit.nbDesorbed);
@@ -104,10 +104,10 @@ double UpdateError(){
 
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			if(simHistory->errorList.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0 || f.sh.isVipFacet)//ignore facet if no hits (=inf error)
+			if(simHistory->errorList_event.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0 || f.sh.isVipFacet)//ignore facet if no hits (=inf error)
 				continue;
 
-			error+=simHistory->errorList.getCurrent(&f)*f.sh.area;
+			error+=simHistory->errorList_event.getCurrent(&f)*f.sh.area;
 			area+=f.sh.area;
 		}
 	}
@@ -119,10 +119,10 @@ bool checkErrorSub(double targetError, double currentError, double factor){
 	bool vipCheck = currentError<=targetError;
 	if(!p->vipFacets.empty()){
 		for(unsigned int i = 0; i < p->vipFacets.size(); i++){
-			if(simHistory->errorList.getCurrent(p->vipFacets[i].first)== std::numeric_limits<double>::infinity())
+			if(simHistory->errorList_event.getCurrent(p->vipFacets[i].first)== std::numeric_limits<double>::infinity())
 				continue;
 
-			vipCheck = vipCheck && (simHistory->errorList.getCurrent(p->vipFacets[i].first)== std::numeric_limits<double>::infinity() || simHistory->errorList.getCurrent(p->vipFacets[i].first) <= p->vipFacets[i].second * factor);
+			vipCheck = vipCheck && (simHistory->errorList_event.getCurrent(p->vipFacets[i].first)== std::numeric_limits<double>::infinity() || simHistory->errorList_event.getCurrent(p->vipFacets[i].first) <= p->vipFacets[i].second * factor);
 		}
 	}
 

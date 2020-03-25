@@ -367,7 +367,7 @@ public:
 	HistoryList<boost::multiprecision::uint128_t> coveringList;
 	HistoryList<double> hitList;
 	HistoryList<llong> desorbedList;
-	HistoryList<double> errorList;
+	HistoryList<double> errorList_event;
 
 	std::vector<unsigned int> normalFacets;
 
