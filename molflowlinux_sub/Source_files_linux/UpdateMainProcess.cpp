@@ -280,7 +280,7 @@ void UpdateErrorMain(Databuff *hitbuffer_sum){
 
 }
 
-std::tuple<std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  CalcPerIteration(){
+std::tuple<std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  CalcPerIteration(){//calculates statistical uncertainties of error_event and error_covering
 	std::vector<double> errorPerIt;
 	errorPerIt =std::vector<double> ();
 

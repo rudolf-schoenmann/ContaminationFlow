@@ -408,7 +408,7 @@ int main(int argc, char *argv[]) {
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
 	if(rank==0){
-		//----Write simulation results to new buffer file. This has to be read in  by Windows-Molflow.
+		//----Write simulation results to new buffer file. This has to be read in by Windows-Molflow.
 		simHistory->print(true);
 
 		if(p->saveResults){
