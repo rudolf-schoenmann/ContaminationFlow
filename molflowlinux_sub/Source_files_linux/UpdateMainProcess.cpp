@@ -101,7 +101,8 @@ double manageStepSize(bool updateCurrentStep){
 	/*if(step_size > p->t_max){
 		step_size=p->t_max;
 	}*/
-	if(incrCurrentStep&&updateCurrentStep){//needed here?  => JEIN
+	if(incrCurrentStep&&updateCurrentStep){
+	//if(true){//just for testing, what would happen, if we deactivate the time step limitation
 		simHistory->currentStep+=1;
 		std::cout<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
 		p->outFile<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;

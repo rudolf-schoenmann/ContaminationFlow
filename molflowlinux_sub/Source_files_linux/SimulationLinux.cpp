@@ -231,7 +231,7 @@ ProblemDef::ProblemDef(){
 	maxSimPerIt=std::numeric_limits<int>::max();
 	histSize=std::numeric_limits<int>::max();
 
-	coveringMinThresh=100000;
+	coveringMinThresh=1000000;
 
 	vipFacets = std::vector< std::pair<int,double> >();
 
