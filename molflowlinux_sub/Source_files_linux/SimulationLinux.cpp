@@ -755,22 +755,23 @@ void SimulationHistory::appendList(double time){
 }
 
 void SimulationHistory::print(bool write){
-	std::vector<double> errorPerIt;//This is the error_event (Desorb + Hit)
+	std::vector<double> errorPerIt_event;//This is the error_event (Desorb + Hit)
+	std::vector<double> errorPerIt_covering;//This is the error_event (Desorb + Adsorb)
 	std::vector<boost::multiprecision::uint128_t> covPerIt;
-	std::tie(errorPerIt,covPerIt) = CalcPerIteration();
+	std::tie(errorPerIt_event, errorPerIt_covering,covPerIt) = CalcPerIteration();
 
 	coveringList.print(std::cout,covPerIt, "Accumulative covering", p->histSize);
 	hitList.print(std::cout, "Accumulative number hits", p->histSize);
 	desorbedList.print(std::cout, "Accumulative number desorbed", p->histSize);
-	errorList_event.print(std::cout,errorPerIt, "Error (Desorb + Hit) per iteration", p->histSize);
-	errorList_covering.print(std::cout,errorPerIt, "Error (Desorb + Adsorb) per iteration", p->histSize);//ToDo Change 'errorPerIt' to a error_covering (Adsorb + Desorb) variable, which is to introduce
+	errorList_event.print(std::cout,errorPerIt_event, "Error (Desorb + Hit) per iteration", p->histSize);
+	errorList_covering.print(std::cout,errorPerIt_event, "Error (Desorb + Adsorb) per iteration", p->histSize);//ToDo Change 'errorPerIt' to a error_covering (Adsorb + Desorb) variable, which is to introduce
 
 	if(write){
 		coveringList.print(p->outFile,covPerIt, "Accumulative covering", p->histSize);
 		hitList.print(p->outFile, "Accumulative number hits", p->histSize);
 		desorbedList.print(p->outFile, "Accumulative number desorbed", p->histSize);
-		errorList_event.print(p->outFile,errorPerIt, "Error (Desorb + Hit) per iteration", p->histSize);
-		errorList_covering.print(p->outFile,errorPerIt, "Error (Desorb + Adsorb) per iteration", p->histSize);//ToDo Change 'errorPerIt' to a error_covering (Adsorb + Desorb) variable, which is to introduce
+		errorList_event.print(p->outFile,errorPerIt_event, "Error (Desorb + Hit) per iteration", p->histSize);
+		errorList_covering.print(p->outFile,errorPerIt_event, "Error (Desorb + Adsorb) per iteration", p->histSize);//ToDo Change 'errorPerIt' to a error_covering (Adsorb + Desorb) variable, which is to introduce
 	}
 }
 

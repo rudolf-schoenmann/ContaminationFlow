@@ -280,9 +280,12 @@ void UpdateErrorMain(Databuff *hitbuffer_sum){
 
 }
 
-std::tuple<std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  CalcPerIteration(){//calculates statistical uncertainties of error_event and error_covering
-	std::vector<double> errorPerIt;
-	errorPerIt =std::vector<double> ();
+std::tuple<std::vector<double>,std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  CalcPerIteration(){//calculates statistical uncertainties of error_event and error_covering at the end of
+	// the simulation for writigin these in the output file. While simulating only the error values of the subprocesses are used to decide, if the targeted error level has been reached.
+	std::vector<double> errorPerIt_event;
+	errorPerIt_event =std::vector<double> ();
+	std::vector<double> errorPerIt_covering;
+	errorPerIt_covering =std::vector<double> ();
 
 	std::vector<boost::multiprecision::uint128_t> covPerIt;
 	covPerIt =std::vector<boost::multiprecision::uint128_t> ();
@@ -306,10 +309,33 @@ std::tuple<std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  C
 				area+=f.sh.area;
 			}
 		}
-		errorPerIt.push_back(error/area);
+		errorPerIt_event.push_back(error/area);
 		covPerIt.push_back(covering);
 	}
-	return std::make_tuple(errorPerIt,covPerIt);
+
+	for(unsigned int it=0; it<simHistory->errorList_covering.pointintime_list.size();it++){
+			// Total error/covering for each iteration
+			double error=0.0;
+			double area=0.0;
+			boost::multiprecision::uint128_t covering=0;
+
+			for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+				for (SubprocessFacet& f : sHandle->structures[s].facets) {
+					int idx=getFacetIndex(&f);
+					covering+=simHistory->coveringList.pointintime_list[it].second[idx];
+
+					double err=simHistory->errorList_covering.pointintime_list[it].second[idx];
+					if(err== std::numeric_limits<double>::infinity()||f.sh.opacity==0)//ignore facet if no hits (=inf error)
+						continue;
+
+					error+=err*f.sh.area;
+					area+=f.sh.area;
+				}
+			}
+			errorPerIt_covering.push_back(error/area);
+		}
+
+	return std::make_tuple(errorPerIt_event,errorPerIt_covering,covPerIt);
 }
 
 // Copy covering to buffer
