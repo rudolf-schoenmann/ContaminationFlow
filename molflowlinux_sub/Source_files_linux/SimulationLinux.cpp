@@ -113,7 +113,7 @@ std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, i
 				simHistory->hitList.printCurrent(tmpstream, std::to_string(rank)+": hitlist");
 				simHistory->desorbedList.printCurrent(tmpstream, std::to_string(rank)+": desorbedlist");
 				simHistory->coveringList.printCurrent(tmpstream, std::to_string(rank)+": coveringlist");
-				simHistory->errorList_event.printCurrent(tmpstream, std::to_string(rank)+": errorlist");
+				simHistory->errorList_event.printCurrent(tmpstream, std::to_string(rank)+": errorlist_event");
 				tmpstream <<std::endl;
 			}
 
@@ -548,6 +548,7 @@ SimulationHistory::SimulationHistory(int world_size){
 	hitList.initCurrent(numFacet);
 	desorbedList.initCurrent(numFacet);
 	errorList_event.initCurrent(numFacet);
+	errorList_covering.initCurrent(numFacet);
 
 
 }
@@ -595,6 +596,8 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 	desorbedList.appendCurrent(0);
 	errorList_event.initCurrent(numFacet);
 	errorList_event.appendCurrent(0.0);
+	errorList_covering.initCurrent(numFacet);
+	errorList_covering.appendCurrent(0.0);
 
 	currentStep=0;
 	stepSize=0.0;
@@ -660,6 +663,8 @@ std::tuple<bool, llong > SimulationHistory::updateHistory(Databuff *hitbuffer){
 
 	errorList_event.reset();
 	errorList_event.initCurrent(numFacet);
+	errorList_covering.reset();
+	errorList_covering.initCurrent(numFacet);
 
 	stepSize=manageStepSize(false);
 
@@ -713,6 +718,8 @@ void SimulationHistory::updateHistory(){
 
 	errorList_event.reset();
 	errorList_event.initCurrent(numFacet);
+	errorList_covering.reset();
+	errorList_covering.initCurrent(numFacet);
 
 	stepSize=manageStepSize(false);
 
@@ -748,20 +755,22 @@ void SimulationHistory::appendList(double time){
 }
 
 void SimulationHistory::print(bool write){
-	std::vector<double> errorPerIt;
+	std::vector<double> errorPerIt;//This is the error_event (Desorb + Hit)
 	std::vector<boost::multiprecision::uint128_t> covPerIt;
 	std::tie(errorPerIt,covPerIt) = CalcPerIteration();
 
 	coveringList.print(std::cout,covPerIt, "Accumulative covering", p->histSize);
 	hitList.print(std::cout, "Accumulative number hits", p->histSize);
 	desorbedList.print(std::cout, "Accumulative number desorbed", p->histSize);
-	errorList_event.print(std::cout,errorPerIt, "Error per iteration", p->histSize);
+	errorList_event.print(std::cout,errorPerIt, "Error (Desorb + Hit) per iteration", p->histSize);
+	errorList_covering.print(std::cout,errorPerIt, "Error (Desorb + Adsorb) per iteration", p->histSize);//ToDo Change 'errorPerIt' to a error_covering (Adsorb + Desorb) variable, which is to introduce
 
 	if(write){
 		coveringList.print(p->outFile,covPerIt, "Accumulative covering", p->histSize);
 		hitList.print(p->outFile, "Accumulative number hits", p->histSize);
 		desorbedList.print(p->outFile, "Accumulative number desorbed", p->histSize);
-		errorList_event.print(p->outFile,errorPerIt, "Error per iteration", p->histSize);
+		errorList_event.print(p->outFile,errorPerIt, "Error (Desorb + Hit) per iteration", p->histSize);
+		errorList_covering.print(p->outFile,errorPerIt, "Error (Desorb + Adsorb) per iteration", p->histSize);//ToDo Change 'errorPerIt' to a error_covering (Adsorb + Desorb) variable, which is to introduce
 	}
 }
 

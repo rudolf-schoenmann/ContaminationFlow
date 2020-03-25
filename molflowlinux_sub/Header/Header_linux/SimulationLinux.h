@@ -368,6 +368,7 @@ public:
 	HistoryList<double> hitList;
 	HistoryList<llong> desorbedList;
 	HistoryList<double> errorList_event;
+	HistoryList<double> errorList_covering;
 
 	std::vector<unsigned int> normalFacets;
 
