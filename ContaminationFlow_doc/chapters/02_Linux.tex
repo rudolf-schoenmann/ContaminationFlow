@@ -7,7 +7,7 @@
 \item Parallel simulation on several sub processes
 \item Processing and control of data in main process
 \item Update and accumulation of hit counters and other information such as profiles
-\item SimulationHistory, final hitbuffer and used parameters exported to results folder
+\item \codew{SimulationHistory}, final \codew{hitbuffer} and used parameters exported to results folder
 \end{itemize}
 \smallskip
 \begin{figure}[hb]
@@ -479,7 +479,6 @@ and the input file defining the following parameters:
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Multiply covering so that smallest covering $\geq$ \codew{ProblemDef::coveringThreshMin}
 \item Multiply covering threshold with same factor
-\item Adapt covering threshold and \codew{simHistory$\rightarrow$coveringList}
 \item Calculation in \codew{checkSmallCovering($\cdot$)} from \codew{SimulationLinux.cpp} file
 \end{itemize}
 
@@ -555,15 +554,14 @@ and the input file defining the following parameters:
 \subsubsection{Multiply small covering before summation of subprocesses}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Only if covering was multiplied in subprocesses
-\item Multiply covering in \codew{hitbuffer} and \codew{simHistory} of main process before simulation using same factor
+\item Multiply covering in \codew{hitbuffer} of main process before simulation using same factor
 \end{itemize}
 
 \subsubsection{Divide small covering after  summation of subprocesses}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Only if covering was multiplied in subprocesses
-\item Divide covering in \codew{hitbuffer} and \codew{simHistory} of main process before simulation using same factor
-\item Adapt hitbuffer and \codew{simHistory$\rightarrow$coveringList}
-\item Calculation in \codew{UndoSmallCovering($\cdot$)} from \codew{SimulationLinux.cpp}
+\item Division by the small covering factor will be done when converting virtual test particles into real, physical particles
+\item Then, \codew{hitbuffer} and \codew{hitbuffer\textunderscore sum}
+ of main process will be overwritten with the real, physical values anyway. So there is no need to divide by the small covering factor.
 \end{itemize}
 
 \subsubsection{Error Calculation}
