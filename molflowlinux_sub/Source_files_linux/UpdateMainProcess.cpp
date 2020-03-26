@@ -259,31 +259,47 @@ void UpdateErrorMain(Databuff *hitbuffer_sum){
 			num_des_ad_it += f.sh.opacity * (getnbAdsorbed(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );// In case of a opacity being not 1 hits, adsorbs and desorbs happen
 			//randomly and therefore counters will be raised or not. So there should be no need for multiplying with this factor 'f.sh.opacity' here.
 			 */
+			//num_hit_it+=f.sh.opacity * (getHits(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) ); // I think, we can replace the 'f.sh.opacity' by 1,0 or typecasting
 			num_hit_it+= (double) (getHits(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );
+			//num_des_ad_it+=f.sh.opacity * (getnbAdsorbed(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) ); // I think, we can replace the 'f.sh.opacity' by 1,0 or typecasting
 			num_des_ad_it += (double)(getnbAdsorbed(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );
 		}
 	}
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			double num_hit_f=f.sh.opacity * ( getHits(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );
+			//double num_hit_f=f.sh.opacity * ( getHits(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );
+			double num_hit_f= (double)( getHits(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );
+			//double num_des_ad_f=f.sh.opacity * ( getHits(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );
+			double num_des_ad_f= (double)( getnbAdsorbed(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );
 
 			if(num_hit_f/num_hit_it<p->hitRatioLimit){// threshold. If reached, small number of hits neglected
-				num_hit_it-=num_hit_f; //TODO also adapt facet counters??
+				num_hit_it-=num_hit_f;
 				num_hit_f=0;
 			}
-
-			if(f.sh.opacity==0){simHistory->errorList_event.setCurrent(&f, 0.0);}
-			else{
-				double error=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
-				simHistory->errorList_event.setCurrent(&f, error);
+			if(num_des_ad_f/num_des_ad_it<p->hitRatioLimit){// threshold. If reached, small number of hits neglected
+				num_des_ad_it-=num_des_ad_f;
+				num_des_ad_f=0;
 			}
+
+			if(f.sh.opacity==0){
+				simHistory->errorList_event.setCurrent(&f, 0.0);
+				simHistory->errorList_covering.setCurrent(&f, 0.0);
+			}
+			else{
+				double error_event=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
+				simHistory->errorList_event.setCurrent(&f, error_event);
+				double error_covering=pow((1/num_des_ad_f)*(1-num_des_ad_f/num_des_ad_it),0.5);
+				simHistory->errorList_covering.setCurrent(&f, error_covering);
+			}
+
 			simHistory->hitList.setLast(&f,getHits(&f,hitbuffer_sum));
 			simHistory->desorbedList.setLast(&f,getnbDesorbed(&f,hitbuffer_sum));
 		}
 	}
 
 	simHistory->errorList_event.appendCurrent(simHistory->lastTime);
+	simHistory->errorList_covering.appendCurrent(simHistory->lastTime);
 	//simHistory->hitList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
 	//simHistory->desorbedList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
 
