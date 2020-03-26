@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	if(world_size<=1){
 		if (rank == 0){
-			std::cout <<"Minimum number of 2 Subprocesses needed. Currently "<<world_size <<std::endl;
+			std::cout <<"Minimum number of 1 Subprocesses needed. Currently "<<world_size <<std::endl;
 		}
 
 		MPI_Finalize();
@@ -193,7 +193,7 @@ int main(int argc, char *argv[]) {
 
 			simHistory = new SimulationHistory (&hitbuffer, world_size);
 			//TODO: maybe add possibility of covering.txt file input
-			initbufftozero(&hitbuffer);
+			//initbufftozero(&hitbuffer); not needed here, cause hitbuffer is reset anyway at the beginning of each iteration.
 		}
 		else{
 			simHistory = new SimulationHistory(world_size);
@@ -220,6 +220,9 @@ int main(int argc, char *argv[]) {
 			//----Send coveringList content to all subprocesses
 			// reset buffer (except covering) before sending to sub processes
 			initbufftozero(&hitbuffer);
+			if(rank==0){
+				//initbufftozero(&hitbuffer_sum);
+			}
 
 			for(unsigned int i=0; i<simHistory->numFacet;i++){
 				MPI_Bcast(&simHistory->coveringList.currentList[i], 16, MPI::BYTE,0,MPI_COMM_WORLD);
