@@ -248,11 +248,14 @@ void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){//Update
 void UpdateErrorMain(Databuff *hitbuffer_sum){
 
 	double num_hit_it=0;
+	double num_des_ad_it =0;
 
-	//save current num total hits in currentList, add difference current-old to num_hit_it
+	//count all hits and all desorption events for all facets in num_hit_it
+	//count all adsorption and all desorption events for all facets in num_des_ad_it
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			num_hit_it+=f.sh.opacity * (getHits(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );
+			num_des_ad_it = f.sh.opacity * (getnbAdsorbed(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );
 		}
 	}
 

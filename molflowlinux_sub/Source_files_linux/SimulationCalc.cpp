@@ -61,7 +61,7 @@ boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet){ // return
 	return simHistory->coveringList.getCurrent(iFacet);
 }
 
-double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number hits from hitbuffer
+double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number of hits from hitbuffer
 	BYTE *buffer;
 	buffer = hitbuffer->buff;
 	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
@@ -69,12 +69,19 @@ double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number 
 	return facetHitBuffer->hit.nbHitEquiv; //TODO nbMCHit or nbHitEquiv?
 }
 
-llong getnbDesorbed(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number hits from hitbuffer
+llong getnbDesorbed(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number of desorbed testparticles from hitbuffer
 	BYTE *buffer;
 	buffer = hitbuffer->buff;
 	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
 
 	return facetHitBuffer->hit.nbDesorbed;
+}
+llong getnbAdsorbed(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number of adsorbed testparticles from hitbuffer
+	BYTE *buffer;
+	buffer = hitbuffer->buff;
+	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
+
+	return facetHitBuffer->hit.nbAbsEquiv;
 }
 
 llong getnbDesorbed(Databuff *hitbuffer_sum){
@@ -216,7 +223,7 @@ double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f){
 	return scaleY *GetMoleculesPerTP(hitbuffer_sum).convert_to<double>() * f->tmpCounter[0].hit.sum_1_per_ort_velocity;
 }
 
-double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f){
+double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f){//calculates Pressure of facet. Output value's unit is mbar.
 	double scaleY = 1.0 / (f->sh.area  * 1E-4)* sHandle->wp.gasMass / 1000 / 6E23 * 0.0100; //0.01: Pa->mbar;  //1E4 is conversion from m2 to cm2, 0.01: Pa->mbar
 	return f->tmpCounter[0].hit.sum_1_per_ort_velocity*scaleY * GetMoleculesPerTP(hitbuffer_sum).convert_to<double>();
 }

@@ -454,6 +454,8 @@ std::tuple<std::vector<double>,std::vector<double>,std::vector<boost::multipreci
 
 llong getnbDesorbed(Databuff *hitbuffer_sum);
 llong getnbDesorbed(SubprocessFacet *iFacet, Databuff *hitbuffer);
+llong getnbAdsorbed(SubprocessFacet *iFacet, Databuff *hitbuffer);//In the original Molflow, particles were absorbed not adsorbed. In ContaminationFlow we regard all old code parts
+// which are called 'Absorb' actually as an 'Adsorb'. But we did not rename them.
 llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
 boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet);
 double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer);
