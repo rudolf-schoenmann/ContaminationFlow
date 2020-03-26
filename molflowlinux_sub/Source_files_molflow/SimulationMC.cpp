@@ -850,7 +850,7 @@ bool StartFromSource() {
 			}
 		}
 
-		if(sHandle->currentParticle.flightTime>simHistory->stepSize && src->sh.opacity!=0){ //TODO maybe other parts from recordAbsorb()?
+		if(sHandle->currentParticle.flightTime>simHistory->stepSize && src->sh.opacity!=0){
 			//----desorb----
 			if (src->sh.isMoving && sHandle->wp.motionType) RecordHit(HIT_MOVING);
 			else RecordHit(HIT_DES); //create blue hit point for created particle
