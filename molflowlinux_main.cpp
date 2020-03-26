@@ -221,7 +221,7 @@ int main(int argc, char *argv[]) {
 			// reset buffer (except covering) before sending to sub processes
 			initbufftozero(&hitbuffer);
 			if(rank==0){
-				//initbufftozero(&hitbuffer_sum);
+				initbufftozero(&hitbuffer_sum);
 			}
 
 			for(unsigned int i=0; i<simHistory->numFacet;i++){

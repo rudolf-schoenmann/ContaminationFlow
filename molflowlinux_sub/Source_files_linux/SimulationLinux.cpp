@@ -520,7 +520,6 @@ SimulationHistory::SimulationHistory(int world_size){
 	numFacet=0;
 	nParticles=0;
 	flightTime=0.0;
-	nbDesorbed_old=0;
 	lastTime=0.0;
 	currentStep=0;
 	stepSize=0.0;
@@ -559,7 +558,6 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 	flightTime=0.0;
 	lastTime=0.0;
 
-	nbDesorbed_old= getnbDesorbed(hitbuffer);
 	normalFacets = std::vector<unsigned int>();
 
 	double numHit;
@@ -620,7 +618,6 @@ std::tuple<bool, llong > SimulationHistory::updateHistory(Databuff *hitbuffer){
 
 	startNewParticle=false;
 
-	nbDesorbed_old= getnbDesorbed(hitbuffer);
 
 	double numHit;
 	llong numDes;

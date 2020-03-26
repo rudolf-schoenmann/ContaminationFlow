@@ -378,7 +378,6 @@ public:
 	unsigned int numFacet;
 	int numSubProcess;
 
-	llong nbDesorbed_old;
 	double flightTime;
 	int nParticles;
 	double lastTime;
@@ -463,7 +462,7 @@ double calcStep(long double var, double start, double end, double step, double W
 //double calcEnergy(SubprocessFacet *iFacet, Databuff *hitbuffer);
 double calcEnergy(SubprocessFacet *iFacet);
 
-boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum, llong nbDesorbed_old);
+boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum);
 //void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
 void calcStickingnew(SubprocessFacet *iFacet);
 //boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);

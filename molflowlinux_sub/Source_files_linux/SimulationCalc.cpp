@@ -146,10 +146,10 @@ double calcEnergy(SubprocessFacet *iFacet){ //TODO verify
 //-----------------------------------------------------------
 // calculation of used values
 
-boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum, llong nbDesorbed_old) // Calculation of Krealvirt
+boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum) // Calculation of Krealvirt
 //Returns how many physical molecules one test particle represents per time
 {
-	llong nbDesorbed = getnbDesorbed(hitbuffer_sum)-nbDesorbed_old;
+	llong nbDesorbed = getnbDesorbed(hitbuffer_sum);
 	if (nbDesorbed == 0) return 0; //avoid division by 0
 
 	boost::multiprecision::float128 desrate(0.0);
@@ -213,12 +213,12 @@ boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet) {//T
 double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f){
 	double scaleY = 1.0 / (f->sh.area * 1E-4); //1E4 is conversion from m2 to cm2
 	//TODO is this correct?
-	return scaleY *GetMoleculesPerTP(hitbuffer_sum,0).convert_to<double>() * f->tmpCounter[0].hit.sum_1_per_ort_velocity;
+	return scaleY *GetMoleculesPerTP(hitbuffer_sum).convert_to<double>() * f->tmpCounter[0].hit.sum_1_per_ort_velocity;
 }
 
 double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f){
 	double scaleY = 1.0 / (f->sh.area  * 1E-4)* sHandle->wp.gasMass / 1000 / 6E23 * 0.0100; //0.01: Pa->mbar;  //1E4 is conversion from m2 to cm2, 0.01: Pa->mbar
-	return f->tmpCounter[0].hit.sum_1_per_ort_velocity*scaleY * GetMoleculesPerTP(hitbuffer_sum,0).convert_to<double>();
+	return f->tmpCounter[0].hit.sum_1_per_ort_velocity*scaleY * GetMoleculesPerTP(hitbuffer_sum).convert_to<double>();
 }
 
 

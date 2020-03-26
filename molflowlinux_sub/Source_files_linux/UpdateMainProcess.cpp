@@ -118,10 +118,10 @@ void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){//Update
 	//Calculates with the summed up counters of hitbuffer_sum how many test particles are equivalent to one physical particle.
 	//simTime in ms
 
-	boost::multiprecision::float128 Krealvirt = GetMoleculesPerTP(hitbuffer_sum, simHistory->nbDesorbed_old);
+	boost::multiprecision::float128 Krealvirt = GetMoleculesPerTP(hitbuffer_sum);
 	//llong nbDesorbed = getnbDesorbed(hitbuffer_sum)-simHistory->nbDesorbed_old;
 	//std::cout <<"nbDesorbed before and after:\t" << history->nbDesorbed_old <<'\t';
-	simHistory->nbDesorbed_old = getnbDesorbed(hitbuffer_sum);
+	//simHistory->nbDesorbed_old = getnbDesorbed(hitbuffer_sum); //Not needed anymore.
 	//std::cout << history->nbDesorbed_old <<std::endl;
 
 	boost::multiprecision::uint128_t covering_phys;
@@ -252,13 +252,13 @@ void UpdateErrorMain(Databuff *hitbuffer_sum){
 	//save current num total hits in currentList, add difference current-old to num_hit_it
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			num_hit_it+=f.sh.opacity * (getHits(&f,hitbuffer_sum)-simHistory->hitList.getLast(&f) + getnbDesorbed(&f, hitbuffer_sum) - simHistory->desorbedList.getLast(&f));
-		}//Counter in hitbuffer_sum will never be set to zero. But llong will not overflow sinc its a 64bit integer (Range until 10^19).
+			num_hit_it+=f.sh.opacity * (getHits(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );
+		}
 	}
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			double num_hit_f=f.sh.opacity * ( getHits(&f,hitbuffer_sum)-simHistory->hitList.getLast(&f) + getnbDesorbed(&f, hitbuffer_sum) - simHistory->desorbedList.getLast(&f));
+			double num_hit_f=f.sh.opacity * ( getHits(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );
 
 			if(num_hit_f/num_hit_it<p->hitRatioLimit){// threshold. If reached, small number of hits neglected
 				num_hit_it-=num_hit_f; //TODO also adapt facet counters??
