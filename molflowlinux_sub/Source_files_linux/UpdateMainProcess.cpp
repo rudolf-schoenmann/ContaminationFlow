@@ -39,7 +39,13 @@ double getStepSize(){
 	double t_start = T_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/(T_min))/(double)p->iterationNumber));
 	double t_stop = T_min*exp((double)(simHistory->currentStep+1)*(log(p->maxTimeS/(T_min))/(double)p->iterationNumber));
 	double Delta = t_stop - t_start;
-	return Delta < p->t_max ? Delta : p->t_max;
+	double Delta_final = p->t_max - t_start;
+	if(t_stop > p->t_max){
+		return Delta_final;
+	}
+	else{
+		return Delta;
+	}
 	/*if(simHistory->currentStep==0){
 		double T_min = estimateAverageFlightTime();
 		return T_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/T_min)/(double)p->iterationNumber));
