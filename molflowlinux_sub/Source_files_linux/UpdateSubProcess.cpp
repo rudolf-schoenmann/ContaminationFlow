@@ -78,8 +78,9 @@ void UpdateErrorSub(){
 			double num_hit_f=f.sh.opacity * ( f.tmpCounter[0].hit.nbHitEquiv + f.tmpCounter[0].hit.nbDesorbed);
 
 			//neglect hits if very small compared to total hits
-			if(num_hit_f/num_hit_it<p->hitRatioLimit){
-				num_hit_it-=num_hit_f; //TODO also adapt facet counters??
+			if(num_hit_f/num_hit_it<(p->hitRatioLimit)/pow(simHistory->numSubProcess,0.5)){// To be consistent with the ignored facets for calculating the error after summation
+				//over all subprocesses, here the hitRationLimit must be reduced with the correction factor due to multiple subprocesses.
+				num_hit_it-=num_hit_f;
 				num_hit_f=0;
 			}
 
@@ -96,7 +97,7 @@ void UpdateErrorSub(){
 
 }
 
-double UpdateError(){
+double UpdateError(){//calculates the averaged total error weighted with the facets area to decide, if the desired uncertainty level is reached
 	UpdateErrorSub();
 
 	double error=0.0;
