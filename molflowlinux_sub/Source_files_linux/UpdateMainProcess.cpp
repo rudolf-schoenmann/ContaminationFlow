@@ -52,6 +52,11 @@ double getStepSize(){
 
 double manageStepSize(bool updateCurrentStep){
 	double step_size = getStepSize();
+
+	if (!updateCurrentStep){//just written here again to save calculation time
+		return step_size;
+	}
+
 	bool incrCurrentStep=true;
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {

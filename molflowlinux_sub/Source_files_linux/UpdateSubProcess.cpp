@@ -153,7 +153,7 @@ bool checkErrorSub(double targetError, double currentError, double factor){
 			*/
 			if(simHistory->errorList_covering.getCurrent(p->vipFacets[i].first)== std::numeric_limits<double>::infinity())
 							continue;//Is this if statement really necessary? Since we also check the error for being initfy in the next line...
-			vipCheck = vipCheck && (simHistory->errorList_covering.getCurrent(p->vipFacets[i].first)== std::numeric_limits<double>::infinity() || simHistory->errorList_event.getCurrent(p->vipFacets[i].first) <= p->vipFacets[i].second * factor);
+			vipCheck = vipCheck && (simHistory->errorList_covering.getCurrent(p->vipFacets[i].first)== std::numeric_limits<double>::infinity() || simHistory->errorList_covering.getCurrent(p->vipFacets[i].first) <= p->vipFacets[i].second * factor);
 		}
 	}
 
