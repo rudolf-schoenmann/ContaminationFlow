@@ -67,15 +67,24 @@ void UpdateSojourn(){
 void UpdateErrorSub(){
 
 	double num_hit_it=0;
+	double num_des_ad_it=0;
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) { //save current num total hits in currentList, add difference current-old to num_hit_it
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			/*
 			num_hit_it+=f.sh.opacity * (f.tmpCounter[0].hit.nbHitEquiv + f.tmpCounter[0].hit.nbDesorbed);
+			num_des_ad_it+=f.sh.opacity * (f.tmpCounter[0].hit.nbAbsEquiv + f.tmpCounter[0].hit.nbDesorbed);
+			*/
+			num_hit_it+=(double)(f.tmpCounter[0].hit.nbHitEquiv + f.tmpCounter[0].hit.nbDesorbed);
+			num_des_ad_it+=(double)(f.tmpCounter[0].hit.nbAbsEquiv + f.tmpCounter[0].hit.nbDesorbed);
 		}
 	}
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			double num_hit_f=f.sh.opacity * ( f.tmpCounter[0].hit.nbHitEquiv + f.tmpCounter[0].hit.nbDesorbed);
+			//double num_hit_f=f.sh.opacity * ( f.tmpCounter[0].hit.nbHitEquiv + f.tmpCounter[0].hit.nbDesorbed);
+			double num_hit_f=(double)( f.tmpCounter[0].hit.nbHitEquiv + f.tmpCounter[0].hit.nbDesorbed);
+			//double num_des_ad_f=f.sh.opacity * ( f.tmpCounter[0].hit.nbAbsEquiv + f.tmpCounter[0].hit.nbDesorbed);
+			double num_des_ad_f=(double)( f.tmpCounter[0].hit.nbAbsEquiv + f.tmpCounter[0].hit.nbDesorbed);
 
 			//neglect hits if very small compared to total hits
 			if(num_hit_f/num_hit_it<(p->hitRatioLimit)/pow(simHistory->numSubProcess,0.5)){// To be consistent with the ignored facets for calculating the error after summation
@@ -83,12 +92,23 @@ void UpdateErrorSub(){
 				num_hit_it-=num_hit_f;
 				num_hit_f=0;
 			}
+			if(num_des_ad_f/num_des_ad_it<(p->hitRatioLimit)/pow(simHistory->numSubProcess,0.5)){// To be consistent with the ignored facets for calculating the error after summation
+				//over all subprocesses, here the hitRationLimit must be reduced with the correction factor due to multiple subprocesses.
+				num_des_ad_it-=num_des_ad_f;
+				num_des_ad_f=0;
+			}
 
-			if(f.sh.opacity==0){simHistory->errorList_event.setCurrent(&f, 0.0);}
+
+
+			if(f.sh.opacity==0){
+				simHistory->errorList_event.setCurrent(&f, 0.0);
+				simHistory->errorList_covering.setCurrent(&f, 0.0);
+			}
 			else{
-				double error=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
-
-				simHistory->errorList_event.setCurrent(&f, error);
+				double error_event=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
+				double error_covering=pow((1/num_des_ad_f)*(1-num_des_ad_f/num_des_ad_it),0.5);
+				simHistory->errorList_event.setCurrent(&f, error_event);
+				simHistory->errorList_covering.setCurrent(&f, error_covering);
 			}
 			simHistory->hitList.setCurrent(&f,f.tmpCounter[0].hit.nbHitEquiv);
 			simHistory->desorbedList.setCurrent(&f,f.tmpCounter[0].hit.nbDesorbed);

@@ -255,13 +255,11 @@ void UpdateErrorMain(Databuff *hitbuffer_sum){
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			/*
-			num_hit_it+=f.sh.opacity * (getHits(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) ); // I think, we can replace the 'f.sh.opacity' by 1,0
+			num_hit_it+=f.sh.opacity * (getHits(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) ); // I think, we can replace the 'f.sh.opacity' by 1,0 or typecasting
 			num_des_ad_it += f.sh.opacity * (getnbAdsorbed(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );// In case of a opacity being not 1 hits, adsorbs and desorbs happen
 			//randomly and therefore counters will be raised or not. So there should be no need for multiplying with this factor 'f.sh.opacity' here.
 			 */
-			//num_hit_it+=f.sh.opacity * (getHits(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) ); // I think, we can replace the 'f.sh.opacity' by 1,0 or typecasting
 			num_hit_it+= (double) (getHits(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );
-			//num_des_ad_it+=f.sh.opacity * (getnbAdsorbed(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) ); // I think, we can replace the 'f.sh.opacity' by 1,0 or typecasting
 			num_des_ad_it += (double)(getnbAdsorbed(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );
 		}
 	}
