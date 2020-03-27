@@ -389,7 +389,7 @@ public:
 
 	void print(bool write=false);
 	void write(std::string path);
-	std::tuple<bool, llong > updateHistory(Databuff *hitbuffer);
+	//std::tuple<bool, llong > updateHistory(Databuff *hitbuffer);
 	void updateHistory();
 
 };
@@ -439,7 +439,8 @@ void initbufftozero(Databuff *databuffer);
 //-----------------------------------------------------------
 //UpdateMainProcess.cpp
 
-double manageStepSize(bool updateCurrentStep=false);
+double manageStepSize();
+double getStepSize();
 
 void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHistory *history,int rank, llong smallCoveringFactor);
 

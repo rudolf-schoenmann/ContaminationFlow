@@ -56,69 +56,39 @@ double getStepSize(){
 
 }
 
-double manageStepSize(bool updateCurrentStep){
-	double step_size = getStepSize();
+double manageStepSize(){
+	double step_size;
+	bool steptoolong; //If step is too long, we will decrease the step size.
+	bool needforCheck = true;
 
-	if (!updateCurrentStep){//just written here again to save calculation time
-		return step_size;
-	}
+	while(needforCheck){
+		step_size = getStepSize();
+		steptoolong=false;
+		for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+				if(f.sh.desorption==0||f.sh.temperature==0)continue;
 
-	bool incrCurrentStep=true;
+				boost::multiprecision::uint128_t covering_phys = simHistory->coveringList.getLast(&f);
 
-	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			if(f.sh.desorption==0||f.sh.temperature==0)continue;
-
-			//int sizeList=simHistory->coveringList.pointintime_list.size();
-			boost::multiprecision::uint128_t covering_phys = simHistory->coveringList.getLast(&f);
-			//boost::multiprecision::uint128_t covering_phys_before = simHistory->coveringList.pointintime_list[sizeList-2].second[getFacetIndex(&f)];
-
-			if(updateCurrentStep){
-				/* Just Output messages...
-				std::cout <<"Facet "<<getFacetIndex(&f) <<": " <<(f.sh.desorption/boost::multiprecision::float128(kb* f.sh.temperature))*boost::multiprecision::float128(step_size) +boost::multiprecision::float128(0.5) <<" >? " <<boost::multiprecision::float128(covering_phys) <<std::endl;
-				p->outFile<<"Facet "<<getFacetIndex(&f) <<": " <<(f.sh.desorption/boost::multiprecision::float128(kb* f.sh.temperature))*boost::multiprecision::float128(step_size) +boost::multiprecision::float128(0.5) <<" >? " <<boost::multiprecision::float128(covering_phys) <<std::endl;
-				*/
-			}
-
-			if ((boost::multiprecision::uint128_t)((f.sh.desorption/boost::multiprecision::float128(kb* f.sh.temperature))*boost::multiprecision::float128(step_size) +boost::multiprecision::float128(0.5))>covering_phys){
-
-				boost::multiprecision::float128 test_size=boost::multiprecision::float128(covering_phys)/(f.sh.desorption/boost::multiprecision::float128(kb* f.sh.temperature));
-				//step_size=0.9 *test_size.convert_to<double>();
-
-				incrCurrentStep=false;
-			}
-			/*
-			if(covering_phys < covering_phys_before && sizeList>1) //covering_pyhs-covering_phys_before < 0
-			{
-				boost::multiprecision::float128 CovDiff=static_cast<boost::multiprecision::float128>(covering_phys_before-covering_phys);
-				boost::multiprecision::float128 CurrTime= static_cast<boost::multiprecision::float128>(simHistory->coveringList.pointintime_list[sizeList-1].first-simHistory->coveringList.pointintime_list[sizeList-2].first);
-
-				std::cout <<"Facet" <<getFacetIndex(&f)<<":\t CovDiff = Cov_before - Cov_now = "<<covering_phys_before <<" - " <<covering_phys<<" = "<<CovDiff <<"\t time_now-time_before = " <<CurrTime<<"\t If clause : "<<CovDiff*boost::multiprecision::float128(step_size)/CurrTime<<" >? " <<covering_phys<<std::endl;
-				if(CovDiff*boost::multiprecision::float128(step_size)/CurrTime > static_cast<boost::multiprecision::float128>(covering_phys)){
-					//boost::multiprecision::float128 test_size = static_cast<boost::multiprecision::float128>(covering_phys) * CurrTime/CovDiff;
-					//step_size= 0.1 * test_size.convert_to<double>();
-					//incrCurrentStep=false;
-					// Müssen uns hier noch was Gescheites überlegen. Rauschen und Oszillationen spielen eine Rolle bei langen Schritten,
-					// da bei gleicher Hitzahl die Zahl der Änderung von covering zurückgeht. Daher steigt Krealvirt. Somit wird Krealvirt größer.
-					// Der Zeitschritt wird auch größer. Die Coveringdifferenz wird multipliziert mit Krealwirt*Zeitschritt.
-					// Insofern werden Abweichungen vom theoretisch konvergierendem Wert immer mehr Verstärkt, je größer der Zeitschritt ist.
+				if ((boost::multiprecision::uint128_t)((f.sh.desorption/boost::multiprecision::float128(kb* f.sh.temperature))*boost::multiprecision::float128(step_size) +boost::multiprecision::float128(0.5))>covering_phys){
+					steptoolong=true;
 				}
-
-			}*/
-
+			}
+		}
+		if(steptoolong){
+			if(simHistory->currentStep == 0){
+				needforCheck = false;
+			}
+			else{
+			simHistory->currentStep-=1;
+			std::cout<<"Decrease simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
+			p->outFile<<"Decrease simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
+			}
+		}
+		else {
+			needforCheck = false;
 		}
 	}
-
-	/*if(step_size > p->t_max){
-		step_size=p->t_max;
-	}*/
-	if(incrCurrentStep&&updateCurrentStep){
-	//if(true){//just for testing, what would happen, if we deactivate the time step limitation
-		simHistory->currentStep+=1;
-		std::cout<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
-		p->outFile<<"Increase simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
-	}
-
 	return step_size;
 }
 //-----------------------------------------------------------
@@ -140,7 +110,7 @@ void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){//Update
 	boost::multiprecision::float128 covering_sum_netto ;//used to devide covering_sum by the smallCoveringFactor; float;
 	//boost::multiprecision::float128 covering_check;
 
-	double time_step;
+	double time_step = getStepSize();
 	if(Krealvirt==boost::multiprecision::float128(0.0)){ //if no Krealvirt(no desorption), do not increase currentStep, time_step=0
 		time_step=0;
 	}
@@ -172,11 +142,13 @@ void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){//Update
 		std::cout <<tmpstream.str();
 		p->outFile<<tmpstream.str();
 
+
 		//if targetError not reached: do not update currentstep
 		if(checkErrorSub(p->targetError, error/area, 1.0))
-			{time_step = manageStepSize(true);}
-		else
-			{time_step = manageStepSize(false);}
+			{simHistory->currentStep += 1;}
+		/*else
+			{simHistory->updateCurrentStep = false;}*/
+
 	}
 
 	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
@@ -247,13 +219,13 @@ void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){//Update
 				simHistory->coveringList.setCurrent(&f, covering_phys);
 		}
 	}
+
 	simHistory->coveringList.appendCurrent(simHistory->lastTime+time_step);
 	simHistory->lastTime+=time_step;
 	simHistory->hitList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 	simHistory->errorList_event.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 	simHistory->desorbedList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-
-	simHistory->stepSize=time_step;
+	simHistory->stepSize=time_step;//For what do I need this? Maybe could be uncommented...
 }
 
 void UpdateErrorMain(Databuff *hitbuffer_sum){

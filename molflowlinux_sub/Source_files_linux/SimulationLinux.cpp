@@ -527,6 +527,7 @@ SimulationHistory::SimulationHistory(int world_size){
 	numSubProcess=world_size-1;
 	startNewParticle=false;
 
+
 	normalFacets = std::vector<unsigned int>();
 
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
@@ -612,6 +613,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 
 }
 
+/* Not used anymore
 std::tuple<bool, llong > SimulationHistory::updateHistory(Databuff *hitbuffer){
 	nParticles=0;
 	flightTime=0.0;
@@ -664,7 +666,7 @@ std::tuple<bool, llong > SimulationHistory::updateHistory(Databuff *hitbuffer){
 	errorList_covering.reset();
 	errorList_covering.initCurrent(numFacet);
 
-	stepSize=manageStepSize(false);
+	//stepSize=manageStepSize();
 
 	if(smallCovering && llong(mincov) < p->coveringMinThresh){
 		smallCoveringFactor=llong(1.0+1.1*double(p->coveringMinThresh)/(double(mincov)));
@@ -682,7 +684,7 @@ std::tuple<bool, llong > SimulationHistory::updateHistory(Databuff *hitbuffer){
 	}
 
 	return {std::make_tuple(smallCovering,smallCoveringFactor)};
-}
+}*/
 
 void SimulationHistory::updateHistory(){
 
@@ -719,7 +721,8 @@ void SimulationHistory::updateHistory(){
 	errorList_covering.reset();
 	errorList_covering.initCurrent(numFacet);
 
-	stepSize=manageStepSize(false);
+	stepSize = getStepSize();
+	//stepSize=manageStepSize();
 
 }
 

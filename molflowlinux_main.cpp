@@ -234,7 +234,7 @@ int main(int argc, char *argv[]) {
 				if(rank==i)
 					simHistory->coveringList.printCurrent(std::to_string(rank)+": coveringList at beginning of iteration");}
 			*/
-			MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
+			//MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
 
 
 			MPI_Barrier(MPI_COMM_WORLD);
@@ -253,7 +253,11 @@ int main(int argc, char *argv[]) {
 				}
 				break;
 			}
-
+			if(rank==0){
+				manageStepSize();
+			}
+			MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
+			MPI_Barrier(MPI_COMM_WORLD);
 
 			//----Simulation on subprocesses
 			if (rank != 0) {
