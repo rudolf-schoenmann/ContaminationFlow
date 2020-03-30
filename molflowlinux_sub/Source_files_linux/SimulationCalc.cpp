@@ -207,8 +207,8 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 
 	desorption = tau_1 * boost::multiprecision::pow(coverage,static_cast<boost::multiprecision::float128>(d)) *boost::multiprecision::exp(-energy_de/static_cast<boost::multiprecision::float128>(kb*temperature));
 	//if (Desorption Energy/Temperature) >~ 1.02E-20J/K, desorption will be zero
-	std::cout << "time constant = " <<  1/(tau_1*boost::multiprecision::exp(-energy_de/static_cast<boost::multiprecision::float128>(kb*temperature))) << " s."<<std::endl;
-	p->outFile << "time constant = " <<  1/(tau_1*boost::multiprecision::exp(-energy_de/static_cast<boost::multiprecision::float128>(kb*temperature))) << " s."<<std::endl;
+	//std::cout << "time constant = " <<  1/(tau_1*boost::multiprecision::exp(-energy_de/static_cast<boost::multiprecision::float128>(kb*temperature))) << " s."<<std::endl;
+	//p->outFile << "time constant = " <<  1/(tau_1*boost::multiprecision::exp(-energy_de/static_cast<boost::multiprecision::float128>(kb*temperature))) << " s."<<std::endl;
 	return desorption;
 }
 

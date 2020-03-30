@@ -844,7 +844,7 @@ bool StartFromSource() {
 		double flightTime=sHandle->currentParticle.flightTime;
 		if (src->sh.enableSojournTime) {
 			double A = exp(-src->sh.sojournE / (kb*src->sh.temperature));
-			sHandle->currentParticle.flightTime += -log(rnd()) / (A*src->sh.sojournFreq);
+			//sHandle->currentParticle.flightTime += -log(rnd()) / (A*src->sh.sojournFreq);//Insolved issue, whether we need a residence before a new particle starts...
 			if(sHandle->currentParticle.flightTime < std::numeric_limits<double>::infinity()){
 				flightTime=sHandle->currentParticle.flightTime;
 			}
