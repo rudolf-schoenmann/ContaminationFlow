@@ -327,34 +327,6 @@ int main(int argc, char *argv[]) {
 				}
 			}
 
-
-			/* Just Output stuff
-			MPI_Barrier(MPI_COMM_WORLD);
-			int num;
-			if(rank == 0){
-				//Der Fehler ist im Hitbuffer_sum!
-				std::cout << "Fehlersuche: " << std::endl;
-				p->outFile << "Fehlersuche: " << std::endl;
-				for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-					for (SubprocessFacet& f : sHandle->structures[j].facets) {
-						num=getFacetIndex(&f);
-						llong cv = getCovering(&f, &hitbuffer_sum);
-						std::cout << "After Summation rank " << rank << " has a covering of = " << cv << " for Facet " << num <<"." << std::endl;
-						p->outFile << "After Summation rank " << rank << " has a covering of = " << cv << " for Facet " << num <<"." << std::endl;
-										}
-									}
-				}
-			else{
-				for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-					for (SubprocessFacet& f : sHandle->structures[j].facets) {
-						num=getFacetIndex(&f);
-						llong cv = getCovering(&f, &hitbuffer);
-						std::cout << "After Summation rank " << rank << " has a covering of = " << cv << " for Facet " << num <<"." << std::endl;
-						p->outFile << "After Summation rank " << rank << " has a covering of = " << cv << " for Facet " << num <<"." << std::endl;
-						}
-					}
-			}
-			*/
 			MPI_Barrier(MPI_COMM_WORLD);
 
 

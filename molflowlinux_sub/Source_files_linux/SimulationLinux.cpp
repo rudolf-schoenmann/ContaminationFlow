@@ -762,8 +762,8 @@ void SimulationHistory::print(bool write){
 	std::tie(errorPerIt_event, errorPerIt_covering,covPerIt) = CalcPerIteration();
 
 	coveringList.print(std::cout,covPerIt, "Accumulative covering", p->histSize);
-	hitList.print(std::cout, "Accumulative number hits", p->histSize);
-	desorbedList.print(std::cout, "Accumulative number desorbed", p->histSize);
+	//hitList.print(std::cout, "Accumulative number hits", p->histSize); //Since we do not accumulate hits anymore over all iterations, we do not need this anymore.
+	//desorbedList.print(std::cout, "Accumulative number desorbed", p->histSize); //Since we do not accumulate desorbs anymore over all iterations, we do not need this anymore.
 	errorList_event.print(std::cout,errorPerIt_event, "Error (Desorb + Hit) per iteration", p->histSize);
 	errorList_covering.print(std::cout,errorPerIt_event, "Error (Desorb + Adsorb) per iteration", p->histSize);//ToDo Change 'errorPerIt' to a error_covering (Adsorb + Desorb) variable, which is to introduce
 
