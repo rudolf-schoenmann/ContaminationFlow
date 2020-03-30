@@ -115,22 +115,28 @@ void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){//Update
 		time_step=0;
 	}
 	else{
-		double error=0.0;
+		double error_event=0.0;
+		double error_covering=0.0;
 		double area=0.0;
 
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				if(simHistory->errorList_event.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0 || f.sh.isVipFacet)//ignore facet if no hits (=inf error)
 					continue;
+				if(simHistory->errorList_covering.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0 || f.sh.isVipFacet)//ignore facet if no hits (=inf error)
+					continue;
 
-				error+=simHistory->errorList_event.getCurrent(&f)*f.sh.area;
+				error_event+=simHistory->errorList_event.getCurrent(&f)*f.sh.area;
+				error_covering+=simHistory->errorList_covering.getCurrent(&f)*f.sh.area;
 				area+=f.sh.area;
 			}
 		}
 		// Print total error and error per facet of this iteration
 		std::ostringstream tmpstream (std::ostringstream::app);
-		tmpstream <<"Total Error "<<error/area <<std::endl;
+		tmpstream <<"Total Error (event) averaged over facets "<<error_event/area <<std::endl;
 		simHistory->errorList_event.printCurrent(tmpstream);
+		tmpstream << std::endl<<"Total Error (covering) averaged over facets "<<error_covering/area <<std::endl;
+		simHistory->errorList_covering.printCurrent(tmpstream);
 
 		if(!p->vipFacets.empty()){
 			tmpstream <<"Vip Facets:"<<std::endl;
@@ -144,10 +150,8 @@ void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){//Update
 
 
 		//if targetError not reached: do not update currentstep
-		if(checkErrorSub(p->targetError, error/area, 1.0))
+		if(checkErrorSub(p->targetError, error_covering/area, 1.0))
 			{simHistory->currentStep += 1;}
-		/*else
-			{simHistory->updateCurrentStep = false;}*/
 
 	}
 
@@ -224,6 +228,7 @@ void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){//Update
 	simHistory->lastTime+=time_step;
 	simHistory->hitList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 	simHistory->errorList_event.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+	simHistory->errorList_covering.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 	simHistory->desorbedList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 	simHistory->stepSize=time_step;//For what do I need this? Maybe could be uncommented...
 }

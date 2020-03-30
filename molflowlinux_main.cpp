@@ -354,12 +354,6 @@ int main(int argc, char *argv[]) {
 				simHistory->coveringList.print(std::cout, "Accumulative covering after iteration "+std::to_string(it+1), p->histSize);
 				simHistory->coveringList.print(p->outFile,"Accumulative covering after iteration "+std::to_string(it+1),p->histSize);
 
-				//simHistory->hitList.print(std::cout,"Accumulative number hits after iteration "+std::to_string(it));
-				//simHistory->hitList.print(p->outFile,"Accumulative number hits after iteration "+std::to_string(it));
-
-				//simHistory->desorbedList.print(std::cout,"Accumulative number desorbed after iteration "+std::to_string(it));
-				//simHistory->desorbedList.print(p->outFile,"Accumulative number desorbed after iteration "+std::to_string(it));
-
 				//simHistory->errorList.print(std::cout,"Error after iteration "+std::to_string(it));
 				//simHistory->errorList.print(p->outFile,"Error after iteration "+std::to_string(it));
 
