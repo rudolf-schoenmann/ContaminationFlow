@@ -41,7 +41,7 @@ const double carbondiameter = 2 *76E-12;
 const double kb = 1.38E-23;
 //const double tau = 1E-13;
 const double h= 6.626E-34;
-const double tuneE=2.64665;//tanh(x)~0,99
+const double tuneE=2.64665;//tanh(2.64665)~0,99
 
 template <typename T> class HistoryList{
 public:
