@@ -58,8 +58,8 @@ void UpdateSojourn(){
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			f.sh.enableSojournTime = true;
-			f.sh.sojournFreq = (kb*f.sh.temperature)/h;
-			f.sh.sojournE = calcEnergy(&f);
+			//f.sh.sojournFreq = (kb*f.sh.temperature)/h; //Don't need that at the moment. If temperature won't be constant later, reactivation is necessary.
+			//f.sh.sojournE = calcEnergy(&f); //Don't need that. We decide in each case of residence at random, if the particle will adsorb at substrate or adsorbate.
 		}
 	}
 }

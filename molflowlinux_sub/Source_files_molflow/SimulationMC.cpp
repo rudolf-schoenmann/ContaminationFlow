@@ -843,7 +843,22 @@ bool StartFromSource() {
 	//--------------------------------------Sojourn time begin----------------------------------------------
 		double flightTime=sHandle->currentParticle.flightTime;
 		if (src->sh.enableSojournTime) {
-			double A = exp(-src->sh.sojournE / (kb*src->sh.temperature));
+			/*
+			double residence_energy;
+			boost::multiprecision::float128 coverage;
+			coverage = calcCoverage(src);
+			if(coverage >= 1)residence_energy = p->E_de;
+			else {
+				if(rnd() <= coverage ){
+					residence_energy = 	p->E_de;
+				}
+				else{
+					residence_energy = 	p->H_vap;
+				}
+			}
+			//double A = exp(-src->sh.sojournE / (kb*src->sh.temperature)); // //Don't need that. We decide in each case of residence at random, if the particle will adsorb at substrate or adsorbate.
+			double A = exp(-residence_energy / (kb*src->sh.temperature));
+			*/
 			//sHandle->currentParticle.flightTime += -log(rnd()) / (A*src->sh.sojournFreq);//Unsolved issue, whether we need a residence before a new particle starts...
 			if(sHandle->currentParticle.flightTime < std::numeric_limits<double>::infinity()){
 				flightTime=sHandle->currentParticle.flightTime;
@@ -1344,7 +1359,20 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 	//--------------------------------------Sojourn time begin----------------------------------------------
 	double flightTime=sHandle->currentParticle.flightTime;
 	if (iFacet->sh.enableSojournTime) {
-		double A = exp(-iFacet->sh.sojournE / (kb*iFacet->sh.temperature));
+		double residence_energy;
+		boost::multiprecision::float128 coverage;
+		coverage = calcCoverage(iFacet);
+		if(coverage >= 1)residence_energy = p->E_de;
+		else {
+				if(rnd() <= coverage ){
+					residence_energy = 	p->E_de;
+				}
+				else{
+					residence_energy = 	p->H_vap;
+				}
+		}
+		//double A = exp(-iFacet->sh.sojournE / (kb*iFacet->sh.temperature)); // //Don't need that. We decide in each case of residence at random, if the particle will adsorb at substrate or adsorbate.
+		double A = exp(-residence_energy / (kb*iFacet->sh.temperature));
 		sHandle->currentParticle.flightTime += -log(rnd()) / (A*iFacet->sh.sojournFreq);
 		if(sHandle->currentParticle.flightTime < std::numeric_limits<double>::infinity()){
 			flightTime=sHandle->currentParticle.flightTime;

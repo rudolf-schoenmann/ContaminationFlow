@@ -470,6 +470,7 @@ boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum);
 void calcStickingnew(SubprocessFacet *iFacet);
 //boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
 boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet);
+boost::multiprecision::float128 calcCoverage(SubprocessFacet *iFacet);
 
 //-----------------------------------------------------------
 //Iteration.cpp
