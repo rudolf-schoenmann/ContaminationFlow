@@ -134,14 +134,14 @@ boost::multiprecision::float128 calctotalDesorption(){// desorptionrate as well 
 	return desrate;
 }
 
-double calcStep(long double var, double start, double end, double step, double Wtr){
+double calcStep(long double variable, double start, double end, double inflection_point, double Wtr){
 
 	if(start==end)
 		return start;
 	else if(start>end)
-		return (double)tanh((step-var) * (2*tuneE)/Wtr) * (start - end)/2 +(start+end)/2; //tanh(adjust width) * adjust height + adjust bias
+		return (double)tanh((inflection_point-variable) * (2*tuneE)/Wtr) * (start - end)/2 +(start+end)/2; //tanh(adjust width) * adjust height + adjust bias
 	else
-		return (-1.0)*(double)tanh((step-var) * (2*tuneE)/Wtr) * (start - end)/2 +(start+end)/2; //-tanh(adjust width) * adjust height + adjust bias
+		return (-1.0)*(double)tanh((inflection_point-variable) * (2*tuneE)/Wtr) * (start - end)/2 +(start+end)/2; //-tanh(adjust width) * adjust height + adjust bias
 }
 
 double calcEnergy(SubprocessFacet *iFacet){ //TODO verify

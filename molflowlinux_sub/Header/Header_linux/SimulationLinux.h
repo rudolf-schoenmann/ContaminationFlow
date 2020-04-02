@@ -41,7 +41,7 @@ const double carbondiameter = 2 *76E-12;
 const double kb = 1.38E-23;
 //const double tau = 1E-13;
 const double h= 6.626E-34;
-const double tuneE=2.7;
+const double tuneE=2.64665;//tanh(x)~0,99
 
 template <typename T> class HistoryList{
 public:
@@ -461,7 +461,7 @@ llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
 boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet);
 double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer);
 
-double calcStep(long double var, double start, double end, double step, double Wtr);
+double calcStep(long double variable, double start, double end, double inflection_point, double Wtr);
 //double calcEnergy(SubprocessFacet *iFacet, Databuff *hitbuffer);
 double calcEnergy(SubprocessFacet *iFacet);
 
