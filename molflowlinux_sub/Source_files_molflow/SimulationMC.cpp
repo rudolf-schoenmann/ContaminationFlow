@@ -847,13 +847,13 @@ bool StartFromSource() {
 			double residence_energy;
 			boost::multiprecision::float128 coverage;
 			coverage = calcCoverage(src);
-			if(coverage >= 1)residence_energy = p->E_de;
+			if(coverage >= 1)residence_energy = p->H_vap;
 			else {
 				if(rnd() <= coverage ){
-					residence_energy = 	p->E_de;
+					residence_energy = 	p->H_vap
 				}
 				else{
-					residence_energy = 	p->H_vap;
+					residence_energy = 	p->E_de;
 				}
 			}
 			//double A = exp(-src->sh.sojournE / (kb*src->sh.temperature)); // //Don't need that. We decide in each case of residence at random, if the particle will adsorb at substrate or adsorbate.
@@ -1362,13 +1362,13 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 		double residence_energy;
 		boost::multiprecision::float128 coverage;
 		coverage = calcCoverage(iFacet);
-		if(coverage >= 1)residence_energy = p->E_de;
+		if(coverage >= 1)residence_energy = p->H_vap;
 		else {
 				if(rnd() <= coverage ){
-					residence_energy = 	p->E_de;
+					residence_energy = 	p->H_vap;
 				}
 				else{
-					residence_energy = 	p->H_vap;
+					residence_energy = 	p->E_de;
 				}
 		}
 		//double A = exp(-iFacet->sh.sojournE / (kb*iFacet->sh.temperature)); // //Don't need that. We decide in each case of residence at random, if the particle will adsorb at substrate or adsorbate.
