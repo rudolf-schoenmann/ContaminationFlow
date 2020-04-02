@@ -138,10 +138,17 @@ double calcStep(long double variable, double start, double end, double inflectio
 
 	if(start==end)
 		return start;
+	else
+		return (double)tanh(((variable - inflection_point)/Wtr) *2*tuneE) * (end - start)/2 +(start+end)/2; //tanh(adjust width) * adjust height + adjust bias
+		//formula remains the same. But written like this, seems to be easier to be understood!
+		// factor of 2, since tanh(x*2*tuneE) is then 0,99 for x = 1/2 as well as -0,99 for x = -1/2; here the normalized transition width is 1/2 - (-1/2) = 1;
+	/* wrong:
 	else if(start>end)
 		return (double)tanh((inflection_point-variable) * (2*tuneE)/Wtr) * (start - end)/2 +(start+end)/2; //tanh(adjust width) * adjust height + adjust bias
 	else
 		return (-1.0)*(double)tanh((inflection_point-variable) * (2*tuneE)/Wtr) * (start - end)/2 +(start+end)/2; //-tanh(adjust width) * adjust height + adjust bias
+		//in the 'else' case an additional minus sign (it's the absolute value of '(start-end)/2') has been forgotten!
+	*/
 }
 
 double calcEnergy(SubprocessFacet *iFacet){ //TODO verify
