@@ -253,9 +253,11 @@ int main(int argc, char *argv[]) {
 				}
 				break;
 			}
+			/* With the new Krealvirt we do not need this check, since covering cannot be negative for too long time steps.
 			if(rank==0){
 				manageStepSize();
 			}
+			*/
 			MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
 			MPI_Barrier(MPI_COMM_WORLD);
 

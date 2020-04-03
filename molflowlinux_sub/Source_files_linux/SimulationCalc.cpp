@@ -195,11 +195,11 @@ void calcStickingnew(SubprocessFacet *iFacet) {//Calculates sticking coefficient
 
 }
 
-boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This returns ((d'coverage')/dt)de. So to speak desorption rate in units of [1/s]
+boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This returns Delta'covering' in units of [1].
 	boost::multiprecision::float128 coverage;
 	double temperature;
 	boost::multiprecision::float128 desorption(0.0);
-
+	double time_step = getStepSize();
 	coverage = calcCoverage(iFacet);
 	temperature=iFacet->sh.temperature;
 
@@ -207,23 +207,20 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 		return 0.0;
 	}
 
-	boost::multiprecision::float128 d = boost::multiprecision::float128(calcStep((long double)(coverage), 1, 0, 1, p->W_tr));
-	boost::multiprecision::float128 tau_1=static_cast<boost::multiprecision::float128>(1.0)/static_cast<boost::multiprecision::float128>(h/(kb*temperature)); //tau_1 is actually tau^(-1)
-
-	boost::multiprecision::float128 energy_de=static_cast<boost::multiprecision::float128>(calcEnergy(iFacet));
-
-	desorption = tau_1 * boost::multiprecision::pow(coverage,static_cast<boost::multiprecision::float128>(d)) *boost::multiprecision::exp(-energy_de/static_cast<boost::multiprecision::float128>(kb*temperature));
-	//if (Desorption Energy/Temperature) >~ 1.02E-20J/K, desorption will be zero
-	//std::cout << "time constant = " <<  1/(tau_1*boost::multiprecision::exp(-energy_de/static_cast<boost::multiprecision::float128>(kb*temperature))) << " s."<<std::endl;
-	//p->outFile << "time constant = " <<  1/(tau_1*boost::multiprecision::exp(-energy_de/static_cast<boost::multiprecision::float128>(kb*temperature))) << " s."<<std::endl;
+	boost::multiprecision::float128 tau_0=static_cast<boost::multiprecision::float128>(h/(kb*temperature));
+	boost::multiprecision::float128 energy_de=static_cast<boost::multiprecision::float128>(p->E_de);
+	boost::multiprecision::float128 tau = tau_0 * boost::multiprecision::exp(energy_de/static_cast<boost::multiprecision::float128>(kb*temperature));
+	desorption = coverage *(1 - boost::multiprecision::exp(-time_step/tau));//This returns Delta'coverage' in units of [1].
+	desorption = coverage *(calcNmono(iFacet)/calcdNsurf());//This returns Delta'covering' in units of [1].
 	return desorption;
 }
-
+/* Don't needed in the new Krealvirt approach...
 boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet) {//This returns ((d'coverage')/dt)de * (Nmono/dNSurf) * kb*T. So to speak desorption rate in units of [Pa m³/s]
 	boost::multiprecision::float128 desorption = calcDesorption(iFacet);
 	boost::multiprecision::float128 desorptionRate = desorption * boost::multiprecision::float128(kb* iFacet->sh.temperature * calcNmono(iFacet) /calcdNsurf());
 	return desorptionRate;
 }
+*/
 
 double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f){
 	double scaleY = 1.0 / (f->sh.area * 1E-4); //1E4 is conversion from m2 to cm2
