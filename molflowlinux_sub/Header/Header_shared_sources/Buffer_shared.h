@@ -176,9 +176,10 @@ public:
 #ifdef MOLFLOW
 							 // Molflow-specific facet parameters
 	double temperature;    // Facet temperature (Kelvin)                  - can be overridden by time-dependent parameter
-	double outgassing;           // (in units of Pa*m^3/s)                      - can be overridden by time-dependent parameter
+	//double outgassing;           // (in units of Pa*m^3/s)                      - can be overridden by time-dependent parameter => Former outgassing of Molflow!
 	//double desorption; // (in units of Pa*m^3/s)
-	boost::multiprecision::float128 desorption;
+	double outgassing; //Is a number of Particles to be desorbed in one time step.
+	boost::multiprecision::float128 desorption; //Is a number of Particles to be desorbed in one time step.
 
 
 	int sticking_paramId;    // -1 if use constant value, 0 or more if referencing time-dependent parameter
@@ -212,7 +213,7 @@ public:
 	size_t   outgassingMapWidth; //rounded up outgassing file map width
 	size_t   outgassingMapHeight; //rounded up outgassing file map height
 
-	double totalOutgassing; //total outgassing for the given facet
+	double totalOutgassing; //total outgassing for the given facet in [Pa m^3/s]
 
 	AnglemapParams anglemapParams;//Incident angle map
 #endif
