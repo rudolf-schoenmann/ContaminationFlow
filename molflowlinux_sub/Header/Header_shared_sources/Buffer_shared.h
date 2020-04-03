@@ -213,7 +213,9 @@ public:
 	size_t   outgassingMapWidth; //rounded up outgassing file map width
 	size_t   outgassingMapHeight; //rounded up outgassing file map height
 
-	double totalOutgassing; //total outgassing for the given facet in [Pa m^3/s]
+	double totalOutgassing; //total outgassing for the given facet. This was calculated by Molflow in [Pa m^3/s] originating from an outgassing file. E.g. from Synrad.
+							//As the code is now changed with the new Krealvirt approach, it would have had to be provided as a number of particles.
+							//We did not change anything about totalOutgassing to be a number of particles, since we do not need it presumably.
 
 	AnglemapParams anglemapParams;//Incident angle map
 #endif
