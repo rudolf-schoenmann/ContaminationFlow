@@ -84,16 +84,24 @@ void CalcTotalOutgassingWorker() {
 				}
 				else { //regular outgassing
 					if (f.sh.outgassing_paramId == -1) { //constant outgassing
+						//This following three lines are still the old code.
 						sHandle->wp.totalDesorbedMolecules += sHandle->wp.latestMoment * f.sh.outgassing / (1.38E-23*f.sh.temperature);
 						sHandle->wp.finalOutgassingRate += f.sh.outgassing / (1.38E-23*f.sh.temperature);  //Outgassing molecules/sec
 						sHandle->wp.finalOutgassingRate_Pa_m3_sec += f.sh.outgassing;
+						//As the code is now changed with the new Krealvirt approach, we now have to provide f.sh.outgassing as a number of particles (not anymore as Pa m^3/s).
+						//f.sh.outgassing is then used by the StartFromSource function (and also by the estimateTmin function, which is not used anymore but might be reactivated).
+						//Either we modify f.sh.outgassing in the new parameter input or we modify the StartFromSource function.
+						//Here in the CalcTotalOutgassingWorker function there are some modifications necessary, too.
+						//This has to be decided, when it is clear, how the input of outgassing is solved.
 					}
 					else { //time-dependent outgassing
+						/*
 						sHandle->wp.totalDesorbedMolecules += sHandle->IDs[f.sh.IDid].back().second / (1.38E-23*f.sh.temperature);
 						size_t lastIndex = sHandle->parameters[f.sh.outgassing_paramId].GetSize() - 1;
 						double finalRate_mbar_l_s = sHandle->parameters[f.sh.outgassing_paramId].GetY(lastIndex);
 						sHandle->wp.finalOutgassingRate += finalRate_mbar_l_s *0.100 / (1.38E-23*f.sh.temperature); //0.1: mbar*l/s->Pa*m3/s
 						sHandle->wp.finalOutgassingRate_Pa_m3_sec += finalRate_mbar_l_s *0.100;
+						*/
 					}
 				}
 			}
