@@ -80,6 +80,7 @@ void CalcTotalOutgassingWorker() {
 						sHandle->wp.totalDesorbedMolecules += sHandle->wp.latestMoment * f.outgassingMap[l] / (1.38E-23*f.sh.temperature);
 						sHandle->wp.finalOutgassingRate += f.outgassingMap[l] / (1.38E-23*f.sh.temperature);
 						sHandle->wp.finalOutgassingRate_Pa_m3_sec += f.outgassingMap[l];
+						//Modifications like in the regular outgassing case necessary!?!
 					}
 				}
 				else { //regular outgassing
@@ -93,6 +94,7 @@ void CalcTotalOutgassingWorker() {
 						//Either we modify f.sh.outgassing in the new parameter input or we modify the StartFromSource function.
 						//Here in the CalcTotalOutgassingWorker function there are some modifications necessary, too.
 						//This has to be decided, when it is clear, how the input of outgassing is solved.
+						//Same for the case of an outgassing file!?!
 					}
 					else { //time-dependent outgassing
 						/*
