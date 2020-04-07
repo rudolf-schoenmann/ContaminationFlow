@@ -202,8 +202,8 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 	boost::multiprecision::float128 tau_0=static_cast<boost::multiprecision::float128>(h/(kb*temperature));
 	boost::multiprecision::float128 energy_de=static_cast<boost::multiprecision::float128>(p->E_de);
 	boost::multiprecision::float128 tau = tau_0 * boost::multiprecision::exp(energy_de/static_cast<boost::multiprecision::float128>(kb*temperature));
-	desorption = coverage *(1 - boost::multiprecision::exp(-time_step/tau));//This returns Delta'coverage' in units of [1].
-	desorption = coverage *(calcNmono(iFacet)/calcdNsurf());//This returns Delta'covering' in units of [1].
+	desorption = coverage *(1 - boost::multiprecision::exp(-time_step/tau));//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
+	desorption = desorption *(calcNmono(iFacet)/calcdNsurf());//This returns Delta'covering' in units of [1]. 1 means one particle.
 	return desorption;
 }
 /* Don't needed in the new Krealvirt approach...
