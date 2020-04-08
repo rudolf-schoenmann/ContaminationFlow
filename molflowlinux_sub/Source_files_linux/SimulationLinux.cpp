@@ -460,9 +460,7 @@ std::tuple<bool, llong > checkSmallCovering(int rank, Databuff *hitbuffer_sum){
 	boost::multiprecision::uint128_t covering;
 
 	boost::multiprecision::uint128_t mincov = boost::multiprecision::uint128_t(p->coveringMinThresh);
-	/*if(rank!=0){
-				simHistory->updateHistory();//here the current covering value gets written in the tmpcounters.
-	}*/
+
 
 	bool smallCovering=false;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {

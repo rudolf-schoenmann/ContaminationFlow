@@ -171,14 +171,7 @@ boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum) // Ca
 
 	CalcTotalOutgassingWorker();
 
-	/*
-	std::cout << "time step = " << simHistory->stepSize <<std::endl;
-	p->outFile << "time step = " << simHistory->stepSize << std::endl;
-	std::cout <<"Krealvirt = Desorption/desorbed particles = " << boost::multiprecision::float128(sHandle->wp.finalOutgassingRate) +desrate << " / ";
-	std::cout << boost::multiprecision::float128(nbDesorbed) << " = " << (boost::multiprecision::float128(sHandle->wp.finalOutgassingRate) +desrate) / boost::multiprecision::float128(nbDesorbed) <<std::endl;
-	p->outFile <<"Krealvirt = Desorption/desorbed particles = " << boost::multiprecision::float128(sHandle->wp.finalOutgassingRate) +desrate << " / ";
-	p->outFile << boost::multiprecision::float128(nbDesorbed) << " = " << (boost::multiprecision::float128(sHandle->wp.finalOutgassingRate) +desrate) / boost::multiprecision::float128(nbDesorbed) <<std::endl;
-	*/
+
 	return (boost::multiprecision::float128(sHandle->wp.finalOutgassingRate) +desrate) / boost::multiprecision::float128(nbDesorbed);
 	}
 
