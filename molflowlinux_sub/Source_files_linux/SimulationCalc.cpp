@@ -171,6 +171,13 @@ boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum) // Ca
 
 	CalcTotalOutgassingWorker();
 
+	std::cout << "time step = " << getStepSize() << std::endl;
+	p->outFile << "time step = " << getStepSize() << std::endl;
+	std::cout <<"Krealvirt = Desorption/desorbed particles = " << boost::multiprecision::float128(sHandle->wp.finalOutgassingRate) +desrate << " / ";
+	std::cout << boost::multiprecision::float128(nbDesorbed) << " = " << (boost::multiprecision::float128(sHandle->wp.finalOutgassingRate) +desrate) / boost::multiprecision::float128(nbDesorbed) <<std::endl;
+	p->outFile <<"Krealvirt = Desorption/desorbed particles = " << boost::multiprecision::float128(sHandle->wp.finalOutgassingRate) +desrate << " / ";
+	p->outFile << boost::multiprecision::float128(nbDesorbed) << " = " << (boost::multiprecision::float128(sHandle->wp.finalOutgassingRate) +desrate) / boost::multiprecision::float128(nbDesorbed) <<std::endl;
+
 	return (boost::multiprecision::float128(sHandle->wp.finalOutgassingRate) +desrate) / boost::multiprecision::float128(nbDesorbed);
 	}
 
@@ -198,6 +205,8 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 	if(coverage==0 || temperature==0){
 		return 0.0;
 	}
+	std::cout << "time step = " << getStepSize() << std::endl;
+	p->outFile << "time step = " << getStepSize() << std::endl;
 
 	boost::multiprecision::float128 tau_0=static_cast<boost::multiprecision::float128>(h/(kb*temperature));
 	boost::multiprecision::float128 energy_de=static_cast<boost::multiprecision::float128>(p->E_de);

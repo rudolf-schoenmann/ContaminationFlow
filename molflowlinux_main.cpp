@@ -244,22 +244,23 @@ int main(int argc, char *argv[]) {
 
 			UpdateSticking();
 			UpdateSojourn();
+
+			MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
+			MPI_Barrier(MPI_COMM_WORLD);
+
+
+
+
 			if(!UpdateDesorptionRate()){//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes
 				if(rank==0) {
 					std::cout <<"Desorption smaller than 1E-50. Ending Simulation." <<std::endl;
 					p->outFile <<"Desorption smaller than 1E-50. Ending Simulation." <<std::endl;
 					std::cout <<"Computation Time (Simulation only): " <<computedTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computedTime/1000.0) <<std::endl;
 					p->outFile <<"Computation Time (Simulation only): " <<computedTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computedTime/1000.0) <<std::endl;
-				}
+					}
 				break;
 			}
-			/* With the new Krealvirt we do not need this check, since covering cannot be negative for too long time steps.
-			if(rank==0){
-				manageStepSize();
-			}
-			*/
-			MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
-			MPI_Barrier(MPI_COMM_WORLD);
+
 
 			//----Simulation on subprocesses
 			if (rank != 0) {
