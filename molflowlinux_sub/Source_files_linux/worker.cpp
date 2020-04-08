@@ -67,7 +67,7 @@ int GenerateNewCDF(double temperature){
 void CalcTotalOutgassingWorker() {
 	// Compute the outgassing of all source facet
 	sHandle->wp.totalDesorbedMolecules = sHandle->wp.finalOutgassingRate_Pa_m3_sec = sHandle->wp.finalOutgassingRate = 0.0;
-	double time_step = getStepSize();
+	//double time_step = simHistory->stepSize;
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {

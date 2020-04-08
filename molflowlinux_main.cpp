@@ -248,8 +248,12 @@ int main(int argc, char *argv[]) {
 			MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
 			MPI_Barrier(MPI_COMM_WORLD);
 
-
-
+			if(rank!=0){
+						simHistory->updateHistory();//here the current covering value gets written in the tmpcounters.
+			}
+			else{
+				simHistory->stepSize = getStepSize();
+			}
 
 			if(!UpdateDesorptionRate()){//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes
 				if(rank==0) {
@@ -257,7 +261,7 @@ int main(int argc, char *argv[]) {
 					p->outFile <<"Desorption smaller than 1E-50. Ending Simulation." <<std::endl;
 					std::cout <<"Computation Time (Simulation only): " <<computedTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computedTime/1000.0) <<std::endl;
 					p->outFile <<"Computation Time (Simulation only): " <<computedTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computedTime/1000.0) <<std::endl;
-					}
+				}
 				break;
 			}
 

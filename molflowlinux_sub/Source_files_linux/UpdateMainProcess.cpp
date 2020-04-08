@@ -32,19 +32,27 @@ extern SimulationHistory* simHistory;
 
 // Step size for intervals
 double getStepSize(){
-	double T_min = p->t_min;//set minimal time resolution to 1E-4 seconds. This does not work yet. If you take enough steps, resolution goes under 1E-4s. => Some "error" to be corrected still
-
-	//Dynamical calculation of min_time is not straight forward, since 'manageTimeStep()' can change it.
-	//Dynamical calculation can be done later, if it is regarded as useful.
-	double t_start = T_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/(T_min))/(double)p->iterationNumber));
-	double t_stop = T_min*exp((double)(simHistory->currentStep+1)*(log(p->maxTimeS/(T_min))/(double)p->iterationNumber));
-	double Delta = t_stop - t_start;
-	double Delta_final = p->t_max - t_start;
-	if(t_stop > p->t_max){
-		return Delta_final;
+	double T_min = p->t_min;//set minimal time resolution to 1E-4 seconds.
+	if(simHistory->currentStep == 0){
+		double test_time_step;
+		test_time_step = T_min*(exp((log(p->maxTimeS/(T_min))/(double)p->iterationNumber)) - 1);
+		while(test_time_step < T_min){
+			p->iterationNumber -=1;
+			test_time_step = T_min*(exp((log(p->maxTimeS/(T_min))/(double)p->iterationNumber)) - 1);
+		}
+		return T_min;
 	}
 	else{
-		return Delta;
+		double t_start = T_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/(T_min))/(double)p->iterationNumber));
+		double t_stop = T_min*exp((double)(simHistory->currentStep+1)*(log(p->maxTimeS/(T_min))/(double)p->iterationNumber));
+		double Delta = t_stop - t_start;
+		double Delta_final = p->t_max - t_start;
+		if(t_stop > p->t_max){
+			return Delta_final;
+		}
+		else{
+			return Delta;
+		}
 	}
 	/*if(simHistory->currentStep==0){
 		double T_min = estimateAverageFlightTime();
@@ -53,7 +61,6 @@ double getStepSize(){
 	else{
 		return exp((double)simHistory->currentStep*(log(p->maxTimeS/simHistory->coveringList.pointintime_list[1].first)/(double)p->iterationNumber));
 		}*/
-
 }
 
 double manageStepSize(){
@@ -62,7 +69,7 @@ double manageStepSize(){
 	bool needforCheck = true;
 
 	while(needforCheck){
-		step_size = getStepSize();
+		step_size = simHistory->stepSize;
 		steptoolong=false;
 		for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
@@ -213,7 +220,7 @@ void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){//Update
 		}
 	}
 
-	double time_step = getStepSize();
+	double time_step = simHistory->stepSize;
 	simHistory->coveringList.appendCurrent(simHistory->lastTime+time_step);
 	simHistory->lastTime+=time_step;
 	simHistory->hitList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
