@@ -160,7 +160,7 @@ double calcEnergy(SubprocessFacet *iFacet){ //TODO verify
 //-----------------------------------------------------------
 // calculation of used values
 
-boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum) // Calculation of Krealvirt
+boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum, llong smallCoveringFactor) // Calculation of Krealvirt
 //Returns how many physical molecules one test particle represents per time
 {
 	llong nbDesorbed = getnbDesorbed(hitbuffer_sum);
@@ -179,7 +179,7 @@ boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum) // Ca
 	std::cout << "gHits->globalHits.hit.nbDesorbed [1] = " << nbDesorbed<< std::endl;
 	std::cout << "(wp.finalOutgassingRate + desrate)/gHits->globalHits.hit.nbDesorbed [1/s] = "<< (sHandle->wp.finalOutgassingRate + desrate)/nbDesorbed << std::endl;
 	*/
-	return (boost::multiprecision::float128(sHandle->wp.finalOutgassingRate) +desrate) / boost::multiprecision::float128(nbDesorbed);
+	return (boost::multiprecision::float128(sHandle->wp.finalOutgassingRate) +desrate) / (boost::multiprecision::float128(nbDesorbed)/smallCoveringFactor);
 	}
 
 
@@ -225,15 +225,15 @@ boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet) {//T
 	return desorptionRate;
 }
 
-double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f){
+double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f, llong smallCoveringFactor){
 	double scaleY = 1.0 / (f->sh.area * 1E-4); //1E4 is conversion from m2 to cm2
 	//TODO is this correct?
-	return scaleY *GetMoleculesPerTP(hitbuffer_sum).convert_to<double>() * f->tmpCounter[0].hit.sum_1_per_ort_velocity;
+	return scaleY *GetMoleculesPerTP(hitbuffer_sum, smallCoveringFactor).convert_to<double>() * f->tmpCounter[0].hit.sum_1_per_ort_velocity;
 }
 
-double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f){//calculates Pressure of facet. Output value's unit is mbar.
+double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f, llong smallCoveringFactor){//calculates Pressure of facet. Output value's unit is mbar.
 	double scaleY = 1.0 / (f->sh.area  * 1E-4)* sHandle->wp.gasMass / 1000 / 6E23 * 0.0100; //0.01: Pa->mbar;  //1E4 is conversion from m2 to cm2, 0.01: Pa->mbar
-	return f->tmpCounter[0].hit.sum_1_per_ort_velocity*scaleY * GetMoleculesPerTP(hitbuffer_sum).convert_to<double>();
+	return f->tmpCounter[0].hit.sum_1_per_ort_velocity*scaleY * GetMoleculesPerTP(hitbuffer_sum, smallCoveringFactor).convert_to<double>();
 }
 
 

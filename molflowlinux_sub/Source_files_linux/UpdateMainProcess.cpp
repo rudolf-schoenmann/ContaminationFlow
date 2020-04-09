@@ -111,7 +111,7 @@ void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){//Update
 	//Calculates with the summed up counters of hitbuffer_sum how many test particles are equivalent to one physical particle.
 	//simTime in ms
 
-	boost::multiprecision::float128 Krealvirt = GetMoleculesPerTP(hitbuffer_sum);
+	boost::multiprecision::float128 Krealvirt = GetMoleculesPerTP(hitbuffer_sum, smallCoveringFactor);
 	//llong nbDesorbed = getnbDesorbed(hitbuffer_sum)-simHistory->nbDesorbed_old;
 	//std::cout <<"nbDesorbed before and after:\t" << history->nbDesorbed_old <<'\t';
 	//simHistory->nbDesorbed_old = getnbDesorbed(hitbuffer_sum); //Not needed anymore.
