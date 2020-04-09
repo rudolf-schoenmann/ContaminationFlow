@@ -104,7 +104,7 @@ double manageStepSize(){
 void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){//Updates Covering after an Iteration using Krealvirt and the smallCoveringFactor.
 	//Calculates with the summed up counters of hitbuffer_sum, how many test particles are equivalent to one physical particle.
 
-	boost::multiprecision::float128 Krealvirt = GetMoleculesPerTP(hitbuffer_sum);
+	boost::multiprecision::float128 Krealvirt = GetMoleculesPerTP(hitbuffer_sum, smallCoveringFactor);
 	boost::multiprecision::uint128_t covering_phys;
 	boost::multiprecision::uint128_t covering_sum;//covering as it is summed up of all subprocesses. In case, it is multiplied by smallCoveringFactor
 	boost::multiprecision::float128 covering_sum_netto ;//used to devide covering_sum by the smallCoveringFactor; float;

@@ -465,7 +465,7 @@ double calcStep(long double variable, double start, double end, double inflectio
 //double calcEnergy(SubprocessFacet *iFacet, Databuff *hitbuffer);
 double calcEnergy(SubprocessFacet *iFacet);
 
-boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum);
+boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum, llong smallCoveringFactor);
 //void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
 void calcStickingnew(SubprocessFacet *iFacet);
 //boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
