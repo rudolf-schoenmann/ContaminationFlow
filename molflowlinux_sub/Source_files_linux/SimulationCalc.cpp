@@ -195,15 +195,30 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 	double time_step = simHistory->stepSize;
 	coverage = calcCoverage(iFacet);
 	temperature=iFacet->sh.temperature;
+	boost::multiprecision::float128 tau_0=static_cast<boost::multiprecision::float128>(h/(kb*temperature));
+	boost::multiprecision::float128 energy_de=static_cast<boost::multiprecision::float128>(p->E_de);
+	boost::multiprecision::float128 enthalpy_vap=static_cast<boost::multiprecision::float128>(p->H_vap);
+	boost::multiprecision::float128 tau_subst = tau_0 * boost::multiprecision::exp(energy_de/static_cast<boost::multiprecision::float128>(kb*temperature));//tau for particles desorbing on the substrate
 
 	if(coverage==0 || temperature==0){
 		return 0.0;
 	}
-
-	boost::multiprecision::float128 tau_0=static_cast<boost::multiprecision::float128>(h/(kb*temperature));
-	boost::multiprecision::float128 energy_de=static_cast<boost::multiprecision::float128>(p->E_de);
-	boost::multiprecision::float128 tau = tau_0 * boost::multiprecision::exp(energy_de/static_cast<boost::multiprecision::float128>(kb*temperature));
-	desorption = coverage *(1 - boost::multiprecision::exp(-time_step/tau));//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
+	else if (coverage <= 1){
+		desorption = coverage *(1 - boost::multiprecision::exp(-time_step/tau_subst));//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
+	}
+	else{//coverage > 1
+		boost::multiprecision::float128 tau_ads = tau_0 * boost::multiprecision::exp(enthalpy_vap/static_cast<boost::multiprecision::float128>(kb*temperature));//tau for particles desorbing on the adsorbate
+		if ((coverage - 1) >= (time_step/tau_ads)){//There are more layers (excluding the first monolayer), than desorbing while the iteration time.
+			desorption = time_step/tau_ads;//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
+		}
+		else{//(coverage - 1) < (time_step/tau_ads): There are less layers (excluding the first monolayer), than desorbing while the iteration time.
+			double time_step_ads;//time while particles desorbe form multilayer until one single monolayer is reached
+			time_step_ads = (double)(tau_ads*(coverage - 1));
+			double time_step_subst;//time while particles desorbe form single monolayer
+			time_step_subst = time_step - time_step_ads;
+			desorption = coverage -1 + (1 - boost::multiprecision::exp(-time_step_subst/tau_subst));//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
+		}
+	}
 	desorption = desorption *(calcNmono(iFacet)/calcdNsurf());//This returns Delta'covering' in units of [1]. 1 means one particle.
 	return desorption;
 }
