@@ -121,14 +121,14 @@ boost::multiprecision::float128 calcCoverage(SubprocessFacet *iFacet){ // calcul
 	return coverage;
 }
 
-boost::multiprecision::float128 calctotalDesorption(){// desorptionrate as well as total Number of desorbed particles
+boost::multiprecision::float128 calctotalDesorption(){// calculates the desorbed particles of all facets
 	boost::multiprecision::float128 desrate(0.0);
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				if(f.sh.temperature==0) {continue;}
 
 				boost::multiprecision::float128 facetdes = f.sh.desorption;
-				desrate+=facetdes/ boost::multiprecision::float128(1.38E-23*f.sh.temperature);
+				desrate+=facetdes;
 			}
 	}
 	return desrate;
@@ -160,9 +160,10 @@ double calcEnergy(SubprocessFacet *iFacet){ //TODO verify
 //-----------------------------------------------------------
 // calculation of used values
 
-boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum, llong smallCoveringFactor) // Calculation of Krealvirt
-//Returns how many physical molecules one test particle represents per time
-{
+
+boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum, llong smallCoveringFactor){ // Calculation of the new Krealvirt
+//Returns how many physical molecules one test particle represents
+
 	llong nbDesorbed = getnbDesorbed(hitbuffer_sum);
 	if (nbDesorbed == 0) return 0; //avoid division by 0
 
@@ -170,15 +171,8 @@ boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum, llong
 	desrate=calctotalDesorption();
 
 	CalcTotalOutgassingWorker();
-	//Constant flow
-	//Each test particle represents a certain real molecule influx per second
-	/*
-	std::cout << "wp.finalOutgassingRate [Pa*m^3/s] = " << sHandle->wp.finalOutgassingRate << std::endl;
-	std::cout << "desrate [1/s] = " << desrate << std::endl;
-	std::cout << "wp.finalOutgassingRate + desrate [1/s] = " << sHandle->wp.finalOutgassingRate + desrate << std::endl;
-	std::cout << "gHits->globalHits.hit.nbDesorbed [1] = " << nbDesorbed<< std::endl;
-	std::cout << "(wp.finalOutgassingRate + desrate)/gHits->globalHits.hit.nbDesorbed [1/s] = "<< (sHandle->wp.finalOutgassingRate + desrate)/nbDesorbed << std::endl;
-	*/
+
+
 	return (boost::multiprecision::float128(sHandle->wp.finalOutgassingRate) +desrate) / (boost::multiprecision::float128(nbDesorbed)/smallCoveringFactor);
 	}
 
@@ -195,45 +189,56 @@ void calcStickingnew(SubprocessFacet *iFacet) {//Calculates sticking coefficient
 
 }
 
-boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This returns ((d'coverage')/dt)de. So to speak desorption rate in units of [1/s]
+boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This returns Delta'covering' in units of [1].
 	boost::multiprecision::float128 coverage;
 	double temperature;
 	boost::multiprecision::float128 desorption(0.0);
-
+	double time_step = simHistory->stepSize;
 	coverage = calcCoverage(iFacet);
 	temperature=iFacet->sh.temperature;
+	boost::multiprecision::float128 tau_0=static_cast<boost::multiprecision::float128>(h/(kb*temperature));
+	boost::multiprecision::float128 energy_de=static_cast<boost::multiprecision::float128>(p->E_de);
+	boost::multiprecision::float128 enthalpy_vap=static_cast<boost::multiprecision::float128>(p->H_vap);
+	boost::multiprecision::float128 tau_subst = tau_0 * boost::multiprecision::exp(energy_de/static_cast<boost::multiprecision::float128>(kb*temperature));//tau for particles desorbing on the substrate
 
 	if(coverage==0 || temperature==0){
 		return 0.0;
 	}
-
-	boost::multiprecision::float128 d = boost::multiprecision::float128(calcStep((long double)(coverage), 1, 0, 1, p->W_tr));
-	boost::multiprecision::float128 tau_1=static_cast<boost::multiprecision::float128>(1.0)/static_cast<boost::multiprecision::float128>(h/(kb*temperature)); //tau_1 is actually tau^(-1)
-
-	boost::multiprecision::float128 energy_de=static_cast<boost::multiprecision::float128>(calcEnergy(iFacet));
-
-	desorption = tau_1 * boost::multiprecision::pow(coverage,static_cast<boost::multiprecision::float128>(d)) *boost::multiprecision::exp(-energy_de/static_cast<boost::multiprecision::float128>(kb*temperature));
-	//if (Desorption Energy/Temperature) >~ 1.02E-20J/K, desorption will be zero
-	//std::cout << "time constant = " <<  1/(tau_1*boost::multiprecision::exp(-energy_de/static_cast<boost::multiprecision::float128>(kb*temperature))) << " s."<<std::endl;
-	//p->outFile << "time constant = " <<  1/(tau_1*boost::multiprecision::exp(-energy_de/static_cast<boost::multiprecision::float128>(kb*temperature))) << " s."<<std::endl;
+	else if (coverage <= 1){
+		desorption = coverage *(1 - boost::multiprecision::exp(-time_step/tau_subst));//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
+	}
+	else{//coverage > 1
+		boost::multiprecision::float128 tau_ads = tau_0 * boost::multiprecision::exp(enthalpy_vap/static_cast<boost::multiprecision::float128>(kb*temperature));//tau for particles desorbing on the adsorbate
+		if ((coverage - 1) >= (time_step/tau_ads)){//There are more layers (excluding the first monolayer), than desorbing while the iteration time.
+			desorption = time_step/tau_ads;//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
+		}
+		else{//(coverage - 1) < (time_step/tau_ads): There are less layers (excluding the first monolayer), than desorbing while the iteration time.
+			double time_step_ads;//time while particles desorbe form multilayer until one single monolayer is reached
+			time_step_ads = (double)(tau_ads*(coverage - 1));
+			double time_step_subst;//time while particles desorbe form single monolayer
+			time_step_subst = time_step - time_step_ads;
+			desorption = coverage -1 + (1 - boost::multiprecision::exp(-time_step_subst/tau_subst));//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
+		}
+	}
+	desorption = desorption *(calcNmono(iFacet)/calcdNsurf());//This returns Delta'covering' in units of [1]. 1 means one particle.
 	return desorption;
 }
-
+/* Don't needed in the new Krealvirt approach...
 boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet) {//This returns ((d'coverage')/dt)de * (Nmono/dNSurf) * kb*T. So to speak desorption rate in units of [Pa m³/s]
 	boost::multiprecision::float128 desorption = calcDesorption(iFacet);
 	boost::multiprecision::float128 desorptionRate = desorption * boost::multiprecision::float128(kb* iFacet->sh.temperature * calcNmono(iFacet) /calcdNsurf());
 	return desorptionRate;
 }
+*/
 
 double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f, llong smallCoveringFactor){
 	double scaleY = 1.0 / (f->sh.area * 1E-4); //1E4 is conversion from m2 to cm2
-	//TODO is this correct?
 	return scaleY *GetMoleculesPerTP(hitbuffer_sum, smallCoveringFactor).convert_to<double>() * f->tmpCounter[0].hit.sum_1_per_ort_velocity;
 }
 
 double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f, llong smallCoveringFactor){//calculates Pressure of facet. Output value's unit is mbar.
 	double scaleY = 1.0 / (f->sh.area  * 1E-4)* sHandle->wp.gasMass / 1000 / 6E23 * 0.0100; //0.01: Pa->mbar;  //1E4 is conversion from m2 to cm2, 0.01: Pa->mbar
-	return f->tmpCounter[0].hit.sum_1_per_ort_velocity*scaleY * GetMoleculesPerTP(hitbuffer_sum, smallCoveringFactor).convert_to<double>();
+	return f->tmpCounter[0].hit.sum_v_ort*scaleY* GetMoleculesPerTP(hitbuffer_sum, smallCoveringFactor).convert_to<double>();
 }
 
 

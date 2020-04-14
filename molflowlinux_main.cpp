@@ -244,6 +244,17 @@ int main(int argc, char *argv[]) {
 
 			UpdateSticking();
 			UpdateSojourn();
+
+			MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
+			MPI_Barrier(MPI_COMM_WORLD);
+
+			if(rank!=0){
+						simHistory->updateHistory();//here the current covering value gets written in the tmpcounters.
+			}
+			else{
+				simHistory->stepSize = getStepSize();
+			}
+
 			if(!UpdateDesorptionRate()){//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes
 				if(rank==0) {
 					std::cout <<"Desorption smaller than 1E-50. Ending Simulation." <<std::endl;
@@ -253,11 +264,7 @@ int main(int argc, char *argv[]) {
 				}
 				break;
 			}
-			if(rank==0){
-				manageStepSize();
-			}
-			MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
-			MPI_Barrier(MPI_COMM_WORLD);
+
 
 			//----Simulation on subprocesses
 			if (rank != 0) {

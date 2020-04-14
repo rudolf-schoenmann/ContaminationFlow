@@ -668,7 +668,7 @@ bool StartFromSource() {
 				/*if(test){
 					std::cout <<"totaldes: " <<totaldes <<" += "<<f.sh.desorption<<" * " <<boost::multiprecision::float128(sHandle->wp.latestMoment/ (1.38E-23*f.sh.temperature)) <<std::endl;
 				}*/
-				totaldes+= f.sh.desorption * boost::multiprecision::float128(sHandle->wp.latestMoment/ (1.38E-23*f.sh.temperature));
+				totaldes+= f.sh.desorption;
 
 			}
 	}
@@ -684,12 +684,12 @@ bool StartFromSource() {
 		while (!found && i < (int)sHandle->structures[j].facets.size()) { //Go through facets in a structure
 			SubprocessFacet& f = sHandle->structures[j].facets[i];
 			if(f.sh.temperature==0) {i++;continue;}
-			boost::multiprecision::float128 des=f.sh.desorption; //double des = sHandle->wp.latestMoment *calcDesorption(&f)/ (1.38E-23*f.sh.temperature); // TODO which one is right?
+			boost::multiprecision::float128 des=f.sh.desorption;
 
 			if (f.sh.desorbType != DES_NONE || des>boost::multiprecision::float128(0.0)) { //there is some kind of outgassing
 				if (f.sh.useOutgassingFile) { //Using SynRad-generated outgassing map
 					if (boost::multiprecision::float128(f.sh.totalOutgassing) +des > boost::multiprecision::float128(0.0)) {
-						found = (srcRnd >= sumA) && (srcRnd < (sumA + (boost::multiprecision::float128(f.sh.totalOutgassing)+des) * boost::multiprecision::float128(sHandle->wp.latestMoment /(1.38E-23*f.sh.temperature))));
+						found = (srcRnd >= sumA) && (srcRnd < (sumA + (boost::multiprecision::float128(f.sh.totalOutgassing)+des)));
 
 						if (found) {
 							//look for exact position in map
@@ -716,14 +716,14 @@ bool StartFromSource() {
 								return false;
 							}*/
 						}
-						sumA += (boost::multiprecision::float128(f.sh.totalOutgassing)+des) * boost::multiprecision::float128(sHandle->wp.latestMoment / (1.38E-23*f.sh.temperature));
+						sumA += (boost::multiprecision::float128(f.sh.totalOutgassing)+des);
 					}
 				} //end outgassing file block
 				else { //constant or time-dependent outgassing
 					boost::multiprecision::float128 facetOutgassing =
 						(f.sh.outgassing_paramId >= 0)
-						? boost::multiprecision::float128(sHandle->IDs[f.sh.IDid].back().second / (1.38E-23*f.sh.temperature))
-						: (boost::multiprecision::float128(f.sh.outgassing)+des) * boost::multiprecision::float128(sHandle->wp.latestMoment / (1.38E-23*f.sh.temperature));
+						? boost::multiprecision::float128(sHandle->IDs[f.sh.IDid].back().second / (1.38E-23*f.sh.temperature))//This is the Molflow time-dependent mode. We don't use that mode.
+						: (boost::multiprecision::float128(f.sh.outgassing)+des);
 					found = (srcRnd >= sumA) && (srcRnd < (sumA + facetOutgassing));
 					sumA += facetOutgassing;
 
