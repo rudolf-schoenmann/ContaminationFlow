@@ -6,9 +6,9 @@
 \subsubsection*{Constants}
 \begin{equation}
 	\begin{split}
-	%carbondiameter&=2 \cdot 76\text{E}-12\\
-	k_b&=1.38\text{E}-23\\
-	h&=6.626\text{E}-34\\
+	%carbondiameter&=2 \cdot 76\,pm\\
+	k_b&=1.38\,10^{-23}\\
+	h&=6.626\,10^{-34}\\
 	\end{split}
 \end{equation}
 
@@ -24,7 +24,7 @@
 \subsubsection*{Number of carbon equivalent particles of one monolayer}
 \begin{equation}
 	\label{eq:nmono}
-	N_{mono}=\frac{\text{Area of Facet [m$^2$]}}{\text{ProblemDef::particleDia}^2}
+	N_{mono}=\frac{\text{Area of Facet [m$^2$]}}{\text{ProblemDef::particleDia$^2$ [m$^2$]}}
 \end{equation}
 
 \subsubsection*{Carbon equivalent relative mass factor}
@@ -83,19 +83,20 @@
 	E=
 	\begin{cases}
 		\begin{split}
-		E_{de}&, \text{\quad if TODO}\\
-		H_{vap}&,  \text{\quad otherwise}
+		E_{de}&, \text{\quad if particle binds with substrate}\\
+		H_{vap}&,  \text{\quad if particle binds with adsorbate}
 		\end{split}
 	\end{cases}
 \end{equation}
 
 
-\subsubsection*{Residence Time}
+\subsubsection*{Residence Time $\tau$}
 \begin{equation}
 	\label{eq:sojourntime}
 	\begin{split}
-		A&=\exp\big( - Energy/(k_b T)\big)\\
-		residence \ time&= \frac{-\text{ln}(rnd)}{A \cdot Frequency}
+		A&=\exp\big( - E/(k_b T)\big)\\
+		\tau_0 &= \frac{k_b \, T}{h}\\
+		\tau &= \frac{-\text{ln}(rnd) \cdot \tau_0}{A}
 	\end{split}
 \end{equation}
 %
@@ -130,7 +131,7 @@
 	\label{eq:des}
 	\begin{split}
 	\tau_0&=\frac{h}{k_b T}\\
-	\tau&=\tau \cdot \exp\Big(\frac{E_de}{k_b T}\Big)\\
+	\tau_{subst} &=\tau_0 \cdot \exp\Big(\frac{E_{de}}{k_b T}\Big)\\
 	\tau_{ads}&=\tau_0 \cdot \exp\Big(\frac{H_{vap}}{k_b T}\Big)\\
 	t_{ads}&=\tau_{ads} \cdot (\theta -1)\\
 	&\\
@@ -368,7 +369,7 @@ GetMoleculesPerTP()&boost::multiprecision::float128&desBoost\\
 \hline
 \rule{0pt}{3ex}\multirow{2}{*}{ targetParticles, targetError}& Calculate target values from overall target\\& and number sub processes\\
 \rule{0pt}{3ex}\multirow{2}{*}{ \codew{simHistory->updateHistory()}}& Reset and update SimulationHistory object\\& from \codew{sHandle}\\
-\rule{0pt}{3ex}\multirow{2}{*}{ smallCoveringFactor}& If covering is small: Covering is multiplied by\\ & smallCoveringFactor to improve statistics\\
+\rule{0pt}{3ex}\multirow{2}{*}{ smallCoveringFactor}& If covering is small: Covering is multiplied by\\ & smallCoveringFactor to be able to have statistics\\ & without overflow of the covering variable\\
 %\rule{0pt}{3ex} StartSimulation()& Create first particle\\
 \rule{0pt}{3ex} SimulationRun()& Simulate for desired simulation time\\
 \rule{0pt}{3ex} UpdateError()& Calculate current error of sub process\\
@@ -472,7 +473,7 @@ GetMoleculesPerTP()&boost::multiprecision::float128&desBoost\\
 \hline
 \rule{0pt}{3ex} UpdateSticking()& Updates sticking\\
 \rule{0pt}{3ex} UpdateDesorptionRate()& Updates desorption \\
-\rule{0pt}{3ex} UpdateSojourn()& Enables sojourn time\\% Updates sojourn frequency and energy \\
+\rule{0pt}{3ex} UpdateSojourn()& Enables sojourn time => Verstehe ich nicht\\% Updates sojourn frequency and energy \\
 \hline
 \multicolumn{2}{l}{}\\
 \hline
