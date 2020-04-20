@@ -101,12 +101,12 @@ std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, i
 			tmpstream << std::endl;
 
 			if(!checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5))){
-				tmpstream << "Facet" << std::setw(15)<<std::right<< " ";
+				tmpstream << "Facet" << std::setw(23)<<std::right<< " ";
 				int num;
 				for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 						for (SubprocessFacet& f : sHandle->structures[j].facets) {
 								num=getFacetIndex(&f);
-								tmpstream << std::setw(16)<<std::right << num;
+								tmpstream <<"\t"<< std::setw(12)<<std::right << num;
 						}
 				}
 				tmpstream << std::endl;
@@ -232,6 +232,8 @@ ProblemDef::ProblemDef(){
 	maxSimPerIt=std::numeric_limits<int>::max();
 	histSize=std::numeric_limits<int>::max();
 
+	counterWindowPercent=0.1;
+
 	coveringMinThresh=1000000;
 
 	vipFacets = std::vector< std::pair<int,double> >();
@@ -316,6 +318,7 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 
 		else if(stringIn =="maxSimPerIt"){is >> intIn; maxSimPerIt=intIn;}
 		else if(stringIn =="histSize"){is >> intIn; histSize=intIn; histSize=histSize>1?histSize:1;}
+		else if(stringIn =="counterWindowPercent"){is >>doubleIn; counterWindowPercent=doubleIn;}
 
 		else if(stringIn=="vipFacets"){
 			int vipf = 0; double vipe=0.0;
@@ -391,6 +394,7 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 	outfile <<"coveringMinThresh" <<"\t" <<coveringMinThresh<<std::endl;
 
 	outfile <<"histSize" <<"\t" <<histSize<<std::endl;
+	outfile <<"counterWindowPercent" <<"\t" <<counterWindowPercent<<std::endl;
 
 	if(!vipFacets.empty()){
 		outfile <<"vipFacets";
@@ -437,6 +441,7 @@ void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 	out <<"coveringMinThresh" <<"\t" <<coveringMinThresh <<std::endl;
 
 	out <<"histSize" <<"\t" <<histSize<<std::endl;
+	out <<"counterWindowPercent" <<"\t" <<counterWindowPercent<<std::endl;
 
 	if(!vipFacets.empty()){
 		out <<"vipFacets";
@@ -452,7 +457,7 @@ void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 }
 
 //-----------------------------------------------------------
-std::tuple<bool, llong > checkSmallCovering(int rank, Databuff *hitbuffer_sum){
+bool checkSmallCovering(int rank, Databuff *hitbuffer_sum){
 	BYTE *buffer_sum;
 	buffer_sum = hitbuffer_sum->buff;
 
@@ -494,20 +499,21 @@ std::tuple<bool, llong > checkSmallCovering(int rank, Databuff *hitbuffer_sum){
 
 
 	}
+	simHistory->smallCoveringFactor=smallCoveringFactor;
 
-	return {std::make_tuple(smallCovering,smallCoveringFactor)};
+	return smallCovering;
 }
 /*
  * Is not needed anymore.
-void UndoSmallCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){
+void UndoSmallCovering(Databuff *hitbuffer_sum){
 	BYTE *buffer_sum;
 	buffer_sum = hitbuffer_sum->buff;
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
-				facetHitSum->hit.covering/=smallCoveringFactor;
-				simHistory->coveringList.setLast(&f, simHistory->coveringList.getLast(&f)/boost::multiprecision::uint128_t(smallCoveringFactor));
+				facetHitSum->hit.covering/=simHistory->smallCoveringFactor;
+				simHistory->coveringList.setLast(&f, simHistory->coveringList.getLast(&f)/boost::multiprecision::uint128_t(simHistory->smallCoveringFactor));
 			}
 	}
 }
@@ -524,6 +530,7 @@ SimulationHistory::SimulationHistory(int world_size){
 	stepSize=0.0;
 	numSubProcess=world_size-1;
 	startNewParticle=false;
+	smallCoveringFactor=1;
 
 
 	normalFacets = std::vector<unsigned int>();
@@ -602,6 +609,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 
 	numSubProcess=world_size-1;
 	startNewParticle=false;
+	smallCoveringFactor=1;
 
 	std::cout<<"Normal facets: ";
 	for (unsigned int i =0; i< normalFacets.size(); i++){

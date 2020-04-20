@@ -191,7 +191,7 @@ public:
 	void printCurrent(std::ostream& out, std::string msg= ""){
 		std::ostringstream tmpstream (std::ostringstream::app);
 
-		tmpstream<<"    " <<std::setw(12)<<std::left<<msg;
+		tmpstream<<"    " <<std::setw(20)<<std::left<<msg;
 
 		for(uint i=0;i<currentList.size();i++)
 		{
@@ -204,7 +204,7 @@ public:
 	void printCurrent(std::string msg= ""){
 		std::ostringstream tmpstream (std::ostringstream::app);
 
-		tmpstream<<"    " <<std::setw(12)<<std::left<<msg;
+		tmpstream<<"    " <<std::setw(20)<<std::left<<msg;
 
 		for(uint i=0;i<currentList.size();i++)
 		{
@@ -343,14 +343,16 @@ public:
 	double targetError;
 
 	double hitRatioLimit;
-	double t_min;
+	double t_min; // [s]
 
-	double t_max;
+	double t_max; // [s]
 	int maxSimPerIt;
 
 	llong coveringMinThresh;
 
 	int histSize;
+
+	double counterWindowPercent; // [%]
 
 	std::vector< std::pair<int,double> > vipFacets;
 
@@ -373,16 +375,17 @@ public:
 	std::vector<unsigned int> normalFacets;
 
 	bool startNewParticle;
-
+	llong smallCoveringFactor;
 
 	unsigned int numFacet;
 	int numSubProcess;
 
-	double flightTime;
+	double flightTime; // [s]
 	int nParticles;
-	double lastTime;
+
+	double lastTime; // [s]
 	int currentStep;
-	double stepSize;
+	double stepSize; // [s]
 
 	void appendList(Databuff *hitbuffer, double time=-1.0);
 	void appendList(double time=-1.0);
@@ -411,8 +414,8 @@ std::tuple<bool, std::vector<int> >  simulateSub2(Databuff *hitbuffer, int rank,
 double convertunit(double simutime, std::string unit);
 
 void printConsole(std::string str,std::ofstream outFile);
-std::tuple<bool, llong > checkSmallCovering(int rank, Databuff *hitbuffer_sum);
-void UndoSmallCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor);
+bool checkSmallCovering(int rank, Databuff *hitbuffer_sum);
+void UndoSmallCovering(Databuff *hitbuffer_sum);
 //ProblemDef
 //SimulationHistory
 
@@ -442,13 +445,15 @@ void initbufftozero(Databuff *databuffer);
 double manageStepSize();
 double getStepSize();
 
-void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHistory *history,int rank, llong smallCoveringFactor);
+void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHistory *history,int rank);
 
-void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor);
+void UpdateCovering(Databuff *hitbuffer_sum);
 void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer);
 
 void UpdateErrorMain(Databuff *hitbuffer_sum);
 std::tuple<std::vector<double>,std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  CalcPerIteration();
+
+void printVelocities(Databuff *hitbuffer);
 
 //-----------------------------------------------------------
 //SimulationCalc.cpp
@@ -460,12 +465,13 @@ llong getnbAdsorbed(SubprocessFacet *iFacet, Databuff *hitbuffer);//In the origi
 llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
 boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet);
 double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer);
+std::tuple<double, double, double> getVelocities(SubprocessFacet *iFacet, Databuff *hitbuffer_sum);
 
 double calcStep(long double variable, double start, double end, double inflection_point, double Wtr);
 //double calcEnergy(SubprocessFacet *iFacet, Databuff *hitbuffer);
 double calcEnergy(SubprocessFacet *iFacet);
 
-boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum, llong smallCoveringFactor);
+boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum);
 //void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
 void calcStickingnew(SubprocessFacet *iFacet);
 //boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);

@@ -38,7 +38,7 @@ double getStepSize(){
 	//Dynamical calculation of min_time is not straight forward, since 'manageTimeStep()' can change it.
 	//Dynamical calculation can be done later, if it is regarded as useful.
 
-		if(simHistory->currentStep == 0){
+		if(simHistory->currentStep == 0 && simHistory->stepSize==0.0){
 			double test_time_step;
 			test_time_step = T_min*(exp((log(p->maxTimeS/(T_min))/(double)p->iterationNumber)) - 1);
 			while(test_time_step < T_min){
@@ -109,10 +109,10 @@ double manageStepSize(){
 //Update Covering
 //Simhistory version
 
-void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){//Updates Covering after an Iteration using Krealvirt and the smallCoveringFactor.
+void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iteration using Krealvirt and the smallCoveringFactor.
 	//Calculates with the summed up counters of hitbuffer_sum, how many test particles are equivalent to one physical particle.
 
-	boost::multiprecision::float128 Krealvirt = GetMoleculesPerTP(hitbuffer_sum, smallCoveringFactor);
+	boost::multiprecision::float128 Krealvirt = GetMoleculesPerTP(hitbuffer_sum);
 	boost::multiprecision::uint128_t covering_phys;
 	boost::multiprecision::uint128_t covering_sum;//covering as it is summed up of all subprocesses. In case, it is multiplied by smallCoveringFactor
 	boost::multiprecision::float128 covering_sum_netto ;//used to devide covering_sum by the smallCoveringFactor; float;
@@ -175,7 +175,7 @@ void UpdateCovering(Databuff *hitbuffer_sum, llong smallCoveringFactor){//Update
 				covering_sum = boost::multiprecision::uint128_t(getCovering(&f, hitbuffer_sum));
 				//std::cout << "covering_sum_brutto " << covering_sum << std::endl;
 				//p->outFile << "covering_sum_brutto " << covering_sum << std::endl;
-				covering_sum_netto = boost::multiprecision::float128( (static_cast < boost::multiprecision::float128 >(covering_sum))/smallCoveringFactor);
+				covering_sum_netto = boost::multiprecision::float128( (static_cast < boost::multiprecision::float128 >(covering_sum))/simHistory->smallCoveringFactor);
 				//std::cout << "covering_sum_netto " << covering_sum_netto << std::endl;
 				//p->outFile << "covering_sum_netto " << covering_sum_netto << std::endl;
 				covering_sum = boost::multiprecision::uint128_t (static_cast <boost::multiprecision::uint128_t>(covering_sum_netto));
@@ -247,22 +247,15 @@ void UpdateErrorMain(Databuff *hitbuffer_sum){
 	//count all adsorption and all desorption events for all facets in num_des_ad_it
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			/*
-			num_hit_it+=f.sh.opacity * (getHits(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) ); // I think, we can replace the 'f.sh.opacity' by 1,0 or typecasting
-			num_des_ad_it += f.sh.opacity * (getnbAdsorbed(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );// In case of a opacity being not 1 hits, adsorbs and desorbs happen
-			//randomly and therefore counters will be raised or not. So there should be no need for multiplying with this factor 'f.sh.opacity' here.
-			 */
-			num_hit_it+= (double) (getHits(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );
-			num_des_ad_it += (double)(getnbAdsorbed(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );
+			num_hit_it+=  f.sh.opacity * (getHits(&f,hitbuffer_sum) + (double)getnbDesorbed(&f, hitbuffer_sum) );
+			num_des_ad_it += f.sh.opacity * (getnbAdsorbed(&f,hitbuffer_sum) + (double)getnbDesorbed(&f, hitbuffer_sum) );
 		}
 	}
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			//double num_hit_f=f.sh.opacity * ( getHits(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );
-			double num_hit_f= (double)( getHits(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );
-			//double num_des_ad_f=f.sh.opacity * ( getHits(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );
-			double num_des_ad_f= (double)( getnbAdsorbed(&f,hitbuffer_sum) + getnbDesorbed(&f, hitbuffer_sum) );
+			double num_hit_f= f.sh.opacity * ( getHits(&f,hitbuffer_sum) + (double)getnbDesorbed(&f, hitbuffer_sum) );
+			double num_des_ad_f= f.sh.opacity * ( getnbAdsorbed(&f,hitbuffer_sum) + (double)getnbDesorbed(&f, hitbuffer_sum) );
 
 			if(num_hit_f/num_hit_it<p->hitRatioLimit){// threshold. If reached, small number of hits neglected
 				num_hit_it-=num_hit_f;
@@ -377,11 +370,24 @@ void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
 	simHistory->nParticles=0;
 }
 
+void printVelocities(Databuff *hitbuffer){
+	std::cout<<std::endl<<"Velocity counter after iteration"<<std::endl;
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			double sum_1_per_ort_velocity, sum_v_ort, sum_1_per_velocity=0.0;
+			std::tie(sum_1_per_ort_velocity, sum_v_ort, sum_1_per_velocity)=getVelocities(&f, hitbuffer);
+			std::cout<<"Facet "<<getFacetIndex(&f) <<std::setw(12)<<std::right<<sum_1_per_ort_velocity <<std::setw(12)<<std::right<<sum_v_ort <<std::setw(12)<<std::right<<sum_1_per_velocity <<std::endl;
+		}
+	}
+	std::cout<<std::endl;
+
+}
+
 //-----------------------------------------------------------
 // Update Buffer of main process using buffer of sub process
 //Simhistory version
 
-void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHistory *history,int rank, llong smallCoveringFactor) {
+void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHistory *history,int rank) {
 	BYTE *buffer, *subbuff;
 	GlobalHitBuffer *gHits, *subHits;
 	TEXTURE_MIN_MAX texture_limits_old[3];
@@ -513,7 +519,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) { // Add hits
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 					FacetHitBuffer *facetHitSub = (FacetHitBuffer *)(subbuff + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
-					llong covering_phys= smallCoveringFactor * history->coveringList.getLast(&f).convert_to<llong>();
+					llong covering_phys= simHistory->smallCoveringFactor * history->coveringList.getLast(&f).convert_to<llong>();
 					llong covering_sum = facetHitSub->hit.covering;
 /*
 					std::cout <<sizeof(GlobalHitBuffer) <<std::endl;

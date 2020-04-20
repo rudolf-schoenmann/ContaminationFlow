@@ -71,21 +71,15 @@ void UpdateErrorSub(){
 	double num_des_ad_it=0;
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) { //save current num total hits in currentList, add difference current-old to num_hit_it
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			/*
-			num_hit_it+=f.sh.opacity * (f.tmpCounter[0].hit.nbHitEquiv + f.tmpCounter[0].hit.nbDesorbed);
-			num_des_ad_it+=f.sh.opacity * (f.tmpCounter[0].hit.nbAbsEquiv + f.tmpCounter[0].hit.nbDesorbed);
-			*/
-			num_hit_it+=(double)(f.tmpCounter[0].hit.nbHitEquiv + f.tmpCounter[0].hit.nbDesorbed);
-			num_des_ad_it+=(double)(f.tmpCounter[0].hit.nbAbsEquiv + f.tmpCounter[0].hit.nbDesorbed);
+			num_hit_it+=f.sh.opacity * (f.tmpCounter[0].hit.nbHitEquiv + (double)f.tmpCounter[0].hit.nbDesorbed);
+			num_des_ad_it+=f.sh.opacity * (f.tmpCounter[0].hit.nbAbsEquiv + (double)f.tmpCounter[0].hit.nbDesorbed);
 		}
 	}
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			//double num_hit_f=f.sh.opacity * ( f.tmpCounter[0].hit.nbHitEquiv + f.tmpCounter[0].hit.nbDesorbed);
-			double num_hit_f=(double)( f.tmpCounter[0].hit.nbHitEquiv + f.tmpCounter[0].hit.nbDesorbed);
-			//double num_des_ad_f=f.sh.opacity * ( f.tmpCounter[0].hit.nbAbsEquiv + f.tmpCounter[0].hit.nbDesorbed);
-			double num_des_ad_f=(double)( f.tmpCounter[0].hit.nbAbsEquiv + f.tmpCounter[0].hit.nbDesorbed);
+			double num_hit_f=f.sh.opacity * ( f.tmpCounter[0].hit.nbHitEquiv + (double)f.tmpCounter[0].hit.nbDesorbed);
+			double num_des_ad_f=f.sh.opacity * ( f.tmpCounter[0].hit.nbAbsEquiv + (double)f.tmpCounter[0].hit.nbDesorbed);
 
 			//neglect hits if very small compared to total hits
 			if(num_hit_f/num_hit_it<(p->hitRatioLimit)/pow(simHistory->numSubProcess,0.5)){// To be consistent with the ignored facets for calculating the error after summation

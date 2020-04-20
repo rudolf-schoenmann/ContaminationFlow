@@ -210,7 +210,7 @@ int main(int argc, char *argv[]) {
 		if (p->simulationTimeMS != 0) {
 			usleep(100);
 			MPI_Barrier(MPI_COMM_WORLD);
-			bool smallCovering; llong smallCoveringFactor = 1;
+			bool smallCovering;
 
 			if(rank == 0){
 			std::cout <<std::endl <<"----------------Starting iteration " <<it+1 <<"----------------"<<std::endl;
@@ -273,7 +273,7 @@ int main(int argc, char *argv[]) {
 
 				//Do the simulation
 				bool eos; std::vector<int> facetNum;
-				std::tie(smallCovering,smallCoveringFactor) = checkSmallCovering(rank, &hitbuffer);
+				smallCovering = checkSmallCovering(rank, &hitbuffer);
 				std::tie(eos, facetNum) = simulateSub2(&hitbuffer, rank, p->simulationTimeMS);
 				MPI_Barrier(MPI_COMM_WORLD);
 				if (eos) {
@@ -292,7 +292,7 @@ int main(int argc, char *argv[]) {
 			}
 			else{
 				t0 = GetTick();
-				std::tie(smallCovering,smallCoveringFactor) = checkSmallCovering(rank, &hitbuffer_sum);
+				smallCovering= checkSmallCovering(rank, &hitbuffer_sum);
 				MPI_Barrier(MPI_COMM_WORLD);
 				t1 = GetTick();
 				computedTime+=t1-t0;
@@ -313,7 +313,7 @@ int main(int argc, char *argv[]) {
 					//Process 0 receives hitbuffer from Process i
 					MPI_Recv(hitbuffer.buff, hitbuffer.size, MPI::BYTE, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-					UpdateMCMainHits(&hitbuffer_sum, &hitbuffer, simHistory ,0 ,smallCoveringFactor);
+					UpdateMCMainHits(&hitbuffer_sum, &hitbuffer, simHistory ,0);
 					std::cout << "Updated hitbuffer with process " << i <<std::endl;
 					p->outFile << "Updated hitbuffer with process " << i <<std::endl;
 
@@ -339,6 +339,7 @@ int main(int argc, char *argv[]) {
 
 			//----Update covering
 			if (rank == 0) {
+				printVelocities(&hitbuffer_sum);
 
 				/*Nicht mehr benötigt. Der smallCoveringFactor wird jetzt in UpdateCovering als Divisor wieder herausgerechnet.
 				 * if(smallCovering){
@@ -348,7 +349,7 @@ int main(int argc, char *argv[]) {
 
 				UpdateErrorMain(&hitbuffer_sum); // !! If order changes, adapt "time" entry in errorList !!
 
-				UpdateCovering(&hitbuffer_sum, smallCoveringFactor);
+				UpdateCovering(&hitbuffer_sum);
 
 				UpdateCoveringphys(&hitbuffer_sum, &hitbuffer);
 
