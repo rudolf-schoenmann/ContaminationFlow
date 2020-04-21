@@ -92,7 +92,7 @@ std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, i
 		}
 		totalTime+=i;
 
-		totalError=UpdateError();
+		totalError=UpdateError("covering");
 
 		if(j%(int)(30000/simutime)==0 || (simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))|| eos || j >= p->maxSimPerIt-1){
 			// Print information every 30s or if target reached

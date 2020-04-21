@@ -115,31 +115,18 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 	boost::multiprecision::float128 Krealvirt = GetMoleculesPerTP(hitbuffer_sum);
 	boost::multiprecision::uint128_t covering_phys;
 	boost::multiprecision::uint128_t covering_sum;//covering as it is summed up of all subprocesses. In case, it is multiplied by smallCoveringFactor
-	boost::multiprecision::float128 covering_sum_netto ;//used to devide covering_sum by the smallCoveringFactor; float;
 	//boost::multiprecision::float128 covering_check;
 
 
-	double error_event=0.0;
-	double error_covering=0.0;
-	double area=0.0;
+	double total_error_event=0.0;
+	double total_error_covering=0.0;
+	std::tie(total_error_event,total_error_covering)=UpdateErrorAll();
 
-	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			if(simHistory->errorList_event.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0 || f.sh.isVipFacet)//ignore facet if no hits (=inf error)
-				continue;
-			if(simHistory->errorList_covering.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0 || f.sh.isVipFacet)//ignore facet if no hits (=inf error)
-				continue;
-
-			error_event+=simHistory->errorList_event.getCurrent(&f)*f.sh.area;
-			error_covering+=simHistory->errorList_covering.getCurrent(&f)*f.sh.area;
-			area+=f.sh.area;
-		}
-	}
 	// Print total error and error per facet of this iteration
 	std::ostringstream tmpstream (std::ostringstream::app);
-	tmpstream <<"Total Error (event) averaged over facets "<<error_event/area <<std::endl;
+	tmpstream <<"Total Error (event) averaged over facets "<<total_error_event <<std::endl;
 	simHistory->errorList_event.printCurrent(tmpstream);
-	tmpstream << std::endl<<"Total Error (covering) averaged over facets "<<error_covering/area <<std::endl;
+	tmpstream << std::endl<<"Total Error (covering) averaged over facets "<<total_error_covering<<std::endl;
 	simHistory->errorList_covering.printCurrent(tmpstream);
 
 	if(!p->vipFacets.empty()){
@@ -154,7 +141,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 
 
 	//if targetError not reached: do not update currentstep
-	if(checkErrorSub(p->targetError, error_covering/area, 1.0))
+	if(checkErrorSub(p->targetError, total_error_covering, 1.0))
 			{simHistory->currentStep += 1;}
 
 
@@ -172,13 +159,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 
 				covering_phys = simHistory->coveringList.getLast(&f);
-				covering_sum = boost::multiprecision::uint128_t(getCovering(&f, hitbuffer_sum));
-				//std::cout << "covering_sum_brutto " << covering_sum << std::endl;
-				//p->outFile << "covering_sum_brutto " << covering_sum << std::endl;
-				covering_sum_netto = boost::multiprecision::float128( (static_cast < boost::multiprecision::float128 >(covering_sum))/simHistory->smallCoveringFactor);
-				//std::cout << "covering_sum_netto " << covering_sum_netto << std::endl;
-				//p->outFile << "covering_sum_netto " << covering_sum_netto << std::endl;
-				covering_sum = boost::multiprecision::uint128_t (static_cast <boost::multiprecision::uint128_t>(covering_sum_netto));
+				covering_sum = static_cast < boost::multiprecision::uint128_t >(static_cast < boost::multiprecision::float128 >(getCovering(&f, hitbuffer_sum))/static_cast < boost::multiprecision::float128 >(simHistory->smallCoveringFactor));
 
 				std::cout<<std::endl << "Facet " << getFacetIndex(&f)<< std::endl;
 				std::cout << "covering_sum = " << covering_sum  << " = "<< boost::multiprecision::float128(covering_sum) << std::endl;
@@ -286,7 +267,8 @@ void UpdateErrorMain(Databuff *hitbuffer_sum){
 	simHistory->errorList_covering.appendCurrent(simHistory->lastTime);
 	//simHistory->hitList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
 	//simHistory->desorbedList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
-
+	//simHistory->errorList_event.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
+	//simHistory->errorList_covering.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
 }
 
 std::tuple<std::vector<double>,std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  CalcPerIteration(){//calculates statistical uncertainties of error_event and error_covering at the end of
@@ -371,15 +353,20 @@ void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
 }
 
 void printVelocities(Databuff *hitbuffer){
-	std::cout<<std::endl<<"Velocity counter after iteration"<<std::endl;
+	std::ostringstream tmpstream (std::ostringstream::app);
+	tmpstream<<std::endl<<"Velocity counter after iteration"<<std::endl;
+	tmpstream<<std::setw(7+12)<<std::right <<"1_ort_v"<<std::setw(12)<<std::right <<"ort_v"<<std::setw(12)<<std::right <<"1_v"<<std::endl;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			double sum_1_per_ort_velocity, sum_v_ort, sum_1_per_velocity=0.0;
 			std::tie(sum_1_per_ort_velocity, sum_v_ort, sum_1_per_velocity)=getVelocities(&f, hitbuffer);
-			std::cout<<"Facet "<<getFacetIndex(&f) <<std::setw(12)<<std::right<<sum_1_per_ort_velocity <<std::setw(12)<<std::right<<sum_v_ort <<std::setw(12)<<std::right<<sum_1_per_velocity <<std::endl;
+			tmpstream<<"Facet "<<getFacetIndex(&f) <<std::setw(12)<<std::right<<sum_1_per_ort_velocity <<std::setw(12)<<std::right<<sum_v_ort <<std::setw(12)<<std::right<<sum_1_per_velocity <<std::endl;
 		}
 	}
-	std::cout<<std::endl;
+	tmpstream<<std::endl;
+
+	std::cout <<tmpstream.str();
+	p->outFile <<tmpstream.str();
 
 }
 

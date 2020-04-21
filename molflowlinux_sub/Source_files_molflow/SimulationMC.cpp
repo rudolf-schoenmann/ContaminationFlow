@@ -860,6 +860,10 @@ bool StartFromSource() {
 			double A = exp(-residence_energy / (kb*src->sh.temperature));
 			*/
 			//sHandle->currentParticle.flightTime += -log(rnd()) / (A*src->sh.sojournFreq);//Unsolved issue, whether we need a residence before a new particle starts...
+
+			//New mode: desorption decreases over time
+			//sHandle->currentParticle.flightTime+=calcStartTime(src);
+
 			if(sHandle->currentParticle.flightTime < std::numeric_limits<double>::infinity()){
 				flightTime=sHandle->currentParticle.flightTime;
 			}

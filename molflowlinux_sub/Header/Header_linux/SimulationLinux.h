@@ -430,9 +430,10 @@ bool UpdateDesorptionRate();
 
 //void UpdateSojourn(Databuff *hitbuffer);
 void UpdateSojourn();
-double UpdateError();
+std::tuple<double,double> UpdateErrorAll();
+double UpdateError(std::string mode);
 void UpdateErrorSub();
-bool checkErrorSub(double targetError, double currentError, double factor);
+bool checkErrorSub(double targetError, double currentError, double factor, std::string mode="covering");
 
 
 void UpdateMCSubHits(Databuff *databuffer, int rank);
@@ -471,13 +472,16 @@ double calcStep(long double variable, double start, double end, double inflectio
 //double calcEnergy(SubprocessFacet *iFacet, Databuff *hitbuffer);
 double calcEnergy(SubprocessFacet *iFacet);
 
+boost::multiprecision::float128 calcCoverage(SubprocessFacet *iFacet);
+
 boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum);
 //void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
 void calcStickingnew(SubprocessFacet *iFacet);
 //boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
 //boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet);
 boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet);
-boost::multiprecision::float128 calcCoverage(SubprocessFacet *iFacet);
+
+double calcStartTime(SubprocessFacet *iFacet);
 
 //-----------------------------------------------------------
 //Iteration.cpp

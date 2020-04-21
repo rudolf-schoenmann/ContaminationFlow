@@ -112,46 +112,71 @@ void UpdateErrorSub(){
 
 }
 
-double UpdateError(){//calculates the averaged total error weighted with the facets area to decide, if the desired uncertainty level is reached
+double UpdateError(std::string mode){//calculates the averaged total error weighted with the facets area to decide, if the desired uncertainty level is reached
 	UpdateErrorSub();
 
-	double error_event=0.0;
-	double error_covering=0.0;
+	double error=0.0;
 	double area=0.0;
 
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			if(simHistory->errorList_event.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0 || f.sh.isVipFacet)//ignore facet if no hits (=inf error)
-				continue;
-			if(simHistory->errorList_covering.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0 || f.sh.isVipFacet)//ignore facet if no hits (=inf error)
-				continue;
-			error_event+=simHistory->errorList_event.getCurrent(&f)*f.sh.area;
-			error_covering+=simHistory->errorList_covering.getCurrent(&f)*f.sh.area;
+			if(mode=="covering"){
+				if(simHistory->errorList_covering.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0)//ignore facet if no hits (=inf error)
+					continue;
+				error+=simHistory->errorList_covering.getCurrent(&f)*f.sh.area;
+			}
+			else if(mode =="event"){
+				if(simHistory->errorList_event.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0)//ignore facet if no hits (=inf error)
+					continue;
+				error+=simHistory->errorList_event.getCurrent(&f)*f.sh.area;
+			}
+			else{
+				std::cout<<"------------! Error mode '"<<mode <<"' not implemented !------------\n";
+				return 0.0;
+			}
 			area+=f.sh.area;
 		}
 	}
 
-	//return error_event/area; // We could also modify the function and return both errors. However, we need only one condition to stop the subprocesses, if uncertainty is low enough.
-	// So we just replace the "event" with the "covering" related uncertainty.
-	//E.g. if we wanted to simulate pressure, it might be better to switch back to the event related uncertainty.
-	return error_covering/area;
+	return error/area;
 }
 
-bool checkErrorSub(double targetError, double currentError, double factor){
-	bool vipCheck = currentError<=targetError;
-	if(!p->vipFacets.empty()){
-		for(unsigned int i = 0; i < p->vipFacets.size(); i++){
-			/*
-			if(simHistory->errorList_event.getCurrent(p->vipFacets[i].first)== std::numeric_limits<double>::infinity())
+std::tuple<double,double> UpdateErrorAll(){//calculates the averaged total error weighted with the facets area to decide, if the desired uncertainty level is reached
+	double error_event=0.0; double error_covering=0.0;
+	double area=0.0;
+
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			if(simHistory->errorList_event.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0)//ignore facet if no hits (=inf error)
 				continue;
-			vipCheck = vipCheck && (simHistory->errorList_event.getCurrent(p->vipFacets[i].first)== std::numeric_limits<double>::infinity() || simHistory->errorList_event.getCurrent(p->vipFacets[i].first) <= p->vipFacets[i].second * factor);
-			*/
-			if(simHistory->errorList_covering.getCurrent(p->vipFacets[i].first)== std::numeric_limits<double>::infinity())
-							continue;//Is this if statement really necessary? Since we also check the error for being initfy in the next line...
-			vipCheck = vipCheck && (simHistory->errorList_covering.getCurrent(p->vipFacets[i].first)== std::numeric_limits<double>::infinity() || simHistory->errorList_covering.getCurrent(p->vipFacets[i].first) <= p->vipFacets[i].second * factor);
+			if(simHistory->errorList_covering.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0)//ignore facet if no hits (=inf error)
+				continue;
+			error_event+=simHistory->errorList_event.getCurrent(&f)*f.sh.area;
+			error_covering+=simHistory->errorList_covering.getCurrent(&f)*f.sh.area;
+
+			area+=f.sh.area;
 		}
 	}
 
+	return std::make_tuple(error_event/area, error_covering/area);
+}
+
+bool checkErrorSub(double targetError, double currentError, double factor, std::string mode){
+	bool vipCheck = currentError<=targetError;
+	if(!p->vipFacets.empty()){
+		for(unsigned int i = 0; i < p->vipFacets.size(); i++){
+			if(mode=="covering"){
+				vipCheck = vipCheck && (simHistory->errorList_covering.getCurrent(p->vipFacets[i].first)== std::numeric_limits<double>::infinity() || simHistory->errorList_covering.getCurrent(p->vipFacets[i].first) <= p->vipFacets[i].second * factor);
+			}
+			else if(mode=="event"){
+				vipCheck = vipCheck && (simHistory->errorList_event.getCurrent(p->vipFacets[i].first)== std::numeric_limits<double>::infinity() || simHistory->errorList_event.getCurrent(p->vipFacets[i].first) <= p->vipFacets[i].second * factor);
+			}
+			else{
+				std::cout<<"------------! Error mode '"<<mode <<"' not implemented !------------\n";
+				return true;
+			}
+		}
+	}
 	return vipCheck;
 }
 

@@ -26,6 +26,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "GLApp/MathTools.h"
 #include <math.h>
 #include <assert.h>
+#include <Random.h>
 
 // Global handles
 extern Simulation* sHandle; //Declared at molflowlinux_main.cpp
@@ -38,13 +39,13 @@ extern SimulationHistory* simHistory;
 int getFacetIndex(SubprocessFacet *iFacet){ // finds index of facet. index used for CoveringHistory class
 	int idx = 0;
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-			for (SubprocessFacet& f : sHandle->structures[j].facets) {
-				//std::cout <<iFacet << '\t' <<&f <<std::endl;
-					if(iFacet==&f){
-						return idx;
-					}
-					idx+=1;
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			//std::cout <<iFacet << '\t' <<&f <<std::endl;
+			if(iFacet==&f){
+				return idx;
 			}
+			idx+=1;
+		}
 	}
 	return -1;
 }
@@ -148,15 +149,6 @@ double calcStep(long double variable, double start, double end, double inflectio
 		return start;
 	else
 		return (double)tanh(((variable - inflection_point)/Wtr) *2*tuneE) * (end - start)/2 +(start+end)/2; //tanh(adjust width) * adjust height + adjust bias
-		//formula remains the same. But written like this, seems to be easier to be understood!
-		// factor of 2, since tanh(x*2*tuneE) is then 0,99 for x = 1/2 as well as -0,99 for x = -1/2; here the normalized transition width is 1/2 - (-1/2) = 1;
-	/* wrong:
-	else if(start>end)
-		return (double)tanh((inflection_point-variable) * (2*tuneE)/Wtr) * (start - end)/2 +(start+end)/2; //tanh(adjust width) * adjust height + adjust bias
-	else
-		return (-1.0)*(double)tanh((inflection_point-variable) * (2*tuneE)/Wtr) * (start - end)/2 +(start+end)/2; //-tanh(adjust width) * adjust height + adjust bias
-		//in the 'else' case an additional minus sign (it's the absolute value of '(start-end)/2') has been forgotten!
-	*/
 }
 
 double calcEnergy(SubprocessFacet *iFacet){ //TODO verify
@@ -175,9 +167,7 @@ boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum){ // C
 	llong nbDesorbed = getnbDesorbed(hitbuffer_sum);
 	if (nbDesorbed == 0) return 0; //avoid division by 0
 
-	boost::multiprecision::float128 desrate(0.0);
-	desrate=calctotalDesorption();
-
+	boost::multiprecision::float128 desrate=calctotalDesorption();
 	CalcTotalOutgassingWorker();
 
 
@@ -201,7 +191,7 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 	boost::multiprecision::float128 coverage;
 	double temperature;
 	boost::multiprecision::float128 desorption(0.0);
-	double time_step = simHistory->stepSize;
+	boost::multiprecision::float128 time_step = boost::multiprecision::float128(simHistory->stepSize);
 	coverage = calcCoverage(iFacet);
 	temperature=iFacet->sh.temperature;
 	boost::multiprecision::float128 tau_0=static_cast<boost::multiprecision::float128>(h/(kb*temperature));
@@ -209,26 +199,26 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 	boost::multiprecision::float128 enthalpy_vap=static_cast<boost::multiprecision::float128>(p->H_vap);
 	boost::multiprecision::float128 tau_subst = tau_0 * boost::multiprecision::exp(energy_de/static_cast<boost::multiprecision::float128>(kb*temperature));//tau for particles desorbing on the substrate
 
-	if(coverage==0 || temperature==0){
+	if(coverage==boost::multiprecision::float128(0) || temperature==0){
 		return 0.0;
 	}
-	else if (coverage <= 1){
-		desorption = coverage *(1 - boost::multiprecision::exp(-time_step/tau_subst));//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
+	else if (coverage <= boost::multiprecision::float128(1)){
+		desorption = coverage *(boost::multiprecision::float128(1) - boost::multiprecision::exp(-time_step/tau_subst));//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
 	}
 	else{//coverage > 1
 		boost::multiprecision::float128 tau_ads = tau_0 * boost::multiprecision::exp(enthalpy_vap/static_cast<boost::multiprecision::float128>(kb*temperature));//tau for particles desorbing on the adsorbate
-		if ((coverage - 1) >= (time_step/tau_ads)){//There are more layers (excluding the first monolayer), than desorbing while the iteration time.
+		if ((coverage - boost::multiprecision::float128(1)) >= (time_step/tau_ads)){//There are more layers (excluding the first monolayer), than desorbing while the iteration time.
 			desorption = time_step/tau_ads;//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
 		}
 		else{//(coverage - 1) < (time_step/tau_ads): There are less layers (excluding the first monolayer), than desorbing while the iteration time.
-			double time_step_ads;//time while particles desorbe form multilayer until one single monolayer is reached
-			time_step_ads = (double)(tau_ads*(coverage - 1));
-			double time_step_subst;//time while particles desorbe form single monolayer
-			time_step_subst = time_step - time_step_ads;
-			desorption = coverage -1 + (1 - boost::multiprecision::exp(-time_step_subst/tau_subst));//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
+			//time while particles desorbe form multilayer until one single monolayer is reached
+			boost::multiprecision::float128 time_step_ads = tau_ads*(coverage - boost::multiprecision::float128(1));
+			//time while particles desorbe form single monolayer
+			boost::multiprecision::float128 time_step_subst = time_step - time_step_ads;
+			desorption = coverage - boost::multiprecision::float128(1) + (boost::multiprecision::float128(1) - boost::multiprecision::exp(-time_step_subst/tau_subst));//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
 		}
 	}
-	desorption = desorption *(calcNmono(iFacet)/calcdNsurf());//This returns Delta'covering' in units of [1]. 1 means one particle.
+	desorption = desorption * boost::multiprecision::float128(calcNmono(iFacet)/calcdNsurf());//This returns Delta'covering' in units of [1]. 1 means one particle.
 	return desorption;
 }
 /* Don't needed in the new Krealvirt approach...
@@ -240,9 +230,15 @@ boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet) {//T
 */
 
 double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f){
-	double scaleY = 1.0 / (f->sh.area * 1E-4); //1E4 is conversion from m2 to cm2
-	double scaleTime=1.0/(p->counterWindowPercent * simHistory->stepSize);
-	return scaleTime * scaleY * GetMoleculesPerTP(hitbuffer_sum).convert_to<double>() * f->tmpCounter[0].hit.sum_1_per_ort_velocity;
+
+	if(f->tmpCounter[0].hit.sum_1_per_ort_velocity==std::numeric_limits<double>::infinity()){
+		return 0.0;
+		}
+	else{
+		double scaleY = 1.0 / (f->sh.area * 1E-4); //1E4 is conversion from m2 to cm2
+		double scaleTime=1.0/(p->counterWindowPercent * simHistory->stepSize);
+		return scaleTime * scaleY * GetMoleculesPerTP(hitbuffer_sum).convert_to<double>() * f->tmpCounter[0].hit.sum_1_per_ort_velocity;
+	}
 }
 
 double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f){//calculates Pressure of facet. Output value's unit is mbar.
@@ -251,6 +247,43 @@ double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f){//calculates P
 	return scaleTime * scaleY * GetMoleculesPerTP(hitbuffer_sum).convert_to<double>() * f->tmpCounter[0].hit.sum_v_ort ;
 }
 
+double calcStartTime(SubprocessFacet *iFacet){
+	boost::multiprecision::float128 t_start(0.0);
+	boost::multiprecision::float128 rand_t=boost::multiprecision::float128(rnd());
+	boost::multiprecision::float128 time_step = boost::multiprecision::float128(simHistory->stepSize);
+
+	boost::multiprecision::float128 coverage = calcCoverage(iFacet);
+	double temperature=iFacet->sh.temperature;
+
+	boost::multiprecision::float128 tau_0=static_cast<boost::multiprecision::float128>(h/(kb*temperature));
+	boost::multiprecision::float128 energy_de=static_cast<boost::multiprecision::float128>(p->E_de);
+	boost::multiprecision::float128 enthalpy_vap=static_cast<boost::multiprecision::float128>(p->H_vap);
+	boost::multiprecision::float128 tau_subst = tau_0 * boost::multiprecision::exp(energy_de/static_cast<boost::multiprecision::float128>(kb*temperature));//tau for particles desorbing on the substrate
+
+	if (coverage <= boost::multiprecision::float128(1)){
+		t_start= - tau_subst * boost::multiprecision::log(boost::multiprecision::float128(1)-rand_t*(boost::multiprecision::float128(1)-boost::multiprecision::exp(-time_step/tau_subst))) ;
+	}
+	else{//coverage > 1
+			boost::multiprecision::float128 tau_ads = tau_0 * boost::multiprecision::exp(enthalpy_vap/static_cast<boost::multiprecision::float128>(kb*temperature));//tau for particles desorbing on the adsorbate
+			if ((coverage - boost::multiprecision::float128(1)) >= (time_step/tau_ads)){//There are more layers (excluding the first monolayer), than desorbing while the iteration time.
+				t_start = rand_t * time_step;
+			}
+			else{//(coverage - 1) < (time_step/tau_ads): There are less layers (excluding the first monolayer), than desorbing while the iteration time.
+				boost::multiprecision::float128 time_step_ads = tau_ads*(coverage - boost::multiprecision::float128(1));
+				boost::multiprecision::float128 time_step_subst = time_step - time_step_ads;
+
+				if(rand_t<(coverage-boost::multiprecision::float128(1))/(coverage-boost::multiprecision::exp(-time_step_subst/tau_subst))){
+					t_start = rand_t * time_step_ads;
+				}
+				else{
+					t_start=time_step_ads - tau_subst * boost::multiprecision::log(boost::multiprecision::float128(1)-rand_t*(boost::multiprecision::float128(1)-boost::multiprecision::exp(-time_step_subst/tau_subst))) ;
+				}
+			}
+		}
+
+	return t_start.convert_to<double>();
+
+}
 
 //----------deprecated functions because hitbuffer not sent to sub processes anymore
 /*
