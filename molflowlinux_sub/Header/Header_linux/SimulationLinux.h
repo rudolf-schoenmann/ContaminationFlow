@@ -353,6 +353,7 @@ public:
 	int histSize;
 
 	double counterWindowPercent; // [%]
+	double desWindowPercent; // [%]
 
 	std::vector< std::pair<int,double> > vipFacets;
 

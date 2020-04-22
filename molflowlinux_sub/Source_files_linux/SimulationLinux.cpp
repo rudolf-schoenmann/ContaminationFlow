@@ -233,6 +233,7 @@ ProblemDef::ProblemDef(){
 	histSize=std::numeric_limits<int>::max();
 
 	counterWindowPercent=0.1;
+	desWindowPercent=1.0;
 
 	coveringMinThresh=1000000;
 
@@ -295,30 +296,31 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 
 		if(stringIn == "loadbufferPath") {is >> stringIn; loadbufferPath=stringIn;}
 		else if(stringIn == "hitbufferPath") {is >> stringIn; hitbufferPath=stringIn;}
-		else if(stringIn == "simulationTime") {is >>doubleIn; simulationTime = doubleIn;}
+		else if(stringIn == "simulationTime") {is >>doubleIn; simulationTime = doubleIn>0.0?doubleIn:0.0;}
 		else if(stringIn == "unit"){is >> stringIn; unit=stringIn;}
 
-		else if(stringIn =="iterationNumber"){is >> intIn; iterationNumber=intIn;}
-		else if(stringIn == "maxTime") {is >>doubleIn; maxTime = doubleIn;}
+		else if(stringIn =="iterationNumber"){is >> intIn; iterationNumber=intIn>0?intIn:0;}
+		else if(stringIn == "maxTime") {is >>doubleIn; maxTime = doubleIn>0.0?doubleIn:0.0;}
 		else if(stringIn == "maxUnit"){is >> stringIn; maxUnit=stringIn;}
 
-		else if(stringIn =="particleDia"){is >> doubleIn; particleDia=doubleIn;}
-		else if(stringIn =="E_de"){is >> doubleIn; E_de=doubleIn;}
-		else if(stringIn =="H_vap"){is >> doubleIn; H_vap=doubleIn;}
-		else if(stringIn =="W_tr"){is >> doubleIn; W_tr=doubleIn;}
-		else if(stringIn =="sticking"){is >> doubleIn; sticking=doubleIn;}
+		else if(stringIn =="particleDia"){is >> doubleIn; particleDia=doubleIn>0.0?doubleIn:0.0;}
+		else if(stringIn =="E_de"){is >> doubleIn; E_de=doubleIn>0.0?doubleIn:0.0;}
+		else if(stringIn =="H_vap"){is >> doubleIn; H_vap=doubleIn>0.0?doubleIn:0.0;}
+		else if(stringIn =="W_tr"){is >> doubleIn; W_tr=doubleIn>0.0?doubleIn:0.0;}
+		else if(stringIn =="sticking"){is >> doubleIn; sticking=doubleIn>0.0?doubleIn:0.0;}
 
-		else if(stringIn =="targetParticles"){is >> intIn; targetParticles=intIn;}
-		else if(stringIn == "targetError") {is >>doubleIn; targetError = doubleIn;}
-		else if(stringIn == "hitRatioLimit") {is >>doubleIn; hitRatioLimit = doubleIn;}
-		else if(stringIn == "t_min") {is >>doubleIn; t_min = doubleIn;}
-		else if(stringIn =="maxStepSize" || stringIn =="t_max"){is >>doubleIn; t_max=doubleIn;}
+		else if(stringIn =="targetParticles"){is >> intIn; targetParticles=intIn>0?intIn:0;}
+		else if(stringIn == "targetError") {is >>doubleIn; targetError = doubleIn>0.0?doubleIn:0.0;}
+		else if(stringIn == "hitRatioLimit") {is >>doubleIn; hitRatioLimit = doubleIn>0.0?doubleIn:0.0;}
+		else if(stringIn == "t_min") {is >>doubleIn; t_min = doubleIn>0.0?doubleIn:0.0;}
+		else if(stringIn =="maxStepSize" || stringIn =="t_max"){is >>doubleIn; t_max=doubleIn>0.0?doubleIn:0.0;}
 
 		else if(stringIn == "coveringMinThresh") {is >>llongIn; coveringMinThresh = llongIn;}
 
-		else if(stringIn =="maxSimPerIt"){is >> intIn; maxSimPerIt=intIn;}
-		else if(stringIn =="histSize"){is >> intIn; histSize=intIn; histSize=histSize>1?histSize:1;}
-		else if(stringIn =="counterWindowPercent"){is >>doubleIn; counterWindowPercent=doubleIn;}
+		else if(stringIn =="maxSimPerIt"){is >> intIn; maxSimPerIt=intIn>1?intIn:1;}
+		else if(stringIn =="histSize"){is >> intIn; histSize=intIn>1?intIn:1;}
+		else if(stringIn =="counterWindowPercent"){is >>doubleIn; doubleIn=doubleIn<1.0?doubleIn:1.0; counterWindowPercent=doubleIn>0.0?doubleIn:0.0;}
+		else if(stringIn =="desWindowPercent"){is >>doubleIn; doubleIn=doubleIn<1.0?doubleIn:1.0; desWindowPercent=doubleIn>0.0?doubleIn:0.0; }
 
 		else if(stringIn=="vipFacets"){
 			int vipf = 0; double vipe=0.0;
@@ -395,6 +397,7 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 
 	outfile <<"histSize" <<"\t" <<histSize<<std::endl;
 	outfile <<"counterWindowPercent" <<"\t" <<counterWindowPercent<<std::endl;
+	outfile <<"desWindowPercent" <<"\t" <<desWindowPercent<<std::endl;
 
 	if(!vipFacets.empty()){
 		outfile <<"vipFacets";
@@ -442,6 +445,7 @@ void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 
 	out <<"histSize" <<"\t" <<histSize<<std::endl;
 	out <<"counterWindowPercent" <<"\t" <<counterWindowPercent<<std::endl;
+	out <<"desWindowPercent" <<"\t" <<desWindowPercent<<std::endl;
 
 	if(!vipFacets.empty()){
 		out <<"vipFacets";
