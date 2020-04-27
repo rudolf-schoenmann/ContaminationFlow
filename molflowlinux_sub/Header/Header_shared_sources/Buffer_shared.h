@@ -346,6 +346,7 @@ public:
 #ifdef MOLFLOW
 	double latestMoment;
 	double totalDesorbedMolecules; //Number of molecules desorbed between t=0 and latest_moment
+	double totalOutgassingParticles;
 	double finalOutgassingRate; //Number of outgassing molecules / second at latest_moment (constant flow)
 	double finalOutgassingRate_Pa_m3_sec;
 	double gasMass;

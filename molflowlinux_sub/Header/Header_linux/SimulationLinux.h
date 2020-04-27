@@ -130,11 +130,11 @@ public:
 			if(i==0){
 				for(uint j=0; j<pointintime_list[i].second.size();j++)
 						{
-					out <<"\t" <<std::setw(6)<<std::right <<"Facet " <<std::setw(8)<<std::right <<j;
+					out <<"\t" <<std::setw(6)<<std::right <<"Facet-" <<std::setw(8)<<std::setfill('-')<<std::right <<j;
 						}
 			}
 			out<<std::endl;
-			out<<std::setw(9)<<std::right <<i+offset_table*(i>0?1:0)<<"\t";
+			out<<std::setw(9)<<std::setfill(' ')<<std::right <<i+offset_table*(i>0?1:0)<<"\t";
 			out<<std::setw(11)<<std::right <<pointintime_list[i].first ;
 			out<<std::setw(22)<<std::right <<convertTime(pointintime_list[i].first);
 
@@ -352,6 +352,7 @@ public:
 
 	int histSize;
 
+	double outgassingTimeWindow; //[s] for 0.0 degenerate distribution, for > 0.0 uniform distribution
 	double counterWindowPercent; // [%]
 	double desWindowPercent; // [%]
 
@@ -372,6 +373,8 @@ public:
 	HistoryList<llong> desorbedList;
 	HistoryList<double> errorList_event;
 	HistoryList<double> errorList_covering;
+	HistoryList<double> particleDensityList;
+	HistoryList<double> pressureList;
 
 	std::vector<unsigned int> normalFacets;
 
@@ -455,6 +458,7 @@ void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer);
 void UpdateErrorMain(Databuff *hitbuffer_sum);
 std::tuple<std::vector<double>,std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  CalcPerIteration();
 
+void UpdateParticleDensityAndPressure(Databuff *hitbuffer_sum);
 void printVelocities(Databuff *hitbuffer);
 
 //-----------------------------------------------------------
@@ -482,7 +486,9 @@ void calcStickingnew(SubprocessFacet *iFacet);
 //boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet);
 boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet);
 
-double calcStartTime(SubprocessFacet *iFacet);
+double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b);
+double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f);
+double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f);
 
 //-----------------------------------------------------------
 //Iteration.cpp

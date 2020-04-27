@@ -216,6 +216,9 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 	simHistory->errorList_event.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 	simHistory->errorList_covering.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 	simHistory->desorbedList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+	simHistory->particleDensityList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+	simHistory->pressureList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+
 	simHistory->stepSize=time_step;//For what do I need this? Maybe could be uncommented...
 }
 
@@ -267,8 +270,6 @@ void UpdateErrorMain(Databuff *hitbuffer_sum){
 	simHistory->errorList_covering.appendCurrent(simHistory->lastTime);
 	//simHistory->hitList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
 	//simHistory->desorbedList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
-	//simHistory->errorList_event.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
-	//simHistory->errorList_covering.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
 }
 
 std::tuple<std::vector<double>,std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  CalcPerIteration(){//calculates statistical uncertainties of error_event and error_covering at the end of
@@ -350,6 +351,18 @@ void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
 
 	simHistory->flightTime=0.0;
 	simHistory->nParticles=0;
+}
+
+void UpdateParticleDensityAndPressure(Databuff *hitbuffer_sum){
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+				simHistory->particleDensityList.setCurrent(&f, calcParticleDensity(hitbuffer_sum , &f));
+				simHistory->pressureList.setCurrent(&f, calcPressure(hitbuffer_sum , &f));
+			}
+	}
+	simHistory->particleDensityList.appendCurrent(simHistory->lastTime);
+	simHistory->pressureList.appendCurrent(simHistory->lastTime);
+
 }
 
 void printVelocities(Databuff *hitbuffer){

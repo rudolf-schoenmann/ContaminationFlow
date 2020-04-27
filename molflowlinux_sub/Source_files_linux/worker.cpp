@@ -27,6 +27,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "SimulationLinux.h"
 #include <vector>
 extern Simulation *sHandle; //delcared in molflowSub.cpp
+extern ProblemDef *p;
 
 std::vector<std::pair<double, double>> Generate_CDF(double gasTempKelvins, double gasMassGramsPerMol, size_t size){
 	std::vector<std::pair<double, double>> cdf; cdf.reserve(size);
@@ -80,6 +81,9 @@ void CalcTotalOutgassingWorker() {
 						sHandle->wp.totalDesorbedMolecules += sHandle->wp.latestMoment * f.outgassingMap[l] / (1.38E-23*f.sh.temperature);
 						sHandle->wp.finalOutgassingRate += f.outgassingMap[l] / (1.38E-23*f.sh.temperature);
 						sHandle->wp.finalOutgassingRate_Pa_m3_sec += f.outgassingMap[l];
+
+						sHandle->wp.totalOutgassingParticles +=(p->outgassingTimeWindow>0.0?p->outgassingTimeWindow:1.0) * f.outgassingMap[l] / (1.38E-23*f.sh.temperature);
+
 						//Modifications like in the regular outgassing case necessary!?!
 					}
 				}
@@ -89,6 +93,8 @@ void CalcTotalOutgassingWorker() {
 						sHandle->wp.totalDesorbedMolecules += sHandle->wp.latestMoment * f.sh.outgassing / (1.38E-23*f.sh.temperature);
 						sHandle->wp.finalOutgassingRate += f.sh.outgassing / (1.38E-23*f.sh.temperature);  //Outgassing molecules/sec
 						sHandle->wp.finalOutgassingRate_Pa_m3_sec += f.sh.outgassing;
+
+						sHandle->wp.totalOutgassingParticles +=(p->outgassingTimeWindow>0.0?p->outgassingTimeWindow:1.0) * f.sh.outgassing / (1.38E-23*f.sh.temperature);
 						//As the code is now changed with the new Krealvirt approach, we now have to provide f.sh.outgassing as a number of particles (not anymore as Pa m^3/s).
 						//f.sh.outgassing is then used by the StartFromSource function (and also by the estimateTmin function, which is not used anymore but might be reactivated).
 						//Either we modify f.sh.outgassing in the new parameter input or we modify the StartFromSource function.

@@ -247,44 +247,52 @@ double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f){//calculates P
 	return scaleTime * scaleY * GetMoleculesPerTP(hitbuffer_sum).convert_to<double>() * f->tmpCounter[0].hit.sum_v_ort ;
 }
 
-double calcStartTime(SubprocessFacet *iFacet){
-	if(p->desWindowPercent==0.0) return 0.0;
+double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b){
 
-	boost::multiprecision::float128 t_start(0.0);
-	boost::multiprecision::float128 rand_t=boost::multiprecision::float128(rnd());
-	boost::multiprecision::float128 time_step = boost::multiprecision::float128(p->desWindowPercent*simHistory->stepSize);
+	if(desorbed_b){// if desorption
+		if(p->desWindowPercent==0.0) return 0.0;
 
-	boost::multiprecision::float128 coverage = calcCoverage(iFacet);
-	double temperature=iFacet->sh.temperature;
+		boost::multiprecision::float128 t_start(0.0);
+		boost::multiprecision::float128 rand_t=boost::multiprecision::float128(rnd());
+		//if(rand_t>boost::multiprecision::float128(0.99999)){rand_t=boost::multiprecision::float128(1.0);}
 
-	boost::multiprecision::float128 tau_0=static_cast<boost::multiprecision::float128>(h/(kb*temperature));
-	boost::multiprecision::float128 energy_de=static_cast<boost::multiprecision::float128>(p->E_de);
-	boost::multiprecision::float128 enthalpy_vap=static_cast<boost::multiprecision::float128>(p->H_vap);
-	boost::multiprecision::float128 tau_subst = tau_0 * boost::multiprecision::exp(energy_de/static_cast<boost::multiprecision::float128>(kb*temperature));//tau for particles desorbing on the substrate
+		boost::multiprecision::float128 time_step = boost::multiprecision::float128(p->desWindowPercent*simHistory->stepSize);
 
-	if (coverage <= boost::multiprecision::float128(1)){
-		t_start= - tau_subst * boost::multiprecision::log(boost::multiprecision::float128(1)-rand_t*(boost::multiprecision::float128(1)-boost::multiprecision::exp(-time_step/tau_subst))) ;
-	}
-	else{//coverage > 1
-			boost::multiprecision::float128 tau_ads = tau_0 * boost::multiprecision::exp(enthalpy_vap/static_cast<boost::multiprecision::float128>(kb*temperature));//tau for particles desorbing on the adsorbate
-			if ((coverage - boost::multiprecision::float128(1)) >= (time_step/tau_ads)){//There are more layers (excluding the first monolayer), than desorbing while the iteration time.
-				t_start = rand_t * time_step;
-			}
-			else{//(coverage - 1) < (time_step/tau_ads): There are less layers (excluding the first monolayer), than desorbing while the iteration time.
-				boost::multiprecision::float128 time_step_ads = tau_ads*(coverage - boost::multiprecision::float128(1));
-				boost::multiprecision::float128 time_step_subst = time_step - time_step_ads;
+		boost::multiprecision::float128 coverage = calcCoverage(iFacet);
+		double temperature=iFacet->sh.temperature;
 
-				if(rand_t<(coverage-boost::multiprecision::float128(1))/(coverage-boost::multiprecision::exp(-time_step_subst/tau_subst))){
-					t_start = rand_t * time_step_ads;
-				}
-				else{
-					t_start=time_step_ads - tau_subst * boost::multiprecision::log(boost::multiprecision::float128(1)-rand_t*(boost::multiprecision::float128(1)-boost::multiprecision::exp(-time_step_subst/tau_subst))) ;
-				}
-			}
+		boost::multiprecision::float128 tau_0=static_cast<boost::multiprecision::float128>(h/(kb*temperature));
+		boost::multiprecision::float128 energy_de=static_cast<boost::multiprecision::float128>(p->E_de);
+		boost::multiprecision::float128 enthalpy_vap=static_cast<boost::multiprecision::float128>(p->H_vap);
+		boost::multiprecision::float128 tau_subst = tau_0 * boost::multiprecision::exp(energy_de/static_cast<boost::multiprecision::float128>(kb*temperature));//tau for particles desorbing on the substrate
+
+		if (coverage <= boost::multiprecision::float128(1)){
+			t_start= - tau_subst * boost::multiprecision::log(boost::multiprecision::float128(1)-rand_t*(boost::multiprecision::float128(1)-boost::multiprecision::exp(-time_step/tau_subst))) ;
 		}
-	if(t_start.convert_to<double>()>24*3600*3)
-		std::cout << t_start.convert_to<double>()<<"\t"<<rand_t<<std::endl;
-	return t_start.convert_to<double>();
+		else{//coverage > 1
+				boost::multiprecision::float128 tau_ads = tau_0 * boost::multiprecision::exp(enthalpy_vap/static_cast<boost::multiprecision::float128>(kb*temperature));//tau for particles desorbing on the adsorbate
+				if ((coverage - boost::multiprecision::float128(1)) >= (time_step/tau_ads)){//There are more layers (excluding the first monolayer), than desorbing while the iteration time.
+					t_start = rand_t * time_step;
+				}
+				else{//(coverage - 1) < (time_step/tau_ads): There are less layers (excluding the first monolayer), than desorbing while the iteration time.
+					boost::multiprecision::float128 time_step_ads = tau_ads*(coverage - boost::multiprecision::float128(1));
+					boost::multiprecision::float128 time_step_subst = time_step - time_step_ads;
+
+					if(rand_t<(coverage-boost::multiprecision::float128(1))/(coverage-boost::multiprecision::exp(-time_step_subst/tau_subst))){
+						t_start = rand_t * time_step_ads;
+					}
+					else{
+						t_start=time_step_ads - tau_subst * boost::multiprecision::log(boost::multiprecision::float128(1)-rand_t*(boost::multiprecision::float128(1)-boost::multiprecision::exp(-time_step_subst/tau_subst))) ;
+					}
+				}
+			}
+		//if(t_start.convert_to<double>()>24*3600*7)
+		//	std::cout << t_start.convert_to<double>()<<"\t"<<rand_t<<std::endl;
+		return t_start.convert_to<double>();
+	}
+	else{//if outgassing
+		return rnd()*p->outgassingTimeWindow;
+	}
 
 }
 

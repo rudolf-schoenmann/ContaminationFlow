@@ -339,13 +339,12 @@ int main(int argc, char *argv[]) {
 
 			//----Update covering
 			if (rank == 0) {
-				printVelocities(&hitbuffer_sum);
-
 				/*Nicht mehr benötigt. Der smallCoveringFactor wird jetzt in UpdateCovering als Divisor wieder herausgerechnet.
 				 * if(smallCovering){
 					std::cout <<"Small covering: divide covering by " <<smallCoveringFactor <<std::endl;
 					UndoSmallCovering(&hitbuffer_sum, smallCoveringFactor);
 				}*/
+				UpdateParticleDensityAndPressure(&hitbuffer_sum);
 
 				UpdateErrorMain(&hitbuffer_sum); // !! If order changes, adapt "time" entry in errorList !!
 
@@ -357,6 +356,10 @@ int main(int argc, char *argv[]) {
 				if(p->histSize != std::numeric_limits<int>::infinity() && simHistory->coveringList.pointintime_list.size() > uint(p->histSize+1)){
 						simHistory->coveringList.pointintime_list.erase(simHistory->coveringList.pointintime_list.begin()+1);
 						simHistory->errorList_event.pointintime_list.erase(simHistory->errorList_event.pointintime_list.begin()+1);
+						simHistory->errorList_covering.pointintime_list.erase(simHistory->errorList_covering.pointintime_list.begin()+1);
+						simHistory->particleDensityList.pointintime_list.erase(simHistory->particleDensityList.pointintime_list.begin()+1);
+						simHistory->pressureList.pointintime_list.erase(simHistory->pressureList.pointintime_list.begin()+1);
+
 				}
 
 				simHistory->coveringList.print(std::cout, "Accumulative covering after iteration "+std::to_string(it+1), p->histSize);

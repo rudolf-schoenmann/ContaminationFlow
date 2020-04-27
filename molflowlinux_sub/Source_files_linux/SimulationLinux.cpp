@@ -232,6 +232,7 @@ ProblemDef::ProblemDef(){
 	maxSimPerIt=std::numeric_limits<int>::max();
 	histSize=std::numeric_limits<int>::max();
 
+	outgassingTimeWindow=0.0;
 	counterWindowPercent=0.1;
 	desWindowPercent=1.0;
 
@@ -321,6 +322,7 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn =="histSize"){is >> intIn; histSize=intIn>1?intIn:1;}
 		else if(stringIn =="counterWindowPercent"){is >>doubleIn; doubleIn=doubleIn<1.0?doubleIn:1.0; counterWindowPercent=doubleIn>0.0?doubleIn:0.0;}
 		else if(stringIn =="desWindowPercent"){is >>doubleIn; doubleIn=doubleIn<1.0?doubleIn:1.0; desWindowPercent=doubleIn>0.0?doubleIn:0.0; }
+		else if(stringIn == "outgassingTimeWindow"){is >>doubleIn; outgassingTimeWindow=doubleIn>0.0?doubleIn:0.0; }
 
 		else if(stringIn=="vipFacets"){
 			int vipf = 0; double vipe=0.0;
@@ -398,6 +400,7 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 	outfile <<"histSize" <<"\t" <<histSize<<std::endl;
 	outfile <<"counterWindowPercent" <<"\t" <<counterWindowPercent<<std::endl;
 	outfile <<"desWindowPercent" <<"\t" <<desWindowPercent<<std::endl;
+	outfile <<"outgassingTimeWindow" <<"\t" <<outgassingTimeWindow <<std::endl;
 
 	if(!vipFacets.empty()){
 		outfile <<"vipFacets";
@@ -446,6 +449,7 @@ void ProblemDef::printInputfile(std::ostream& out){ //std::cout or p->outFile
 	out <<"histSize" <<"\t" <<histSize<<std::endl;
 	out <<"counterWindowPercent" <<"\t" <<counterWindowPercent<<std::endl;
 	out <<"desWindowPercent" <<"\t" <<desWindowPercent<<std::endl;
+	out <<"outgassingTimeWindow" <<"\t" <<outgassingTimeWindow <<std::endl;
 
 	if(!vipFacets.empty()){
 		out <<"vipFacets";
@@ -559,6 +563,8 @@ SimulationHistory::SimulationHistory(int world_size){
 	desorbedList.initCurrent(numFacet);
 	errorList_event.initCurrent(numFacet);
 	errorList_covering.initCurrent(numFacet);
+	particleDensityList.initCurrent(numFacet);
+	pressureList.initCurrent(numFacet);
 
 
 }
@@ -607,6 +613,11 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 	errorList_event.appendCurrent(0.0);
 	errorList_covering.initCurrent(numFacet);
 	errorList_covering.appendCurrent(0.0);
+
+	particleDensityList.initCurrent(numFacet);
+	particleDensityList.appendCurrent(0.0);
+	pressureList.initCurrent(numFacet);
+	pressureList.appendCurrent(0.0);
 
 	currentStep=0;
 	stepSize=0.0;
@@ -731,6 +742,14 @@ void SimulationHistory::updateHistory(){
 	errorList_covering.reset();
 	errorList_covering.initCurrent(numFacet);
 
+	particleDensityList.reset();
+	particleDensityList.initCurrent(numFacet);
+	particleDensityList.appendCurrent(0.0);
+
+	pressureList.reset();
+	pressureList.initCurrent(numFacet);
+	pressureList.appendCurrent(0.0);
+
 	stepSize = getStepSize();
 	//stepSize=manageStepSize();
 
@@ -776,6 +795,8 @@ void SimulationHistory::print(bool write){
 	//desorbedList.print(std::cout, "Accumulative number desorbed", p->histSize);//Since we do not accumulate desorbs anymore over all iterations, we do not need this anymore.
 	errorList_event.print(std::cout,errorPerIt_event, "Error (Desorb + Hit) per iteration", p->histSize);
 	errorList_covering.print(std::cout,errorPerIt_covering, "Error (Desorb + Adsorb) per iteration", p->histSize);
+	particleDensityList.print(std::cout, "Particle density per iteration", p->histSize);
+	pressureList.print(std::cout, "Pressure per iteration", p->histSize);
 
 	if(write){
 		coveringList.print(p->outFile,covPerIt, "Accumulative covering", p->histSize);
@@ -783,11 +804,16 @@ void SimulationHistory::print(bool write){
 		//desorbedList.print(p->outFile, "Accumulative number desorbed", p->histSize);//Since we do not accumulate desorbs anymore over all iterations, we do not need this anymore.
 		errorList_event.print(p->outFile,errorPerIt_event, "Error (Desorb + Hit) per iteration", p->histSize);
 		errorList_covering.print(p->outFile,errorPerIt_covering, "Error (Desorb + Adsorb) per iteration", p->histSize);
+		particleDensityList.print(p->outFile, "Particle density per iteration", p->histSize);
+		pressureList.print(p->outFile, "Pressure per iteration", p->histSize);
 	}
 }
 
 void SimulationHistory::write(std::string path){
 	coveringList.write(path+"/covering.txt", p->histSize);
+	errorList_covering.write(path+"/errorCovering.txt", p->histSize);
+	particleDensityList.write(path+"/particleDensity.txt", p->histSize);
+	pressureList.write(path+"/pressure.txt", p->histSize);
 }
 
 //----------deprecated functions because hitbuffer not sent to sub processes anymore

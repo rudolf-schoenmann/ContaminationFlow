@@ -51,7 +51,7 @@ bool UpdateDesorptionRate (){
 		}
 	}
 
-	if((boost::multiprecision::float128(sHandle->wp.totalDesorbedMolecules)+totaldes)<boost::multiprecision::pow(boost::multiprecision::float128(10.),boost::multiprecision::float128(-50))){return false;}
+	if((boost::multiprecision::float128(sHandle->wp.totalOutgassingParticles)+totaldes)<boost::multiprecision::pow(boost::multiprecision::float128(10.),boost::multiprecision::float128(-50))){return false;}
 	else{return true;}
 }
 

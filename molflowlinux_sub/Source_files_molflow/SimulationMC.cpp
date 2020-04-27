@@ -657,11 +657,11 @@ bool StartFromSource() {
 	}*/
 	boost::multiprecision::float128 totaldes=0.0;
 	if(!sHandle->posCovering){
-								std::cout <<"StartFromSource function has ended simulation due to some facet having reached threshold. "  <<std::endl;
-								p->outFile <<"StartFromSource function has ended simulation due to some facet having reached threshold. " <<std::endl;
+		std::cout <<"StartFromSource function has ended simulation due to some facet having reached threshold. "  <<std::endl;
+		p->outFile <<"StartFromSource function has ended simulation due to some facet having reached threshold. " <<std::endl;
 
-								return false;
-								}
+		return false;
+		}
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				if(f.sh.temperature==0) {continue;}
@@ -674,7 +674,7 @@ bool StartFromSource() {
 	}
 
 	// Select source
-	srcRnd = boost::multiprecision::float128(rnd()) * (boost::multiprecision::float128(sHandle->wp.totalDesorbedMolecules)+totaldes);
+	srcRnd = boost::multiprecision::float128(rnd()) * (boost::multiprecision::float128(sHandle->wp.totalOutgassingParticles)+totaldes);
 	if(srcRnd==boost::multiprecision::float128(0)){return false;}
 
 	//std::cout <<srcRnd <<"\t" <<totaldes <<std::endl;
@@ -723,7 +723,7 @@ bool StartFromSource() {
 					boost::multiprecision::float128 facetOutgassing =
 						(f.sh.outgassing_paramId >= 0)
 						? boost::multiprecision::float128(sHandle->IDs[f.sh.IDid].back().second / (1.38E-23*f.sh.temperature))//This is the Molflow time-dependent mode. We don't use that mode.
-						: (boost::multiprecision::float128(f.sh.outgassing)+des);
+						: (boost::multiprecision::float128(f.sh.outgassing*(p->outgassingTimeWindow>0.0?p->outgassingTimeWindow:1.0))+des);
 					found = (srcRnd >= sumA) && (srcRnd < (sumA + facetOutgassing));
 					sumA += facetOutgassing;
 
@@ -747,7 +747,7 @@ bool StartFromSource() {
 	if(src->sh.desorbType != DES_NONE ){ //there is outgassing
 		desorbed_b=false;
 		boost::multiprecision::float128 des=src->sh.desorption;
-		if(boost::multiprecision::float128(rnd())<des/(boost::multiprecision::float128(src->sh.outgassing)+des) ){
+		if(boost::multiprecision::float128(rnd())<des/(boost::multiprecision::float128(src->sh.outgassing*(p->outgassingTimeWindow>0.0?p->outgassingTimeWindow:1.0))+des) ){
 			desorbed_b=true;
 		}
 	}
@@ -862,7 +862,7 @@ bool StartFromSource() {
 			//sHandle->currentParticle.flightTime += -log(rnd()) / (A*src->sh.sojournFreq);//Unsolved issue, whether we need a residence before a new particle starts...
 
 			//New mode: desorption decreases over time
-			sHandle->currentParticle.flightTime+=calcStartTime(src);
+			sHandle->currentParticle.flightTime+=calcStartTime(src,desorbed_b);
 
 			if(sHandle->currentParticle.flightTime < std::numeric_limits<double>::infinity()){
 				flightTime=sHandle->currentParticle.flightTime;
