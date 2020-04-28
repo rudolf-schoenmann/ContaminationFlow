@@ -68,7 +68,7 @@ int GenerateNewCDF(double temperature){
 
 void CalcTotalOutgassingWorker() {
 	// Compute the outgassing of all source facet
-	sHandle->wp.totalDesorbedMolecules = sHandle->wp.finalOutgassingRate_Pa_m3_sec = sHandle->wp.finalOutgassingRate = 0.0;
+	sHandle->wp.totalDesorbedMolecules = sHandle->wp.finalOutgassingRate_Pa_m3_sec = sHandle->wp.finalOutgassingRate = sHandle->wp.totalOutgassingParticles= 0.0;
 	//double time_step = simHistory->stepSize;
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
@@ -83,7 +83,7 @@ void CalcTotalOutgassingWorker() {
 						sHandle->wp.finalOutgassingRate += f.outgassingMap[l] / (1.38E-23*f.sh.temperature);
 						sHandle->wp.finalOutgassingRate_Pa_m3_sec += f.outgassingMap[l];
 
-						sHandle->wp.totalOutgassingParticles += f.outgassingMap[l] / (1.38E-23*f.sh.temperature);
+						sHandle->wp.totalOutgassingParticles += simHistory->stepSize_outgassing * f.outgassingMap[l] / (1.38E-23*f.sh.temperature);
 
 						//Modifications like in the regular outgassing case necessary!?!
 					}
