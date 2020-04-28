@@ -657,9 +657,9 @@ bool StartFromSource() {
 	}*/
 	boost::multiprecision::float128 totaldes=0.0;
 	if(!sHandle->posCovering){
-		std::cout <<"StartFromSource function has ended simulation due to some facet having reached threshold. "  <<std::endl;
-		p->outFile <<"StartFromSource function has ended simulation due to some facet having reached threshold. " <<std::endl;
-
+		std::ostringstream tmpstream (std::ostringstream::app);
+		tmpstream <<"StartFromSource function has ended simulation due to some facet having reached threshold. "  <<std::endl;
+		printStream(tmpstream.str());
 		return false;
 		}
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
@@ -688,8 +688,8 @@ bool StartFromSource() {
 
 			if (f.sh.desorbType != DES_NONE || des>boost::multiprecision::float128(0.0)) { //there is some kind of outgassing
 				if (f.sh.useOutgassingFile) { //Using SynRad-generated outgassing map
-					if (boost::multiprecision::float128(f.sh.totalOutgassing) +des > boost::multiprecision::float128(0.0)) {
-						found = (srcRnd >= sumA) && (srcRnd < (sumA + (boost::multiprecision::float128(f.sh.totalOutgassing)+des)));
+					if (boost::multiprecision::float128(f.sh.totalOutgassing*simHistory->stepSize_outgassing/(kb*f.sh.temperature)) +des > boost::multiprecision::float128(0.0)) {
+						found = (srcRnd >= sumA) && (srcRnd < (sumA + (boost::multiprecision::float128(f.sh.totalOutgassing*simHistory->stepSize_outgassing/(kb*f.sh.temperature))+des)));
 
 						if (found) {
 							//look for exact position in map
@@ -716,14 +716,14 @@ bool StartFromSource() {
 								return false;
 							}*/
 						}
-						sumA += (boost::multiprecision::float128(f.sh.totalOutgassing)+des);
+						sumA += (boost::multiprecision::float128(f.sh.totalOutgassing*simHistory->stepSize_outgassing/(kb*f.sh.temperature))+des);
 					}
 				} //end outgassing file block
 				else { //constant or time-dependent outgassing
 					boost::multiprecision::float128 facetOutgassing =
 						(f.sh.outgassing_paramId >= 0)
 						? boost::multiprecision::float128(sHandle->IDs[f.sh.IDid].back().second / (1.38E-23*f.sh.temperature))//This is the Molflow time-dependent mode. We don't use that mode.
-						: (boost::multiprecision::float128(f.sh.outgassing*(p->outgassingTimeWindow>0.0?p->outgassingTimeWindow:1.0))+des);
+						: (boost::multiprecision::float128(f.sh.outgassing*simHistory->stepSize_outgassing/(kb*f.sh.temperature))+des);
 					found = (srcRnd >= sumA) && (srcRnd < (sumA + facetOutgassing));
 					sumA += facetOutgassing;
 
@@ -745,10 +745,9 @@ bool StartFromSource() {
 
 	bool desorbed_b=true; //determines whether particle created from outgassing or desorption; true desorbed, false outgassed
 	if(src->sh.desorbType != DES_NONE ){ //there is outgassing
-		desorbed_b=false;
 		boost::multiprecision::float128 des=src->sh.desorption;
-		if(boost::multiprecision::float128(rnd())<des/(boost::multiprecision::float128(src->sh.outgassing*(p->outgassingTimeWindow>0.0?p->outgassingTimeWindow:1.0))+des) ){
-			desorbed_b=true;
+		if(boost::multiprecision::float128(rnd())>des/(boost::multiprecision::float128(src->sh.outgassing*simHistory->stepSize_outgassing/(kb*src->sh.temperature))+des) ){
+			desorbed_b=false;
 		}
 	}
 
@@ -1762,8 +1761,9 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 					int num = getFacetIndex(f);
 					llong cv = f->tmpCounter[m].hit.covering;
 					llong cvth = sHandle->coveringThreshold[num];
-					std::cout << "Facet: "  << num << " covering = " << cv <<"; sHandle->coveringThreshold = " << cvth << std::endl;
-					p->outFile << "Facet: "  << num << " covering = " << cv <<"; sHandle->coveringThreshold = " << cvth << std::endl;
+					std::ostringstream tmpstream (std::ostringstream::app);
+					tmpstream << "Facet: "  << num << " covering = " << cv <<"; sHandle->coveringThreshold = " << cvth << std::endl;
+					printStream(tmpstream.str());
 					sHandle->posCovering=false;}
 
 				}

@@ -94,9 +94,10 @@ double manageStepSize(){
 				needforCheck = false;
 			}
 			else{
-			simHistory->currentStep-=1;
-			std::cout<<"Decrease simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
-			p->outFile<<"Decrease simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
+				simHistory->currentStep-=1;
+				std::ostringstream tmpstream (std::ostringstream::app);
+				tmpstream<<"Decrease simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
+				printStream(tmpstream.str());
 			}
 		}
 		else {
@@ -136,76 +137,61 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 		}
 		tmpstream <<std::endl;
 	}
-	std::cout <<tmpstream.str();
-	p->outFile<<tmpstream.str();
-
 
 	//if targetError not reached: do not update currentstep
 	if(checkErrorSub(p->targetError, total_error_covering, 1.0))
 			{simHistory->currentStep += 1;}
 
+	tmpstream <<"Krealvirt = " << Krealvirt << std::endl;
+	tmpstream << "Covering difference will be multiplied by Krealvirt: " << Krealvirt << std::endl;
 
-
-	std::cout <<"Krealvirt = " << Krealvirt << std::endl;
-	std::cout << "Covering difference will be multiplied by Krealvirt: " << Krealvirt << std::endl;
-
-	p->outFile <<"Krealvirt = " << Krealvirt << std::endl;
-	p->outFile << "Covering difference will be multiplied by Krealvirt: " << Krealvirt << std::endl;
-	//std::cout <<"testing timestep: " <<time_step <<'\t' <<estimateAverageFlightTime() <<std::endl;
+	printStream(tmpstream.str());
 
 	//double rounding=1/simHistory->numFacet;
 	boost::multiprecision::float128 rounding(0.5);
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+				std::ostringstream tmpstream (std::ostringstream::app);
 
 				covering_phys = simHistory->coveringList.getLast(&f);
 				covering_sum = static_cast < boost::multiprecision::uint128_t >(static_cast < boost::multiprecision::float128 >(getCovering(&f, hitbuffer_sum))/static_cast < boost::multiprecision::float128 >(simHistory->smallCoveringFactor));
 
-				std::cout<<std::endl << "Facet " << getFacetIndex(&f)<< std::endl;
-				std::cout << "covering_sum = " << covering_sum  << " = "<< boost::multiprecision::float128(covering_sum) << std::endl;
-				std::cout<< "covering_phys_before = " << covering_phys << " = "<< boost::multiprecision::float128(covering_phys) << std::endl;
-
-				p->outFile<<std::endl << "Facet " << getFacetIndex(&f) << std::endl;
-				p->outFile<< "covering_sum = " << covering_sum  << " = "<< boost::multiprecision::float128(covering_sum) << std::endl;
-				p->outFile<< "covering_phys_before = " << covering_phys << " = "<< boost::multiprecision::float128(covering_phys) << std::endl;
+				tmpstream <<std::endl << "Facet " << getFacetIndex(&f)<< std::endl;
+				tmpstream << "covering_sum = " << covering_sum  << " = "<< boost::multiprecision::float128(covering_sum) << std::endl;
+				tmpstream << "covering_phys_before = " << covering_phys << " = "<< boost::multiprecision::float128(covering_phys) << std::endl;
 
 				if (covering_sum > covering_phys){
 					//+0.5 for rounding
 					boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (rounding + boost::multiprecision::float128(covering_sum - covering_phys)*Krealvirt);
 					covering_phys += covering_delta;
-					std::cout << "covering rises by " <<covering_delta << " = "<<boost::multiprecision::float128(covering_delta) << std::endl;
-					p->outFile << "covering rises by " <<covering_delta << " = "<<boost::multiprecision::float128(covering_delta) << std::endl;
+					tmpstream << "covering rises by " <<covering_delta << " = "<<boost::multiprecision::float128(covering_delta) << std::endl;
 				}
 				else{
 					//+0.5 for rounding
 					boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (rounding + boost::multiprecision::float128(covering_phys - covering_sum)*Krealvirt);
 					if(covering_phys+1==covering_delta){
-						std::cout<<"!!!-----Correct covering_delta by 1: "<<covering_phys<<" - "<<covering_delta <<" because of rounding-----!!!"<<std::endl;
-						p->outFile<<"!!!-----Correct covering_delta by 1: "<<covering_phys<<" - "<<covering_delta <<" because of rounding-----!!!"<<std::endl;
+						tmpstream<<"!!!-----Correct covering_delta by 1: "<<covering_phys<<" - "<<covering_delta <<" because of rounding-----!!!"<<std::endl;
 						covering_delta=covering_phys;
 					}
 					else if(covering_phys<covering_delta && covering_phys+10>=covering_delta){
-						std::cout<<"!!!-----Correct covering_delta: "<<covering_phys<<" - "<<covering_delta <<" because of bad statistic-----!!!"<<std::endl;
-						p->outFile<<"!!!-----Correct covering_delta: "<<covering_phys<<" - "<<covering_delta <<" because of bad statistic-----!!!"<<std::endl;
+						tmpstream <<"!!!-----Correct covering_delta: "<<covering_phys<<" - "<<covering_delta <<" because of bad statistic-----!!!"<<std::endl;
 						covering_delta=covering_phys;
 					}
 					else if(covering_phys<covering_delta){
-						std::cout<<"!!!-----Covering gets negative: "<<covering_phys<<" - "<<covering_delta <<". Correct Covering=0-----!!!"<<std::endl;
-						p->outFile<<"!!!-----Covering gets negative: "<<covering_phys<<" - "<<covering_delta <<". Correct Covering=0-----!!!"<<std::endl;
+						tmpstream <<"!!!-----Covering gets negative: "<<covering_phys<<" - "<<covering_delta <<". Correct Covering=0-----!!!"<<std::endl;
 						covering_delta=covering_phys;
 					}
 
 					covering_phys -= covering_delta;
-					std::cout << "covering decreases by "<<covering_delta << " = " << boost::multiprecision::float128(covering_delta) << std::endl;
-					p->outFile << "covering decreases by "<<covering_delta << " = " << boost::multiprecision::float128(covering_delta) << std::endl;
+					tmpstream << "covering decreases by "<<covering_delta << " = " << boost::multiprecision::float128(covering_delta) << std::endl;
 
 				}
-				std::cout<< "covering_phys_after = " << covering_phys << " = " << boost::multiprecision::float128(covering_phys) << std::endl;
-				std::cout<< "coveringThreshhold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << " = " << boost::multiprecision::float128(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
-				p->outFile<< "covering_phys_after = " << covering_phys << " = " << boost::multiprecision::float128(covering_phys) << std::endl;
-				p->outFile<< "coveringThreshhold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << " = " << boost::multiprecision::float128(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
+				tmpstream << "covering_phys_after = " << covering_phys << " = " << boost::multiprecision::float128(covering_phys) << std::endl;
+				tmpstream << "coveringThreshhold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << " = " << boost::multiprecision::float128(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
 
 				simHistory->coveringList.setCurrent(&f, covering_phys);
+
+				printStream(tmpstream.str());
 		}
 	}
 
@@ -355,10 +341,17 @@ void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
 
 void UpdateParticleDensityAndPressure(Databuff *hitbuffer_sum){
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-			for (SubprocessFacet& f : sHandle->structures[j].facets) {
-				simHistory->particleDensityList.setCurrent(&f, calcParticleDensity(hitbuffer_sum , &f));
-				simHistory->pressureList.setCurrent(&f, calcPressure(hitbuffer_sum , &f));
-			}
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			simHistory->particleDensityList.setCurrent(&f, calcParticleDensity(hitbuffer_sum , &f));
+			simHistory->pressureList.setCurrent(&f, calcPressure(hitbuffer_sum , &f));
+
+			double energy=calcCoverage(&f)<1?p->E_de:p->H_vap;
+
+			double tau=h/(kb*f.sh.temperature) * exp(energy/(kb*f.sh.temperature));
+			double targetPressure = 3/(tau*pow(p->particleDia,2)) * sqrt(3.14 * (sHandle->wp.gasMass/ 1000 / 6E23) *kb*f.sh.temperature/8);
+			std::cout << "Facet " <<getFacetIndex(&f) <<" Target Pressure: " <<targetPressure <<"  ,  Real pressure: " <<simHistory->pressureList.getCurrent(&f)<<"\tfor gass mass "<<sHandle->wp.gasMass <<" g/mol" <<std::endl;
+
+		}
 	}
 	simHistory->particleDensityList.appendCurrent(simHistory->lastTime);
 	simHistory->pressureList.appendCurrent(simHistory->lastTime);
@@ -378,8 +371,7 @@ void printVelocities(Databuff *hitbuffer){
 	}
 	tmpstream<<std::endl;
 
-	std::cout <<tmpstream.str();
-	p->outFile <<tmpstream.str();
+	printStream(tmpstream.str());
 
 }
 

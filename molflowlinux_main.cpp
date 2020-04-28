@@ -213,8 +213,9 @@ int main(int argc, char *argv[]) {
 			bool smallCovering;
 
 			if(rank == 0){
-			std::cout <<std::endl <<"----------------Starting iteration " <<it+1 <<"----------------"<<std::endl;
-			p->outFile <<std::endl <<"----------------Starting iteration " <<it+1 <<"----------------"<<std::endl;
+				std::ostringstream tmpstream (std::ostringstream::app);
+				tmpstream <<std::endl <<"----------------Starting iteration " <<it+1 <<"----------------"<<std::endl;
+				printStream(tmpstream.str());
 			}
 
 			//----Send coveringList content to all subprocesses
@@ -232,7 +233,7 @@ int main(int argc, char *argv[]) {
 			for(int i=0; i<world_size;i++){
 				MPI_Barrier(MPI_COMM_WORLD);
 				if(rank==i)
-					simHistory->coveringList.printCurrent(std::to_string(rank)+": coveringList at beginning of iteration");}
+					simHistory->coveringList.printCurrent(std::cout,std::to_string(rank)+": coveringList at beginning of iteration");}
 			*/
 			//MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
 
@@ -249,7 +250,8 @@ int main(int argc, char *argv[]) {
 			MPI_Barrier(MPI_COMM_WORLD);
 
 			if(rank!=0){
-						simHistory->updateHistory();//here the current covering value gets written in the tmpcounters.
+				simHistory->updateHistory();//here the current covering value gets written in the tmpcounters.
+				CalcTotalOutgassingWorker();
 			}
 			else{
 				simHistory->stepSize = getStepSize();
@@ -257,10 +259,10 @@ int main(int argc, char *argv[]) {
 
 			if(!UpdateDesorptionRate()){//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes
 				if(rank==0) {
-					std::cout <<"Desorption smaller than 1E-50. Ending Simulation." <<std::endl;
-					p->outFile <<"Desorption smaller than 1E-50. Ending Simulation." <<std::endl;
-					std::cout <<"Computation Time (Simulation only): " <<computedTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computedTime/1000.0) <<std::endl;
-					p->outFile <<"Computation Time (Simulation only): " <<computedTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computedTime/1000.0) <<std::endl;
+					std::ostringstream tmpstream (std::ostringstream::app);
+					tmpstream <<"Desorption smaller than 1E-50. Ending Simulation." <<std::endl;
+					tmpstream <<"Computation Time (Simulation only): " <<computedTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computedTime/1000.0) <<std::endl;
+					printStream(tmpstream.str());
 				}
 				break;
 			}
@@ -276,19 +278,19 @@ int main(int argc, char *argv[]) {
 				smallCovering = checkSmallCovering(rank, &hitbuffer);
 				std::tie(eos, facetNum) = simulateSub2(&hitbuffer, rank, p->simulationTimeMS);
 				MPI_Barrier(MPI_COMM_WORLD);
+				std::ostringstream tmpstream (std::ostringstream::app);
 				if (eos) {
 					if(sHandle->posCovering)
-						{std::cout << "Maximum desorption reached." << std::endl;}
+						{tmpstream << "Maximum desorption reached." << std::endl;}
 					else{
 						for (uint facets=0; facets < facetNum.size(); facets++){
-							std::cout <<"Facet " <<facetNum[facets] <<" reached threshold " <<sHandle->coveringThreshold[facetNum[facets]] <<" for process " <<rank <<std::endl;
-							p->outFile <<"Facet " <<facetNum[facets] <<" reached threshold " <<sHandle->coveringThreshold[facetNum[facets]] <<" for process " <<rank <<std::endl;
+							tmpstream <<"Facet " <<facetNum[facets] <<" reached threshold " <<sHandle->coveringThreshold[facetNum[facets]] <<" for process " <<rank <<std::endl;
 						}
 					}
 				} else {
-					std::cout << "Simulation for process " << rank << " for iteration " << it+1 << " finished."<< std::endl;
-					p->outFile << "Simulation for process " << rank << " for iteration " << it+1 << " finished."<< std::endl;
+					tmpstream << "Simulation for process " << rank << " for iteration " << it+1 << " finished."<< std::endl;
 				}
+				printStream(tmpstream.str());
 			}
 			else{
 				t0 = GetTick();
@@ -314,9 +316,8 @@ int main(int argc, char *argv[]) {
 					MPI_Recv(hitbuffer.buff, hitbuffer.size, MPI::BYTE, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
 					UpdateMCMainHits(&hitbuffer_sum, &hitbuffer, simHistory ,0);
-					std::cout << "Updated hitbuffer with process " << i <<std::endl;
-					p->outFile << "Updated hitbuffer with process " << i <<std::endl;
-
+					std::ostringstream tmpstream (std::ostringstream::app);
+					tmpstream << "Updated hitbuffer with process " << i <<std::endl;
 
 					// Calc flightTime and nParticles over all subprocesses -> still needed?
 					double old_flightTime=simHistory->flightTime;
@@ -327,10 +328,10 @@ int main(int argc, char *argv[]) {
 					simHistory->nParticles+=old_nParticles;
 
 					if(i==world_size-1){
-						std::cout << std::endl<< "flightTime " << simHistory->flightTime << std::endl;
-						std::cout << std::endl<< "nParticles " << simHistory->nParticles << std::endl <<std::endl;
-						p->outFile << "flightTime " << simHistory->flightTime << std::endl;
-						p->outFile << "nParticles " << simHistory->nParticles << std::endl <<std::endl;}
+						tmpstream <<std::endl << "flightTime " << simHistory->flightTime << std::endl;
+						tmpstream << "nParticles " << simHistory->nParticles << std::endl <<std::endl;
+					}
+					printStream(tmpstream.str());
 				}
 			}
 
@@ -362,11 +363,8 @@ int main(int argc, char *argv[]) {
 
 				}
 
-				simHistory->coveringList.print(std::cout, "Accumulative covering after iteration "+std::to_string(it+1), p->histSize);
-				simHistory->coveringList.print(p->outFile,"Accumulative covering after iteration "+std::to_string(it+1),p->histSize);
+				simHistory->coveringList.print(p->outFile,"Accumulative covering after iteration "+std::to_string(it+1),p->histSize,true);
 
-				//simHistory->errorList.print(std::cout,"Error after iteration "+std::to_string(it));
-				//simHistory->errorList.print(p->outFile,"Error after iteration "+std::to_string(it));
 
 			}
 
@@ -377,10 +375,10 @@ int main(int argc, char *argv[]) {
 			MPI_Bcast(&simHistory->lastTime, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
 			if((int)(simHistory->lastTime+0.5) >= p->maxTimeS){
 				if(rank==0) {
-					std::cout <<"Maximum simulation time reached: " <<simHistory->lastTime  <<" >= " <<p->maxTimeS <<std::endl;
-					p->outFile <<"Maximum simulation time reached: " <<simHistory->lastTime  <<" >= " <<p->maxTimeS <<std::endl;
-					std::cout <<"Computation Time (Simulation only): " <<computedTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computedTime/1000.0) <<std::endl;
-					p->outFile <<"Computation Time (Simulation only): " <<computedTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computedTime/1000.0) <<std::endl;
+					std::ostringstream tmpstream (std::ostringstream::app);
+					tmpstream <<"Maximum simulation time reached: " <<simHistory->lastTime  <<" >= " <<p->maxTimeS <<std::endl;
+					tmpstream <<"Computation Time (Simulation only): " <<computedTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computedTime/1000.0) <<std::endl;
+					printStream(tmpstream.str());
 				}
 				break;
 			}
@@ -397,9 +395,9 @@ int main(int argc, char *argv[]) {
 
 		if(p->saveResults){
 			simHistory->write(p->resultpath);
-
-			std::cout << "Process 0 exporting final hitbuffer" << std::endl <<std::endl;
-			p->outFile << "Process 0 exporting final hitbuffer" << std::endl <<std::endl;
+			std::ostringstream tmpstream (std::ostringstream::app);
+			tmpstream << "Process 0 exporting final hitbuffer" << std::endl <<std::endl;
+			printStream(tmpstream.str());
 			exportBuff(p->resultbufferPath,&hitbuffer_sum);//export hitbuffer_sum
 		}
 	}

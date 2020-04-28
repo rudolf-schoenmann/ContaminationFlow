@@ -113,8 +113,8 @@ public:
 
 		return final;
 	}
-	void print(std::ostream& out, std::string msg= "", int histSize = std::numeric_limits<int>::infinity()){
-
+	void print(std::ostream& outstream, std::string msg= "", int histSize = std::numeric_limits<int>::infinity(), bool printToConsole=false, bool printToStream=true){
+		std::ostringstream out (std::ostringstream::app);
 		uint offset_table=0;
 		if(histSize != std::numeric_limits<int>::infinity() && currIt > histSize+1){
 			offset_table=currIt - uint(histSize)-1;
@@ -146,9 +146,12 @@ public:
 
 		}
 		out<<std::endl<<std::endl;
+		if(printToStream) outstream <<out.str();
+		if(printToConsole) std::cout <<out.str();
 	}
 
-	void print(std::ostream& out, std::vector<T> totalvec, std::string msg= "", int histSize = std::numeric_limits<int>::infinity()){
+	void print(std::ostream& outstream, std::vector<T> totalvec, std::string msg= "", int histSize = std::numeric_limits<int>::infinity(), bool printToConsole=false, bool printToStream=true){
+		std::ostringstream out (std::ostringstream::app);
 
 		uint offset_table=0;
 		if(histSize != std::numeric_limits<int>::infinity()&& currIt > histSize+1){
@@ -186,9 +189,11 @@ public:
 
 		}
 		out<<std::endl<<std::endl;
+		if(printToStream)outstream <<out.str();
+		if(printToConsole) std::cout <<out.str();
 	}
 
-	void printCurrent(std::ostream& out, std::string msg= ""){
+	void printCurrent(std::ostream& outstream, std::string msg= "", bool printToConsole=false, bool printToStream=true){
 		std::ostringstream tmpstream (std::ostringstream::app);
 
 		tmpstream<<"    " <<std::setw(20)<<std::left<<msg;
@@ -198,20 +203,8 @@ public:
 			tmpstream <<"\t" <<std::setw(12)<<std::right <<boost::multiprecision::float128(currentList[i]);
 		}
 		tmpstream<<std::endl;
-		out<<tmpstream.str();
-	}
-
-	void printCurrent(std::string msg= ""){
-		std::ostringstream tmpstream (std::ostringstream::app);
-
-		tmpstream<<"    " <<std::setw(20)<<std::left<<msg;
-
-		for(uint i=0;i<currentList.size();i++)
-		{
-			tmpstream <<"\t" <<std::setw(12)<<std::right <<currentList[i];
-		}
-		tmpstream<<std::endl;
-		std::cout<<tmpstream.str();
+		if(printToStream) outstream<<tmpstream.str();
+		if(printToConsole) std::cout <<tmpstream.str();
 	}
 
 	void write(std::string filename, int histSize = std::numeric_limits<int>::infinity()){
@@ -312,7 +305,7 @@ public:
 	void readArg(int argc, char *argv[], int rank=1);
 	void readInputfile(std::string filename, int rank=1, int save=1);
 	void writeInputfile(std::string filename, int rank=1);
-	void printInputfile(std::ostream& out);
+	void printInputfile(std::ostream& out, bool printConversion=true);
 
 	bool saveResults;
 
@@ -352,7 +345,7 @@ public:
 
 	int histSize;
 
-	double outgassingTimeWindow; //[s] for 0.0 degenerate distribution, for > 0.0 uniform distribution
+	double outgassingTimeWindow; //[s] uniform distribution of outgassing over outgassingTimeWindow
 	double counterWindowPercent; // [%]
 	double desWindowPercent; // [%]
 
@@ -390,6 +383,7 @@ public:
 	double lastTime; // [s]
 	int currentStep;
 	double stepSize; // [s]
+	double stepSize_outgassing; //[s]
 
 	void appendList(Databuff *hitbuffer, double time=-1.0);
 	void appendList(double time=-1.0);
@@ -412,6 +406,8 @@ public:
 
 //-----------------------------------------------------------
 //SimulationLinux.cpp
+void printStream(std::string string);
+
 //std::tuple<bool, std::vector<int> >  simulateSub(Databuff *hitbuffer, int rank, int simutime);
 std::tuple<bool, std::vector<int> >  simulateSub2(Databuff *hitbuffer, int rank, int simutime);
 

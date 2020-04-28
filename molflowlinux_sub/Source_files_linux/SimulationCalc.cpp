@@ -170,8 +170,7 @@ boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum){ // C
 	boost::multiprecision::float128 desrate=calctotalDesorption();
 	CalcTotalOutgassingWorker();
 
-
-	return (boost::multiprecision::float128(sHandle->wp.finalOutgassingRate) +desrate) / (boost::multiprecision::float128(nbDesorbed)/boost::multiprecision::float128(simHistory->smallCoveringFactor));
+	return (boost::multiprecision::float128(sHandle->wp.totalOutgassingParticles) +desrate) / (boost::multiprecision::float128(nbDesorbed)/boost::multiprecision::float128(simHistory->smallCoveringFactor));
 	}
 
 
@@ -235,9 +234,22 @@ double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f){
 		return 0.0;
 		}
 	else{
+		//Correction for double-density effect (measuring density on desorbing/absorbing facets):
+
+		//Normally a facet only sees half of the particles (those moving towards it). So it multiplies the "seen" density by two.
+		//However, in case of desorption or sticking, the real density is not twice the "seen" density, but a bit less, therefore this reduction factor
+		//If only desorption, or only absorption, the correction factor is 0.5, if no des/abs, it's 1.0, and in between, see below
+		double densityCorrection=1.0;
+		if (f->tmpCounter[0].hit.nbMCHit > 0 || f->tmpCounter[0].hit.nbDesorbed > 0) {
+			if (f->tmpCounter[0].hit.nbAbsEquiv > 0.0 || f->tmpCounter[0].hit.nbDesorbed > 0) {//otherwise save calculation time
+				densityCorrection-= (f->tmpCounter[0].hit.nbAbsEquiv + (double)f->tmpCounter[0].hit.nbDesorbed) / (f->tmpCounter[0].hit.nbHitEquiv + (double)f->tmpCounter[0].hit.nbDesorbed) / 2.0;
+			}
+		}
+
+
 		double scaleY = 1.0 / (f->sh.area * 1E-4); //1E4 is conversion from m2 to cm2
 		double scaleTime=1.0/(p->counterWindowPercent * simHistory->stepSize);
-		return scaleTime * scaleY * GetMoleculesPerTP(hitbuffer_sum).convert_to<double>() * f->tmpCounter[0].hit.sum_1_per_ort_velocity;
+		return scaleTime * scaleY * densityCorrection * GetMoleculesPerTP(hitbuffer_sum).convert_to<double>() * f->tmpCounter[0].hit.sum_1_per_ort_velocity;
 	}
 }
 
@@ -291,7 +303,7 @@ double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b){
 		return t_start.convert_to<double>();
 	}
 	else{//if outgassing
-		return rnd()*p->outgassingTimeWindow;
+		return rnd() * simHistory->stepSize_outgassing;
 	}
 
 }
