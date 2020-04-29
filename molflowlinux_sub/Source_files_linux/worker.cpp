@@ -30,42 +30,6 @@ extern Simulation *sHandle; //delcared in molflowSub.cpp
 extern ProblemDef *p;
 extern SimulationHistory *simHistory;
 
-std::vector<std::pair<double, double>> Generate_CDF(double gasTempKelvins, double gasMassGramsPerMol, size_t size){
-	std::vector<std::pair<double, double>> cdf; cdf.reserve(size);
-	double Kb = 1.38E-23;
-	double R = 8.3144621;
-	double a = sqrt(Kb*gasTempKelvins / (gasMassGramsPerMol*1.67E-27)); //distribution a parameter. Converting molar mass to atomic mass
-
-	//Generate cumulative distribution function
-	double mostProbableSpeed = sqrt(2 * R*gasTempKelvins / (gasMassGramsPerMol / 1000.0));
-	double binSize = 4.0*mostProbableSpeed / (double)size; //distribution generated between 0 and 4*V_prob
-
-	for (size_t i = 0; i < size; i++) {
-		double x = (double)i*binSize;
-		double x_square_per_2_a_square = pow(x, 2) / (2 * pow(a, 2));
-		cdf.push_back(std::make_pair(x, 1 - exp(-x_square_per_2_a_square)*(x_square_per_2_a_square + 1)));
-
-	}
-
-
-	return cdf;
-}
-
-int GetCDFId(double temperature) {
-
-	int i;
-	for (i = 0; i<(int)sHandle->temperatures.size() && (abs(temperature - (double)(sHandle->temperatures[i]))>1E-5); i++); //check if we already had this temperature
-	if (i >= (int)sHandle->temperatures.size()) i = -1; //not found
-	return i;
-}
-
-int GenerateNewCDF(double temperature){
-	size_t i = sHandle->temperatures.size();
-	sHandle->temperatures.push_back(temperature);
-	sHandle->CDFs.push_back(Generate_CDF(temperature, sHandle->wp.gasMass, CDF_SIZE));
-	return (int)i;
-}
-
 void CalcTotalOutgassingWorker() {
 	// Compute the outgassing of all source facet
 	sHandle->wp.totalDesorbedMolecules = sHandle->wp.finalOutgassingRate_Pa_m3_sec = sHandle->wp.finalOutgassingRate = sHandle->wp.totalOutgassingParticles= 0.0;
@@ -117,8 +81,43 @@ void CalcTotalOutgassingWorker() {
 			}
 		}
 	}
-	//if (mApp->globalSettings) mApp->globalSettings->UpdateOutgassing();
+}
 
+/*
+std::vector<std::pair<double, double>> Generate_CDF(double gasTempKelvins, double gasMassGramsPerMol, size_t size){
+	std::vector<std::pair<double, double>> cdf; cdf.reserve(size);
+	double Kb = 1.38E-23;
+	double R = 8.3144621;
+	double a = sqrt(Kb*gasTempKelvins / (gasMassGramsPerMol*1.67E-27)); //distribution a parameter. Converting molar mass to atomic mass
+
+	//Generate cumulative distribution function
+	double mostProbableSpeed = sqrt(2 * R*gasTempKelvins / (gasMassGramsPerMol / 1000.0));
+	double binSize = 4.0*mostProbableSpeed / (double)size; //distribution generated between 0 and 4*V_prob
+
+	for (size_t i = 0; i < size; i++) {
+		double x = (double)i*binSize;
+		double x_square_per_2_a_square = pow(x, 2) / (2 * pow(a, 2));
+		cdf.push_back(std::make_pair(x, 1 - exp(-x_square_per_2_a_square)*(x_square_per_2_a_square + 1)));
+
+	}
+
+
+	return cdf;
+}
+
+int GetCDFId(double temperature) {
+
+	int i;
+	for (i = 0; i<(int)sHandle->temperatures.size() && (abs(temperature - (double)(sHandle->temperatures[i]))>1E-5); i++); //check if we already had this temperature
+	if (i >= (int)sHandle->temperatures.size()) i = -1; //not found
+	return i;
+}
+
+int GenerateNewCDF(double temperature){
+	size_t i = sHandle->temperatures.size();
+	sHandle->temperatures.push_back(temperature);
+	sHandle->CDFs.push_back(Generate_CDF(temperature, sHandle->wp.gasMass, CDF_SIZE));
+	return (int)i;
 }
 
 std::vector<std::pair<double, double>> Generate_ID(int paramId){
@@ -182,15 +181,6 @@ int GenerateNewID(int paramId){
 	sHandle->IDs.push_back(Generate_ID(paramId));
 	return (int)i;
 }
-/*
-int GetIDId(int paramId) {
-
-	int i;
-	for (i = 0; i < (int)sHandle->desorptionParameterIDs.size() && (paramId != sHandle->desorptionParameterIDs[i]); i++); //check if we already had this parameter Id
-	if (i >= (int)sHandle->desorptionParameterIDs.size()) i = -1; //not found
-	return i;
-
-}*/
 
 int GetParamId(const std::string name) {
 	int foundId = -1;
@@ -198,4 +188,4 @@ int GetParamId(const std::string name) {
 		if (name.compare(sHandle->parameters[i].name) == 0) foundId = i;
 	return foundId;
 }
-
+*/

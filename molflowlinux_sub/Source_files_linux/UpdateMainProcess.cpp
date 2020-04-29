@@ -33,8 +33,6 @@ extern SimulationHistory* simHistory;
 // Step size for intervals
 double getStepSize(){
 	double T_min = p->t_min;//set minimal time resolution to 1E-4 seconds.
-
-
 	//Dynamical calculation of min_time is not straight forward, since 'manageTimeStep()' can change it.
 	//Dynamical calculation can be done later, if it is regarded as useful.
 
@@ -62,50 +60,14 @@ double getStepSize(){
 		/*if(simHistory->currentStep==0){
 			double T_min = estimateAverageFlightTime();
 			return T_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/T_min)/(double)p->iterationNumber));
-			}
+		}
 		else{
 			return exp((double)simHistory->currentStep*(log(p->maxTimeS/simHistory->coveringList.pointintime_list[1].first)/(double)p->iterationNumber));
-			}*/
+		}*/
 
 
 }
 
-double manageStepSize(){
-	double step_size;
-	bool steptoolong; //If step is too long, we will decrease the step size.
-	bool needforCheck = true;
-
-	while(needforCheck){
-		step_size = simHistory->stepSize;
-		steptoolong=false;
-		for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-			for (SubprocessFacet& f : sHandle->structures[j].facets) {
-				if(f.sh.desorption==0||f.sh.temperature==0)continue;
-
-				boost::multiprecision::uint128_t covering_phys = simHistory->coveringList.getLast(&f);
-
-				if ((boost::multiprecision::uint128_t)((f.sh.desorption/boost::multiprecision::float128(kb* f.sh.temperature))*boost::multiprecision::float128(step_size) +boost::multiprecision::float128(0.5))>covering_phys){
-					steptoolong=true;
-				}
-			}
-		}
-		if(steptoolong){
-			if(simHistory->currentStep == 0){
-				needforCheck = false;
-			}
-			else{
-				simHistory->currentStep-=1;
-				std::ostringstream tmpstream (std::ostringstream::app);
-				tmpstream<<"Decrease simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
-				printStream(tmpstream.str());
-			}
-		}
-		else {
-			needforCheck = false;
-		}
-	}
-	return step_size;
-}
 //-----------------------------------------------------------
 //Update Covering
 //Simhistory version
@@ -208,6 +170,29 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 	simHistory->stepSize=time_step;//For what do I need this? Maybe could be uncommented...
 }
 
+// Copy covering to buffer
+void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
+	boost::multiprecision::uint128_t covering_phys;
+	BYTE *buffer_sum;
+	buffer_sum = hitbuffer_sum->buff;
+
+	BYTE *buffer;
+	buffer = hitbuffer->buff;
+
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
+				FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
+				covering_phys = simHistory->coveringList.getLast(&f);
+				facetHitBuffer->hit.covering=covering_phys.convert_to<llong>();
+				facetHitSum->hit.covering=covering_phys.convert_to<llong>();
+			}
+	}
+
+	simHistory->flightTime=0.0;
+	simHistory->nParticles=0;
+}
+
 void UpdateErrorMain(Databuff *hitbuffer_sum){
 
 	double num_hit_it=0;
@@ -258,6 +243,44 @@ void UpdateErrorMain(Databuff *hitbuffer_sum){
 	//simHistory->desorbedList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
 }
 
+void UpdateParticleDensityAndPressure(Databuff *hitbuffer_sum){
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			simHistory->particleDensityList.setCurrent(&f, calcParticleDensity(hitbuffer_sum , &f));
+			simHistory->pressureList.setCurrent(&f, calcPressure(hitbuffer_sum , &f));
+
+			double energy=calcCoverage(&f)<1?p->E_de:p->H_vap;
+
+			double tau=h/(kb*f.sh.temperature) * exp(energy/(kb*f.sh.temperature));
+			double targetPressure = 3/(tau*pow(p->particleDia,2)) * sqrt(3.14 * (sHandle->wp.gasMass/ 1000 / 6E23) *kb*f.sh.temperature/8);
+
+			double sum_1_per_ort_velocity, sum_v_ort, sum_1_per_velocity=0.0;
+			std::tie(sum_1_per_ort_velocity, sum_v_ort, sum_1_per_velocity)=getVelocities(&f, hitbuffer_sum);
+			std::cout << "Facet " <<getFacetIndex(&f) <<" Target Pressure: " <<std::setw(11)<<std::right <<targetPressure <<"  ,  Real pressure: " <<std::setw(11)<<std::right <<simHistory->pressureList.getCurrent(&f);
+			std::cout <<"\tfor gass mass "<<sHandle->wp.gasMass <<" [g/mol]  ,  and 1_ort_v: "<<std::setw(11)<<std::right <<sum_1_per_ort_velocity <<"  ,  ort_v: "<<std::setw(11)<<std::right <<sum_v_ort <<"  ,  1_v: "<<std::setw(11)<<std::right <<sum_1_per_velocity<<std::endl;
+		}
+	}
+	simHistory->particleDensityList.appendCurrent(simHistory->lastTime);
+	simHistory->pressureList.appendCurrent(simHistory->lastTime);
+
+}
+
+void printVelocities(Databuff *hitbuffer){
+	std::ostringstream tmpstream (std::ostringstream::app);
+	tmpstream<<std::endl<<"Velocity counter after iteration"<<std::endl;
+	tmpstream<<std::setw(7+12)<<std::right <<"1_ort_v"<<std::setw(12)<<std::right <<"ort_v"<<std::setw(12)<<std::right <<"1_v"<<std::endl;
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			double sum_1_per_ort_velocity, sum_v_ort, sum_1_per_velocity=0.0;
+			std::tie(sum_1_per_ort_velocity, sum_v_ort, sum_1_per_velocity)=getVelocities(&f, hitbuffer);
+			tmpstream<<"Facet "<<getFacetIndex(&f) <<std::setw(12)<<std::right<<sum_1_per_ort_velocity <<std::setw(12)<<std::right<<sum_v_ort <<std::setw(12)<<std::right<<sum_1_per_velocity <<std::endl;
+		}
+	}
+	tmpstream<<std::endl;
+
+	printStream(tmpstream.str());
+}
+
 std::tuple<std::vector<double>,std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  CalcPerIteration(){//calculates statistical uncertainties of error_event and error_covering at the end of
 	// the simulation for writigin these in the output file. While simulating only the error values of the subprocesses are used to decide, if the targeted error level has been reached.
 	std::vector<double> errorPerIt_event;
@@ -292,87 +315,28 @@ std::tuple<std::vector<double>,std::vector<double>,std::vector<boost::multipreci
 	}
 
 	for(unsigned int it=0; it<simHistory->errorList_covering.pointintime_list.size();it++){
-			// Total error/covering for each iteration
-			double error=0.0;
-			double area=0.0;
-			boost::multiprecision::uint128_t covering=0;
+		// Total error/covering for each iteration
+		double error=0.0;
+		double area=0.0;
+		boost::multiprecision::uint128_t covering=0;
 
-			for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-				for (SubprocessFacet& f : sHandle->structures[s].facets) {
-					int idx=getFacetIndex(&f);
-					covering+=simHistory->coveringList.pointintime_list[it].second[idx];
+		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+			for (SubprocessFacet& f : sHandle->structures[s].facets) {
+				int idx=getFacetIndex(&f);
+				covering+=simHistory->coveringList.pointintime_list[it].second[idx];
 
-					double err=simHistory->errorList_covering.pointintime_list[it].second[idx];
-					if(err== std::numeric_limits<double>::infinity()||f.sh.opacity==0)//ignore facet if no hits (=inf error)
-						continue;
+				double err=simHistory->errorList_covering.pointintime_list[it].second[idx];
+				if(err== std::numeric_limits<double>::infinity()||f.sh.opacity==0)//ignore facet if no hits (=inf error)
+					continue;
 
-					error+=err*f.sh.area;
-					area+=f.sh.area;
-				}
+				error+=err*f.sh.area;
+				area+=f.sh.area;
 			}
-			errorPerIt_covering.push_back(error/area);
 		}
+		errorPerIt_covering.push_back(error/area);
+	}
 
 	return std::make_tuple(errorPerIt_event,errorPerIt_covering,covPerIt);
-}
-
-// Copy covering to buffer
-void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
-	boost::multiprecision::uint128_t covering_phys;
-	BYTE *buffer_sum;
-	buffer_sum = hitbuffer_sum->buff;
-
-	BYTE *buffer;
-	buffer = hitbuffer->buff;
-
-	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-			for (SubprocessFacet& f : sHandle->structures[j].facets) {
-				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
-				FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
-				covering_phys = simHistory->coveringList.getLast(&f);
-				facetHitBuffer->hit.covering=covering_phys.convert_to<llong>();
-				facetHitSum->hit.covering=covering_phys.convert_to<llong>();
-			}
-	}
-
-	simHistory->flightTime=0.0;
-	simHistory->nParticles=0;
-}
-
-void UpdateParticleDensityAndPressure(Databuff *hitbuffer_sum){
-	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			simHistory->particleDensityList.setCurrent(&f, calcParticleDensity(hitbuffer_sum , &f));
-			simHistory->pressureList.setCurrent(&f, calcPressure(hitbuffer_sum , &f));
-
-			double energy=calcCoverage(&f)<1?p->E_de:p->H_vap;
-
-			double tau=h/(kb*f.sh.temperature) * exp(energy/(kb*f.sh.temperature));
-			double targetPressure = 3/(tau*pow(p->particleDia,2)) * sqrt(3.14 * (sHandle->wp.gasMass/ 1000 / 6E23) *kb*f.sh.temperature/8);
-			std::cout << "Facet " <<getFacetIndex(&f) <<" Target Pressure: " <<targetPressure <<"  ,  Real pressure: " <<simHistory->pressureList.getCurrent(&f)<<"\tfor gass mass "<<sHandle->wp.gasMass <<" g/mol" <<std::endl;
-
-		}
-	}
-	simHistory->particleDensityList.appendCurrent(simHistory->lastTime);
-	simHistory->pressureList.appendCurrent(simHistory->lastTime);
-
-}
-
-void printVelocities(Databuff *hitbuffer){
-	std::ostringstream tmpstream (std::ostringstream::app);
-	tmpstream<<std::endl<<"Velocity counter after iteration"<<std::endl;
-	tmpstream<<std::setw(7+12)<<std::right <<"1_ort_v"<<std::setw(12)<<std::right <<"ort_v"<<std::setw(12)<<std::right <<"1_v"<<std::endl;
-	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			double sum_1_per_ort_velocity, sum_v_ort, sum_1_per_velocity=0.0;
-			std::tie(sum_1_per_ort_velocity, sum_v_ort, sum_1_per_velocity)=getVelocities(&f, hitbuffer);
-			tmpstream<<"Facet "<<getFacetIndex(&f) <<std::setw(12)<<std::right<<sum_1_per_ort_velocity <<std::setw(12)<<std::right<<sum_v_ort <<std::setw(12)<<std::right<<sum_1_per_velocity <<std::endl;
-		}
-	}
-	tmpstream<<std::endl;
-
-	printStream(tmpstream.str());
-
 }
 
 //-----------------------------------------------------------
@@ -704,3 +668,44 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 #endif
 
 }
+
+
+//----------deprecated functions because of new K_real/virt approach
+/*
+double manageStepSize(){
+	double step_size;
+	bool steptoolong; //If step is too long, we will decrease the step size.
+	bool needforCheck = true;
+
+	while(needforCheck){
+		step_size = simHistory->stepSize;
+		steptoolong=false;
+		for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+				if(f.sh.desorption==0||f.sh.temperature==0)continue;
+
+				boost::multiprecision::uint128_t covering_phys = simHistory->coveringList.getLast(&f);
+
+				if ((boost::multiprecision::uint128_t)((f.sh.desorption/boost::multiprecision::float128(kb* f.sh.temperature))*boost::multiprecision::float128(step_size) +boost::multiprecision::float128(0.5))>covering_phys){
+					steptoolong=true;
+				}
+			}
+		}
+		if(steptoolong){
+			if(simHistory->currentStep == 0){
+				needforCheck = false;
+			}
+			else{
+				simHistory->currentStep-=1;
+				std::ostringstream tmpstream (std::ostringstream::app);
+				tmpstream<<"Decrease simHistory->currentStep: "<<simHistory->currentStep <<std::endl;
+				printStream(tmpstream.str());
+			}
+		}
+		else {
+			needforCheck = false;
+		}
+	}
+	return step_size;
+}
+*/

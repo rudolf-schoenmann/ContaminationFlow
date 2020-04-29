@@ -115,7 +115,24 @@ void initCoveringThresh(){
 		}
 }
 
+void setCoveringThreshold(int size, int rank){
+	llong num_sim=size-1;
+	llong cov_sim; //number of particles that can be desorbed from facet
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+				if(rank==1)
+					{cov_sim=simHistory->coveringList.getCurrent(&f).convert_to<llong>()/num_sim + simHistory->coveringList.getCurrent(&f).convert_to<llong>()%num_sim;}
+				else
+					{cov_sim=simHistory->coveringList.getCurrent(&f).convert_to<llong>()/num_sim;}
 
+				sHandle->coveringThreshold[getFacetIndex(&f)]=simHistory->coveringList.getCurrent(&f).convert_to<llong>()-cov_sim;
+			}
+	}
+}
+
+
+//----------deprecated functions because hitbuffer not sent to sub processes anymore
+/*
 void setCoveringThreshold(Databuff *hitbuffer, int size, int rank){
 	BYTE *buffer;
 	buffer = hitbuffer->buff;
@@ -133,19 +150,4 @@ void setCoveringThreshold(Databuff *hitbuffer, int size, int rank){
 			}
 	}
 }
-
-void setCoveringThreshold(int size, int rank){
-	llong num_sim=size-1;
-	llong cov_sim; //number of particles that can be desorbed from facet
-	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-			for (SubprocessFacet& f : sHandle->structures[j].facets) {
-				if(rank==1)
-					{cov_sim=simHistory->coveringList.getCurrent(&f).convert_to<llong>()/num_sim + simHistory->coveringList.getCurrent(&f).convert_to<llong>()%num_sim;}
-				else
-					{cov_sim=simHistory->coveringList.getCurrent(&f).convert_to<llong>()/num_sim;}
-
-				sHandle->coveringThreshold[getFacetIndex(&f)]=simHistory->coveringList.getCurrent(&f).convert_to<llong>()-cov_sim;
-			}
-	}
-}
-
+*/

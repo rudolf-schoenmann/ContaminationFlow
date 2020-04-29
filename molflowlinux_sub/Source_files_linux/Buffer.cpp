@@ -56,14 +56,13 @@ bool checkWriteable(std::string fileName){
 //Import/export of buffer files with filename given as char* or std::string
 //-> no need for conversion
 
-void importBuff(char *fileName, Databuff *databuffer)
+void importBuff(const char *fileName, Databuff *databuffer)
 {
 
 	std::filebuf fb;
 	databuffer->buff=NULL;
 	if (fb.open(fileName, std::ios::in))
 	{
-
 		std::istream is(&fb);
 		if (is) {
 			is.seekg(0, is.end);
@@ -71,7 +70,7 @@ void importBuff(char *fileName, Databuff *databuffer)
 			is.seekg(0, is.beg);
 
 			char *temp = new char[length];
-			databuffer->buff = new BYTE[length];
+			//databuffer->buff = new BYTE[length];
 
 			is.read(temp, length);
 			databuffer->size = length;
@@ -89,7 +88,7 @@ void importBuff(char *fileName, Databuff *databuffer)
 
 
 
-void exportBuff(char *fileName, Databuff *databuffer)
+void exportBuff(const char *fileName, Databuff *databuffer)
 {
 	std::filebuf f;
 	if (f.open(fileName, std::ios::out))
@@ -108,32 +107,8 @@ void exportBuff(char *fileName, Databuff *databuffer)
 
 void importBuff(std::string fileName, Databuff *databuffer)
 {
-
-	std::filebuf fb;
-	databuffer->buff=NULL;
-	if (fb.open(fileName, std::ios::in))
-	{
-
-		std::istream is(&fb);
-		if (is) {
-			is.seekg(0, is.end);
-			signed int length = is.tellg();
-			is.seekg(0, is.beg);
-
-			char *temp = new char[length];
-			databuffer->buff = new BYTE[length];
-
-			is.read(temp, length);
-			databuffer->size = length;
-			databuffer->buff = (BYTE*)temp;
-		}
-
-		fb.close();
-	}
-	else{
-		std::cout << "Could not open file to read data from." << std::endl;
-	}
-	std::cout << "Buffer '" << fileName <<"' imported. Buffersize (read in): " << databuffer->size << std::endl;
+	const char *c =fileName.c_str();
+	importBuff(c, databuffer);
 }
 
 
@@ -141,17 +116,6 @@ void importBuff(std::string fileName, Databuff *databuffer)
 
 void exportBuff(std::string fileName, Databuff *databuffer)
 {
-	std::filebuf f;
-	if (f.open(fileName, std::ios::out))
-	{
-		std::ostream os(&f);
-		if (os)
-		{
-			signed int length = databuffer->size;
-			os.write(reinterpret_cast<const char *>(databuffer->buff), length);
-		}
-		f.close();
-	}
-	else {std::cout << "Could not open file to write data in." << std::endl;}
-	std::cout << "Buffersize (write in file): " << databuffer->size << std::endl;
+	const char *c =fileName.c_str();
+	exportBuff(c, databuffer);
 }

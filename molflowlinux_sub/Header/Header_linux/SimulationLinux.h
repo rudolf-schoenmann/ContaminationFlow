@@ -385,7 +385,7 @@ public:
 	double stepSize; // [s]
 	double stepSize_outgassing; //[s]
 
-	void appendList(Databuff *hitbuffer, double time=-1.0);
+	//void appendList(Databuff *hitbuffer, double time=-1.0);
 	void appendList(double time=-1.0);
 
 	void print(bool write=false);
@@ -413,9 +413,9 @@ std::tuple<bool, std::vector<int> >  simulateSub2(Databuff *hitbuffer, int rank,
 
 double convertunit(double simutime, std::string unit);
 
-void printConsole(std::string str,std::ofstream outFile);
 bool checkSmallCovering(int rank, Databuff *hitbuffer_sum);
-void UndoSmallCovering(Databuff *hitbuffer_sum);
+//void UndoSmallCovering(Databuff *hitbuffer_sum);
+
 //ProblemDef
 //SimulationHistory
 
@@ -443,7 +443,7 @@ void initbufftozero(Databuff *databuffer);
 //-----------------------------------------------------------
 //UpdateMainProcess.cpp
 
-double manageStepSize();
+//double manageStepSize();
 double getStepSize();
 
 void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHistory *history,int rank);
@@ -452,10 +452,10 @@ void UpdateCovering(Databuff *hitbuffer_sum);
 void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer);
 
 void UpdateErrorMain(Databuff *hitbuffer_sum);
-std::tuple<std::vector<double>,std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  CalcPerIteration();
-
 void UpdateParticleDensityAndPressure(Databuff *hitbuffer_sum);
+
 void printVelocities(Databuff *hitbuffer);
+std::tuple<std::vector<double>,std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  CalcPerIteration();
 
 //-----------------------------------------------------------
 //SimulationCalc.cpp
@@ -464,36 +464,40 @@ llong getnbDesorbed(Databuff *hitbuffer_sum);
 llong getnbDesorbed(SubprocessFacet *iFacet, Databuff *hitbuffer);
 llong getnbAdsorbed(SubprocessFacet *iFacet, Databuff *hitbuffer);//In the original Molflow, particles were absorbed not adsorbed. In ContaminationFlow we regard all old code parts
 // which are called 'Absorb' actually as an 'Adsorb'. But we did not rename them.
+
 llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
 boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet);
+
 double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer);
 std::tuple<double, double, double> getVelocities(SubprocessFacet *iFacet, Databuff *hitbuffer_sum);
 
-double calcStep(long double variable, double start, double end, double inflection_point, double Wtr);
+//double calcStep(long double variable, double start, double end, double inflection_point, double Wtr);
 //double calcEnergy(SubprocessFacet *iFacet, Databuff *hitbuffer);
-double calcEnergy(SubprocessFacet *iFacet);
+//double calcEnergy(SubprocessFacet *iFacet);
+
+//----------
 
 boost::multiprecision::float128 calcCoverage(SubprocessFacet *iFacet);
 
 boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum);
 //void calcStickingnew(SubprocessFacet *iFacet, Databuff *hitbuffer);
 void calcStickingnew(SubprocessFacet *iFacet);
+
 //boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet, Databuff *hitbuffer);
 //boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet);
 boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet);
 
-double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b);
 double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f);
 double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f);
 
+double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b);
+
 //-----------------------------------------------------------
 //Iteration.cpp
-/*
-double estimateTmin(Databuff *hitbuffer);
-*/
-double estimateAverageFlightTime();
 
-//void allocateCovering(Databuff *hitbuffer, int size, int rank);
+//double estimateTmin(Databuff *hitbuffer);
+//double estimateAverageFlightTime();
+
 void setCoveringThreshold(Databuff *hitbuffer, int size, int rank);
 void setCoveringThreshold(int size, int rank);
 void initCoveringThresh();

@@ -180,7 +180,10 @@ int main(int argc, char *argv[]) {
 			MPI_Finalize();
 			return 0;
 		}
+
 		initCoveringThresh();
+		UpdateSojourn();
+
 		if(rank==0){ // hitbuffer_sum and histphys
 			//Save copies of the original loaded hitbuffer
 			//These copies will be used in process 0. The hitbuffers of all subprocesses will be add up and written in the hitbuffer_sum
@@ -244,7 +247,6 @@ int main(int argc, char *argv[]) {
 			setCoveringThreshold(world_size, rank);
 
 			UpdateSticking();
-			UpdateSojourn();
 
 			MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
 			MPI_Barrier(MPI_COMM_WORLD);

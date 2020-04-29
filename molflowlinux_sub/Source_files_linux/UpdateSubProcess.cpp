@@ -93,8 +93,6 @@ void UpdateErrorSub(){
 				num_des_ad_f=0;
 			}
 
-
-
 			if(f.sh.opacity==0){
 				simHistory->errorList_event.setCurrent(&f, 0.0);
 				simHistory->errorList_covering.setCurrent(&f, 0.0);
@@ -115,50 +113,42 @@ void UpdateErrorSub(){
 double UpdateError(std::string mode){//calculates the averaged total error weighted with the facets area to decide, if the desired uncertainty level is reached
 	UpdateErrorSub();
 
-	double error=0.0;
-	double area=0.0;
+	double total_error_event=0.0;
+	double total_error_covering=0.0;
+	std::tie(total_error_event,total_error_covering)=UpdateErrorAll();
 
-	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			if(mode=="covering"){
-				if(simHistory->errorList_covering.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0)//ignore facet if no hits (=inf error)
-					continue;
-				error+=simHistory->errorList_covering.getCurrent(&f)*f.sh.area;
-			}
-			else if(mode =="event"){
-				if(simHistory->errorList_event.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0)//ignore facet if no hits (=inf error)
-					continue;
-				error+=simHistory->errorList_event.getCurrent(&f)*f.sh.area;
-			}
-			else{
-				std::cout<<"------------! Error mode '"<<mode <<"' not implemented !------------\n";
-				return 0.0;
-			}
-			area+=f.sh.area;
-		}
+	if(mode=="covering"){
+		return total_error_covering;
 	}
-
-	return error/area;
+	else if(mode =="event"){
+		return total_error_event;
+	}
+	else{
+		std::cout<<"------------! Error mode '"<<mode <<"' not implemented !------------\n";
+		return 0.0;
+	}
 }
 
 std::tuple<double,double> UpdateErrorAll(){//calculates the averaged total error weighted with the facets area to decide, if the desired uncertainty level is reached
 	double error_event=0.0; double error_covering=0.0;
-	double area=0.0;
+	double area_event=0.0; double area_covering=0.0;
 
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			if(simHistory->errorList_event.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0)//ignore facet if no hits (=inf error)
-				continue;
-			if(simHistory->errorList_covering.getCurrent(&f)== std::numeric_limits<double>::infinity()||f.sh.opacity==0)//ignore facet if no hits (=inf error)
-				continue;
-			error_event+=simHistory->errorList_event.getCurrent(&f)*f.sh.area;
-			error_covering+=simHistory->errorList_covering.getCurrent(&f)*f.sh.area;
+			if(f.sh.opacity==0) {continue;} //ignore facet if no opacity
 
-			area+=f.sh.area;
+			if(!std::isinf(simHistory->errorList_event.getCurrent(&f))){//ignore facet if no hits (=inf error)
+				error_event+=simHistory->errorList_event.getCurrent(&f)*f.sh.area;
+				area_event+=f.sh.area;
+
+			}
+			if(!std::isinf(simHistory->errorList_covering.getCurrent(&f))){//ignore facet if no hits (=inf error)
+				error_covering+=simHistory->errorList_covering.getCurrent(&f)*f.sh.area;
+				area_covering+=f.sh.area;
+			}
 		}
 	}
-
-	return std::make_tuple(error_event/area, error_covering/area);
+	return std::make_tuple(error_event/area_event, error_covering/area_covering);
 }
 
 bool checkErrorSub(double targetError, double currentError, double factor, std::string mode){
@@ -470,31 +460,31 @@ void initbufftozero(Databuff *databuffer){
 
 	//Global histograms saved
 
-		for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
-			BYTE *histCurrentMoment = buffer + sizeof(GlobalHitBuffer) + m * sHandle->wp.globalHistogramParams.GetDataSize();
+	for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
+		BYTE *histCurrentMoment = buffer + sizeof(GlobalHitBuffer) + m * sHandle->wp.globalHistogramParams.GetDataSize();
 
-			double* nbHitsHistogram = (double*)histCurrentMoment;
-			double* distanceHistogram = (double*)(histCurrentMoment + sHandle->wp.globalHistogramParams.GetBouncesDataSize());
-			double* timeHistogram = (double*)(histCurrentMoment + sHandle->wp.globalHistogramParams.GetBouncesDataSize() + sHandle->wp.globalHistogramParams.GetDistanceDataSize());
+		double* nbHitsHistogram = (double*)histCurrentMoment;
+		double* distanceHistogram = (double*)(histCurrentMoment + sHandle->wp.globalHistogramParams.GetBouncesDataSize());
+		double* timeHistogram = (double*)(histCurrentMoment + sHandle->wp.globalHistogramParams.GetBouncesDataSize() + sHandle->wp.globalHistogramParams.GetDistanceDataSize());
 
-			if (sHandle->wp.globalHistogramParams.recordBounce) {
-				for (size_t i = 0; i < sHandle->wp.globalHistogramParams.GetBounceHistogramSize(); i++) {
-					nbHitsHistogram[i] = 0.0;
-				}
-			}
-
-			if (sHandle->wp.globalHistogramParams.recordDistance) {//(MY) removed +
-				for (size_t i = 0; i < (sHandle->wp.globalHistogramParams.GetDistanceHistogramSize()); i++) {
-					distanceHistogram[i] = 0.0;
-				}
-			}
-
-			if (sHandle->wp.globalHistogramParams.recordTime) {//(MY) removed +
-				for (size_t i = 0; i < (sHandle->wp.globalHistogramParams.GetTimeHistogramSize()); i++) {
-					timeHistogram[i] = 0.0;
-				}
+		if (sHandle->wp.globalHistogramParams.recordBounce) {
+			for (size_t i = 0; i < sHandle->wp.globalHistogramParams.GetBounceHistogramSize(); i++) {
+				nbHitsHistogram[i] = 0.0;
 			}
 		}
+
+		if (sHandle->wp.globalHistogramParams.recordDistance) {//(MY) removed +
+			for (size_t i = 0; i < (sHandle->wp.globalHistogramParams.GetDistanceHistogramSize()); i++) {
+				distanceHistogram[i] = 0.0;
+			}
+		}
+
+		if (sHandle->wp.globalHistogramParams.recordTime) {//(MY) removed +
+			for (size_t i = 0; i < (sHandle->wp.globalHistogramParams.GetTimeHistogramSize()); i++) {
+				timeHistogram[i] = 0.0;
+			}
+		}
+	}
 
 
 	//here: init values with zero
@@ -502,105 +492,105 @@ void initbufftozero(Databuff *databuffer){
 	int j, x, y, s;
 
 	for (s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-			for (SubprocessFacet& f : sHandle->structures[s].facets) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 
-				//if (f.hitted) {
+			//if (f.hitted) {
 
-					for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
-						FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
-						facetHitBuffer->hit.nbAbsEquiv = 0.0;
-						facetHitBuffer->hit.nbDesorbed = 0;
-						facetHitBuffer->hit.nbMCHit = 0;
-						facetHitBuffer->hit.nbHitEquiv = 0.0;
-						facetHitBuffer->hit.sum_1_per_ort_velocity = 0.0;
-						facetHitBuffer->hit.sum_v_ort = 0.0;
-						facetHitBuffer->hit.sum_1_per_velocity = 0.0;
+				for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
+					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
+					facetHitBuffer->hit.nbAbsEquiv = 0.0;
+					facetHitBuffer->hit.nbDesorbed = 0;
+					facetHitBuffer->hit.nbMCHit = 0;
+					facetHitBuffer->hit.nbHitEquiv = 0.0;
+					facetHitBuffer->hit.sum_1_per_ort_velocity = 0.0;
+					facetHitBuffer->hit.sum_v_ort = 0.0;
+					facetHitBuffer->hit.sum_1_per_velocity = 0.0;
+				}
+
+				if (f.sh.isProfile) {//(MY) removed +
+					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
+						ProfileSlice *shProfile = (ProfileSlice *)(buffer + f.sh.hitOffset + facetHitsSize + m * f.profileSize);
+						for (j = 0; j < (int)PROFILE_SIZE; j++) {
+							shProfile[j].countEquiv=0.0; shProfile[j].sum_1_per_ort_velocity=0.0; shProfile[j].sum_v_ort=0.0;
+						}
 					}
+				}
 
-					if (f.sh.isProfile) {//(MY) removed +
-						for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-							ProfileSlice *shProfile = (ProfileSlice *)(buffer + f.sh.hitOffset + facetHitsSize + m * f.profileSize);
-							for (j = 0; j < (int)PROFILE_SIZE; j++) {
-								shProfile[j].countEquiv=0.0; shProfile[j].sum_1_per_ort_velocity=0.0; shProfile[j].sum_v_ort=0.0;
+				if (f.sh.isTextured) {//(MY)
+					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
+						TextureCell *shTexture = (TextureCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
+
+						for (y = 0; y < (int)f.sh.texHeight; y++) {
+							for (x = 0; x < (int)f.sh.texWidth; x++) {
+								size_t add = x + y * f.sh.texWidth;
+
+								//Add temporary hit counts
+								shTexture[add].countEquiv=0.0; shTexture[add].sum_1_per_ort_velocity=0.0; shTexture[add].sum_v_ort_per_area=0.0;
+
 							}
 						}
 					}
+				}
 
-					if (f.sh.isTextured) {//(MY)
-						for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-							TextureCell *shTexture = (TextureCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
-
-							for (y = 0; y < (int)f.sh.texHeight; y++) {
-								for (x = 0; x < (int)f.sh.texWidth; x++) {
-									size_t add = x + y * f.sh.texWidth;
-
-									//Add temporary hit counts
-									shTexture[add].countEquiv=0.0; shTexture[add].sum_1_per_ort_velocity=0.0; shTexture[add].sum_v_ort_per_area=0.0;
-
-								}
+				if (f.sh.countDirection) {//(MY) removed +
+					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
+						DirectionCell *shDir = (DirectionCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*m));
+						for (y = 0; y < (int)f.sh.texHeight; y++) {
+							for (x = 0; x < (int)f.sh.texWidth; x++) {
+								size_t add = x + y * f.sh.texWidth;
+								shDir[add].dir.x = 0.0;
+								shDir[add].dir.y = 0.0;
+								shDir[add].dir.z = 0.0;
+								//shDir[add].sumSpeed += f.direction[m][add].sumSpeed;
+								shDir[add].count = 0;
 							}
 						}
 					}
+				}
 
-					if (f.sh.countDirection) {//(MY) removed +
-						for (unsigned int m = 0; m < (1 + nbMoments); m++) {
-							DirectionCell *shDir = (DirectionCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*m));
-							for (y = 0; y < (int)f.sh.texHeight; y++) {
-								for (x = 0; x < (int)f.sh.texWidth; x++) {
-									size_t add = x + y * f.sh.texWidth;
-									shDir[add].dir.x = 0.0;
-									shDir[add].dir.y = 0.0;
-									shDir[add].dir.z = 0.0;
-									//shDir[add].sumSpeed += f.direction[m][add].sumSpeed;
-									shDir[add].count = 0;
-								}
-							}
+				if (f.sh.anglemapParams.record) {//(MY) removed +
+					size_t *shAngleMap = (size_t *)(buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments));
+					for (y = 0; y < (int)(f.sh.anglemapParams.thetaLowerRes + f.sh.anglemapParams.thetaHigherRes); y++) {
+						for (x = 0; x < (int)f.sh.anglemapParams.phiWidth; x++) {
+							size_t add = x + y * f.sh.anglemapParams.phiWidth;
+							shAngleMap[add] = 0;
+						}
+					}
+				}
+
+			//Facet histograms
+
+				for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
+					BYTE *histCurrentMoment = buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments) + f.sh.anglemapParams.GetRecordedDataSize() + m * f.sh.facetHistogramParams.GetDataSize();
+
+					if (f.sh.facetHistogramParams.recordBounce) {
+						double* nbHitsHistogram = (double*)histCurrentMoment;
+						for (size_t i = 0; i < f.sh.facetHistogramParams.GetBounceHistogramSize(); i++) {
+							nbHitsHistogram[i] = 0.0;
 						}
 					}
 
-					if (f.sh.anglemapParams.record) {//(MY) removed +
-						size_t *shAngleMap = (size_t *)(buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments));
-						for (y = 0; y < (int)(f.sh.anglemapParams.thetaLowerRes + f.sh.anglemapParams.thetaHigherRes); y++) {
-							for (x = 0; x < (int)f.sh.anglemapParams.phiWidth; x++) {
-								size_t add = x + y * f.sh.anglemapParams.phiWidth;
-								shAngleMap[add] = 0;
-							}
+
+					if (f.sh.facetHistogramParams.recordDistance) {
+						double* distanceHistogram = (double*)(histCurrentMoment + f.sh.facetHistogramParams.GetBouncesDataSize());
+						for (size_t i = 0; i < (f.sh.facetHistogramParams.GetDistanceHistogramSize()); i++) {
+							distanceHistogram[i] = 0.0;
 						}
 					}
 
-					//Facet histograms
-
-						for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
-							BYTE *histCurrentMoment = buffer + f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + f.textureSize*(1 + nbMoments) + f.directionSize*(1 + nbMoments) + f.sh.anglemapParams.GetRecordedDataSize() + m * f.sh.facetHistogramParams.GetDataSize();
-
-							if (f.sh.facetHistogramParams.recordBounce) {
-								double* nbHitsHistogram = (double*)histCurrentMoment;
-								for (size_t i = 0; i < f.sh.facetHistogramParams.GetBounceHistogramSize(); i++) {
-									nbHitsHistogram[i] = 0.0;
-								}
-							}
-
-
-							if (f.sh.facetHistogramParams.recordDistance) {
-								double* distanceHistogram = (double*)(histCurrentMoment + f.sh.facetHistogramParams.GetBouncesDataSize());
-								for (size_t i = 0; i < (f.sh.facetHistogramParams.GetDistanceHistogramSize()); i++) {
-									distanceHistogram[i] = 0.0;
-								}
-							}
-
-							if (f.sh.facetHistogramParams.recordTime) {
-								double* timeHistogram = (double*)(histCurrentMoment + f.sh.facetHistogramParams.GetBouncesDataSize() + f.sh.facetHistogramParams.GetDistanceDataSize());
-								for (size_t i = 0; i < (f.sh.facetHistogramParams.GetTimeHistogramSize()); i++) {
-									timeHistogram[i] = 0.0;
-								}
-							}
-
+					if (f.sh.facetHistogramParams.recordTime) {
+						double* timeHistogram = (double*)(histCurrentMoment + f.sh.facetHistogramParams.GetBouncesDataSize() + f.sh.facetHistogramParams.GetDistanceDataSize());
+						for (size_t i = 0; i < (f.sh.facetHistogramParams.GetTimeHistogramSize()); i++) {
+							timeHistogram[i] = 0.0;
 						}
+					}
 
-				//} // End if(hitted)
+				}
 
-			} // End nbFacet
-		} // End nbSuper
+			//} // End if(hitted)
+
+		} // End nbFacet
+	} // End nbSuper
 
 	return;
 }

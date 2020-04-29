@@ -36,8 +36,8 @@ typedef struct {
 bool checkReadable(std::string fileName);
 bool checkWriteable(std::string fileName);
 
-void importBuff(char *fileName, Databuff *databuffer);
-void exportBuff(char *fileName, Databuff *databuffer);
+void importBuff(const char *fileName, Databuff *databuffer);
+void exportBuff(const char *fileName, Databuff *databuffer);
 void importBuff(std::string fileName, Databuff *databuffer);
 void exportBuff(std::string fileName, Databuff *databuffer);
 

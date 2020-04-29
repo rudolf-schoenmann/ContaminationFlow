@@ -37,14 +37,11 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 #define CDF_SIZE 100 //points in a cumulative distribution function
 
+void CalcTotalOutgassingWorker();
 
-  std::vector<std::pair<double, double>> Generate_ID(int paramId);
-  int GenerateNewID(int paramId);
-  std::vector<std::pair<double, double>> Generate_CDF(double gasTempKelvins, double gasMassGramsPerMol, size_t size);
-  int GenerateNewCDF(double temperature);
-  void CalcTotalOutgassingWorker();
-  int GetCDFId(double temperature);
-  //int GetIDId(int paramId); // already defined in simulation control
-
-  int GetParamId(const std::string); //Get ID of parameter name
-
+//std::vector<std::pair<double, double>> Generate_ID(int paramId);
+//int GenerateNewID(int paramId);
+//std::vector<std::pair<double, double>> Generate_CDF(double gasTempKelvins, double gasMassGramsPerMol, size_t size);
+//int GenerateNewCDF(double temperature);
+//int GetCDFId(double temperature);
+//int GetParamId(const std::string); //Get ID of parameter name

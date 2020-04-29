@@ -113,16 +113,6 @@ double calcdNsurf(){//Calculates the (carbon equivalent relative) mass factor
 	return sHandle->wp.gasMass/12.011;
 }
 
-long double calcCoverage(SubprocessFacet *iFacet, Databuff *hitbuffer){ // calculates coverage depending on covering (number particles on facet)
-	llong covering;
-	long double coverage;
-
-	covering = getCovering( iFacet, hitbuffer);
-
-	coverage = (long double)covering /(long double)(calcNmono(iFacet)/calcdNsurf());
-	return coverage;
-}
-
 boost::multiprecision::float128 calcCoverage(SubprocessFacet *iFacet){ // calculates coverage depending on covering (number particles on facet)
 	boost::multiprecision::uint128_t covering = getCovering(iFacet);
 
@@ -142,20 +132,6 @@ boost::multiprecision::float128 calctotalDesorption(){// calculates the desorbed
 	}
 	return desrate;
 }
-
-double calcStep(long double variable, double start, double end, double inflection_point, double Wtr){
-
-	if(start==end)
-		return start;
-	else
-		return (double)tanh(((variable - inflection_point)/Wtr) *2*tuneE) * (end - start)/2 +(start+end)/2; //tanh(adjust width) * adjust height + adjust bias
-}
-
-double calcEnergy(SubprocessFacet *iFacet){ //TODO verify
-	long double coverage=calcCoverage(iFacet).convert_to<long double>();
-	return calcStep(coverage, p->E_de, p->H_vap,1, p->W_tr);
-}
-
 
 //-----------------------------------------------------------
 // calculation of used values
@@ -187,12 +163,12 @@ void calcStickingnew(SubprocessFacet *iFacet) {//Calculates sticking coefficient
 }
 
 boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This returns Delta'covering' in units of [1].
-	boost::multiprecision::float128 coverage;
-	double temperature;
 	boost::multiprecision::float128 desorption(0.0);
+
+	boost::multiprecision::float128 coverage= calcCoverage(iFacet);
+	double temperature = iFacet->sh.temperature;
 	boost::multiprecision::float128 time_step = boost::multiprecision::float128(simHistory->stepSize);
-	coverage = calcCoverage(iFacet);
-	temperature=iFacet->sh.temperature;
+
 	boost::multiprecision::float128 tau_0=static_cast<boost::multiprecision::float128>(h/(kb*temperature));
 	boost::multiprecision::float128 energy_de=static_cast<boost::multiprecision::float128>(p->E_de);
 	boost::multiprecision::float128 enthalpy_vap=static_cast<boost::multiprecision::float128>(p->H_vap);
@@ -220,13 +196,6 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 	desorption = desorption * boost::multiprecision::float128(calcNmono(iFacet)/calcdNsurf());//This returns Delta'covering' in units of [1]. 1 means one particle.
 	return desorption;
 }
-/* Don't needed in the new Krealvirt approach...
-boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet) {//This returns ((d'coverage')/dt)de * (Nmono/dNSurf) * kb*T. So to speak desorption rate in units of [Pa m³/s]
-	boost::multiprecision::float128 desorption = calcDesorption(iFacet);
-	boost::multiprecision::float128 desorptionRate = desorption * boost::multiprecision::float128(kb* iFacet->sh.temperature * calcNmono(iFacet) /calcdNsurf());
-	return desorptionRate;
-}
-*/
 
 double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f){
 
@@ -310,6 +279,16 @@ double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b){
 
 //----------deprecated functions because hitbuffer not sent to sub processes anymore
 /*
+long double calcCoverage(SubprocessFacet *iFacet, Databuff *hitbuffer){ // calculates coverage depending on covering (number particles on facet)
+	llong covering;
+	long double coverage;
+
+	covering = getCovering( iFacet, hitbuffer);
+
+	coverage = (long double)covering /(long double)(calcNmono(iFacet)/calcdNsurf());
+	return coverage;
+}
+
 double calcEnergy(SubprocessFacet *iFacet, Databuff *hitbuffer){ //TODO verify
 
 	long double coverage=calcCoverage(iFacet,hitbuffer);
@@ -356,3 +335,27 @@ boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet, Data
 	boost::multiprecision::float128 desorptionRate = desorption * boost::multiprecision::float128(kb* iFacet->sh.temperature * calcNmono(iFacet) /calcdNsurf());
 	return desorptionRate;
 }*/
+
+
+//----------deprecated functions because of new K_real/virt approach
+
+/*
+double calcStep(long double variable, double start, double end, double inflection_point, double Wtr){
+
+	if(start==end)
+		return start;
+	else
+		return (double)tanh(((variable - inflection_point)/Wtr) *2*tuneE) * (end - start)/2 +(start+end)/2; //tanh(adjust width) * adjust height + adjust bias
+}
+
+double calcEnergy(SubprocessFacet *iFacet){ //TODO verify
+	long double coverage=calcCoverage(iFacet).convert_to<long double>();
+	return calcStep(coverage, p->E_de, p->H_vap,1, p->W_tr);
+}
+
+boost::multiprecision::float128 calcDesorptionRate(SubprocessFacet *iFacet) {//This returns ((d'coverage')/dt)de * (Nmono/dNSurf) * kb*T. So to speak desorption rate in units of [Pa m³/s]
+	boost::multiprecision::float128 desorption = calcDesorption(iFacet);
+	boost::multiprecision::float128 desorptionRate = desorption * boost::multiprecision::float128(kb* iFacet->sh.temperature * calcNmono(iFacet) /calcdNsurf());
+	return desorptionRate;
+}
+*/
