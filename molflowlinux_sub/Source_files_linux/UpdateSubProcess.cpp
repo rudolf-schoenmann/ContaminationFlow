@@ -52,7 +52,7 @@ bool UpdateDesorptionRate (){
 	}
 
 	if((boost::multiprecision::float128(sHandle->wp.totalOutgassingParticles)+totaldes)<boost::multiprecision::pow(boost::multiprecision::float128(10.),boost::multiprecision::float128(-50))){return false;}
-	else{return true;}
+	return true;
 }
 
 void UpdateSojourn(){
@@ -129,7 +129,7 @@ double UpdateError(std::string mode){//calculates the averaged total error weigh
 	}
 }
 
-std::tuple<double,double> UpdateErrorAll(){//calculates the averaged total error weighted with the facets area to decide, if the desired uncertainty level is reached
+std::tuple<double,double> UpdateErrorAll(int it){//calculates the averaged total error weighted with the facets area to decide, if the desired uncertainty level is reached
 	double error_event=0.0; double error_covering=0.0;
 	double area_event=0.0; double area_covering=0.0;
 
@@ -137,13 +137,16 @@ std::tuple<double,double> UpdateErrorAll(){//calculates the averaged total error
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			if(f.sh.opacity==0) {continue;} //ignore facet if no opacity
 
-			if(!std::isinf(simHistory->errorList_event.getCurrent(&f))){//ignore facet if no hits (=inf error)
-				error_event+=simHistory->errorList_event.getCurrent(&f)*f.sh.area;
+			int idx=getFacetIndex(&f);
+			double error_event_facet=(it==-1)?simHistory->errorList_event.getCurrent(&f):simHistory->errorList_event.pointintime_list[it].second[idx];
+			if(!std::isinf(error_event_facet)){//ignore facet if no hits (=inf error)
+				error_event+=error_event_facet*f.sh.area;
 				area_event+=f.sh.area;
-
 			}
-			if(!std::isinf(simHistory->errorList_covering.getCurrent(&f))){//ignore facet if no hits (=inf error)
-				error_covering+=simHistory->errorList_covering.getCurrent(&f)*f.sh.area;
+
+			double error_covering_facet=(it==-1)?simHistory->errorList_covering.getCurrent(&f):simHistory->errorList_covering.pointintime_list[it].second[idx];
+			if(!std::isinf(error_covering_facet)){//ignore facet if no hits (=inf error)
+				error_covering+=error_covering_facet*f.sh.area;
 				area_covering+=f.sh.area;
 			}
 		}

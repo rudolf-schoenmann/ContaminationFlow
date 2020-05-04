@@ -23,7 +23,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
  */
 
 #include "SimulationLinux.h"
-#include "levmar.h"
+//#include "levmar.h"
 extern SimulationHistory* simHistory;
 extern Simulation *sHandle;
 
@@ -89,44 +89,29 @@ double estimateAverageFlightTime(){
 
 //-----------------------------------------------------------
 //Functions for covering threshold
-
-void allocateCovering(Databuff *hitbuffer, int size, int rank){
-	BYTE *buffer;
-	buffer = hitbuffer->buff;
-	llong temp=size+1;
-	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-			for (SubprocessFacet& f : sHandle->structures[j].facets) {
-				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
-				if(rank==1)
-					{facetHitBuffer->hit.covering=facetHitBuffer->hit.covering/temp + facetHitBuffer->hit.covering%temp;}
-				else
-					{facetHitBuffer->hit.covering=facetHitBuffer->hit.covering/temp;}
-			}
-	}
-}
-
-
 void initCoveringThresh(){
+	// Initializes size of cveringThreshold
 	sHandle->coveringThreshold=std::vector<llong> ();
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-				for(uint i=0; i<sHandle->structures[j].facets.size(); i++){
-					sHandle->coveringThreshold.push_back(0);
-				}
+		for(uint i=0; i<sHandle->structures[j].facets.size(); i++){
+			sHandle->coveringThreshold.push_back(0);
 		}
+	}
 }
 
 void setCoveringThreshold(int size, int rank){
 	llong num_sim=size-1;
-	llong cov_sim; //number of particles that can be desorbed from facet
+	llong cov_sim; //number of particles that can be desorbed from facet per subprocess
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-			for (SubprocessFacet& f : sHandle->structures[j].facets) {
-				if(rank==1)
-					{cov_sim=simHistory->coveringList.getCurrent(&f).convert_to<llong>()/num_sim + simHistory->coveringList.getCurrent(&f).convert_to<llong>()%num_sim;}
-				else
-					{cov_sim=simHistory->coveringList.getCurrent(&f).convert_to<llong>()/num_sim;}
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			if(rank==1)
+				{cov_sim=simHistory->coveringList.getCurrent(&f).convert_to<llong>()/num_sim + simHistory->coveringList.getCurrent(&f).convert_to<llong>()%num_sim;}
+			else
+				{cov_sim=simHistory->coveringList.getCurrent(&f).convert_to<llong>()/num_sim;}
 
-				sHandle->coveringThreshold[getFacetIndex(&f)]=simHistory->coveringList.getCurrent(&f).convert_to<llong>()-cov_sim;
-			}
+			// Covering threshold: current covering of face - particles that can be desorbed
+			sHandle->coveringThreshold[getFacetIndex(&f)]=simHistory->coveringList.getCurrent(&f).convert_to<llong>()-cov_sim;
+		}
 	}
 }
 
@@ -147,6 +132,24 @@ void setCoveringThreshold(Databuff *hitbuffer, int size, int rank){
 					{cov_sim=facetHitBuffer->hit.covering/num_sim;}
 
 				sHandle->coveringThreshold[getFacetIndex(&f)]=facetHitBuffer->hit.covering-cov_sim;
+			}
+	}
+}
+*/
+
+//----------Not used anymore
+/*
+void allocateCovering(Databuff *hitbuffer, int size, int rank){
+	BYTE *buffer;
+	buffer = hitbuffer->buff;
+	llong temp=size+1;
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
+				if(rank==1)
+					{facetHitBuffer->hit.covering=facetHitBuffer->hit.covering/temp + facetHitBuffer->hit.covering%temp;}
+				else
+					{facetHitBuffer->hit.covering=facetHitBuffer->hit.covering/temp;}
 			}
 	}
 }

@@ -19,7 +19,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 */
 
 /*
- * This file contains the serialization of the Simulation
+ * This file contains the serialization of the simulation in the sub processes
  */
 
 #include "SimulationLinux.h"
@@ -39,7 +39,7 @@ extern ProblemDef* p;
 // Simulation on subprocess
 std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, int simutime){
 
-	//Calculate target values for error and desorbed particles
+	//Calculate target values for error and number of desorbed particles
 	int targetParticles=p->targetParticles/simHistory->numSubProcess;
 	double targetError=p->targetError*pow(simHistory->numSubProcess,0.5);
 
@@ -48,17 +48,16 @@ std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, i
 		tmpstream <<std::endl <<"Currentstep: " << simHistory->currentStep <<". Step size: " <<simHistory->stepSize <<std::endl;
 		tmpstream<<simHistory->lastTime <<" + " <<simHistory->stepSize << " = " <<simHistory->lastTime+simHistory->stepSize << " < " <<p->outgassingTimeWindow <<" ? => stepSize_outgassing = " <<simHistory->stepSize_outgassing <<std::endl;
 		tmpstream <<"Target Particles: " << targetParticles <<". Target Error: " <<targetError <<std::endl <<std::endl;
-
 		printStream(tmpstream.str());
 
 	}
 
 	//Values for simulation
-	double timestep=1000; // desired length per iteration for simulation, here hardcoded to 1 second
-	double realtimestep; // actual time elapsed for iteration step
-	double i;			// Time elapsed between checking of targets
-	double totalTime=0.0;	//Total simulated time
-	bool eos=false;		// Set end of simulation flag
+	double timestep=1000; // Desired length per iteration step for simulation, here hardcoded to 1 second
+	double realtimestep; // Actual time elapsed for iteration step
+	double i;			// Time elapsed between checking of targets (i.e., if each iteration step)
+	double totalTime=0.0;	//Total simulation time
+	bool eos=false;		// End of simulation flag
 	double totalError=1.;//Total error
 
 	// Facets that have reached the covering threshold
@@ -74,28 +73,29 @@ std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, i
 
 
 	// Run Simulation for timestep milliseconds
+	// Termination condition: maximum number of iteration reached or target error & number of desorbed particles reached or maximum desoption/covering threshold reached
 	for(int j=0; j<p->maxSimPerIt && !(j>0 && simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))&& !eos; j++){
 		for(i=0; i<(double)(simutime) && !eos;i+=realtimestep){
-
+			// Until simutime is reached, do simulation
 			if(i>=(double(simutime)*0.99)){break;}
 			if(simHistory->coveringList.empty()){
 				simHistory->appendList(i); //append list with initial covering
 				}
 
 			if(i+timestep>=(double)(simutime)){ //last timestep
-				std::tie(eos,realtimestep) = SimulationRun((double)simutime-i); // Some additional simulation, as iteration step  does not run for exactly timestep ms
+				std::tie(eos,realtimestep) = SimulationRun((double)simutime-i); // Some additional simulation to reach desired simutime, as iteration step  does not run for exactly timestep ms
 				}
 			else{
-				std::tie(eos, realtimestep) = SimulationRun(timestep);      // Run during timestep ms, performs MC steps
+				std::tie(eos, realtimestep) = SimulationRun(timestep);      // Run for timestep ms, performs MC steps
 			}
 
 		}
 		totalTime+=i;
-
+		// Calculate error for this iteration step
 		totalError=UpdateError("covering");
 
 		if(j%(int)(30000/simutime)==0 || (simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))|| eos || j >= p->maxSimPerIt-1){
-			// Print information every 30s or if target reached
+			// Print current history lists every 30s or if target reached
 			std::ostringstream tmpstream (std::ostringstream::app);
 			tmpstream <<" Subprocess "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Desorbed particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
 			tmpstream << std::endl;
@@ -117,7 +117,6 @@ std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, i
 				simHistory->errorList_covering.printCurrent(tmpstream, std::to_string(rank)+": errorlist_covering");
 				tmpstream <<std::endl;
 			}
-
 			printStream(tmpstream.str());
 		}
 	}
@@ -175,7 +174,6 @@ double convertunit(double simutime, std::string unit){
 	return simutime*1000.0;
 
 }
-//-----------------------------------------------------------
 
 void printStream(std::string string){
 	std::cout <<string;
@@ -193,6 +191,7 @@ std::string get_path( )
         return std::string( exepath );
 }
 
+//-----------------------------------------------------------
 //----ProblemDef class
 ProblemDef::ProblemDef(){
 	loadbufferPath= "/home/van/Buffer/loadbuffer_alle_RT";
@@ -412,15 +411,13 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 }
 
 //-----------------------------------------------------------
-bool checkSmallCovering(int rank, Databuff *hitbuffer_sum){
+void checkSmallCovering(int rank, Databuff *hitbuffer_sum){
 	BYTE *buffer_sum;
 	buffer_sum = hitbuffer_sum->buff;
 
 	llong smallCoveringFactor=1;
 	boost::multiprecision::uint128_t covering;
-
 	boost::multiprecision::uint128_t mincov = boost::multiprecision::uint128_t(p->coveringMinThresh);
-
 
 	bool smallCovering=false;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
@@ -437,7 +434,7 @@ bool checkSmallCovering(int rank, Databuff *hitbuffer_sum){
 		}
 	}
 
-	if(smallCovering /*&& llong(mincov) < p->coveringMinThresh This is automatically fulfilled... */){
+	if(smallCovering){
 		smallCoveringFactor=llong(1.0+1.1*double(p->coveringMinThresh)/(double(mincov)));
 		/*
 		std::cout <<"Small covering found for rank " << rank << ": multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
@@ -453,8 +450,6 @@ bool checkSmallCovering(int rank, Databuff *hitbuffer_sum){
 		}
 	}
 	simHistory->smallCoveringFactor=smallCoveringFactor;
-
-	return smallCovering;
 }
 
 //----SimulationHistory class
@@ -468,7 +463,6 @@ SimulationHistory::SimulationHistory(int world_size){
 	stepSize=0.0;
 	stepSize_outgassing=0.0;
 	numSubProcess=world_size-1;
-	startNewParticle=false;
 	smallCoveringFactor=1;
 
 
@@ -496,8 +490,6 @@ SimulationHistory::SimulationHistory(int world_size){
 	errorList_covering.initCurrent(numFacet);
 	particleDensityList.initCurrent(numFacet);
 	pressureList.initCurrent(numFacet);
-
-
 }
 
 SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
@@ -555,7 +547,6 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 	stepSize_outgassing=0.0;
 
 	numSubProcess=world_size-1;
-	startNewParticle=false;
 	smallCoveringFactor=1;
 
 	std::cout<<"Normal facets: ";
@@ -570,10 +561,6 @@ void SimulationHistory::updateHistory(){
 
 	nParticles=0;
 	flightTime=0.0;
-
-	startNewParticle=false;
-
-	//nbDesorbed_old= getnbDesorbed(hitbuffer);
 
 	boost::multiprecision::uint128_t covering;
 
@@ -608,8 +595,12 @@ void SimulationHistory::updateHistory(){
 	pressureList.initCurrent(numFacet);
 	pressureList.appendCurrent(0.0);
 
+	updateStepSize();
+	//lastTime=0.0;
+}
+
+void SimulationHistory::updateStepSize(){
 	stepSize = getStepSize();
-	//stepSize=manageStepSize();
 
 	if(lastTime+stepSize<=p->outgassingTimeWindow){
 		stepSize_outgassing = stepSize;
@@ -620,9 +611,7 @@ void SimulationHistory::updateHistory(){
 	else{
 		stepSize_outgassing = 0.0;
 	}
-	//lastTime=0.0;
 }
-
 
 void SimulationHistory::appendList(double time){
 
@@ -846,7 +835,7 @@ void UndoSmallCovering(Databuff *hitbuffer_sum){
 }
 */
 
-//----------deprecated functions
+//----------Not used anymore
 /*
 void SimulationHistory::appendList(Databuff *hitbuffer, double time){
 

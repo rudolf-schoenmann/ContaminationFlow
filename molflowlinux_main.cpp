@@ -49,7 +49,7 @@ bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 	}
 	if(argc>3){ // list of parameters given
 		std::cout <<std::endl;
-		if (argc < 5 || argc > 6) {
+		if (argc < 5 || argc > 6) { //Check correct number of arguments
 			if(rank==0){
 				std::cout << "MolflowLinux requires 4 mandatory arguments and 1 optional argument."<< std::endl;
 				std::cout << "Please pass these arguments to MolflowLinux:"<< std::endl;
@@ -58,10 +58,10 @@ bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 				std::cout << "3. Save results: 0=false, 1=true."<< std::endl;
 				std::cout << "4. The total simulation time (e.g 2.5)." << std::endl;
 				std::cout << "5. [OPTIONAL] Simulation time unit (e.g. seconds, minutes, hours, days). Default set to seconds." << std::endl;
-				std::cout << "MolflowLinux is terminated now." << std::endl;}
-			return false;
+				std::cout << "MolflowLinux is terminated now." << std::endl;
+			}
 		}
-		else{
+		else{ //Read input arguments
 			if(rank==0){std::cout<<"Read arguments" <<std::endl;}
 
 			if(!checkReadable(argv[1])||!checkReadable(argv[2])||std::atof(argv[4])<0.0) // check if parameters are feasible
@@ -70,7 +70,7 @@ bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 			return true;
 		}
 	}
-	else if(argc<4 && argc>1){ // input file given
+	else if(argc<4 && argc>1){ // Read input file
 		if(checkReadable(argv[1])){
 			p->readInputfile(argv[1],rank, argc==3?(int)std::atof(argv[2]):1);
 			if(!checkReadable(p->hitbufferPath)||!checkReadable(p->loadbufferPath)){return false;}
@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
 	loadbuffer.buff=NULL;
 
 	double t0,t1;
-	double computedTime=0.0;
+	double computationTime=0.0; // total time (measured by system clock) used for simulation
 
 
 	/* Create child processes, each of which has its own variables.
@@ -115,30 +115,28 @@ int main(int argc, char *argv[]) {
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	if(world_size<=1){
 		if (rank == 0){
-			std::cout <<"Minimum number of 1 Subprocesses needed. Currently "<<world_size <<std::endl;
+			std::cout <<"Minimum number of 2 processes needed. Currently "<<world_size <<std::endl;
 		}
-
 		MPI_Finalize();
 		return 0;
 	}
 
+//---- Initialize ProblemDef that defines relevant simulation parameters for MolflowLinux
 	p = new ProblemDef();
-
-	// Parameter check for MolflowLinux
+	// Check parameters (defined by command line arguments or input file) to be written to ProblemDef p
 	if (!parametercheck(argc, argv,p,rank)) {
 		if (rank == 0){
-			std::cout <<"check parameters" <<std::endl;
+			std::cout <<"Required parameters cannot be read." <<std::endl;
+			std::cout <<"Check command line arguments and/or parameters in input file." <<std::endl;
+			std::cout <<"Ending Simulation." <<std::endl;
 		}
 
 		MPI_Finalize();
 		return 0;
-	}
-	else{
-		if (rank == 0){p->printInputfile(p->outFile);}
 	}
 
 	if (rank == 0) {
-		//p->writeInputfile("/home/van/InputFileCF.txt");
+		p->printInputfile(p->outFile);
 
 		//Read in buffer file (exported by Windows-Molflow). File given as first argument to main().
 		importBuff(p->loadbufferPath,&loadbuffer);
@@ -148,11 +146,11 @@ int main(int argc, char *argv[]) {
 	}
 
 //---- Send load-buffer to all other processes
-	// Send size of buffer
+	// Send size of loadbuffer from main process to subprocesses
 	MPI_Bcast(&loadbuffer.size, sizeof(loadbuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
 	MPI_Barrier(MPI_COMM_WORLD);
-	// Allocate memory for buffer
-	if (rank != 0) { /* do work in any remaining processes */
+	// Allocate memory for loadbuffer in subprocesses
+	if (rank != 0) {
 		loadbuffer.buff = new BYTE[loadbuffer.size];
 	}
 
@@ -161,15 +159,15 @@ int main(int argc, char *argv[]) {
 	MPI_Barrier(MPI_COMM_WORLD);
 
 //----Send hit-buffer size to all other processes.
-	// Send size of buffer
+	// Send size of hitbuffer from main process to subprocesses in subprocesses
 	MPI_Bcast(&hitbuffer.size, sizeof(hitbuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
 	MPI_Barrier(MPI_COMM_WORLD);
-	// Allocate memory for buffer
-	if (rank != 0) { /* do work in any remaining processes */
+	// Allocate memory for hitbuffer
+	if (rank != 0) {
 		hitbuffer.buff = new BYTE[hitbuffer.size];
 	}
 
-//----create Simulation handle and preprocess hitbuffer
+//----Create Simulation handle and preprocess hitbuffer
 	if (p->simulationTimeMS != 0) {
 		//Creates sHandle instance for process 0 and all subprocesses (before the first iteration step starts)
 		InitSimulation();
@@ -184,50 +182,49 @@ int main(int argc, char *argv[]) {
 		initCoveringThresh();
 		UpdateSojourn();
 
-		if(rank==0){ // hitbuffer_sum and histphys
-			//Save copies of the original loaded hitbuffer
-			//These copies will be used in process 0. The hitbuffers of all subprocesses will be add up and written in the hitbuffer_sum
-			//and then converted in the hitbuffer_phys
-
-
+		if(rank==0){
+			//Initialize hitbuffer_sum as copy of hitbuffer in main process
+			//The hitbuffers of all subprocesses will be added up and written in the hitbuffer_sum
 			hitbuffer_sum.buff = new BYTE[hitbuffer.size];
 			memcpy(hitbuffer_sum.buff,hitbuffer.buff,hitbuffer.size);
 			hitbuffer_sum.size =hitbuffer.size;
 
+			// Initialize simHistory for main process from hitbuffer
+			//simHistory contains the relevant results/quantities of the simulation. E.g., covering history, total simulated time, etc.
 			simHistory = new SimulationHistory (&hitbuffer, world_size);
 			//TODO: maybe add possibility of covering.txt file input
-			//initbufftozero(&hitbuffer); not needed here, cause hitbuffer is reset anyway at the beginning of each iteration.
 		}
 		else{
+			//Initialize simHistory for subprocesses
 			simHistory = new SimulationHistory(world_size);
 		}
-
+		//Send hitbuffer to all subprocesses
 		MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 	}
 
 //----Simulation
-	int it = -1;
+	int it = 0;
 	while(true){
 		it++;
 		// Start of Simulation
 		if (p->simulationTimeMS != 0) {
 			usleep(100);
 			MPI_Barrier(MPI_COMM_WORLD);
-			bool smallCovering;
 
 			if(rank == 0){
 				std::ostringstream tmpstream (std::ostringstream::app);
-				tmpstream <<std::endl <<"----------------Starting iteration " <<it+1 <<"----------------"<<std::endl;
+				tmpstream <<std::endl <<"----------------Starting iteration " <<it <<"----------------"<<std::endl;
 				printStream(tmpstream.str());
 			}
 
 			//----Send coveringList content to all subprocesses
-			// reset buffer (except covering) before sending to sub processes
+			// reset hitbuffer_sum (except covering) before sending to sub processes
 			initbufftozero(&hitbuffer);
 			if(rank==0){
 				initbufftozero(&hitbuffer_sum);
 			}
 
+			// Send each coveringList entry one at a time
 			for(unsigned int i=0; i<simHistory->numFacet;i++){
 				MPI_Bcast(&simHistory->coveringList.currentList[i], 16, MPI::BYTE,0,MPI_COMM_WORLD);
 			}
@@ -238,32 +235,27 @@ int main(int argc, char *argv[]) {
 				if(rank==i)
 					simHistory->coveringList.printCurrent(std::cout,std::to_string(rank)+": coveringList at beginning of iteration");}
 			*/
-			//MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
-
-
-			MPI_Barrier(MPI_COMM_WORLD);
-
-			//End simulation step if covering reaches threshold (covering -covering/(size-1))
-			setCoveringThreshold(world_size, rank);
-
-			UpdateSticking();
-
 			MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
 			MPI_Barrier(MPI_COMM_WORLD);
 
+			// Set covering threshold (covering -covering/(size-1)). Iteration in subprocess is ended if this threshold is reached
+			setCoveringThreshold(world_size, rank);
+
+			UpdateSticking(); // Write sticking factor into sHandle for all subprocesses
 			if(rank!=0){
-				simHistory->updateHistory();//here the current covering value gets written in the tmpcounters.
-				CalcTotalOutgassingWorker();
+				simHistory->updateHistory();// Write the current covering values from the simHistory to the sHandle and calculate stepSize (normal and outgassing).
+				CalcTotalOutgassingWorker();// Calculate outgassing values for this iteration
 			}
 			else{
-				simHistory->stepSize = getStepSize();
+				simHistory->updateStepSize(); // Calculate stepSize (normal and outgassing) for this iteration
 			}
 
-			if(!UpdateDesorptionRate()){//Just writing Desorptionrate into Facetproperties for Simulation Handle of all processes
+			if(!UpdateDesorptionRate()){// Write desorption into sHandle for all subprocesses
+				// End simulation for very small desorption + outgassing particles
 				if(rank==0) {
 					std::ostringstream tmpstream (std::ostringstream::app);
 					tmpstream <<"Desorption smaller than 1E-50. Ending Simulation." <<std::endl;
-					tmpstream <<"Computation Time (Simulation only): " <<computedTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computedTime/1000.0) <<std::endl;
+					tmpstream <<"Computation Time (Simulation only): " <<computationTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computationTime/1000.0) <<std::endl;
 					printStream(tmpstream.str());
 				}
 				break;
@@ -272,14 +264,13 @@ int main(int argc, char *argv[]) {
 
 			//----Simulation on subprocesses
 			if (rank != 0) {
-				/* do work in any remaining processes */
-				sHandle->posCovering=true;//assumption that negative covering has been resolved before: implemented through covering threshold in sub processes and manageTimeStep() and smallCovering workaoround
+				sHandle->posCovering=true;//assumption that negative covering has been resolved before: implemented through covering threshold in sub processes and smallCovering workaoround
+				checkSmallCovering(rank, &hitbuffer); // Calculate smallCoveringFactor for this iteration
 
 				//Do the simulation
 				bool eos; std::vector<int> facetNum;
-				smallCovering = checkSmallCovering(rank, &hitbuffer);
 				std::tie(eos, facetNum) = simulateSub2(&hitbuffer, rank, p->simulationTimeMS);
-				MPI_Barrier(MPI_COMM_WORLD);
+
 				std::ostringstream tmpstream (std::ostringstream::app);
 				if (eos) {
 					if(sHandle->posCovering)
@@ -290,40 +281,42 @@ int main(int argc, char *argv[]) {
 						}
 					}
 				} else {
-					tmpstream << "Simulation for process " << rank << " for iteration " << it+1 << " finished."<< std::endl;
+					tmpstream << "Simulation for process " << rank << " for iteration " << it << " finished."<< std::endl;
 				}
 				printStream(tmpstream.str());
+				MPI_Barrier(MPI_COMM_WORLD);
 			}
 			else{
 				t0 = GetTick();
-				smallCovering= checkSmallCovering(rank, &hitbuffer_sum);
+				checkSmallCovering(rank, &hitbuffer_sum); // Calculate smallCoveringFactor for this iteration
 				MPI_Barrier(MPI_COMM_WORLD);
 				t1 = GetTick();
-				computedTime+=t1-t0;
+				computationTime+=t1-t0; // Add calculation time of current iteration
 
 			}
 
-			//----iteratively add hitbuffer from subprocesses
+			//----iteratively add hitbuffer from subprocesses to main buffer
 			for (int i = 1; i < world_size; i++) {
 				MPI_Barrier(MPI_COMM_WORLD);
 				if (rank == i) {
-					//Process i sends hitbuffer to Process 0
+					//Process i sends hitbuffer to main process 0
 					MPI_Send(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, 0,MPI_COMM_WORLD);
 
+					//Process i send flightTIme and number of particles to main process 0
 					MPI_Send(&simHistory->flightTime, 1, MPI::DOUBLE, 0, 0,MPI_COMM_WORLD);
 					MPI_Send(&simHistory->nParticles, 1, MPI::INT, 0, 0,MPI_COMM_WORLD);
 
 				} else if (rank == 0) {
-					//Process 0 receives hitbuffer from Process i
+					//Main process 0 receives hitbuffer from Process i
 					MPI_Recv(hitbuffer.buff, hitbuffer.size, MPI::BYTE, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
 					UpdateMCMainHits(&hitbuffer_sum, &hitbuffer, simHistory ,0);
 					std::ostringstream tmpstream (std::ostringstream::app);
 					tmpstream << "Updated hitbuffer with process " << i <<std::endl;
 
-					// Calc flightTime and nParticles over all subprocesses -> still needed?
+					// Calculate flightTime and nParticles over all subprocesses -> These values are currently not used
 					double old_flightTime=simHistory->flightTime;
-					int old_nParticles = simHistory->nParticles; //reset in UpdateCoveringPhys
+					int old_nParticles = simHistory->nParticles; //These values are reset in UpdateCoveringPhys()
 					MPI_Recv(&simHistory->flightTime, 1, MPI::DOUBLE, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 					MPI_Recv(&simHistory->nParticles, 1, MPI::INT, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 					simHistory->flightTime += old_flightTime;
@@ -340,46 +333,36 @@ int main(int argc, char *argv[]) {
 			MPI_Barrier(MPI_COMM_WORLD);
 
 
-			//----Update covering
+			//----Update History: particle density, pressure, error, covering
 			if (rank == 0) {
-				/*Nicht mehr benötigt. Der smallCoveringFactor wird jetzt in UpdateCovering als Divisor wieder herausgerechnet.
-				 * if(smallCovering){
-					std::cout <<"Small covering: divide covering by " <<smallCoveringFactor <<std::endl;
-					UndoSmallCovering(&hitbuffer_sum, smallCoveringFactor);
-				}*/
 				UpdateParticleDensityAndPressure(&hitbuffer_sum);
-
 				UpdateErrorMain(&hitbuffer_sum); // !! If order changes, adapt "time" entry in errorList !!
-
 				UpdateCovering(&hitbuffer_sum);
 
 				UpdateCoveringphys(&hitbuffer_sum, &hitbuffer);
 
-				//std::cout <<p->histSize<<"\t"<<simHistory->coveringList.pointintime_list.size()<<"\t"<<simHistory->coveringList.currIt<<std::endl;
+				// Adapt size of history lists if p->histSize is exceeded
 				if(p->histSize != std::numeric_limits<int>::infinity() && simHistory->coveringList.pointintime_list.size() > uint(p->histSize+1)){
 						simHistory->coveringList.pointintime_list.erase(simHistory->coveringList.pointintime_list.begin()+1);
 						simHistory->errorList_event.pointintime_list.erase(simHistory->errorList_event.pointintime_list.begin()+1);
 						simHistory->errorList_covering.pointintime_list.erase(simHistory->errorList_covering.pointintime_list.begin()+1);
 						simHistory->particleDensityList.pointintime_list.erase(simHistory->particleDensityList.pointintime_list.begin()+1);
 						simHistory->pressureList.pointintime_list.erase(simHistory->pressureList.pointintime_list.begin()+1);
-
 				}
-
-				simHistory->coveringList.print(p->outFile,"Accumulative covering after iteration "+std::to_string(it+1),p->histSize,true);
-
-
+				// print current coveringList
+				simHistory->coveringList.print(p->outFile,"Accumulative covering after iteration "+std::to_string(it),p->histSize,true);
 			}
 
-			if (rank == 0) {std::cout << "ending iteration " << it+1 <<std::endl;}
+			if (rank == 0) {std::cout << "ending iteration " << it <<std::endl;}
 
+			// Check if maximum simulation time is reached
 			MPI_Barrier(MPI_COMM_WORLD);
-
 			MPI_Bcast(&simHistory->lastTime, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
 			if((int)(simHistory->lastTime+0.5) >= p->maxTimeS){
 				if(rank==0) {
 					std::ostringstream tmpstream (std::ostringstream::app);
 					tmpstream <<"Maximum simulation time reached: " <<simHistory->lastTime  <<" >= " <<p->maxTimeS <<std::endl;
-					tmpstream <<"Computation Time (Simulation only): " <<computedTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computedTime/1000.0) <<std::endl;
+					tmpstream <<"Computation Time (Simulation only): " <<computationTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computationTime/1000.0) <<std::endl;
 					printStream(tmpstream.str());
 				}
 				break;
@@ -393,10 +376,14 @@ int main(int argc, char *argv[]) {
 	MPI_Barrier(MPI_COMM_WORLD);
 	if(rank==0){
 		//----Write simulation results to new buffer file. This has to be read in by Windows-Molflow.
+		// Print history lists
 		simHistory->print(true);
 
 		if(p->saveResults){
+			// Write result files
 			simHistory->write(p->resultpath);
+
+			// Export hitbuffer
 			std::ostringstream tmpstream (std::ostringstream::app);
 			tmpstream << "Process 0 exporting final hitbuffer" << std::endl <<std::endl;
 			printStream(tmpstream.str());
@@ -405,7 +392,7 @@ int main(int argc, char *argv[]) {
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	//--delete Buffer
+	//--delete buffers
 	if (hitbuffer.buff != NULL) {
 		delete[] hitbuffer.buff;
 		hitbuffer.buff = NULL;

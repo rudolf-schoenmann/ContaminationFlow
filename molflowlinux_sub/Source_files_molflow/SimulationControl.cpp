@@ -614,8 +614,8 @@ bool StartSimulation() {
 	sHandle->wp.sMode = sMode;
 	switch (sMode) {
 	case MC_MODE:
-		if (!sHandle->currentParticle.lastHitFacet) return StartFromSource();
-		return (sHandle->currentParticle.lastHitFacet != NULL);
+		if (!sHandle->currentParticle.lastHitFacet) return StartFromSource(); // Select staring facet if no particle exists
+		return true;
 	/*case AC_MODE: (my) no AC_MODE
 		if (sHandle->prgAC != 100) {
 			SetErrorSub("AC matrix not calculated");

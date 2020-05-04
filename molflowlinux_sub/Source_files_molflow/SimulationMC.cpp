@@ -499,8 +499,7 @@ bool SimulationMCStep(size_t nbStep) {
 	for (size_t i = 0; i < nbStep || lastWasHit; i++) {
 
 
-		if(simHistory->startNewParticle){
-			simHistory->startNewParticle=false;
+		if(!sHandle->currentParticle.lastHitFacet){
 			if (!StartFromSource())
 				// desorptionLimit reached
 				return false;
@@ -895,8 +894,6 @@ bool StartFromSource() {
 
 			//NEW: to detect whether new particle has to be created
 			sHandle->currentParticle.lastHitFacet=NULL;
-
-			simHistory->startNewParticle=true;
 			return true;
 		}
 

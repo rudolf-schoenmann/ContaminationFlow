@@ -47,7 +47,7 @@ void CalcTotalOutgassingWorker() {
 						sHandle->wp.finalOutgassingRate += f.outgassingMap[l] / (1.38E-23*f.sh.temperature);
 						sHandle->wp.finalOutgassingRate_Pa_m3_sec += f.outgassingMap[l];
 
-						sHandle->wp.totalOutgassingParticles += simHistory->stepSize_outgassing * f.outgassingMap[l] / (1.38E-23*f.sh.temperature);
+						sHandle->wp.totalOutgassingParticles += simHistory->stepSize_outgassing * f.outgassingMap[l] / (1.38E-23*f.sh.temperature); // Number of particles outgassing in time stepSize_outgassing
 
 						//Modifications like in the regular outgassing case necessary!?!
 					}
@@ -59,7 +59,7 @@ void CalcTotalOutgassingWorker() {
 						sHandle->wp.finalOutgassingRate += f.sh.outgassing / (1.38E-23*f.sh.temperature);  //Outgassing molecules/sec
 						sHandle->wp.finalOutgassingRate_Pa_m3_sec += f.sh.outgassing;
 
-						sHandle->wp.totalOutgassingParticles +=simHistory->stepSize_outgassing* f.sh.outgassing / (1.38E-23*f.sh.temperature);
+						sHandle->wp.totalOutgassingParticles +=simHistory->stepSize_outgassing* f.sh.outgassing / (1.38E-23*f.sh.temperature); // Number of particles outgassing in time stepSize_outgassing
 
 						//As the code is now changed with the new Krealvirt approach, we now have to provide f.sh.outgassing as a number of particles (not anymore as Pa m^3/s).
 						//f.sh.outgassing is then used by the StartFromSource function (and also by the estimateTmin function, which is not used anymore but might be reactivated).
@@ -83,6 +83,7 @@ void CalcTotalOutgassingWorker() {
 	}
 }
 
+//----------Not used anymore
 /*
 std::vector<std::pair<double, double>> Generate_CDF(double gasTempKelvins, double gasMassGramsPerMol, size_t size){
 	std::vector<std::pair<double, double>> cdf; cdf.reserve(size);

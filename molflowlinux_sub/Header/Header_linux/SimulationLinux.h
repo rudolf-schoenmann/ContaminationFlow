@@ -371,7 +371,6 @@ public:
 
 	std::vector<unsigned int> normalFacets;
 
-	bool startNewParticle;
 	llong smallCoveringFactor;
 
 	unsigned int numFacet;
@@ -393,6 +392,8 @@ public:
 	//std::tuple<bool, llong > updateHistory(Databuff *hitbuffer);
 	void updateHistory();
 
+	void updateStepSize();
+
 };
 
 class NullStream : public std::ostream {
@@ -413,7 +414,7 @@ std::tuple<bool, std::vector<int> >  simulateSub2(Databuff *hitbuffer, int rank,
 
 double convertunit(double simutime, std::string unit);
 
-bool checkSmallCovering(int rank, Databuff *hitbuffer_sum);
+void checkSmallCovering(int rank, Databuff *hitbuffer_sum);
 //void UndoSmallCovering(Databuff *hitbuffer_sum);
 
 //ProblemDef
@@ -430,7 +431,7 @@ bool UpdateDesorptionRate();
 
 //void UpdateSojourn(Databuff *hitbuffer);
 void UpdateSojourn();
-std::tuple<double,double> UpdateErrorAll();
+std::tuple<double,double> UpdateErrorAll(int it=-1);
 double UpdateError(std::string mode);
 void UpdateErrorSub();
 bool checkErrorSub(double targetError, double currentError, double factor, std::string mode="covering");

@@ -54,29 +54,28 @@ bool checkWriteable(std::string fileName){
 
 //-----------------------------------------------------------
 //Import/export of buffer files with filename given as char* or std::string
-//-> no need for conversion
 
 void importBuff(const char *fileName, Databuff *databuffer)
 {
-
 	std::filebuf fb;
 	databuffer->buff=NULL;
 	if (fb.open(fileName, std::ios::in))
 	{
 		std::istream is(&fb);
 		if (is) {
+			// Get length of file
 			is.seekg(0, is.end);
 			signed int length = is.tellg();
 			is.seekg(0, is.beg);
 
+			// Read file
 			char *temp = new char[length];
-			//databuffer->buff = new BYTE[length];
-
 			is.read(temp, length);
+
+			// Set length and content of buffer
 			databuffer->size = length;
 			databuffer->buff = (BYTE*)temp;
 		}
-
 		fb.close();
 	}
 	else{
@@ -96,6 +95,7 @@ void exportBuff(const char *fileName, Databuff *databuffer)
 		std::ostream os(&f);
 		if (os)
 		{
+			// Write buffer to file
 			signed int length = databuffer->size;
 			os.write(reinterpret_cast<const char *>(databuffer->buff), length);
 		}
@@ -107,7 +107,7 @@ void exportBuff(const char *fileName, Databuff *databuffer)
 
 void importBuff(std::string fileName, Databuff *databuffer)
 {
-	const char *c =fileName.c_str();
+	const char *c =fileName.c_str(); // Convert std::string to const char*
 	importBuff(c, databuffer);
 }
 
@@ -116,6 +116,6 @@ void importBuff(std::string fileName, Databuff *databuffer)
 
 void exportBuff(std::string fileName, Databuff *databuffer)
 {
-	const char *c =fileName.c_str();
+	const char *c =fileName.c_str(); // Convert std::string to const char*
 	exportBuff(c, databuffer);
 }
