@@ -178,7 +178,6 @@ int main(int argc, char *argv[]) {
 			MPI_Finalize();
 			return 0;
 		}
-
 		initCoveringThresh();
 		UpdateSojourn();
 
@@ -342,15 +341,19 @@ int main(int argc, char *argv[]) {
 				UpdateCoveringphys(&hitbuffer_sum, &hitbuffer);
 
 				// Adapt size of history lists if p->histSize is exceeded
-				if(p->histSize != std::numeric_limits<int>::infinity() && simHistory->coveringList.pointintime_list.size() > uint(p->histSize+1)){
-						simHistory->coveringList.pointintime_list.erase(simHistory->coveringList.pointintime_list.begin()+1);
-						simHistory->errorList_event.pointintime_list.erase(simHistory->errorList_event.pointintime_list.begin()+1);
-						simHistory->errorList_covering.pointintime_list.erase(simHistory->errorList_covering.pointintime_list.begin()+1);
-						simHistory->particleDensityList.pointintime_list.erase(simHistory->particleDensityList.pointintime_list.begin()+1);
-						simHistory->pressureList.pointintime_list.erase(simHistory->pressureList.pointintime_list.begin()+1);
+				if(p->histSize != std::numeric_limits<int>::infinity() && simHistory->coveringList.historyList.first.size() > uint(p->histSize+1)){
+
+						simHistory->coveringList.erase();
+						simHistory->errorList_event.erase();
+						simHistory->errorList_covering.erase();
+						simHistory->particleDensityList.erase();
+						simHistory->pressureList.erase();
 				}
 				// print current coveringList
 				simHistory->coveringList.print(p->outFile,"Accumulative covering after iteration "+std::to_string(it),p->histSize,true);
+
+				simHistory->coveringList.updateStatistics(p->rollingWindowSize);
+				simHistory->coveringList.printStatistics(p->outFile, "Rolling time window statistics over last "+std::to_string(p->rollingWindowSize)+" iterations", true);
 			}
 
 			if (rank == 0) {std::cout << "ending iteration " << it <<std::endl;}

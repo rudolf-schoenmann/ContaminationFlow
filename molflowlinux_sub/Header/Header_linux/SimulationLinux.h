@@ -31,6 +31,9 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 //#include <boost/multiprecision/cpp_int.hpp>
 //#include <boost/multiprecision/float128.hpp>
 
+//#include <boost/accumulators/statistics/rolling_variance.hpp>
+//#include <boost/accumulators/statistics/rolling_mean.hpp>
+
 static const char *year[]={"Years","years","Year","year","Yr","yr","Y","y"};
 static const char *month[]={"Months","months","Month","month","Mth","mth","mo","Mo"};
 static const char *day[]={"day","Day","days","Days","d","D"};
@@ -46,31 +49,54 @@ const double tuneE=2.64665;//tanh(2.64665)~0,99
 template <typename T> class HistoryList{
 public:
 	HistoryList(){
-		pointintime_list = std::vector< std::pair<double,std::vector<T>> >();
+		//historyList = std::vector< std::pair<double,std::vector<T>> >();
+		historyList.first = std::vector<double>();
+		historyList.second = std::vector<std::vector<T>>();
 		currentList=std::vector<T>();
+		statisticsList=std::vector<std::pair<boost::multiprecision::float128,boost::multiprecision::float128>> ();
 		currIt=0;
 	}
 
-	std::vector< std::pair<double,std::vector<T>> > pointintime_list;
+	//std::vector< std::pair<double,std::vector<T>> > historyList;
+	std::pair< std::vector<double>,std::vector<std::vector<T>> > historyList;
 	std::vector<T> currentList;
+	std::vector<std::pair<boost::multiprecision::float128,boost::multiprecision::float128>> statisticsList;
 	unsigned int currIt;
 
-	void reset(unsigned int numFacet=0){
-		pointintime_list.clear();
+	void reset(){
+		historyList.first.clear();
+		historyList.second.clear();
 		currentList.clear();
+		statisticsList.clear();
 		currIt=0;
+	}
+
+	void initList(unsigned int numFacet){
+		for(unsigned int i=0; i<numFacet; i++){
+			historyList.second.push_back(std::vector<T>());
+		}
+	}
+
+	void initStatistics(unsigned int numFacet){
+		for(unsigned int i=0; i<numFacet; i++){
+			statisticsList.push_back(std::make_pair(static_cast<boost::multiprecision::float128>(0),static_cast<boost::multiprecision::float128>(0)));
+		}
 	}
 
 	void initCurrent(unsigned int numFacet){
 		for(unsigned int i=0; i<numFacet; i++){
-			currentList.push_back(0);
+			currentList.push_back(static_cast<T>(0));
 		}
+		//initStatistics(numFacet);
 	}
 
 	void appendCurrent(double time=-1){
 		if(time==-1.0) //one step
-				time=pointintime_list.back().first+1.0;
-		pointintime_list.push_back(std::make_pair(time,currentList));
+				time=historyList.first.back()+1.0;
+		historyList.first.push_back(time);
+		for(int j=0; j < currentList.size(); j++){
+			historyList.second[j].push_back(currentList[j]);
+		}
 		currIt+=1;
 
 	}
@@ -78,11 +104,43 @@ public:
 	void appendList(std::vector<T> List, double time=-1){
 
 		if(time==-1.0) //One step
-				time=pointintime_list.back().first+1.0;
-		pointintime_list.push_back(std::make_pair(time,List));
+				time=historyList.back().first+1.0;
+		historyList.first.push_back(time);
+		for(int j=0; j < currentList.size(); j++){
+			historyList.second[j].push_back(List[j]);
+		}
 		currIt+=1;
-
 	}
+
+	void updateStatistics(int rollingWindowSize, unsigned int offset=0){
+		//std::cout<< historyList.second.back().size() <<std::endl;
+		if(offset==0 && currIt>historyList.first.size()){
+			offset=1;
+		}
+
+		for(uint j=0; j<statisticsList.size();j++){
+			if(historyList.first.size()<rollingWindowSize+offset){ //Not enough samples for rolling window
+				statisticsList[j].first=static_cast<boost::multiprecision::float128>(0);
+				statisticsList[j].second=static_cast<boost::multiprecision::float128>(0);
+			}
+			else if(rollingWindowSize==1){
+				statisticsList[j].first =static_cast<boost::multiprecision::float128>(historyList.second[j].back());
+				statisticsList[j].second=static_cast<boost::multiprecision::float128>(0);
+			}
+			else{ //Do statistics
+				// mean = sum(point)/N
+				T sum = std::accumulate(std::end(historyList.second[j])-rollingWindowSize, std::end(historyList.second[j]), static_cast<T>(0));
+				statisticsList[j].first = static_cast<boost::multiprecision::float128>(sum) / static_cast<boost::multiprecision::float128>(rollingWindowSize);
+				// std = sqrt (sum((point -mean)^2)/(N-1))
+				boost::multiprecision::float128 accum = boost::multiprecision::float128(0.0);
+				std::for_each (std::end(historyList.second[j])-rollingWindowSize, std::end(historyList.second[j]), [&](const T d) {
+				    accum += (static_cast<boost::multiprecision::float128>(d) - statisticsList[j].first) * (static_cast<boost::multiprecision::float128>(d) - statisticsList[j].first);
+				});
+				statisticsList[j].second = boost::multiprecision::sqrt(accum/static_cast<boost::multiprecision::float128>(rollingWindowSize-1));
+			}
+		}
+	}
+
 	std::string convertTime(double time){
 		bool empty=true;
 		std::string final="";
@@ -122,25 +180,25 @@ public:
 
 		out<<std::endl <<msg <<std::endl;
 
-		out <<std::setw(9)<<std::right<<"Iteration\t";
-		out <<std::setw(11)<<std::right<<"Time[s]";
+		out <<std::setw(9)<<std::right<<"Iteration";
+		out <<std::setw(14)<<std::right<<"Time[s]";
 		out <<std::setw(22)<<std::right<<"Time";
-		for(uint i=0;i<pointintime_list.size();i++)
+		for(uint i=0;i<historyList.first.size();i++)
 		{
 			if(i==0){
-				for(uint j=0; j<pointintime_list[i].second.size();j++)
+				for(uint j=0; j<historyList.second.size();j++)
 						{
-					out <<"\t" <<std::setw(6)<<std::right <<"Facet-" <<std::setw(8)<<std::setfill('-')<<std::right <<j;
+					out <<"\t" <<std::setw(6)<<std::right <<"Facet-" <<std::setw(6)<<std::setfill('-')<<std::right <<j;
 						}
 			}
 			out<<std::endl;
-			out<<std::setw(9)<<std::setfill(' ')<<std::right <<i+offset_table*(i>0?1:0)<<"\t";
-			out<<std::setw(11)<<std::right <<pointintime_list[i].first ;
-			out<<std::setw(22)<<std::right <<convertTime(pointintime_list[i].first);
+			out<<std::setw(9)<<std::setfill(' ')<<std::right <<i+offset_table*(i>0?1:0);
+			out<<std::setw(14)<<std::right <<historyList.first[i] ;
+			out<<std::setw(22)<<std::right <<convertTime(historyList.first[i]);
 
-			for(uint j=0; j<pointintime_list[i].second.size();j++)
+			for(uint j=0; j<historyList.second.size();j++)
 			{
-				out <<"\t" <<std::setw(14)<<std::right <<boost::multiprecision::float128(pointintime_list[i].second[j]);
+				out <<"\t" <<std::setw(12)<<std::right <<boost::multiprecision::float128(historyList.second[j][i]);
 
 			}
 
@@ -159,31 +217,27 @@ public:
 		}
 		out<<std::endl <<msg <<std::endl;
 
-		out <<std::setw(9)<<std::right<<"Iteration\t";
-		out <<std::setw(11)<<std::right<<"Time[s]";
+		out <<std::setw(9)<<std::right<<"Iteration";
+		out <<std::setw(14)<<std::right<<"Time[s]";
 		out <<std::setw(22)<<std::right<<"Time";
-		for(uint i=0;i<pointintime_list.size();i++)
+		for(uint i=0;i<historyList.first.size();i++)
 		{
 			if(i==0){
-				for(uint j=0; j<pointintime_list[i].second.size();j++){
-					out <<"\t" <<std::setw(6)<<std::right <<"Facet-" <<std::setw(8)<<std::setfill('-')<<std::right <<j;
+				for(uint j=0; j<historyList.second.size();j++){
+					out <<"\t" <<std::setw(6)<<std::right <<"Facet-" <<std::setw(6)<<std::setfill('-')<<std::right <<j;
 					}
 
 				out <<"\t" <<std::setw(14)<<std::setfill(' ')<<std::right<<"Total";
 			}
 			out<<std::endl;
 
-			out<<std::setw(9)<<std::right <<i+offset_table*(i>0?1:0)<<"\t";
-			out<<std::setw(11)<<std::right <<pointintime_list[i].first ;
-			out<<std::setw(22)<<std::right <<convertTime(pointintime_list[i].first);
+			out<<std::setw(9)<<std::right <<i+offset_table*(i>0?1:0);
+			out<<std::setw(14)<<std::right <<historyList.first[i] ;
+			out<<std::setw(22)<<std::right <<convertTime(historyList.first[i]);
 
-			for(uint j=0; j<pointintime_list[i].second.size();j++)
+			for(uint j=0; j<historyList.second.size();j++)
 			{
-				if(j==pointintime_list[i].second.size()-1)
-					out <<"\t" <<std::setw(14)<<std::right <<pointintime_list[i].second[j];
-				else
-					out <<"\t" <<std::setw(14)<<std::right <<boost::multiprecision::float128(pointintime_list[i].second[j]);
-
+				out <<"\t" <<std::setw(12)<<std::right <<boost::multiprecision::float128(historyList.second[j][i]);
 			}
 			out<<"\t"<<std::setw(14)<<std::right<<totalvec[i];
 
@@ -207,6 +261,25 @@ public:
 		if(printToConsole) std::cout <<tmpstream.str();
 	}
 
+	void printStatistics(std::ostream& outstream, std::string msg= "", bool printToConsole=false, bool printToStream=true, int textwidth=45){
+		std::ostringstream tmpstream (std::ostringstream::app);
+
+		tmpstream<<std::left<<msg <<std::endl;
+		tmpstream<<std::setw(textwidth)<<std::right <<"mean";
+		for(uint i=0;i<statisticsList.size();i++)
+		{
+			tmpstream <<"\t" <<std::setw(12)<<std::right <<statisticsList[i].first;
+		}
+		tmpstream<<std::endl<<std::setw(textwidth)<<std::right <<"std";
+		for(uint i=0;i<statisticsList.size();i++)
+		{
+			tmpstream <<"\t" <<std::setw(12)<<std::right <<statisticsList[i].second;
+		}
+		tmpstream<<std::endl;
+		if(printToStream) outstream<<tmpstream.str();
+		if(printToConsole) std::cout <<tmpstream.str();
+	}
+
 	void write(std::string filename, int histSize = std::numeric_limits<int>::infinity()){
 
 		uint offset_table=0;
@@ -219,23 +292,23 @@ public:
 		out <<std::setw(9)<<std::right<<"Iteration\t";
 		out <<std::setw(11)<<std::right<<"Time[s]";
 		out <<std::setw(22)<<std::right<<"Time";
-		for(uint i=0;i<pointintime_list.size();i++)
+		for(uint i=0;i<historyList.first.size();i++)
 		{
 			if(i==0){
-				for(uint j=0; j<pointintime_list[i].second.size();j++)
-						{
+				for(uint j=0; j<historyList.second.size();j++)
+				{
 					out <<"\t" <<std::setw(6)<<std::right <<"Facet-" <<std::setw(8)<<std::setfill('-')<<std::right <<j;
-						}
+				}
 			}
 			out<<std::endl;
 
 			out<<std::setw(9)<<std::setfill(' ')<<std::right <<i+offset_table*(i>0?1:0)<<"\t";
-			out<<std::setw(11)<<std::right <<pointintime_list[i].first ;
-			out<<std::setw(22)<<std::right <<convertTime(pointintime_list[i].first);
+			out<<std::setw(11)<<std::right <<historyList.first[i] ;
+			out<<std::setw(22)<<std::right <<convertTime(historyList.first[i]);
 
-			for(uint j=0; j<pointintime_list[i].second.size();j++)
+			for(uint j=0; j<historyList.second.size();j++)
 			{
-				out <<"\t" <<std::setw(14)<<std::right <<pointintime_list[i].second[j];
+				out <<"\t" <<std::setw(14)<<std::right <<historyList.second[j][i];
 
 			}
 
@@ -243,56 +316,22 @@ public:
 		out.close();
 		std::cout <<"Results saved to " <<filename <<std::endl;
 	}
-	void read(std::string filename, Databuff *hitbuffer, Simulation *sHandle){//Rudi: Not ready yet.
-		pointintime_list.clear();
-		std::string line;
 
-		std::ifstream input(filename,std::ifstream::in);
-		std::cout <<"Reading in covering history from " <<filename <<std::endl;
-		while(std::getline(input,line)){
-			std::vector<llong> currentstep;
-			currentstep =std::vector<llong> ();
-
-			llong covering;
-			double time;
-			std::istringstream is( line );
-
-			is >> time;
-			while(!is.eof()){
-				is >> covering;
-				currentstep.push_back(covering);
-
-			}
-			pointintime_list.push_back(std::make_pair(time,currentstep));
+	void erase(){
+		historyList.first.erase(historyList.first.begin()+1);
+		for(unsigned int j=0; j<historyList.second.size();j++){
+			historyList.second[j].erase(historyList.second[j].begin()+1);
 		}
-		input.close();
-
-		int i=0;
-		double num_mol=0.0;
-		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-			for (SubprocessFacet& f : sHandle->structures[s].facets) {
-					num_mol=pointintime_list.back().second[i]; //Rudi: Maybe wrong, since we changed covering and introduced coverage.
-					f.tmpCounter[0].hit.covering = pointintime_list.back().second[i];
-					//calcStickingnew(&f, hitbuffer); // calculate new sticking for new covering value
-					// 1) Update the hitbuffer with the last covering value
-					// 2) calcStickingnew(&f, hitbuffer);
-					std::cout <<"Facet "<<i <<"\t covering: " <<f.tmpCounter[0].hit.covering <<"\t Corresponding number of particles: " <<num_mol <<std::endl;
-					i+=1;
-			}
-		}
-		std::cout <<std::endl;
-
 	}
 
-	bool empty(){return pointintime_list.empty();}
+	bool empty(){return historyList.second.empty();}
 
 	void setCurrent(SubprocessFacet *iFacet, T newValue){int covidx = getFacetIndex(iFacet);	currentList[covidx]=newValue;}
-	T getLast(int idx){return pointintime_list.back().second[idx];}
-	T getLast(SubprocessFacet *iFacet){int covidx = getFacetIndex(iFacet);return pointintime_list.back().second[covidx];}
+	T getLast(int idx){return historyList.second[idx].back();}
+	T getLast(SubprocessFacet *iFacet){int covidx = getFacetIndex(iFacet);return historyList.second[covidx].back();}
 	T getCurrent(int idx){return currentList[idx];}
 	T getCurrent(SubprocessFacet *iFacet){int covidx = getFacetIndex(iFacet);return currentList[covidx];}
-	std::vector<T> getCurrent(){return pointintime_list.back().second;};
-	void setLast(SubprocessFacet *iFacet, T newValue){int covidx = getFacetIndex(iFacet);	pointintime_list.back().second[covidx]=newValue;}
+	void setLast(SubprocessFacet *iFacet, T newValue){int covidx = getFacetIndex(iFacet);	historyList.second[covidx].back()=newValue;}
 
 };
 
@@ -348,6 +387,8 @@ public:
 	double outgassingTimeWindow; //[s] uniform distribution of outgassing over outgassingTimeWindow
 	double counterWindowPercent; // [%]
 	double desWindowPercent; // [%]
+
+	int rollingWindowSize;
 
 	std::vector< std::pair<int,double> > vipFacets;
 

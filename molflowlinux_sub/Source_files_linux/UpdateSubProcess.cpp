@@ -138,13 +138,13 @@ std::tuple<double,double> UpdateErrorAll(int it){//calculates the averaged total
 			if(f.sh.opacity==0) {continue;} //ignore facet if no opacity
 
 			int idx=getFacetIndex(&f);
-			double error_event_facet=(it==-1)?simHistory->errorList_event.getCurrent(&f):simHistory->errorList_event.pointintime_list[it].second[idx];
+			double error_event_facet=(it==-1)?simHistory->errorList_event.getCurrent(&f):simHistory->errorList_event.historyList.second[idx][it];
 			if(!std::isinf(error_event_facet)){//ignore facet if no hits (=inf error)
 				error_event+=error_event_facet*f.sh.area;
 				area_event+=f.sh.area;
 			}
 
-			double error_covering_facet=(it==-1)?simHistory->errorList_covering.getCurrent(&f):simHistory->errorList_covering.pointintime_list[it].second[idx];
+			double error_covering_facet=(it==-1)?simHistory->errorList_covering.getCurrent(&f):simHistory->errorList_covering.historyList.second[idx][it];
 			if(!std::isinf(error_covering_facet)){//ignore facet if no hits (=inf error)
 				error_covering+=error_covering_facet*f.sh.area;
 				area_covering+=f.sh.area;

@@ -227,6 +227,8 @@ ProblemDef::ProblemDef(){
 	counterWindowPercent=0.1;
 	desWindowPercent=1.0;
 
+	rollingWindowSize=10;
+
 	coveringMinThresh=1000000;
 
 	vipFacets = std::vector< std::pair<int,double> >();
@@ -314,6 +316,8 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn =="desWindowPercent"){is >>doubleIn; doubleIn=doubleIn<1.0?doubleIn:1.0; desWindowPercent=doubleIn>0.0?doubleIn:0.0; }
 		else if(stringIn == "outgassingTimeWindow"){is >>doubleIn; outgassingTimeWindow=doubleIn>0.0?doubleIn:0.0; }
 
+		else if(stringIn =="rollingWindowSize"){is >> intIn; rollingWindowSize=intIn>1?intIn:1;}
+
 		else if(stringIn=="vipFacets"){
 			int vipf = 0; double vipe=0.0;
 			unsigned int vipfacet=0;
@@ -396,6 +400,9 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 	out <<"counterWindowPercent" <<"\t" <<counterWindowPercent<<std::endl;
 	out <<"desWindowPercent" <<"\t" <<desWindowPercent<<std::endl;
 	out <<"outgassingTimeWindow" <<"\t" <<outgassingTimeWindow <<std::endl;
+
+	out <<"rollingWindowSize" <<"\t" <<rollingWindowSize <<std::endl;
+
 
 	if(!vipFacets.empty()){
 		out <<"vipFacets";
@@ -483,12 +490,25 @@ SimulationHistory::SimulationHistory(int world_size){
 			numFacet+=1;
 		}
 	}
+	coveringList.initList(numFacet);
 	coveringList.initCurrent(numFacet);
+
+	hitList.initList(numFacet);
 	hitList.initCurrent(numFacet);
+
+	desorbedList.initList(numFacet);
 	desorbedList.initCurrent(numFacet);
+
+	errorList_event.initList(numFacet);
 	errorList_event.initCurrent(numFacet);
+
+	errorList_covering.initList(numFacet);
 	errorList_covering.initCurrent(numFacet);
+
+	particleDensityList.initList(numFacet);
 	particleDensityList.initCurrent(numFacet);
+
+	pressureList.initList(numFacet);
 	pressureList.initCurrent(numFacet);
 }
 
@@ -528,17 +548,29 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 			numFacet+=1;
 		}
 	}
-
+	coveringList.initList(numFacet);
 	coveringList.appendCurrent(0);
+	coveringList.initStatistics(numFacet);
+
+	hitList.initList(numFacet);
 	hitList.appendCurrent(0);
+
+	desorbedList.initList(numFacet);
 	desorbedList.appendCurrent(0);
+
+	errorList_event.initList(numFacet);
 	errorList_event.initCurrent(numFacet);
 	errorList_event.appendCurrent(0.0);
+
+	errorList_covering.initList(numFacet);
 	errorList_covering.initCurrent(numFacet);
 	errorList_covering.appendCurrent(0.0);
 
+	particleDensityList.initList(numFacet);
 	particleDensityList.initCurrent(numFacet);
 	particleDensityList.appendCurrent(0.0);
+
+	pressureList.initList(numFacet);
 	pressureList.initCurrent(numFacet);
 	pressureList.appendCurrent(0.0);
 
@@ -571,27 +603,36 @@ void SimulationHistory::updateHistory(){
 			f.tmpCounter[0].hit.covering=covering.convert_to<llong>();
 		}
 	}
-	coveringList.pointintime_list.clear();
+	coveringList.historyList.first.clear();
+	coveringList.historyList.second.clear();
+	coveringList.initList(numFacet);
 	coveringList.appendCurrent(0);
 
 	hitList.reset();
+	hitList.initList(numFacet);
 	hitList.initCurrent(numFacet);
 	hitList.appendCurrent(0);
 
 	desorbedList.reset();
+	desorbedList.initList(numFacet);
 	desorbedList.initCurrent(numFacet);
 	desorbedList.appendCurrent(0);
 
 	errorList_event.reset();
+	errorList_event.initList(numFacet);
 	errorList_event.initCurrent(numFacet);
+
 	errorList_covering.reset();
+	errorList_covering.initList(numFacet);
 	errorList_covering.initCurrent(numFacet);
 
 	particleDensityList.reset();
+	particleDensityList.initList(numFacet);
 	particleDensityList.initCurrent(numFacet);
 	particleDensityList.appendCurrent(0.0);
 
 	pressureList.reset();
+	pressureList.initList(numFacet);
 	pressureList.initCurrent(numFacet);
 	pressureList.appendCurrent(0.0);
 
@@ -616,7 +657,7 @@ void SimulationHistory::updateStepSize(){
 void SimulationHistory::appendList(double time){
 
 	if(time==-1.0) //One step
-		time=coveringList.pointintime_list.back().first+1.0;
+		time=coveringList.historyList.first.back()+1.0;
 
 	coveringList.appendCurrent(time);
 
@@ -631,8 +672,8 @@ void SimulationHistory::print(bool write){
 	coveringList.print(p->outFile,covPerIt, "Accumulative covering", p->histSize, true, write);
 	//hitList.print(p->outFile, "Accumulative number hits", p->histSize, true,write);//Since we do not accumulate hits anymore over all iterations, we do not need this anymore.
 	//desorbedList.print(p->outFile, "Accumulative number desorbed", p->histSize,true,write);//Since we do not accumulate desorbs anymore over all iterations, we do not need this anymore.
-	errorList_event.print(p->outFile,errorPerIt_event, "Error (Desorb + Hit) per iteration", p->histSize, true,write);
-	errorList_covering.print(p->outFile, errorPerIt_covering, "Error (Desorb + Adsorb) per iteration", p->histSize,true,write);
+	errorList_event.print(p->outFile,errorPerIt_event, "Error Event (Desorb + Hit) per iteration", p->histSize, true,write);
+	errorList_covering.print(p->outFile, errorPerIt_covering, "Error Covering (Desorb + Adsorb) per iteration", p->histSize,true,write);
 	particleDensityList.print(p->outFile, "Particle density per iteration", p->histSize,true,write);
 	pressureList.print(p->outFile, "Pressure per iteration", p->histSize,true,write);
 }
@@ -843,7 +884,7 @@ void SimulationHistory::appendList(Databuff *hitbuffer, double time){
 	currentCov =std::vector<boost::multiprecision::uint128_t> ();
 
 	if(time==-1.0) //One step
-		time=coveringList.pointintime_list.back().first+1.0;
+		time=coveringList.historyList.back().first+1.0;
 
 	boost::multiprecision::uint128_t covering;
 

@@ -61,7 +61,7 @@ double getStepSize(){
 			return t_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/t_min)/(double)p->iterationNumber));
 		}
 		else{
-			return exp((double)simHistory->currentStep*(log(p->maxTimeS/simHistory->coveringList.pointintime_list[1].first)/(double)p->iterationNumber));
+			return exp((double)simHistory->currentStep*(log(p->maxTimeS/simHistory->coveringList.historyList[1].first)/(double)p->iterationNumber));
 		}*/
 
 
@@ -157,12 +157,12 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 	simHistory->lastTime+=time_step;
 
 	// Update other history lists with correct time entry
-	simHistory->hitList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-	simHistory->errorList_event.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-	simHistory->errorList_covering.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-	simHistory->desorbedList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-	simHistory->particleDensityList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-	simHistory->pressureList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+	simHistory->hitList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+	simHistory->errorList_event.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+	simHistory->errorList_covering.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+	simHistory->desorbedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+	simHistory->particleDensityList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+	simHistory->pressureList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 }
 
 // Copy covering to hitbuffers
@@ -234,8 +234,8 @@ void UpdateErrorMain(Databuff *hitbuffer_sum){
 
 	simHistory->errorList_event.appendCurrent(simHistory->lastTime);
 	simHistory->errorList_covering.appendCurrent(simHistory->lastTime);
-	//simHistory->hitList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
-	//simHistory->desorbedList.pointintime_list.back().first=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
+	//simHistory->hitList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
+	//simHistory->desorbedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
 }
 
 void UpdateParticleDensityAndPressure(Databuff *hitbuffer_sum){
@@ -279,7 +279,7 @@ std::tuple<std::vector<double>,std::vector<double>,std::vector<boost::multipreci
 	std::vector<boost::multiprecision::uint128_t> covPerIt;
 	covPerIt =std::vector<boost::multiprecision::uint128_t> ();
 
-	for(unsigned int it=0; it<simHistory->errorList_event.pointintime_list.size();it++){
+	for(unsigned int it=0; it<simHistory->errorList_event.historyList.first.size();it++){
 		// Total error/covering for each iteration
 		double total_error_event=0.0;
 		double total_error_covering=0.0;
@@ -287,7 +287,7 @@ std::tuple<std::vector<double>,std::vector<double>,std::vector<boost::multipreci
 
 		boost::multiprecision::uint128_t covering=0;
 		for (unsigned int idx=0; idx<simHistory->numFacet; idx++) {
-			covering+=simHistory->coveringList.pointintime_list[it].second[idx];
+			covering+=simHistory->coveringList.historyList.second[idx][it];
 		}
 
 		errorPerIt_event.push_back(total_error_event);
