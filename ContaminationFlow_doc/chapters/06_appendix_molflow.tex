@@ -9,6 +9,7 @@
 	%carbondiameter&=2 \cdot 76\,pm\\
 	k_b&=1.38\,10^{-23}\\
 	h&=6.626\,10^{-34}\\
+	N_A&=6\,10^{23}\\
 	\end{split}
 \end{equation}
 
@@ -94,8 +95,7 @@
 \begin{equation}
 	\label{eq:sojourntime}
 	\begin{split}
-		A&=\exp\big( - E/(k_b T)\big)\\
-		\tau_0 &= \frac{k_b \, T}{h}\\
+		A&=\exp\big( - E/(k_b T)\big),\ \tau_0 = \frac{k_b \, T}{h}\\
 		\tau &= \frac{-\text{ln}(rnd) \cdot \tau_0}{A}
 	\end{split}
 \end{equation}
@@ -130,10 +130,7 @@
 \begin{equation}
 	\label{eq:des}
 	\begin{split}
-	\tau_0&=\frac{h}{k_b T}\\
-	\tau_{subst} &=\tau_0 \cdot \exp\Big(\frac{E_{de}}{k_b T}\Big)\\
-	\tau_{ads}&=\tau_0 \cdot \exp\Big(\frac{H_{vap}}{k_b T}\Big)\\
-	t_{ads}&=\tau_{ads} \cdot (\theta -1)\\
+	\tau_0&=\frac{h}{k_b T},\ \tau_{subst} =\tau_0 \cdot \exp\Big(\frac{E_{de}}{k_b T}\Big),\ \tau_{ads}=\tau_0 \cdot \exp\Big(\frac{H_{vap}}{k_b T}\Big),\ t_{ads}=\tau_{ads} \cdot (\theta -1)\\
 	&\\
 	des&=
 	\begin{cases}
@@ -153,6 +150,18 @@
 	out=\frac{\text{Facet outgassing}}{k_b T}
 \end{equation}
 
+\subsubsection*{Particle Density}
+\begin{equation}
+	\label{eq:density}
+	density=\frac{\text{sum over reciprocal of orthogonal velocity}}{\text{Area of Facet [m$^2$]} \cdot t_{step}} \cdot K_{\text{real}/\text{virtual}}
+\end{equation}
+
+\subsubsection*{Pressure [mbar]}
+\begin{equation}
+	\label{eq:pressure}
+	density=\frac{\text{sum over orthogonal velocity}}{\text{Area of Facet [m$^2$]} \cdot t_{step}} \cdot \frac{\text{carbon equivalent gas mass}}{1000/N_A} \cdot 0.01 \cdot K_{\text{real}/\text{virtual}}
+\end{equation}
+
 \subsubsection*{Small covering factor}
 \begin{equation}
 	\label{eq:smallcov}
@@ -168,10 +177,10 @@
 	\end{split}
 \end{equation}
 
-\subsubsection*{$\text{K}_{\text{real}/\text{virtual}}$}
+\subsubsection*{$K_{\text{real}/\text{virtual}}$}
 \begin{equation}
 	\label{eq:krealvirt}
-	\text{K}_{\text{real}/\text{virtual}}=\frac{\sum\limits_{\text{facets}}\Big(out + des\Big)}{\text{number of total desorbed molecules/small covering factor}}
+	K_{\text{real}/\text{virtual}}=\frac{\sum\limits_{\text{facets}}\Big(out + des\Big)}{\text{number of total desorbed molecules/small covering factor}}
 \end{equation}
 
 \subsubsection*{Error}
@@ -230,6 +239,39 @@ GetMoleculesPerTP()&boost::multiprecision::float128&desBoost\\
 \begin{center}
 \begin{tabular}{|l|l|}
 \hline
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}HistoryList}\\
+\hline
+\rule{0pt}{3ex} historyList& list containing history respective facet values\\
+\rule{0pt}{3ex} currentList& list containing facet values at current step\\
+\rule{0pt}{3ex} statisticsList& list containing facet statistics over last iterations\\
+\rule{0pt}{3ex} currIt& current iteration number\\
+\hline
+\rule{0pt}{3ex} reset()& Resets lists\\
+\rule{0pt}{3ex} initCurrent()& Initializes size of currentList\\
+\rule{0pt}{3ex} initStatistics()& Initializes size of statisticsList\\
+\rule{0pt}{3ex} initList()& Initializes size of historyList\\
+\rule{0pt}{3ex} appendCurrent()& Appends currentList to historyList\\
+\rule{0pt}{3ex} appendList()& Append input list to historyList\\
+\rule{0pt}{3ex} updateStatistics()& Calculates statistics and save to statisticsList\\
+\rule{0pt}{3ex} convertTime()& Converts time for better clarity\\
+\rule{0pt}{3ex} print()& Print historyList to terminal, optinal message\\
+\rule{0pt}{3ex} printCurrent()& Print currentList as table to terminal, optional message\\
+\rule{0pt}{3ex} printStatistics()& Print statisticsList as table to terminal, optional message\\
+\rule{0pt}{3ex} write()& Write historyList to file\\
+\rule{0pt}{3ex} erase()& delete desired point in historyList\\
+\rule{0pt}{3ex} empty()& Checks if historyList is empty\\
+\rule{0pt}{3ex} setCurrent()& Set value of desired facet in currentList\\
+\rule{0pt}{3ex} getCurrent()& Get value of desired facet in currentList\\
+\rule{0pt}{3ex} setLast()& Set value of desired facet from historyList\\
+\rule{0pt}{3ex} getLast()& Get value of desired facet from historyList\\
+\hline
+\end{tabular}
+\end{center}
+
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}SimulationHistory}\\
 \hline
 \rule{0pt}{3ex} coveringList& of class HistoryList, stores covering history\\
@@ -237,48 +279,29 @@ GetMoleculesPerTP()&boost::multiprecision::float128&desBoost\\
 \rule{0pt}{3ex} errorList\_covering& of class HistoryList, stores error history for covering\\
 \rule{0pt}{3ex} hitList& of class HistoryList, stores hits for each facet\\
 \rule{0pt}{3ex} desorbedList& of class HistoryList, stores desorbed particles for each facet\\
-\rule{0pt}{3ex} startNewParticle& Determines wether to create a new particle for next iteration\\
+\rule{0pt}{3ex} particleDensityList& of class HistoryList, stores particle density for each facet\\
+\rule{0pt}{3ex} pressureList& of class HistoryList, stores pressure for each facet\\
 \rule{0pt}{3ex} numFacet& number of Facets\\
 \rule{0pt}{3ex} numSubProcess& number of sub processes used for simulation\\
-\rule{0pt}{3ex} \multirow{2}{*}{nbDesorbed\_old}& number of total desorbed molecules of previous iteration\\
-&\qquad$\Rightarrow$ To calculate difference between consecutive iterations\\
 \rule{0pt}{3ex} flightTime& Simulated flight time for iteration\\
 \rule{0pt}{3ex} nParticles& Simulated particles for iteration\\
 \rule{0pt}{3ex} lastTime& Total simulated time = last time in Lists\\
 \rule{0pt}{3ex} currentStep& step of logarithmic time step calculation in \codew{getStepSize()}\\
-\rule{0pt}{3ex} stepSize&current step size\\
+\rule{0pt}{3ex} stepSize& current step size\\
+\rule{0pt}{3ex} stepSize\_outgassing& current step size of outgassing impulse\\
 \hline
-\rule{0pt}{3ex} updateHistory()& Reset and update from hitbuffer\\
-\rule{0pt}{3ex} appendList()& Updates coveringList from hitbuffer\\
+\rule{0pt}{3ex} updateHistory()& Reset and update\\
+\rule{0pt}{3ex} updateStepSize()& Calculate stepSize and stepSize\_outgassing\\
+\rule{0pt}{3ex} appendList()& Updates coveringList\\
+\rule{0pt}{3ex} erase()& Erases desired point in history\\
 \rule{0pt}{3ex} print()& Print to terminal\\
 \rule{0pt}{3ex} write()& Write to file\\
 \hline
-
 \end{tabular}
 \end{center}
 
 \begin{center}
 \begin{tabular}{|l|l|}
-\hline
-\multicolumn{2}{|c|}{\rule{0pt}{3ex}HistoryList}\\
-\hline
-\rule{0pt}{3ex} pointInTimeList& list containing history respective facet values\\
-\rule{0pt}{3ex} currentList& list containing facet values at current step\\
-\rule{0pt}{3ex} currIt& current iteration number\\
-\hline
-%\rule{0pt}{3ex} reset()& Resets lists\\
-%\rule{0pt}{3ex} initCurrent()& Initializes size of lists\\
-\rule{0pt}{3ex} appendCurrent()& Appends currentList to pointInTimeList\\
-\rule{0pt}{3ex} appendList()& Append input list to pointInTimeList\\
-\rule{0pt}{3ex} convertTime()& Converts time for better clarity\\
-\rule{0pt}{3ex} printCurrent()& Print currentList as table to terminal, optional message\\
-\rule{0pt}{3ex} print()& Print pointInTimeList as table to terminal, optional msg\\
-\rule{0pt}{3ex} write(), read()& Write to file, read from file\\
-%\rule{0pt}{3ex} empty()& Checks if pointintime\_list is empty\\
-\rule{0pt}{3ex} set/getCurrent()& Set/get value of desired facet in currentList\\
-\rule{0pt}{3ex} setLast(), getLast()& Set/get value of desired facet from pointInTimeList\\
-\hline
-\multicolumn{2}{l}{}\\
 \hline
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}ProblemDef}\\
 \hline
@@ -290,10 +313,10 @@ GetMoleculesPerTP()&boost::multiprecision::float128&desBoost\\
 \enskip$\Rightarrow$simulationTimeMS&\\
 \rule{0pt}{3ex} maxTime, maxUnit& \multirow{2}{*}{Maximal total simulated time in seconds}\\
 \enskip$\Rightarrow$maxTimeS&\\
-\rule{0pt}{3ex} iterationNumber& Number of iterations\\
+\rule{0pt}{3ex} iterationNumber& Number of iterations of simulation\\
 \rule{0pt}{3ex} particleDia& Diameter of particles\\
-%\rule{0pt}{3ex}  d& Parameter to calculate desorption rate, see equation \ref{eq:des}\\
-\rule{0pt}{3ex}  E\_de, H\_vap& Parameters to calculate binding energy, see equation \ref{eq:energy}\\ %W\_tr
+%\rule{0pt}{3ex}  d& Parameter to calculate desorption rate, see eq.\ \ref{eq:des}\\
+\rule{0pt}{3ex}  E\_de, H\_vap& Parameters to calculate binding energy, see eq.\ \ref{eq:energy}\\ %W\_tr
 \rule{0pt}{3ex}  sticking&  Sticking factor for all facets\\
 %\rule{0pt}{3ex}  coveringLimit&  Covering limit for zero desorption \\
 \rule{0pt}{3ex}  targetParticles/-Error&  Target values for each iteration\\
@@ -303,13 +326,19 @@ GetMoleculesPerTP()&boost::multiprecision::float128&desBoost\\
 \rule{0pt}{3ex}  maxSimPerIt&  Maximun simulation steps per iteration\\
 \rule{0pt}{3ex}  histSize&  Size of history lists (most recent values in memory)\\
 \rule{0pt}{3ex}  vipFacets&  alterning: vip facet and target error, e.g.\ 1 0.001 3 0.002\\
+\rule{0pt}{3ex}  outgassingTimeWindow&  Duration of outgassing impulse\\
+\rule{0pt}{3ex}  counterWindowPercent&  Percentage of step size at which velocity counters are increased\\
+\rule{0pt}{3ex}  desWindowPercent&  Percentage of step size at which desorption occurs\\
+\rule{0pt}{3ex}  rollingWindowSize&  Number of iterations over which statistics are calculated\\
 \hline
+\rule{0pt}{3ex} createOutput()& Create output directory and file\\
 \rule{0pt}{3ex} readInputfile()& Initialization from input file\\
 \rule{0pt}{3ex} printInputfile()& Print to terminal\\
+\rule{0pt}{3ex} writeInputfile()& Write to terminal\\
 \hline
 \end{tabular}
 \end{center}
-
+%\newpage
 \section{New Functions}
 \subsection{molflowlinux\_main.cpp}
 \begin{center}
@@ -323,6 +352,7 @@ GetMoleculesPerTP()&boost::multiprecision::float128&desBoost\\
 \rule{0pt}{3ex} MPI\_Bcast()& Send loadbuffer to sub processes\\
 \rule{0pt}{3ex} LoadSimulation()& Load geometry from loadbuffer\\
 \rule{0pt}{3ex} initCoveringThresh()& Initialize covering threshold\\
+\rule{0pt}{3ex} UpdateSojourn()& Enable sojourn time for each facet\\
 \rule{0pt}{3ex} \codew{simHistory}& Initialize SimulationHistory object\\
 \hline
 \multicolumn{2}{l}{}\\
@@ -337,17 +367,20 @@ GetMoleculesPerTP()&boost::multiprecision::float128&desBoost\\
 \rule{0pt}{3ex} initbufftozero()& Reset all hitbuffer counters except covering\\
 \rule{0pt}{3ex} \multirow{2}{*}{MPI\_Bcast()}& Send \codew{simHistory$\rightarrow$coveringList} and \\&\codew{simHistory$\rightarrow$currentStep} to sub processes\\
 \rule{0pt}{3ex} setCoveringThreshold()& Sets covering threshold for each facet\\
-\rule{0pt}{3ex} UpdateSojourn()& Sets sojourn variables for each facet\\
-\rule{0pt}{3ex} UpdateDesorptionRate()& Sets desorption for each facet, ends simulation if 0\\
-\rule{0pt}{3ex} checkSmallCovering()& multiplies covering to reach threshold if covering small\\
+\rule{0pt}{3ex} updateStepSize()& Calculates step sizes for desorption and outgassing\\
+\rule{0pt}{3ex} UpdateDesorption()& Sets desorption for each facet, ends simulation if 0\\
+\rule{0pt}{3ex} CalcTotalOutgassingWorker()& Calculates total outgassing for iteration\\
+\rule{0pt}{3ex} checkSmallCovering()& multiplies covering to reach threshold if necessary\\
 \rule{0pt}{3ex} simulateSub()& Simulation on sub processes\\
 \rule{0pt}{3ex} MPI\_Send(), MPI\_Recv()& Send sub hitbuffer to main process\\
-\rule{0pt}{3ex} \multirow{2}{*}{UpdateMCMainHits()}& Add simulation results from sub hitbuffer\\& to main hitbuffer\\
+\rule{0pt}{3ex} UpdateMCMainHits()& Add simulation results to main hitbuffer\\
 %\rule{0pt}{3ex} UndoSmallCovering()& Divide covering if it was multiplied before\\
+\rule{0pt}{3ex} \footnotesize UpdateParticleDensityAndPressure()& Calculate and save particle density and pressure\\
 \rule{0pt}{3ex} UpdateErrorMain()& Calculate and save error of iteration to simHistory\\
 \rule{0pt}{3ex} UpdateCovering()& Calculate and save new covering to simHistory\\
 \rule{0pt}{3ex} UpdateCoveringphys()& Saves current covering to hitbuffer\\
-\rule{0pt}{3ex} \codew{simHistory$\rightarrow$coveringList}& \multirow{2}{*}{Adapt size to \codew{p$\rightarrow$histSize} if necessary}\\ \codew{simHistory$\rightarrow$errorList}&\\
+\rule{0pt}{3ex} \codew{simHistory$\rightarrow$erase()}& Adapt historyList size of to \codew{p$\rightarrow$histSize}\\ 
+\rule{0pt}{3ex} updateStatistics()& Statistics over \codew{p$\rightarrow$rollingWindowSize} iterations\\ 
 \hline
 \multicolumn{2}{|c|}{\rule{0pt}{2.5ex}End simulation if maximum simulation time is reached}\\
 \hline
@@ -367,13 +400,13 @@ GetMoleculesPerTP()&boost::multiprecision::float128&desBoost\\
 \hline
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}simulateSub()}\\
 \hline
-\rule{0pt}{3ex}\multirow{2}{*}{ targetParticles, targetError}& Calculate target values from overall target\\& and number sub processes\\
-\rule{0pt}{3ex}\multirow{2}{*}{ \codew{simHistory->updateHistory()}}& Reset and update SimulationHistory object\\& from \codew{sHandle}\\
+\rule{0pt}{3ex}\codew{simHistory->updateHistory()}& Update SimulationHistory object from \codew{sHandle}\\
 \rule{0pt}{3ex}\multirow{2}{*}{ smallCoveringFactor}& If covering is small: Covering is multiplied by\\ & smallCoveringFactor to be able to have statistics\\ & without overflow of the covering variable\\
+\rule{0pt}{3ex}\multirow{2}{*}{ targetParticles, targetError}& Calculate target values from overall target\\& and number sub processes\\
 %\rule{0pt}{3ex} StartSimulation()& Create first particle\\
 \rule{0pt}{3ex} SimulationRun()& Simulate for desired simulation time\\
 \rule{0pt}{3ex} UpdateError()& Calculate current error of sub process\\
-\rule{0pt}{3ex} \multirow{2}{*}{CheckErrorSub()}& Checks if normal facets reached targetError\\& and if vip facets reached own target\\
+\rule{0pt}{3ex} \multirow{2}{*}{CheckErrorSub()}& Checks if total error reached targetError\\& and if vip facets reached own target\\
 \rule{0pt}{3ex} UpdateMCSubHits()& Save simulation results to hitbuffer\\
 %\rule{0pt}{3ex} ResetTmpCounters()& Reset simulation for next iteration\\
 \hline
@@ -384,6 +417,13 @@ GetMoleculesPerTP()&boost::multiprecision::float128&desBoost\\
 \rule{0pt}{3ex} \multirow{2}{*}{CheckSmallCovering()}& If covering is small, find smallCoveringFactor \\& to reach \codew{p$\rightarrow$coveringMinThresh}\\
 \rule{0pt}{3ex} Undo multiplication& In \codew{UpdateCovering()}\\
 \hline
+\multicolumn{2}{l}{}\\
+\hline
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}Others}\\
+\hline
+\rule{0pt}{3ex} get\_path() & Get path of executable\\
+\rule{0pt}{3ex} printStream() & Print input string to terminal and file\\
+\hline
 \end{tabular}
 \end{center}
 
@@ -393,7 +433,7 @@ GetMoleculesPerTP()&boost::multiprecision::float128&desBoost\\
 %\hline
 %\multicolumn{2}{|c|}{\rule{0pt}{3ex}Calculation of time\_step}\\
 %\hline
-%\rule{0pt}{3ex} estimateAverageFlightTime()& Average flight time, see equation \ref{eq:tavg}\\
+%\rule{0pt}{3ex} estimateAverageFlightTime()& Average flight time, see eq.\ \ref{eq:tavg}\\
 %\rule{0pt}{3ex} estimateTmin\_RudiTest()& Average path length/average velocity\\
 %\hline
 \multicolumn{2}{l}{}\\
@@ -421,9 +461,8 @@ GetMoleculesPerTP()&boost::multiprecision::float128&desBoost\\
 \hline
 \end{tabular}
 \end{center}
-
+\newpage
 \subsection{Calculations in SimulationCalc.cpp etc.}
-
 \begin{center}
 \begin{tabular}{|l|l|}
 \hline
@@ -435,31 +474,33 @@ GetMoleculesPerTP()&boost::multiprecision::float128&desBoost\\
 &molecules from hitbuffer\\
 \rule{0pt}{3ex} \multirow{2}{*}{getnbAdsorbed()}& Get number of total adsorbed\\
 &molecules from hitbuffer\\
-\rule{0pt}{3ex} calcNmono()& see equation \ref{eq:nmono} \\
-\rule{0pt}{3ex} calcdNsurf()& see equation \ref{eq:nsurf} \\
-\rule{0pt}{3ex} calcCoverage()& see equation \ref{eq:cov} \\
-%\rule{0pt}{3ex} calcStep()& see equation \ref{eq:stepfct} \\
-\rule{0pt}{3ex} calcEnergy()& see equation \ref{eq:energy} \\
+\rule{0pt}{3ex} calcNmono()& see eq.\ \ref{eq:nmono} \\
+\rule{0pt}{3ex} calcdNsurf()& see eq.\ \ref{eq:nsurf} \\
+\rule{0pt}{3ex} calcCoverage()& see eq.\ \ref{eq:cov} \\
+%\rule{0pt}{3ex} calcStep()& see eq.\ \ref{eq:stepfct} \\
+%\rule{0pt}{3ex} calcEnergy()& see eq.\ \ref{eq:energy} \\
 \rule{0pt}{3ex} calcStickingnew()& sets sticking coefficient to p$\rightarrow$sticking \\
-\rule{0pt}{3ex} calcDesorption()& see equation \ref{eq:des} \\
-\rule{0pt}{3ex} GetMoleculesPerTP()& see equation \ref{eq:krealvirt} \\
+\rule{0pt}{3ex} calcDesorption()& see eq.\ \ref{eq:des} \\
+\rule{0pt}{3ex} GetMoleculesPerTP()& see eq.\ \ref{eq:krealvirt} \\
 \rule{0pt}{3ex} \multirow{2}{*}{calctotalDesorption}& calculates desorption for\\
 &\codew{startFromSource()} \\
-\rule{0pt}{3ex} calcPressure()& TODO has to be verified \\
-\rule{0pt}{3ex} calcParticleDensity()& TODO has to be verified \\
+\rule{0pt}{3ex} calcOutgassingFactor()& Calculate factor to determine outgassing particles\\
+\rule{0pt}{3ex} calcPressure()& see eq.\ \ref{eq:pressure} \\
+\rule{0pt}{3ex} calcParticleDensity()& see eq.\ \ref{eq:density} \\
+\rule{0pt}{3ex}\multirow{2}{*}{ calcStartTime()}& Calculate start time of particle\\& depending on desorption/outgassing distribution \\
 \hline
 \multicolumn{2}{l}{}\\
 \hline
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}worker.cpp}\\
 \hline
-\rule{0pt}{3ex}\multirow{2}{*}{CalcTotalOutgassingWorker()}& see equation \ref{eq:out}, calculates outgassing\\
+\rule{0pt}{3ex}\multirow{2}{*}{ CalcTotalOutgassingWorker()}& see eq.\ \ref{eq:out}, calculate outgassing distribution\\
 &for \codew{startFromSource()} \\
 \hline
 \multicolumn{2}{l}{}\\
 \hline
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}SimulationLinux.cpp}\\
 \hline
-\rule{0pt}{3ex} convertunit()& Converts simutime*unit to milliseconds\\
+\rule{0pt}{3ex} convertunit()& Converts simutime $\cdot$ unit to milliseconds\\
 \hline
 \end{tabular}
 \end{center}
@@ -471,17 +512,18 @@ GetMoleculesPerTP()&boost::multiprecision::float128&desBoost\\
 \hline
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}Update sHandle paramters from hitbuffer}\\
 \hline
-\rule{0pt}{3ex} UpdateSticking()& Updates sticking\\
-\rule{0pt}{3ex} UpdateDesorptionRate()& Updates desorption \\
-\rule{0pt}{3ex} UpdateSojourn()& Enables sojourn time => Verstehe ich nicht\\% Updates sojourn frequency and energy \\
+\rule{0pt}{3ex} UpdateSticking()& Update sticking\\
+\rule{0pt}{3ex} UpdateDesorption()& Update desorption \\
+\rule{0pt}{3ex} UpdateSojourn()& Enable residence time for all facets\\% Updates sojourn frequency and energy \\
 \hline
 \multicolumn{2}{l}{}\\
 \hline
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}Error calculations}\\
 \hline
-\rule{0pt}{3ex} \multirow{3}{*}{UpdateErrorSub()}& Calculates error per facet, see equation \ref{eq:error}\\&Saves to \codew{simHistory$\rightarrow$ errorList\_covering}\\ & and \codew{simHistory$\rightarrow$ errorList\_event}\\
-\rule{0pt}{3ex} \multirow{2}{*}{UpdateError()}& Sums up error of normal facets \& weights by facet area\\& Currently covering error instead of event error\\
-\rule{0pt}{3ex} CheckErrorSub()& Checks if normal \& vip facets reached respective target\\
+\rule{0pt}{3ex} \multirow{2}{*}{UpdateErrorSub()}& Calculates error per facet, see eq.\ \ref{eq:error}\\&Saves to \codew{simHistory}\\
+\rule{0pt}{3ex} \multirow{2}{*}{UpdateErrorAll()}& Sums up total error of facets \& weights by facet area \\ & for all possible error types\\
+\rule{0pt}{3ex} UpdateError()& Returns total error of desired error type\\
+\rule{0pt}{3ex} CheckErrorSub()& Checks if total error and vip facet error reached target\\
 \hline
 \multicolumn{2}{l}{}\\
 \hline
@@ -505,13 +547,14 @@ GetMoleculesPerTP()&boost::multiprecision::float128&desBoost\\
 \hline
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}Update real covering in hitbuffer}\\
 \hline
-\rule{0pt}{3ex} getStepSize()& Calculates step size for current step, see equation \ref{eq:tstep}\\
+\rule{0pt}{3ex} getStepSize()& Calculates step size for current step, see eq.\ \ref{eq:tstep}\\
 %\rule{0pt}{3ex} {manageStepSize()}&  Adapts step size if desRate $\cdot$ step size $>$ than covering\\
 \rule{0pt}{3ex} \multirow{2}{*}{UpdateCovering()}& Uses Krealvirt to calculate new covering\\
 & Saved to \codew{simHistory$\rightarrow$coveringList}\\
 \rule{0pt}{3ex} UpdateCoveringphys()& Saves current real covering to hitbuffer\\
-\rule{0pt}{3ex} \multirow{3}{*}{UpdateErrorMain()}& Calculates total error for each facet, see equation \ref{eq:error}\\
+\rule{0pt}{3ex} \multirow{3}{*}{UpdateErrorMain()}& Calculates total error for each facet, see eq.\ \ref{eq:error}\\
 & Saves to \codew{simHistory$\rightarrow$errorList\_event}\\& and \codew{simHistory$\rightarrow$errorList\_covering}\\
+\rule{0pt}{3ex} \multirow{2}{*}{\footnotesize UpdateParticleDensityAndPressure()}& Calculate pressure and particle density,\\& see eq.\ \ref{eq:density}, \ref{eq:pressure}\\
 \rule{0pt}{3ex} \multirow{2}{*}{CalcPerIteration()}&  Calculates total error (covering and event)\\& and covering over all facets per iteration\\
 \hline
 \end{tabular}
