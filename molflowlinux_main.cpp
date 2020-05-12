@@ -249,7 +249,7 @@ int main(int argc, char *argv[]) {
 				simHistory->updateStepSize(); // Calculate stepSize (normal and outgassing) for this iteration
 			}
 
-			if(!UpdateDesorptionRate()){// Write desorption into sHandle for all subprocesses
+			if(!UpdateDesorption()){// Write desorption into sHandle for all subprocesses
 				// End simulation for very small desorption + outgassing particles
 				if(rank==0) {
 					std::ostringstream tmpstream (std::ostringstream::app);
@@ -342,12 +342,7 @@ int main(int argc, char *argv[]) {
 
 				// Adapt size of history lists if p->histSize is exceeded
 				if(p->histSize != std::numeric_limits<int>::infinity() && simHistory->coveringList.historyList.first.size() > uint(p->histSize+1)){
-
-						simHistory->coveringList.erase();
-						simHistory->errorList_event.erase();
-						simHistory->errorList_covering.erase();
-						simHistory->particleDensityList.erase();
-						simHistory->pressureList.erase();
+						simHistory->erase(1);
 				}
 				// print current coveringList
 				simHistory->coveringList.print(p->outFile,"Accumulative covering after iteration "+std::to_string(it),p->histSize,true);

@@ -132,6 +132,10 @@ boost::multiprecision::float128 calctotalDesorption(){// calculates the desorbed
 	return desrate;
 }
 
+double calcOutgassingFactor(SubprocessFacet *iFacet){
+	return simHistory->stepSize_outgassing/(kb * iFacet->sh.temperature);
+}
+
 //-----------------------------------------------------------
 // calculation of used values
 

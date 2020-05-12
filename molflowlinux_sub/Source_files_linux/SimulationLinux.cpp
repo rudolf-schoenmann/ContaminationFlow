@@ -660,7 +660,14 @@ void SimulationHistory::appendList(double time){
 		time=coveringList.historyList.first.back()+1.0;
 
 	coveringList.appendCurrent(time);
+}
 
+void SimulationHistory::erase(int idx){
+	coveringList.erase(idx);
+	errorList_event.erase(idx);
+	errorList_covering.erase(idx);
+	particleDensityList.erase(idx);
+	pressureList.erase(idx);
 }
 
 void SimulationHistory::print(bool write){

@@ -40,7 +40,7 @@ void UpdateSticking(){
 }
 
 //desorption
-bool UpdateDesorptionRate (){
+bool UpdateDesorption (){
 	boost::multiprecision::float128 totaldes(0.0);
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {

@@ -687,8 +687,8 @@ bool StartFromSource() {
 
 			if (f.sh.desorbType != DES_NONE || des>boost::multiprecision::float128(0.0)) { //there is some kind of outgassing
 				if (f.sh.useOutgassingFile) { //Using SynRad-generated outgassing map
-					if (boost::multiprecision::float128(f.sh.totalOutgassing*simHistory->stepSize_outgassing/(kb*f.sh.temperature)) +des > boost::multiprecision::float128(0.0)) {
-						found = (srcRnd >= sumA) && (srcRnd < (sumA + (boost::multiprecision::float128(f.sh.totalOutgassing*simHistory->stepSize_outgassing/(kb*f.sh.temperature))+des)));
+					if (boost::multiprecision::float128(f.sh.totalOutgassing * calcOutgassingFactor(&f)) +des > boost::multiprecision::float128(0.0)) {
+						found = (srcRnd >= sumA) && (srcRnd < (sumA + (boost::multiprecision::float128(f.sh.totalOutgassing * calcOutgassingFactor(&f))+des)));
 
 						if (found) {
 							//look for exact position in map
@@ -715,14 +715,14 @@ bool StartFromSource() {
 								return false;
 							}*/
 						}
-						sumA += (boost::multiprecision::float128(f.sh.totalOutgassing*simHistory->stepSize_outgassing/(kb*f.sh.temperature))+des);
+						sumA += (boost::multiprecision::float128(f.sh.totalOutgassing * calcOutgassingFactor(&f))+des);
 					}
 				} //end outgassing file block
 				else { //constant or time-dependent outgassing
 					boost::multiprecision::float128 facetOutgassing =
 						(f.sh.outgassing_paramId >= 0)
 						? boost::multiprecision::float128(sHandle->IDs[f.sh.IDid].back().second / (1.38E-23*f.sh.temperature))//This is the Molflow time-dependent mode. We don't use that mode.
-						: (boost::multiprecision::float128(f.sh.outgassing*simHistory->stepSize_outgassing/(kb*f.sh.temperature))+des);
+						: (boost::multiprecision::float128(f.sh.outgassing * calcOutgassingFactor(&f))+des);
 					found = (srcRnd >= sumA) && (srcRnd < (sumA + facetOutgassing));
 					sumA += facetOutgassing;
 
@@ -745,7 +745,7 @@ bool StartFromSource() {
 	bool desorbed_b=true; //determines whether particle created from outgassing or desorption; true desorbed, false outgassed
 	if(src->sh.desorbType != DES_NONE ){ //there is outgassing
 		boost::multiprecision::float128 des=src->sh.desorption;
-		if(boost::multiprecision::float128(rnd())>des/(boost::multiprecision::float128(src->sh.outgassing*simHistory->stepSize_outgassing/(kb*src->sh.temperature))+des) ){
+		if(boost::multiprecision::float128(rnd())>des/(boost::multiprecision::float128(src->sh.outgassing * calcOutgassingFactor(src))+des) ){
 			desorbed_b=false;
 		}
 	}

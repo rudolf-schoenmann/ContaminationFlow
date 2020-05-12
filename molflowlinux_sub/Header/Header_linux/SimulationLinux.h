@@ -317,10 +317,10 @@ public:
 		std::cout <<"Results saved to " <<filename <<std::endl;
 	}
 
-	void erase(){
-		historyList.first.erase(historyList.first.begin()+1);
+	void erase(int idx){
+		historyList.first.erase(historyList.first.begin()+idx);
 		for(unsigned int j=0; j<historyList.second.size();j++){
-			historyList.second[j].erase(historyList.second[j].begin()+1);
+			historyList.second[j].erase(historyList.second[j].begin()+idx);
 		}
 	}
 
@@ -427,6 +427,7 @@ public:
 
 	//void appendList(Databuff *hitbuffer, double time=-1.0);
 	void appendList(double time=-1.0);
+	void erase(int idx);
 
 	void print(bool write=false);
 	void write(std::string path);
@@ -468,7 +469,7 @@ void checkSmallCovering(int rank, Databuff *hitbuffer_sum);
 void UpdateSticking();
 
 //bool UpdateDesorptionRate (Databuff *hitbuffer);
-bool UpdateDesorptionRate();
+bool UpdateDesorption();
 
 //void UpdateSojourn(Databuff *hitbuffer);
 void UpdateSojourn();
@@ -518,6 +519,7 @@ std::tuple<double, double, double> getVelocities(SubprocessFacet *iFacet, Databu
 //double calcEnergy(SubprocessFacet *iFacet);
 
 //----------
+double calcOutgassingFactor(SubprocessFacet *iFacet);
 
 boost::multiprecision::float128 calcCoverage(SubprocessFacet *iFacet);
 
