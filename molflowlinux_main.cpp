@@ -243,12 +243,12 @@ int main(int argc, char *argv[]) {
 			UpdateSticking(); // Write sticking factor into sHandle for all subprocesses
 			if(rank!=0){
 				simHistory->updateHistory();// Write the current covering values from the simHistory to the sHandle and calculate stepSize (normal and outgassing).
-				CalcTotalOutgassingWorker();// Calculate outgassing values for this iteration
 			}
 			else{
 				simHistory->updateStepSize(); // Calculate stepSize (normal and outgassing) for this iteration
 			}
 
+			CalcTotalOutgassingWorker();// Calculate outgassing values for this iteration
 			if(!UpdateDesorption()){// Write desorption into sHandle for all subprocesses
 				// End simulation for very small desorption + outgassing particles
 				if(rank==0) {

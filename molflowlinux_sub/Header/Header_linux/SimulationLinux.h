@@ -410,7 +410,7 @@ public:
 	HistoryList<double> particleDensityList;
 	HistoryList<double> pressureList;
 
-	std::vector<unsigned int> normalFacets;
+	//std::vector<unsigned int> normalFacets;
 
 	llong smallCoveringFactor;
 
@@ -474,6 +474,7 @@ bool UpdateDesorption();
 //void UpdateSojourn(Databuff *hitbuffer);
 void UpdateSojourn();
 std::tuple<double,double> UpdateErrorAll(int it=-1);
+void UpdateErrorList(Databuff *hitbuffer_sum);
 double UpdateError(std::string mode);
 void UpdateErrorSub();
 bool checkErrorSub(double targetError, double currentError, double factor, std::string mode="covering");

@@ -49,12 +49,14 @@ double getStepSize(){
 		else{
 			double t_start = t_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/(t_min))/(double)p->iterationNumber));
 			double t_stop = t_min*exp((double)(simHistory->currentStep+1)*(log(p->maxTimeS/(t_min))/(double)p->iterationNumber));
+			/*
 			if(t_stop > p->t_max){
 				return p->t_max - t_start;
 			}
 			else{
 				return t_stop - t_start;;
-			}
+			}*/
+			return t_stop-t_start<p->t_max?t_stop-t_start:p->t_max;
 		}
 		/*if(simHistory->currentStep==0){
 			double t_min = estimateAverageFlightTime();
@@ -189,7 +191,8 @@ void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
 }
 
 void UpdateErrorMain(Databuff *hitbuffer_sum){
-
+	UpdateErrorList(hitbuffer_sum);
+	/*
 	double num_hit_it=0;
 	double num_des_ad_it =0;
 
@@ -231,7 +234,7 @@ void UpdateErrorMain(Databuff *hitbuffer_sum){
 			simHistory->desorbedList.setLast(&f,getnbDesorbed(&f,hitbuffer_sum));
 		}
 	}
-
+	*/
 	simHistory->errorList_event.appendCurrent(simHistory->lastTime);
 	simHistory->errorList_covering.appendCurrent(simHistory->lastTime);
 	//simHistory->hitList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain

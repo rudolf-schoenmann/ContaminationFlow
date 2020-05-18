@@ -47,7 +47,7 @@ bool UpdateDesorption (){
 			f.sh.desorption = calcDesorption(&f); // TODO long double -> double here. Change f.sh.desorption to long double? bit need to adapt in Windows and new buffers
 			//f.sh.desorption is now a number of desorbed particles per time step!
 				if(f.sh.temperature==0) {continue;}
-				totaldes+= f.sh.desorption * boost::multiprecision::float128(sHandle->wp.latestMoment/ (1.38E-23*f.sh.temperature));
+				totaldes+= f.sh.desorption;
 		}
 	}
 
@@ -66,7 +66,8 @@ void UpdateSojourn(){
 }
 
 void UpdateErrorSub(){
-
+	UpdateErrorList(NULL);
+	/*
 	double num_hit_it=0;
 	double num_des_ad_it=0;
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) { //save current num total hits in currentList, add difference current-old to num_hit_it
@@ -107,7 +108,69 @@ void UpdateErrorSub(){
 			simHistory->desorbedList.setCurrent(&f,f.tmpCounter[0].hit.nbDesorbed);
 		}
 	}
+	*/
+}
 
+std::tuple<double,double,double> getErrorVariables(SubprocessFacet* f, Databuff *hitbuffer_sum){
+	if(hitbuffer_sum==NULL){
+		return std::make_tuple(f->tmpCounter[0].hit.nbHitEquiv, (double)f->tmpCounter[0].hit.nbDesorbed, f->tmpCounter[0].hit.nbAbsEquiv);
+	}
+	else{
+		return std::make_tuple(getHits(f,hitbuffer_sum),(double)getnbDesorbed(f, hitbuffer_sum),getnbAdsorbed(f,hitbuffer_sum));
+	}
+}
+
+void UpdateErrorList(Databuff *hitbuffer_sum){ // hitbuffer_sum==NULL: subprocess error, else: main error
+	double num_hit_it=0;
+	double num_des_ad_it=0;
+	double nbhits=0.0; double nbdes=0.0; double nbads=0.0;
+
+	double factor=hitbuffer_sum==NULL?pow(simHistory->numSubProcess,0.5):1.0; // To be consistent with the ignored facets for calculating the error after summation over all subprocesses, here the hitRationLimit must be reduced with the correction factor due to multiple subprocesses.
+
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) { //save current num total hits in currentList, add difference current-old to num_hit_it
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			std::tie(nbhits,nbdes,nbads)=getErrorVariables(&f, hitbuffer_sum);
+			num_hit_it+=f.sh.opacity * (nbhits + nbdes);
+			num_des_ad_it+=f.sh.opacity * (nbads+ nbdes);
+		}
+	}
+
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			std::tie(nbhits,nbdes,nbads)=getErrorVariables(&f, hitbuffer_sum);
+			double num_hit_f=f.sh.opacity * (nbhits + nbdes);
+			double num_des_ad_f=f.sh.opacity * (nbads+ nbdes);
+
+			//neglect events/covering change if very small compared to total hits
+			if(num_hit_f/num_hit_it<(p->hitRatioLimit)/factor){
+				num_hit_it-=num_hit_f;
+				num_hit_f=0;
+			}
+			if(num_des_ad_f/num_des_ad_it<(p->hitRatioLimit)/factor){
+				num_des_ad_it-=num_des_ad_f;
+				num_des_ad_f=0;
+			}
+
+			if(f.sh.opacity==0){
+				simHistory->errorList_event.setCurrent(&f, 0.0);
+				simHistory->errorList_covering.setCurrent(&f, 0.0);
+			}
+			else{
+				double error_event=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
+				double error_covering=pow((1/num_des_ad_f)*(1-num_des_ad_f/num_des_ad_it),0.5);
+				simHistory->errorList_event.setCurrent(&f, error_event);
+				simHistory->errorList_covering.setCurrent(&f, error_covering);
+			}
+			if(hitbuffer_sum==NULL){ // Sub process: set currentList values
+				simHistory->hitList.setCurrent(&f,nbhits);
+				simHistory->desorbedList.setCurrent(&f,nbdes);
+			}
+			else{ // Main process: set historyList values
+				simHistory->hitList.setLast(&f,nbhits);
+				simHistory->desorbedList.setLast(&f,nbdes);
+			}
+		}
+	}
 }
 
 double UpdateError(std::string mode){//calculates the averaged total error weighted with the facets area to decide, if the desired uncertainty level is reached

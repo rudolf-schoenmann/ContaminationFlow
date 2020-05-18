@@ -60,6 +60,9 @@ std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, i
 	bool eos=false;		// End of simulation flag
 	double totalError=1.;//Total error
 
+	int j_old=0;
+	bool j_print=false;
+
 	// Facets that have reached the covering threshold
 	std::vector<int> facetNum;
 	facetNum =std::vector<int> ();
@@ -91,32 +94,45 @@ std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, i
 
 		}
 		totalTime+=i;
+		j_old=j;
+		if(i/simutime>=2.0*simutime/1000.0){
+			//j+=int(i/simutime -1); // correct number of steps for significantly longer simulation MCSteps: for small sojourn time, sHandle->stepPerSec can be smaller than 1 => 1 MCStep can take significantly longer than 1 second
+			j=int((totalTime-simutime)/1000.0);
+		}
+
+		j_print=false;
+		for(; j_old<=j;j_old++){
+			if(j_old%(int)(30000/simutime)==0){
+				j_print=true;
+				break;
+			}
+		}
+
 		// Calculate error for this iteration step
 		totalError=UpdateError("covering");
 
-		if(j%(int)(30000/simutime)==0 || (simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))|| eos || j >= p->maxSimPerIt-1){
+		if(j_print || (simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))|| eos || j >= p->maxSimPerIt-1){
 			// Print current history lists every 30s or if target reached
 			std::ostringstream tmpstream (std::ostringstream::app);
-			tmpstream <<" Subprocess "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Desorbed particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
+			tmpstream <<" Subprocess "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Adsorbed particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
 			tmpstream << std::endl;
 
-			if(!checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5))){
-				tmpstream << "Facet" << std::setw(23)<<std::right<< " ";
-				int num;
-				for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-						for (SubprocessFacet& f : sHandle->structures[j].facets) {
-								num=getFacetIndex(&f);
-								tmpstream <<"\t"<< std::setw(12)<<std::right << num;
-						}
+			tmpstream << "Facet" << std::setw(23)<<std::right<< " ";
+			int num;
+			for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+				for (SubprocessFacet& f : sHandle->structures[j].facets) {
+						num=getFacetIndex(&f);
+						tmpstream <<"\t"<< std::setw(12)<<std::right << num;
 				}
-				tmpstream << std::endl;
-				simHistory->hitList.printCurrent(tmpstream, std::to_string(rank)+": hitlist");
-				simHistory->desorbedList.printCurrent(tmpstream, std::to_string(rank)+": desorbedlist");
-				simHistory->coveringList.printCurrent(tmpstream, std::to_string(rank)+": coveringlist");
-				//simHistory->errorList_event.printCurrent(tmpstream, std::to_string(rank)+": errorlist_event");
-				simHistory->errorList_covering.printCurrent(tmpstream, std::to_string(rank)+": errorlist_covering");
-				tmpstream <<std::endl;
 			}
+			tmpstream << std::endl;
+			simHistory->hitList.printCurrent(tmpstream, std::to_string(rank)+": hitlist");
+			simHistory->desorbedList.printCurrent(tmpstream, std::to_string(rank)+": desorbedlist");
+			simHistory->coveringList.printCurrent(tmpstream, std::to_string(rank)+": coveringlist");
+			//simHistory->errorList_event.printCurrent(tmpstream, std::to_string(rank)+": errorlist_event");
+			simHistory->errorList_covering.printCurrent(tmpstream, std::to_string(rank)+": errorlist_covering");
+			tmpstream <<std::endl;
+
 			printStream(tmpstream.str());
 		}
 	}
@@ -473,7 +489,7 @@ SimulationHistory::SimulationHistory(int world_size){
 	smallCoveringFactor=1;
 
 
-	normalFacets = std::vector<unsigned int>();
+	//normalFacets = std::vector<unsigned int>();
 
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
@@ -485,8 +501,8 @@ SimulationHistory::SimulationHistory(int world_size){
 					}
 				}
 			}
-			if(!f.sh.isVipFacet)
-				normalFacets.push_back(numFacet);
+			//if(!f.sh.isVipFacet)
+			//	normalFacets.push_back(numFacet);
 			numFacet+=1;
 		}
 	}
@@ -518,7 +534,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 	flightTime=0.0;
 	lastTime=0.0;
 
-	normalFacets = std::vector<unsigned int>();
+	//normalFacets = std::vector<unsigned int>();
 
 	double numHit;
 	llong numDes;
@@ -543,8 +559,8 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 					}
 				}
 			}
-			if(!f.sh.isVipFacet)
-				normalFacets.push_back(numFacet);
+			//if(!f.sh.isVipFacet)
+			//	normalFacets.push_back(numFacet);
 			numFacet+=1;
 		}
 	}
@@ -581,11 +597,11 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 	numSubProcess=world_size-1;
 	smallCoveringFactor=1;
 
-	std::cout<<"Normal facets: ";
-	for (unsigned int i =0; i< normalFacets.size(); i++){
-		std::cout <<"\t" << normalFacets[i];
-	}
-	std::cout <<std::endl;
+	//std::cout<<"Normal facets: ";
+	//for (unsigned int i =0; i< normalFacets.size(); i++){
+	//	std::cout <<"\t" << normalFacets[i];
+	//}
+	//std::cout <<std::endl;
 
 }
 

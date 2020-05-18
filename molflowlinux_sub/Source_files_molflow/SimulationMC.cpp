@@ -1733,7 +1733,7 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 			f->tmpCounter[m].hit.nbMCHit += hit;
 			double hitEquiv = static_cast<double>(hit)*sHandle->currentParticle.oriRatio;
 			f->tmpCounter[m].hit.nbHitEquiv += hitEquiv;
-			f->tmpCounter[m].hit.nbDesorbed += desorb;
+			f->tmpCounter[m].hit.nbDesorbed += true?desorb:0;
 			f->tmpCounter[m].hit.nbAbsEquiv += static_cast<double>(absorb)*sHandle->currentParticle.oriRatio;
 
 			if(time >= simHistory->stepSize*(1.0-p->counterWindowPercent) && time <= simHistory->stepSize){//only increase velocity counters if with a timewindow

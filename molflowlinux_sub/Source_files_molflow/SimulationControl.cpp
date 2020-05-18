@@ -658,7 +658,7 @@ std::pair<bool,double> SimulationRun(double time) {
 
 	// 1s step
 	double t0, t1;
-	int    nbStep = 1;
+	size_t    nbStep = 1;
 	bool   goOn;
 
 	if (sHandle->stepPerSec == 0.0) {
@@ -673,12 +673,12 @@ std::pair<bool,double> SimulationRun(double time) {
 
 	}
 	if (sHandle->stepPerSec != 0.0)
-		nbStep = (int)((time*(sHandle->stepPerSec)/1000.0 + 0.5));
+		nbStep = (size_t)((time*(sHandle->stepPerSec)/1000.0 + 0.5));
 	if (nbStep < 1) nbStep = 1;
 	t0 = GetTick();
 	switch (sHandle->wp.sMode) {
 	case MC_MODE:
-
+		//std::cout<<nbStep<<std::endl;
 		goOn = SimulationMCStep(nbStep);
 		break;
 	case AC_MODE:
@@ -688,6 +688,8 @@ std::pair<bool,double> SimulationRun(double time) {
 
 	t1 = GetTick();
 	sHandle->stepPerSec =1000.0* (double)(nbStep) / (t1 - t0);
+	//std::cout<<sHandle->stepPerSec<<std::endl;
+	//std::cout<<t1-t0<<std::endl;
 #ifdef _DEBUG
 	printf("Running: stepPerSec = %f\n", sHandle->stepPerSec);
 #endif

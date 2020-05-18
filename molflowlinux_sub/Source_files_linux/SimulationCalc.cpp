@@ -146,10 +146,10 @@ boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum){ // C
 	llong nbDesorbed = getnbDesorbed(hitbuffer_sum);
 	if (nbDesorbed == 0) return 0; //avoid division by 0
 
-	boost::multiprecision::float128 desrate=calctotalDesorption();
+	boost::multiprecision::float128 des=calctotalDesorption();
 	CalcTotalOutgassingWorker();
 
-	return (boost::multiprecision::float128(sHandle->wp.totalOutgassingParticles) +desrate) / (boost::multiprecision::float128(nbDesorbed)/boost::multiprecision::float128(simHistory->smallCoveringFactor));
+	return (boost::multiprecision::float128(sHandle->wp.totalOutgassingParticles) +des) / (boost::multiprecision::float128(nbDesorbed)/boost::multiprecision::float128(simHistory->smallCoveringFactor));
 	}
 
 
