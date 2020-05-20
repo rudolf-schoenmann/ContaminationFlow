@@ -244,6 +244,7 @@ ProblemDef::ProblemDef(){
 	desWindowPercent=1.0;
 
 	rollingWindowSize=10;
+	convergenceTarget=0.1;
 
 	coveringMinThresh=1000000;
 
@@ -331,6 +332,7 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn =="counterWindowPercent"){is >>doubleIn; doubleIn=doubleIn<1.0?doubleIn:1.0; counterWindowPercent=doubleIn>0.0?doubleIn:0.0;}
 		else if(stringIn =="desWindowPercent"){is >>doubleIn; doubleIn=doubleIn<1.0?doubleIn:1.0; desWindowPercent=doubleIn>0.0?doubleIn:0.0; }
 		else if(stringIn == "outgassingTimeWindow"){is >>doubleIn; outgassingTimeWindow=doubleIn>0.0?doubleIn:0.0; }
+		else if(stringIn == "convergenceTarget"){is >>doubleIn; convergenceTarget=doubleIn>0.0?doubleIn:0.0; }
 
 		else if(stringIn =="rollingWindowSize"){is >> intIn; rollingWindowSize=intIn>1?intIn:1;}
 
@@ -418,6 +420,7 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 	out <<"outgassingTimeWindow" <<"\t" <<outgassingTimeWindow <<std::endl;
 
 	out <<"rollingWindowSize" <<"\t" <<rollingWindowSize <<std::endl;
+	out <<"convergenceTarget" <<"\t" <<convergenceTarget <<std::endl;
 
 
 	if(!vipFacets.empty()){

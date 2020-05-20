@@ -218,14 +218,14 @@ double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f){
 		}
 
 
-		double scaleY = 1.0 / (f->sh.area * 1E-4); //1E4 is conversion from m2 to cm2
+		double scaleY = 1.0 / (f->getArea() * 1E-4); //1E4 is conversion from m2 to cm2
 		double scaleTime=1.0/(p->counterWindowPercent * simHistory->stepSize);
 		return scaleTime * scaleY * densityCorrection * GetMoleculesPerTP(hitbuffer_sum).convert_to<double>() * f->tmpCounter[0].hit.sum_1_per_ort_velocity;
 	}
 }
 
 double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f){//calculates Pressure of facet. Output value's unit is mbar.
-	double scaleY = 1.0 / (f->sh.area  * 1E-4)* sHandle->wp.gasMass / 1000 / 6E23 * 0.0100; //0.01: Pa->mbar;  //1E4 is conversion from m2 to cm2, 0.01: Pa->mbar
+	double scaleY = 1.0 / (f->getArea()  * 1E-4)* sHandle->wp.gasMass / 1000 / 6E23 * 0.0100; //0.01: Pa->mbar;  //1E4 is conversion from m2 to cm2, 0.01: Pa->mbar
 	double scaleTime=1.0/(p->counterWindowPercent * simHistory->stepSize);
 	return scaleTime * scaleY * GetMoleculesPerTP(hitbuffer_sum).convert_to<double>() * f->tmpCounter[0].hit.sum_v_ort ;
 }

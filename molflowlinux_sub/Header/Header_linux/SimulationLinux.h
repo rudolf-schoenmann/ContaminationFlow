@@ -141,6 +141,25 @@ public:
 		}
 	}
 
+	boost::multiprecision::float128 getAverageStatistics(Simulation *sHandle,bool opacityCheck){
+		double totalArea=0.0;
+		bool meanZero=true;
+		boost::multiprecision::float128 totalStatistics= boost::multiprecision::float128(0);
+		for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+				double idx=getFacetIndex(&f);
+				if( (opacityCheck && f.sh.opacity!=0.0) || !opacityCheck){
+					totalArea+=f.sh.area;
+					totalStatistics+=boost::multiprecision::float128(f.sh.area)*statisticsList[idx].second/statisticsList[idx].first;
+					if(statisticsList[idx].first!= boost::multiprecision::float128(0)){
+						meanZero=false;
+					}
+				}
+			}
+		}
+		return meanZero? std::numeric_limits<boost::multiprecision::float128>::infinity():totalStatistics/boost::multiprecision::float128(totalArea);
+	}
+
 	std::string convertTime(double time){
 		bool empty=true;
 		std::string final="";
@@ -389,6 +408,7 @@ public:
 	double desWindowPercent; // [%]
 
 	int rollingWindowSize;
+	double convergenceTarget;
 
 	std::vector< std::pair<int,double> > vipFacets;
 

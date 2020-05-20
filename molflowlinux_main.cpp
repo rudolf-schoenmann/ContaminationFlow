@@ -203,6 +203,7 @@ int main(int argc, char *argv[]) {
 
 //----Simulation
 	int it = 0;
+	double currentRatio=0.0;
 	while(true){
 		it++;
 		// Start of Simulation
@@ -348,7 +349,9 @@ int main(int argc, char *argv[]) {
 				simHistory->coveringList.print(p->outFile,"Accumulative covering after iteration "+std::to_string(it),p->histSize,true);
 
 				simHistory->coveringList.updateStatistics(p->rollingWindowSize);
-				simHistory->coveringList.printStatistics(p->outFile, "Rolling time window statistics over last "+std::to_string(p->rollingWindowSize)+" iterations", true);
+
+				currentRatio=double(simHistory->coveringList.getAverageStatistics(sHandle,true));
+				simHistory->coveringList.printStatistics(p->outFile, "Rolling time window statistics over last "+std::to_string(p->rollingWindowSize)+" iterations. Mean ratio std/mean = "+std::to_string(currentRatio)+" with target ratio for convergence "+std::to_string(p->convergenceTarget), true);
 			}
 
 			if (rank == 0) {std::cout << "ending iteration " << it <<std::endl;}
@@ -356,10 +359,19 @@ int main(int argc, char *argv[]) {
 			// Check if maximum simulation time is reached
 			MPI_Barrier(MPI_COMM_WORLD);
 			MPI_Bcast(&simHistory->lastTime, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
+			MPI_Bcast(&currentRatio, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
 			if((int)(simHistory->lastTime+0.5) >= p->maxTimeS){
 				if(rank==0) {
 					std::ostringstream tmpstream (std::ostringstream::app);
 					tmpstream <<"Maximum simulation time reached: " <<simHistory->lastTime  <<" >= " <<p->maxTimeS <<std::endl;
+					tmpstream <<"Computation Time (Simulation only): " <<computationTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computationTime/1000.0) <<std::endl;
+					printStream(tmpstream.str());
+				}
+				break;
+			} else if (currentRatio<=p->convergenceTarget){
+				if(rank==0) {
+					std::ostringstream tmpstream (std::ostringstream::app);
+					tmpstream <<"Average ratio std/mean target reached: " <<currentRatio <<" <= "<<p->convergenceTarget <<std::endl;
 					tmpstream <<"Computation Time (Simulation only): " <<computationTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computationTime/1000.0) <<std::endl;
 					printStream(tmpstream.str());
 				}

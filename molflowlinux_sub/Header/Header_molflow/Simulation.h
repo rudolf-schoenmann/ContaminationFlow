@@ -114,6 +114,8 @@ public:
 	bool InitializeLinkAndVolatile(const size_t & id);
 
 	void RegisterTransparentPass(); //Allows one shared Intersect routine between MolFlow and Synrad
+
+	double getArea(){return sh.area*(sh.is2sided ? 2.0 : 1.0);}
 };
 
 // Local simulation structure

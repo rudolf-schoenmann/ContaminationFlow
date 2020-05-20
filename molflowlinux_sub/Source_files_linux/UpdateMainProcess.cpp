@@ -177,13 +177,13 @@ void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
 	buffer = hitbuffer->buff;
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-			for (SubprocessFacet& f : sHandle->structures[j].facets) {
-				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
-				FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
-				covering_phys = simHistory->coveringList.getLast(&f);
-				facetHitBuffer->hit.covering=covering_phys.convert_to<llong>();
-				facetHitSum->hit.covering=covering_phys.convert_to<llong>();
-			}
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
+			FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
+			covering_phys = simHistory->coveringList.getLast(&f);
+			facetHitBuffer->hit.covering=covering_phys.convert_to<llong>();
+			facetHitSum->hit.covering=covering_phys.convert_to<llong>();
+		}
 	}
 
 	simHistory->flightTime=0.0;
