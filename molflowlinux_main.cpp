@@ -371,11 +371,15 @@ int main(int argc, char *argv[]) {
 			} else if (currentRatio<=p->convergenceTarget){
 				if(rank==0) {
 					std::ostringstream tmpstream (std::ostringstream::app);
-					tmpstream <<"Average ratio std/mean target reached: " <<currentRatio <<" <= "<<p->convergenceTarget <<std::endl;
-					tmpstream <<"Computation Time (Simulation only): " <<computationTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computationTime/1000.0) <<std::endl;
+					tmpstream <<"Simulation converged. Average ratio std/mean target reached: " <<currentRatio <<" <= "<<p->convergenceTarget <<std::endl;
+					if(p->stopConverged)
+						tmpstream <<"Computation Time (Simulation only): " <<computationTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computationTime/1000.0) <<std::endl;
+					else
+						tmpstream <<"Continue Simulation."<<std::endl;
 					printStream(tmpstream.str());
 				}
-				break;
+				if(p->stopConverged)
+					break;
 			}
 
 		} else {

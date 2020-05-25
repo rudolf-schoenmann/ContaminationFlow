@@ -87,6 +87,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 
 	// Print total error and error per facet of this iteration
 	std::ostringstream tmpstream (std::ostringstream::app);
+	tmpstream <<"Target Error (covering only) "<<p->targetError <<std::endl <<std::endl;
 	tmpstream <<"Total Error (event) averaged over facets "<<total_error_event <<std::endl;
 	simHistory->errorList_event.printCurrent(tmpstream);
 	tmpstream << std::endl<<"Total Error (covering) averaged over facets "<<total_error_covering<<std::endl;

@@ -120,10 +120,12 @@ public:
 
 		for(uint j=0; j<statisticsList.size();j++){
 			if(historyList.first.size()<rollingWindowSize+offset){ //Not enough samples for rolling window
+				// mean and std = 0
 				statisticsList[j].first=static_cast<boost::multiprecision::float128>(0);
 				statisticsList[j].second=static_cast<boost::multiprecision::float128>(0);
 			}
 			else if(rollingWindowSize==1){
+				// mean current value, std 0
 				statisticsList[j].first =static_cast<boost::multiprecision::float128>(historyList.second[j].back());
 				statisticsList[j].second=static_cast<boost::multiprecision::float128>(0);
 			}
@@ -148,8 +150,9 @@ public:
 		for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				double idx=getFacetIndex(&f);
-				if( (opacityCheck && f.sh.opacity!=0.0) || !opacityCheck){
+				if( (opacityCheck && f.sh.opacity!=0.0) || !opacityCheck){ // If opacity has to be checked (e.g. for covering): only consider facet if opacity is larger than 0
 					totalArea+=f.sh.area;
+					// area * std/mean
 					totalStatistics+=boost::multiprecision::float128(f.sh.area)*statisticsList[idx].second/statisticsList[idx].first;
 					if(statisticsList[idx].first!= boost::multiprecision::float128(0)){
 						meanZero=false;
@@ -157,6 +160,7 @@ public:
 				}
 			}
 		}
+		// if mean is zero: return inf, otherwise return totalStatistics/totalArea
 		return meanZero? std::numeric_limits<boost::multiprecision::float128>::infinity():totalStatistics/boost::multiprecision::float128(totalArea);
 	}
 
@@ -388,7 +392,7 @@ public:
 	double sticking;
 
 	double H_vap;
-	double W_tr;
+	//double W_tr;
 
 	int targetParticles;
 	double targetError;
@@ -397,7 +401,7 @@ public:
 	double t_min; // [s]
 
 	double t_max; // [s]
-	int maxSimPerIt;
+	int maxTimePerIt;
 
 	llong coveringMinThresh;
 
@@ -409,6 +413,7 @@ public:
 
 	int rollingWindowSize;
 	double convergenceTarget;
+	bool stopConverged;
 
 	std::vector< std::pair<int,double> > vipFacets;
 

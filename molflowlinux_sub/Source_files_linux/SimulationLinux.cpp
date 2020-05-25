@@ -77,7 +77,7 @@ std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, i
 
 	// Run Simulation for timestep milliseconds
 	// Termination condition: maximum number of iteration reached or target error & number of desorbed particles reached or maximum desoption/covering threshold reached
-	for(int j=0; j<p->maxSimPerIt && !(j>0 && simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))&& !eos; j++){
+	for(int j=0; totalTime<p->maxTimePerIt*1000.0 && !(j>0 && simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))&& !eos; j++){
 		for(i=0; i<(double)(simutime) && !eos;i+=realtimestep){
 			// Until simutime is reached, do simulation
 			if(i>=(double(simutime)*0.99)){break;}
@@ -111,7 +111,7 @@ std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, i
 		// Calculate error for this iteration step
 		totalError=UpdateError("covering");
 
-		if(j_print || (simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))|| eos || j >= p->maxSimPerIt-1){
+		if(j_print || (simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))|| eos || totalTime >= p->maxTimePerIt*1000.0){
 			// Print current history lists every 30s or if target reached
 			std::ostringstream tmpstream (std::ostringstream::app);
 			tmpstream <<" Subprocess "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Adsorbed particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
@@ -217,7 +217,7 @@ ProblemDef::ProblemDef(){
 	particleDia=carbondiameter;
 	E_de=1E-21;
 	H_vap=0.8E-19;
-	W_tr=1.0;
+	//W_tr=1.0;
 	sticking=0.0;
 
 	maxTime=10.0;
@@ -236,7 +236,7 @@ ProblemDef::ProblemDef(){
 	t_min=1E-4;
 
 	t_max=std::numeric_limits<double>::max();
-	maxSimPerIt=std::numeric_limits<int>::max();
+	maxTimePerIt=std::numeric_limits<int>::max();
 	histSize=std::numeric_limits<int>::max();
 
 	outgassingTimeWindow=0.0;
@@ -245,6 +245,7 @@ ProblemDef::ProblemDef(){
 
 	rollingWindowSize=10;
 	convergenceTarget=0.1;
+	stopConverged=true;
 
 	coveringMinThresh=1000000;
 
@@ -295,13 +296,15 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 	std::string line;
 	std::ifstream input(filename,std::ifstream::in);
 
-	while(std::getline(input,line)){
-		std::string stringIn;
-		double doubleIn;
-		int intIn;
-		llong llongIn;
-		std::istringstream is( line );
+	std::string stringIn;
+	double doubleIn;
+	int intIn;
+	llong llongIn;
 
+	while(std::getline(input,line)){
+		if(line.front()=='#'){continue;} //skip if line starts with #
+
+		std::istringstream is( line );
 		is >> stringIn;
 
 		if(stringIn == "loadbufferPath") {is >> stringIn; loadbufferPath=stringIn;}
@@ -316,7 +319,7 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn =="particleDia"){is >> doubleIn; particleDia=doubleIn>0.0?doubleIn:0.0;}
 		else if(stringIn =="E_de"){is >> doubleIn; E_de=doubleIn>0.0?doubleIn:0.0;}
 		else if(stringIn =="H_vap"){is >> doubleIn; H_vap=doubleIn>0.0?doubleIn:0.0;}
-		else if(stringIn =="W_tr"){is >> doubleIn; W_tr=doubleIn>0.0?doubleIn:0.0;}
+		//else if(stringIn =="W_tr"){is >> doubleIn; W_tr=doubleIn>0.0?doubleIn:0.0;}
 		else if(stringIn =="sticking"){is >> doubleIn; sticking=doubleIn>0.0?doubleIn:0.0;}
 
 		else if(stringIn =="targetParticles"){is >> intIn; targetParticles=intIn>0?intIn:0;}
@@ -327,14 +330,16 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 
 		else if(stringIn == "coveringMinThresh") {is >>llongIn; coveringMinThresh = llongIn;}
 
-		else if(stringIn =="maxSimPerIt"){is >> intIn; maxSimPerIt=intIn>1?intIn:1;}
+		else if(stringIn =="maxTimePerIt"){is >> intIn; maxTimePerIt=intIn>1?intIn:1;}
 		else if(stringIn =="histSize"){is >> intIn; histSize=intIn>1?intIn:1;}
 		else if(stringIn =="counterWindowPercent"){is >>doubleIn; doubleIn=doubleIn<1.0?doubleIn:1.0; counterWindowPercent=doubleIn>0.0?doubleIn:0.0;}
 		else if(stringIn =="desWindowPercent"){is >>doubleIn; doubleIn=doubleIn<1.0?doubleIn:1.0; desWindowPercent=doubleIn>0.0?doubleIn:0.0; }
 		else if(stringIn == "outgassingTimeWindow"){is >>doubleIn; outgassingTimeWindow=doubleIn>0.0?doubleIn:0.0; }
 		else if(stringIn == "convergenceTarget"){is >>doubleIn; convergenceTarget=doubleIn>0.0?doubleIn:0.0; }
+		else if(stringIn =="stopConverged"){is >> intIn; stopConverged=intIn==0?false:true;}
 
 		else if(stringIn =="rollingWindowSize"){is >> intIn; rollingWindowSize=intIn>1?intIn:1;}
+
 
 		else if(stringIn=="vipFacets"){
 			int vipf = 0; double vipe=0.0;
@@ -402,7 +407,7 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 	out <<"particleDia" <<'\t' <<particleDia<<std::endl;
 	out  <<"E_de" <<'\t' <<E_de<<std::endl;
 	out <<"H_vap" <<'\t' <<H_vap <<std::endl;
-	out <<"W_tr" <<'\t' <<W_tr <<std::endl;
+	//out <<"W_tr" <<'\t' <<W_tr <<std::endl;
 
 	out <<"targetError" <<'\t' <<targetError <<std::endl;
 	out <<"targetParticles" <<'\t' <<targetParticles <<std::endl;
@@ -410,7 +415,7 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 	out <<"t_min" <<'\t' <<t_min <<std::endl;
 
 	out <<"t_max" <<"\t" <<t_max<<std::endl;
-	out <<"maxSimPerIt" <<"\t" <<maxSimPerIt<<std::endl;
+	out <<"maxTimePerIt" <<"\t" <<maxTimePerIt<<std::endl;
 
 	out <<"coveringMinThresh" <<"\t" <<coveringMinThresh <<std::endl;
 
@@ -421,6 +426,7 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 
 	out <<"rollingWindowSize" <<"\t" <<rollingWindowSize <<std::endl;
 	out <<"convergenceTarget" <<"\t" <<convergenceTarget <<std::endl;
+	out <<"stopConverged" <<"\t" <<(stopConverged?1:0) <<std::endl;
 
 
 	if(!vipFacets.empty()){
@@ -752,7 +758,7 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 
 
 	// Run Simulation for timestep milliseconds
-	for(int j=0; j<p->maxSimPerIt && !(j>0 && simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))&& !eos; j++){
+	for(int j=0; j<p->maxTimePerIt && !(j>0 && simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))&& !eos; j++){
 
 		for(i=0; i<(double)(simutime) && !eos;i+=realtimestep){
 
