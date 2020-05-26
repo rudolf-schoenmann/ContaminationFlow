@@ -40,7 +40,7 @@ static const char *day[]={"day","Day","days","Days","d","D"};
 static const char *hour[]={"hour","Hour","hours","Hours","h","H","hr","Hr"};
 static const char *min[]={"Minutes","minutes","Minute","minute","min","Min","m","M"};
 
-const double carbondiameter = 2 *76E-12;
+const double diameterH2O = 2.76E-10;
 const double kb = 1.38E-23;
 //const double tau = 1E-13;
 const double h= 6.626E-34;

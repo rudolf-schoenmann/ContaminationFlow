@@ -214,8 +214,8 @@ ProblemDef::ProblemDef(){
 	hitbufferPath="/home/van/Buffer/hitbuffer_allee-6";
 
 	iterationNumber = 43200;
-	particleDia=carbondiameter;
-	E_de=1E-21;
+	particleDia=diameterH2O;
+	E_de=1.6E-19;
 	H_vap=0.8E-19;
 	//W_tr=1.0;
 	sticking=0.0;
