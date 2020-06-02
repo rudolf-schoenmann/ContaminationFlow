@@ -5,13 +5,13 @@
 %Here comes structure Molflow Linux Molflow Windows, Communication.
 
 \begin{center}
-\begin{tikzpicture}[node distance=2cm]
+\begin{tikzpicture}[node distance=2cm, font=\scriptsize]
 %\draw [help lines] (0,0) grid (4,4);
 	\node (Windows)[textbox, rectangle split, rectangle split parts=2] at (0,4)
 	{
 		\textbf{ContaminationFlow Windows}
 		\nodepart{second}
-			\begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item GUI \item Create Geometry \item Set parameters \item View profiles \end{itemize}
+			\begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item GUI \item Create Geometry \item Set parameters (temperature, outgassing, etc.) \item Set initial covering \item View profiles \end{itemize}
 	};
 
 	\node (Loadbuffer)[textboxsmall, rectangle split, rectangle split parts=2] at (5.5,4)
@@ -28,9 +28,9 @@
 
 	\node (Linux)[textbox, rectangle split, rectangle split parts=2] at (11,4)
 	{
-		\textbf{ContaminationFlow Linux}
+		\textbf{ContaminationFlow\\Linux}
 		\nodepart{second}
-			\begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Command line \item Parallel simulation \item Update of hitbuffer \end{itemize}	
+			\begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Command line \item Parallel simulation \item Monitor covering, statistical error, particle density, pressure per iteration \item Update of hitbuffer \end{itemize}	
 	};
 
 	%\draw[->, line width=0.04cm] (2.15,3.2) -- (3.85,3.2);

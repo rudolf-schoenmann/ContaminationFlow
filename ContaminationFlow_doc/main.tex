@@ -13,10 +13,11 @@
     {\vspace*{\baselineskip}}% Originalwert 2.3\baselineskip
 \usepackage{xcolor}
 \definecolor{light-gray}{gray}{0.95}
-\newcommand{\codew}[1]{\colorbox{light-gray}{\texttt{#1}}}
+\newcommand{\newsize}[0]{\fontsize{10pt}{12pt}\selectfont}
+\newcommand{\codew}[1]{\colorbox{light-gray}{\texttt{\newsize#1}}}
 \usepackage{tcolorbox}
 \tcbuselibrary{breakable}
-\newcommand{\code}[1]{\texttt{\begin{tcolorbox}[breakable,colframe=light-gray,arc=0pt,outer arc=0pt]#1\end{tcolorbox}}}
+\newcommand{\code}[1]{\texttt{\begin{tcolorbox}[breakable,colframe=light-gray,arc=0pt,outer arc=0pt]\newsize#1\end{tcolorbox}}}
 
 \usepackage{hyperref}
 \usepackage{pbox}
