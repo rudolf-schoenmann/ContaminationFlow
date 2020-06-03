@@ -29,7 +29,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "SimulationLinux.h"
 
 
-typedef void *HANDLE;
+//typedef void *HANDLE;
 
 // Global process variables
 Simulation* sHandle; //Global handle to simulation, one per subprocess
@@ -51,14 +51,14 @@ bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 		std::cout <<std::endl;
 		if (argc < 5 || argc > 6) { //Check correct number of arguments
 			if(rank==0){
-				std::cout << "MolflowLinux requires 4 mandatory arguments and 1 optional argument."<< std::endl;
-				std::cout << "Please pass these arguments to MolflowLinux:"<< std::endl;
+				std::cout << "ContaminationFlowLinux requires 4 mandatory arguments and 1 optional argument."<< std::endl;
+				std::cout << "Please pass these arguments to ContaminationFlowLinux:"<< std::endl;
 				std::cout << "1. Name of load-buffer file to read in (e.g. loadbuffer)."<< std::endl;
 				std::cout << "2. Name of hit-buffer file to read in (e.g. hitbuffer)."<< std::endl;
 				std::cout << "3. Save results: 0=false, 1=true."<< std::endl;
 				std::cout << "4. The total simulation time (e.g 2.5)." << std::endl;
 				std::cout << "5. [OPTIONAL] Simulation time unit (e.g. seconds, minutes, hours, days). Default set to seconds." << std::endl;
-				std::cout << "MolflowLinux is terminated now." << std::endl;
+				std::cout << "ContaminationFlowLinux is terminated now." << std::endl;
 			}
 		}
 		else{ //Read input arguments
@@ -115,20 +115,24 @@ int main(int argc, char *argv[]) {
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	if(world_size<=1){
 		if (rank == 0){
-			std::cout <<"Minimum number of 2 processes needed. Currently "<<world_size <<std::endl;
+			std::ostringstream tmpstream (std::ostringstream::app);
+			tmpstream <<"Minimum number of 2 processes needed. Currently "<<world_size <<std::endl;
+			printStream(tmpstream.str());
 		}
 		MPI_Finalize();
 		return 0;
 	}
 
-//---- Initialize ProblemDef that defines relevant simulation parameters for MolflowLinux
+//---- Initialize ProblemDef that defines relevant simulation parameters for ContaminationFlowLinux
 	p = new ProblemDef();
 	// Check parameters (defined by command line arguments or input file) to be written to ProblemDef p
 	if (!parametercheck(argc, argv,p,rank)) {
 		if (rank == 0){
-			std::cout <<"Required parameters cannot be read." <<std::endl;
-			std::cout <<"Check command line arguments and/or parameters in input file." <<std::endl;
-			std::cout <<"Ending Simulation." <<std::endl;
+			std::ostringstream tmpstream (std::ostringstream::app);
+			tmpstream <<"Required parameters cannot be read." <<std::endl;
+			tmpstream <<"Check command line arguments and/or parameters in input file." <<std::endl;
+			tmpstream <<"Ending Simulation." <<std::endl;
+			printStream(tmpstream.str());
 		}
 
 		MPI_Finalize();
@@ -136,7 +140,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (rank == 0) {
-		p->printInputfile(p->outFile);
+		std::ostringstream tmpstream (std::ostringstream::app);
+		p->printInputfile(tmpstream);
+		printStream(tmpstream.str(),false);
 
 		//Read in buffer file (exported by Windows-Molflow). File given as first argument to main().
 		importBuff(p->loadbufferPath,&loadbuffer);
@@ -173,11 +179,26 @@ int main(int argc, char *argv[]) {
 		InitSimulation();
 		// Load geometry from buffer to sHandle
 		if (!LoadSimulation(&loadbuffer)) {
-			std::cout << "Geometry not loaded." << std::endl;
-			std::cout << "MolflowLinux is terminated now." << std::endl;
+			if(rank==0){
+				std::ostringstream tmpstream (std::ostringstream::app);
+				tmpstream << "Geometry not loaded." << std::endl;
+				tmpstream << "ContaminationFlowLinux is terminated now." << std::endl;
+				printStream(tmpstream.str());
+			}
 			MPI_Finalize();
 			return 0;
 		}
+		if(sHandle->moments.size()){
+			if(rank==0){
+				std::ostringstream tmpstream (std::ostringstream::app);
+				tmpstream << "Number of moments "<<sHandle->moments.size() <<" > 0. ContaminationFlowLinux only implemented for 0 moments."<< std::endl;
+				tmpstream << "ContaminationFlowLinux is terminated now." << std::endl;
+				printStream(tmpstream.str());
+			}
+			MPI_Finalize();
+			return 0;
+		}
+
 		initCoveringThresh();
 		UpdateSojourn();
 
@@ -208,7 +229,6 @@ int main(int argc, char *argv[]) {
 		it++;
 		// Start of Simulation
 		if (p->simulationTimeMS != 0) {
-			usleep(100);
 			MPI_Barrier(MPI_COMM_WORLD);
 
 			if(rank == 0){
@@ -270,19 +290,21 @@ int main(int argc, char *argv[]) {
 				//Do the simulation
 				bool eos; std::vector<int> facetNum;
 				std::tie(eos, facetNum) = simulateSub2(&hitbuffer, rank, p->simulationTimeMS);
-
+				//p->outFile<<testString;
 				std::ostringstream tmpstream (std::ostringstream::app);
 				if (eos) {
+					tmpstream << "Iteration ended early. "<<std::endl;
 					if(sHandle->posCovering)
-						{tmpstream << "Maximum desorption reached." << std::endl;}
+						{tmpstream << "Maximum desorption reached for process "<<rank << "."<< std::endl;}
 					else{
 						for (uint facets=0; facets < facetNum.size(); facets++){
-							tmpstream <<"Facet " <<facetNum[facets] <<" reached threshold " <<sHandle->coveringThreshold[facetNum[facets]] <<" for process " <<rank <<std::endl;
+							tmpstream <<"Facet " <<facetNum[facets] <<" reached threshold " <<sHandle->coveringThreshold[facetNum[facets]] <<" for process " <<rank <<"."<<std::endl;
 						}
 					}
 				} else {
 					tmpstream << "Simulation for process " << rank << " for iteration " << it << " finished."<< std::endl;
 				}
+				tmpstream <<std::endl;
 				printStream(tmpstream.str());
 				MPI_Barrier(MPI_COMM_WORLD);
 			}
@@ -346,24 +368,26 @@ int main(int argc, char *argv[]) {
 						simHistory->erase(1);
 				}
 				// print current coveringList
-				simHistory->coveringList.print(p->outFile,"Accumulative covering after iteration "+std::to_string(it),p->histSize,true);
+				std::ostringstream tmpstream (std::ostringstream::app);
+				simHistory->coveringList.print(tmpstream,"Accumulative covering after iteration "+std::to_string(it),p->histSize);
 
 				simHistory->coveringList.updateStatistics(p->rollingWindowSize);
 
 				currentRatio=double(simHistory->coveringList.getAverageStatistics(sHandle,true));
-				simHistory->coveringList.printStatistics(p->outFile, "Rolling time window statistics over last "+std::to_string(p->rollingWindowSize)+" iterations. Mean ratio std/mean = "+std::to_string(currentRatio)+" with target ratio for convergence "+std::to_string(p->convergenceTarget), true);
+				simHistory->coveringList.printStatistics(tmpstream, "Rolling time window statistics over last "+std::to_string(p->rollingWindowSize)+" iterations. Mean ratio std/mean = "+std::to_string(currentRatio)+" with target ratio for convergence "+std::to_string(p->convergenceTarget));
+				printStream(tmpstream.str());
 			}
 
 			if (rank == 0) {std::cout << "ending iteration " << it <<std::endl;}
 
-			// Check if maximum simulation time is reached
+			// Check if maximum simulated time is reached
 			MPI_Barrier(MPI_COMM_WORLD);
 			MPI_Bcast(&simHistory->lastTime, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
 			MPI_Bcast(&currentRatio, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
 			if((int)(simHistory->lastTime+0.5) >= p->maxTimeS){
 				if(rank==0) {
 					std::ostringstream tmpstream (std::ostringstream::app);
-					tmpstream <<"Maximum simulation time reached: " <<simHistory->lastTime  <<" >= " <<p->maxTimeS <<std::endl;
+					tmpstream <<"Maximum simulated time reached: " <<simHistory->lastTime  <<" >= " <<p->maxTimeS <<std::endl;
 					tmpstream <<"Computation Time (Simulation only): " <<computationTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computationTime/1000.0) <<std::endl;
 					printStream(tmpstream.str());
 				}
@@ -372,13 +396,13 @@ int main(int argc, char *argv[]) {
 				if(rank==0) {
 					std::ostringstream tmpstream (std::ostringstream::app);
 					tmpstream <<"Simulation converged. Average ratio std/mean target reached: " <<currentRatio <<" <= "<<p->convergenceTarget <<std::endl;
-					if(p->stopConverged)
+					if(p->stopConverged && simHistory->lastTime>=p->convergenceTime)
 						tmpstream <<"Computation Time (Simulation only): " <<computationTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computationTime/1000.0) <<std::endl;
 					else
 						tmpstream <<"Continue Simulation."<<std::endl;
 					printStream(tmpstream.str());
 				}
-				if(p->stopConverged)
+				if(p->stopConverged && simHistory->lastTime>=p->convergenceTime)
 					break;
 			}
 

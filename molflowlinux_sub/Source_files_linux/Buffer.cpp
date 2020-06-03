@@ -25,6 +25,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <iostream>     // std::ios, std::istream, std::cout
 #include <fstream>      // std::filebuf
 #include "Buffer.h"
+#include "SimulationLinux.h"
 #include <cstring>		//std::memcpy
 
 
@@ -36,7 +37,9 @@ bool checkReadable(std::string fileName){
 	{
 		return true;
 	}
-	std::cout <<fileName <<" not readable" <<std::endl;
+	std::ostringstream tmpstream (std::ostringstream::app);
+	tmpstream <<fileName <<" not readable" <<std::endl;
+	printStream(tmpstream.str());
 	return false;
 
 }
@@ -47,7 +50,9 @@ bool checkWriteable(std::string fileName){
 	{
 		return true;
 	}
-	std::cout <<fileName <<" not writable" <<std::endl;
+	std::ostringstream tmpstream (std::ostringstream::app);
+	tmpstream <<fileName <<" not writable" <<std::endl;
+	printStream(tmpstream.str());
 	return false;
 
 }

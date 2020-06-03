@@ -194,7 +194,7 @@ public:
 
 		return final;
 	}
-	void print(std::ostream& outstream, std::string msg= "", int histSize = std::numeric_limits<int>::infinity(), bool printToConsole=false, bool printToStream=true){
+	void print(std::ostream& outstream, std::string msg= "", int histSize = std::numeric_limits<int>::infinity()){
 		std::ostringstream out (std::ostringstream::app);
 		uint offset_table=0;
 		if(histSize != std::numeric_limits<int>::infinity() && currIt > histSize+1){
@@ -227,11 +227,10 @@ public:
 
 		}
 		out<<std::endl<<std::endl;
-		if(printToStream) outstream <<out.str();
-		if(printToConsole) std::cout <<out.str();
+		outstream <<out.str();
 	}
 
-	void print(std::ostream& outstream, std::vector<T> totalvec, std::string msg= "", int histSize = std::numeric_limits<int>::infinity(), bool printToConsole=false, bool printToStream=true){
+	void print(std::ostream& outstream, std::vector<T> totalvec, std::string msg= "", int histSize = std::numeric_limits<int>::infinity()){
 		std::ostringstream out (std::ostringstream::app);
 
 		uint offset_table=0;
@@ -250,7 +249,7 @@ public:
 					out <<"\t" <<std::setw(6)<<std::right <<"Facet-" <<std::setw(6)<<std::setfill('-')<<std::right <<j;
 					}
 
-				out <<"\t" <<std::setw(14)<<std::setfill(' ')<<std::right<<"Total";
+				out <<"\t" <<std::setw(20)<<std::setfill(' ')<<std::right<<"Total";
 			}
 			out<<std::endl;
 
@@ -262,15 +261,14 @@ public:
 			{
 				out <<"\t" <<std::setw(12)<<std::right <<boost::multiprecision::float128(historyList.second[j][i]);
 			}
-			out<<"\t"<<std::setw(14)<<std::right<<totalvec[i];
+			out<<"\t"<<std::setw(20)<<std::right<<totalvec[i];
 
 		}
 		out<<std::endl<<std::endl;
-		if(printToStream)outstream <<out.str();
-		if(printToConsole) std::cout <<out.str();
+		outstream <<out.str();
 	}
 
-	void printCurrent(std::ostream& outstream, std::string msg= "", bool printToConsole=false, bool printToStream=true){
+	void printCurrent(std::ostream& outstream, std::string msg= ""){
 		std::ostringstream tmpstream (std::ostringstream::app);
 
 		tmpstream<<"    " <<std::setw(20)<<std::left<<msg;
@@ -280,11 +278,10 @@ public:
 			tmpstream <<"\t" <<std::setw(12)<<std::right <<boost::multiprecision::float128(currentList[i]);
 		}
 		tmpstream<<std::endl;
-		if(printToStream) outstream<<tmpstream.str();
-		if(printToConsole) std::cout <<tmpstream.str();
+		outstream<<tmpstream.str();
 	}
 
-	void printStatistics(std::ostream& outstream, std::string msg= "", bool printToConsole=false, bool printToStream=true, int textwidth=45){
+	void printStatistics(std::ostream& outstream, std::string msg= "", int textwidth=45){
 		std::ostringstream tmpstream (std::ostringstream::app);
 
 		tmpstream<<std::left<<msg <<std::endl;
@@ -299,8 +296,7 @@ public:
 			tmpstream <<"\t" <<std::setw(12)<<std::right <<statisticsList[i].second;
 		}
 		tmpstream<<std::endl;
-		if(printToStream) outstream<<tmpstream.str();
-		if(printToConsole) std::cout <<tmpstream.str();
+		outstream<<tmpstream.str();
 	}
 
 	void write(std::string filename, int histSize = std::numeric_limits<int>::infinity()){
@@ -320,7 +316,7 @@ public:
 			if(i==0){
 				for(uint j=0; j<historyList.second.size();j++)
 				{
-					out <<"\t" <<std::setw(6)<<std::right <<"Facet-" <<std::setw(8)<<std::setfill('-')<<std::right <<j;
+					out <<"\t" <<std::setw(6)<<std::right <<"Facet-" <<std::setw(14)<<std::setfill('-')<<std::right <<j;
 				}
 			}
 			out<<std::endl;
@@ -331,7 +327,7 @@ public:
 
 			for(uint j=0; j<historyList.second.size();j++)
 			{
-				out <<"\t" <<std::setw(14)<<std::right <<historyList.second[j][i];
+				out <<"\t" <<std::setw(20)<<std::right <<historyList.second[j][i];
 
 			}
 
@@ -413,6 +409,7 @@ public:
 
 	int rollingWindowSize;
 	double convergenceTarget;
+	double convergenceTime; //[s]
 	bool stopConverged;
 
 	std::vector< std::pair<int,double> > vipFacets;
@@ -474,10 +471,10 @@ public:
 
 //-----------------------------------------------------------
 //SimulationLinux.cpp
-void printStream(std::string string);
+void printStream(std::string string, bool print=true);
 
 //std::tuple<bool, std::vector<int> >  simulateSub(Databuff *hitbuffer, int rank, int simutime);
-std::tuple<bool, std::vector<int> >  simulateSub2(Databuff *hitbuffer, int rank, int simutime);
+std::tuple<bool, std::vector<int>>  simulateSub2(Databuff *hitbuffer, int rank, int simutime);
 
 double convertunit(double simutime, std::string unit);
 

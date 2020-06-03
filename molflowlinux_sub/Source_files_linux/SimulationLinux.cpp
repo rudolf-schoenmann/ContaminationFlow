@@ -37,7 +37,7 @@ extern Simulation *sHandle;
 extern ProblemDef* p;
 
 // Simulation on subprocess
-std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, int simutime){
+std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, int simutime){
 
 	//Calculate target values for error and number of desorbed particles
 	int targetParticles=p->targetParticles/simHistory->numSubProcess;
@@ -111,13 +111,17 @@ std::tuple<bool, std::vector<int> > simulateSub2(Databuff *hitbuffer,int rank, i
 		// Calculate error for this iteration step
 		totalError=UpdateError("covering");
 
+		for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+				simHistory->coveringList.setCurrent(&f, (boost::multiprecision::uint128_t)f.tmpCounter[0].hit.covering);
+			}
+		}
+
 		if(j_print || (simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))|| eos || totalTime >= p->maxTimePerIt*1000.0){
 			// Print current history lists every 30s or if target reached
 			std::ostringstream tmpstream (std::ostringstream::app);
 			tmpstream <<" Subprocess "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Adsorbed particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
-			tmpstream << std::endl;
-
-			tmpstream << "Facet" << std::setw(23)<<std::right<< " ";
+			tmpstream << " Facet" << std::setw(23)<<std::right<< "";
 			int num;
 			for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 				for (SubprocessFacet& f : sHandle->structures[j].facets) {
@@ -191,9 +195,14 @@ double convertunit(double simutime, std::string unit){
 
 }
 
-void printStream(std::string string){
-	std::cout <<string;
-	p->outFile <<string;
+void printStream(std::string string, bool print){
+	if(print)
+		std::cout <<string;
+	if(p->saveResults){
+		p->outFile.open(p->resultpath+"/console.txt", std::fstream::app);
+		p->outFile <<string;
+		p->outFile.close();
+	}
 }
 
 //----get path of executable
@@ -245,6 +254,7 @@ ProblemDef::ProblemDef(){
 
 	rollingWindowSize=10;
 	convergenceTarget=0.1;
+	convergenceTime=0.0;
 	stopConverged=true;
 
 	coveringMinThresh=1000000;
@@ -263,11 +273,11 @@ void ProblemDef::createOutput(int save){
 		mkdir(resultpath.c_str(),S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
 		resultbufferPath=resultpath+"/resultbuffer";
-		outFile.open(resultpath+"/console.txt", std::fstream::app);
+		//outFile.open(resultpath+"/console.txt", std::fstream::app);
 		saveResults=true;
 	}
 	else{
-		outFile.setstate(std::ios_base::badbit);
+		//outFile.setstate(std::ios_base::badbit);
 		saveResults=false;
 	}
 }
@@ -336,6 +346,7 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn =="desWindowPercent"){is >>doubleIn; doubleIn=doubleIn<1.0?doubleIn:1.0; desWindowPercent=doubleIn>0.0?doubleIn:0.0; }
 		else if(stringIn == "outgassingTimeWindow"){is >>doubleIn; outgassingTimeWindow=doubleIn>0.0?doubleIn:0.0; }
 		else if(stringIn == "convergenceTarget"){is >>doubleIn; convergenceTarget=doubleIn>0.0?doubleIn:0.0; }
+		else if(stringIn == "convergenceTime"){is >>doubleIn; convergenceTime=doubleIn>0.0?doubleIn:0.0; }
 		else if(stringIn =="stopConverged"){is >> intIn; stopConverged=intIn==0?false:true;}
 
 		else if(stringIn =="rollingWindowSize"){is >> intIn; rollingWindowSize=intIn>1?intIn:1;}
@@ -426,6 +437,7 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 
 	out <<"rollingWindowSize" <<"\t" <<rollingWindowSize <<std::endl;
 	out <<"convergenceTarget" <<"\t" <<convergenceTarget <<std::endl;
+	out <<"convergenceTime" <<"\t" <<convergenceTime <<std::endl;
 	out <<"stopConverged" <<"\t" <<(stopConverged?1:0) <<std::endl;
 
 
@@ -438,7 +450,7 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 	}
 	if(printConversion){
 		out  << "Simulation time " << simulationTime << unit << " converted to " << simulationTimeMS << "ms" << std::endl;
-		out  << "Maximum simulation time " << maxTime << maxUnit << " converted to " << maxTimeS << "s" << std::endl<<std::endl;
+		out  << "Maximum simulated time " << maxTime << maxUnit << " converted to " << maxTimeS << "s" << std::endl<<std::endl;
 	}
 }
 
@@ -701,13 +713,15 @@ void SimulationHistory::print(bool write){
 	std::vector<boost::multiprecision::uint128_t> covPerIt;
 	std::tie(errorPerIt_event, errorPerIt_covering,covPerIt) = CalcPerIteration();
 
-	coveringList.print(p->outFile,covPerIt, "Accumulative covering", p->histSize, true, write);
-	//hitList.print(p->outFile, "Accumulative number hits", p->histSize, true,write);//Since we do not accumulate hits anymore over all iterations, we do not need this anymore.
-	//desorbedList.print(p->outFile, "Accumulative number desorbed", p->histSize,true,write);//Since we do not accumulate desorbs anymore over all iterations, we do not need this anymore.
-	errorList_event.print(p->outFile,errorPerIt_event, "Error Event (Desorb + Hit) per iteration", p->histSize, true,write);
-	errorList_covering.print(p->outFile, errorPerIt_covering, "Error Covering (Desorb + Adsorb) per iteration", p->histSize,true,write);
-	particleDensityList.print(p->outFile, "Particle density per iteration", p->histSize,true,write);
-	pressureList.print(p->outFile, "Pressure per iteration", p->histSize,true,write);
+	std::ostringstream tmpstream (std::ostringstream::app);
+	coveringList.print(tmpstream,covPerIt, "Accumulative covering", p->histSize);
+	//hitList.print(tmpstream, "Accumulative number hits", p->histSize, true,write);//Since we do not accumulate hits anymore over all iterations, we do not need this anymore.
+	//desorbedList.print(tmpstream, "Accumulative number desorbed", p->histSize,true,write);//Since we do not accumulate desorbs anymore over all iterations, we do not need this anymore.
+	errorList_event.print(tmpstream,errorPerIt_event, "Error Event (Desorb + Hit) per iteration", p->histSize);
+	errorList_covering.print(tmpstream, errorPerIt_covering, "Error Covering (Desorb + Adsorb) per iteration", p->histSize);
+	particleDensityList.print(tmpstream, "Particle density per iteration", p->histSize);
+	pressureList.print(tmpstream, "Pressure per iteration", p->histSize);
+	printStream(tmpstream.str());
 }
 
 void SimulationHistory::write(std::string path){

@@ -657,7 +657,7 @@ bool StartFromSource() {
 	boost::multiprecision::float128 totaldes=0.0;
 	if(!sHandle->posCovering){
 		std::ostringstream tmpstream (std::ostringstream::app);
-		tmpstream <<"StartFromSource function has ended simulation due to some facet having reached threshold. "  <<std::endl;
+		tmpstream <<"StartFromSource function has ended iteration due to some facet having reached covering threshold. "  <<std::endl;
 		printStream(tmpstream.str());
 		return false;
 		}
@@ -1746,9 +1746,18 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 			//if (time>getStepSize()){
 				//std::cout<< f->tmpCounter[m].hit.covering << std::endl;
 				//double a = f->tmpCounter[m].hit.covering;
-				f->tmpCounter[m].hit.covering += 1;
+				if(f->tmpCounter[m].hit.covering<std::numeric_limits<llong>::max())
+					{f->tmpCounter[m].hit.covering += 1;}
 				//std::cout <<"Absorb from facet " <<getFacetIndex(f) <<std::endl;
+				else{
+					int num = getFacetIndex(f);
+					llong cv = f->tmpCounter[m].hit.covering;
+					std::ostringstream tmpstream (std::ostringstream::app);
+					tmpstream << "Facet: "  << num << " covering = " << cv <<"; max value = " << std::numeric_limits<llong>::max() << std::endl;
+					printStream(tmpstream.str());
+					sHandle->posCovering=false;
 				}
+			}
 			if (desorbed){
 				if(f->tmpCounter[m].hit.covering>sHandle->coveringThreshold[getFacetIndex(f)]){
 					f->tmpCounter[m].hit.covering -= 1;
