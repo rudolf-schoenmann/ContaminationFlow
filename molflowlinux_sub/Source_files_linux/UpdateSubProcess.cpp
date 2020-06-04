@@ -34,7 +34,7 @@ extern SimulationHistory* simHistory;
 void UpdateSticking(){
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			calcStickingnew(&f);
+			calcSticking(&f);
 		}
 	}
 }

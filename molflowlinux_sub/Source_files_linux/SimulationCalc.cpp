@@ -153,7 +153,7 @@ boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum){ // C
 	}
 
 
-void calcStickingnew(SubprocessFacet *iFacet) {//Calculates sticking coefficient dependent on covering.
+void calcSticking(SubprocessFacet *iFacet) {//Calculates sticking coefficient dependent on covering.
 
 	llong covering=getCovering(iFacet).convert_to<llong>();
 	// sticking constant, zero if no covering

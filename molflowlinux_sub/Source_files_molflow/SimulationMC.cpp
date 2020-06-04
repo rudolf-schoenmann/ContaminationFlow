@@ -498,7 +498,7 @@ bool SimulationMCStep(size_t nbStep) {
 	bool lastWasHit=false;
 	for (size_t i = 0; i < nbStep || lastWasHit; i++) {
 
-
+		lastWasHit=false;
 		if(!sHandle->currentParticle.lastHitFacet){
 			if (!StartFromSource())
 				// desorptionLimit reached
@@ -535,6 +535,7 @@ bool SimulationMCStep(size_t nbStep) {
 					if (collidedFacet->sh.teleportDest != 0) { //Teleport
 						IncreaseDistanceCounters(d * sHandle->currentParticle.oriRatio);
 						PerformTeleport(collidedFacet);
+						lastWasHit=true;
 					}
 					/*else if ((GetOpacityAt(collidedFacet, sHandle->currentParticle.flightTime) < 1.0) && (rnd() > GetOpacityAt(collidedFacet, sHandle->currentParticle.flightTime))) {
 						//Transparent pass
@@ -548,7 +549,6 @@ bool SimulationMCStep(size_t nbStep) {
 							if (stickingProbability == 1.0 || ((stickingProbability > 0.0) && (rnd() < (stickingProbability)))) {
 								//Absorbed
 								RecordAbsorb(collidedFacet);
-								lastWasHit=false;
 								//sHandle->distTraveledSinceUpdate += sHandle->currentParticle.distanceTraveled;
 								if (!StartFromSource())
 									// desorptionLimit reached
@@ -558,8 +558,6 @@ bool SimulationMCStep(size_t nbStep) {
 								//Reflected
 								if(!PerformBounce(collidedFacet)){
 									//if not bounce but "absorb"
-
-									lastWasHit=false;
 									if (!StartFromSource())
 										// desorptionLimit reached
 										return false;
@@ -575,7 +573,6 @@ bool SimulationMCStep(size_t nbStep) {
 								double oriRatioBeforeCollision = sHandle->currentParticle.oriRatio; //Local copy
 								sHandle->currentParticle.oriRatio *= (stickingProbability); //Sticking part
 								RecordAbsorb(collidedFacet);
-								lastWasHit=false;
 								sHandle->currentParticle.oriRatio = oriRatioBeforeCollision * (1.0 - stickingProbability); //Reflected part
 							}
 							else
@@ -583,7 +580,6 @@ bool SimulationMCStep(size_t nbStep) {
 							if (sHandle->currentParticle.oriRatio > sHandle->ontheflyParams.lowFluxCutoff) {
 								if(!PerformBounce(collidedFacet)){
 									//if not bounce but "absorb"
-									lastWasHit=false;
 									if (!StartFromSource())
 										// desorptionLimit reached
 										return false;
