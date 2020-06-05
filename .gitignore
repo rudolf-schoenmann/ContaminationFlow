@@ -1,5 +1,6 @@
 .settings/
 Debug/
+!Debug/MolflowLinux
 results/
 ContaminationFlow_doc/main.log
 ContaminationFlow_doc/main.aux
