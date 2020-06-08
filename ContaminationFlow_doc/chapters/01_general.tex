@@ -30,7 +30,7 @@
 	{
 		\textbf{ContaminationFlow\\Linux}
 		\nodepart{second}
-			\begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Command line \item Parallel simulation \item Monitor covering, statistical error, particle density, pressure per iteration \item Update of hitbuffer \end{itemize}	
+			\begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Command line \item Parallel simulation \item Monitor covering, statistical error, particle density, pressure per iteration \item Logarithmic time steps\end{itemize}	
 	};
 
 	%\draw[->, line width=0.04cm] (2.15,3.2) -- (3.85,3.2);
@@ -59,7 +59,7 @@
 	\draw let \p1=(Windows.east), \p2=(Hitbuffer.second west) in [<-, line width=0.04cm] (\x1,\y2-0.1cm) --  ([yshift=-0.1cm]\p2);
 	\path let \p1=(Windows.east), \p2=(Hitbuffer.second west) in node[below] at (0.5*\x1+0.5*\x2,\y2-0.1cm) {Import};
 	\draw let \p1=(Linux.west), \p2=(Hitbuffer.second east) in [->, line width=0.04cm] (\x1,\y2-0.1cm) --  ([yshift=-0.1cm]\p2);
-	\path let \p1=(Linux.west), \p2=(Hitbuffer.second east) in node[below] at (0.5*\x1+0.5*\x2,\y2-0.1cm) {Export};
+	%\path let \p1=(Linux.west), \p2=(Hitbuffer.second east) in node[below] at (0.5*\x1+0.5*\x2,\y2-0.1cm) {Export};
 
 \end{tikzpicture}
 \end{center}
