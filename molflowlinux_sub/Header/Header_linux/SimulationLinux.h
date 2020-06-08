@@ -390,6 +390,7 @@ public:
 	double H_vap;
 	//double W_tr;
 
+	std::string errorMode;
 	int targetParticles;
 	double targetError;
 
@@ -476,7 +477,7 @@ void printStream(std::string string, bool print=true);
 //std::tuple<bool, std::vector<int> >  simulateSub(Databuff *hitbuffer, int rank, int simutime);
 std::tuple<bool, std::vector<int>>  simulateSub2(Databuff *hitbuffer, int rank, int simutime);
 
-double convertunit(double simutime, std::string unit);
+double convertunit(double simutime, const char* unit);
 
 void checkSmallCovering(int rank, Databuff *hitbuffer_sum);
 //void UndoSmallCovering(Databuff *hitbuffer_sum);
@@ -499,7 +500,7 @@ std::tuple<double,double> UpdateErrorAll(int it=-1);
 void UpdateErrorList(Databuff *hitbuffer_sum);
 double UpdateError(std::string mode);
 void UpdateErrorSub();
-bool checkErrorSub(double targetError, double currentError, double factor, std::string mode="covering");
+bool checkErrorSub(double targetError, double currentError, double factor, std::string mode);
 
 
 void UpdateMCSubHits(Databuff *databuffer, int rank);

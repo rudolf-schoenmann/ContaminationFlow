@@ -77,7 +77,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 
 	// Run Simulation for timestep milliseconds
 	// Termination condition: maximum number of iteration reached or target error & number of desorbed particles reached or maximum desoption/covering threshold reached
-	for(int j=0; totalTime<p->maxTimePerIt*1000.0 && !(j>0 && simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))&& !eos; j++){
+	for(int j=0; totalTime<p->maxTimePerIt*1000.0 && !(j>0 && simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5),p->errorMode))&& !eos; j++){
 		for(i=0; i<(double)(simutime) && !eos;i+=realtimestep){
 			// Until simutime is reached, do simulation
 			if(i>=(double(simutime)*0.99)){break;}
@@ -109,7 +109,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 		}
 
 		// Calculate error for this iteration step
-		totalError=UpdateError("covering");
+		totalError=UpdateError(p->errorMode);
 
 		for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
@@ -117,7 +117,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 			}
 		}
 
-		if(j_print || (simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))|| eos || totalTime >= p->maxTimePerIt*1000.0){
+		if(j_print || (simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5), p->errorMode))|| eos || totalTime >= p->maxTimePerIt*1000.0){
 			// Print current history lists every 30s or if target reached
 			std::ostringstream tmpstream (std::ostringstream::app);
 			tmpstream <<" Subprocess "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Adsorbed particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
@@ -133,8 +133,10 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 			simHistory->hitList.printCurrent(tmpstream, std::to_string(rank)+": hitlist");
 			simHistory->desorbedList.printCurrent(tmpstream, std::to_string(rank)+": desorbedlist");
 			simHistory->coveringList.printCurrent(tmpstream, std::to_string(rank)+": coveringlist");
-			//simHistory->errorList_event.printCurrent(tmpstream, std::to_string(rank)+": errorlist_event");
-			simHistory->errorList_covering.printCurrent(tmpstream, std::to_string(rank)+": errorlist_covering");
+			if(p->errorMode=="event")
+				simHistory->errorList_event.printCurrent(tmpstream, std::to_string(rank)+": errorlist_event");
+			else if(p->errorMode=="covering")
+				simHistory->errorList_covering.printCurrent(tmpstream, std::to_string(rank)+": errorlist_covering");
 			tmpstream <<std::endl;
 
 			printStream(tmpstream.str());
@@ -169,7 +171,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 }
 //-----------------------------------------------------------
 //helpful functions
-double convertunit(double simutime, std::string unit){
+double convertunit(double simutime, const char* unit){
 	for(int i=0; i<8;i++){
 		// year to seconds to MS
 			if(unit==year[i]) return (simutime*365.25*24.0*3600.0*1000.0);
@@ -231,19 +233,20 @@ ProblemDef::ProblemDef(){
 
 	maxTime=10.0;
 	maxUnit="y";
-	maxTimeS=convertunit(maxTime, maxUnit)/1000.0;
+	maxTimeS=convertunit(maxTime, maxUnit.c_str())/1000.0;
 
 	simulationTime = 10.0;
 	unit = "s";
-	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
+	simulationTimeMS = (int) (convertunit(simulationTime, unit.c_str()) + 0.5);
 
 	saveResults=true;
 
+	errorMode="covering";
 	targetParticles=1000;
 	targetError=0.001;
 	hitRatioLimit=0;
-	t_min=1E-4;
 
+	t_min=1E-4;
 	t_max=std::numeric_limits<double>::max();
 	maxTimePerIt=std::numeric_limits<int>::max();
 	histSize=std::numeric_limits<int>::max();
@@ -293,7 +296,7 @@ void ProblemDef::readArg(int argc, char *argv[], int rank){
 	simulationTime = argc > 4? std::atof(argv[4]): simulationTime;
 	unit = argc > 5? argv[5]:unit;
 
-	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
+	simulationTimeMS = (int) (convertunit(simulationTime, unit.c_str()) + 0.5);
 
 	if(saveResults)
 		writeInputfile(resultpath+"/InputFile.txt",rank);
@@ -332,6 +335,7 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 		//else if(stringIn =="W_tr"){is >> doubleIn; W_tr=doubleIn>0.0?doubleIn:0.0;}
 		else if(stringIn =="sticking"){is >> doubleIn; sticking=doubleIn>0.0?doubleIn:0.0;}
 
+		else if(stringIn == "errorMode") {is >> stringIn; errorMode=(stringIn=="covering"||stringIn=="event")?stringIn:errorMode;}
 		else if(stringIn =="targetParticles"){is >> intIn; targetParticles=intIn>0?intIn:0;}
 		else if(stringIn == "targetError") {is >>doubleIn; targetError = doubleIn>0.0?doubleIn:0.0;}
 		else if(stringIn == "hitRatioLimit") {is >>doubleIn; hitRatioLimit = doubleIn>0.0?doubleIn:0.0;}
@@ -383,8 +387,8 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else{if(rank==0) std::cout <<stringIn <<" not a valid argument." <<std::endl;}
 
 	}
-	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
-	maxTimeS=convertunit(maxTime, maxUnit)/1000.0;
+	simulationTimeMS = (int) (convertunit(simulationTime, unit.c_str()) + 0.5);
+	maxTimeS=convertunit(maxTime, maxUnit.c_str())/1000.0;
 
 	if(saveResults)
 		writeInputfile(resultpath+"/InputFile.txt",rank);
@@ -420,11 +424,12 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 	out <<"H_vap" <<'\t' <<H_vap <<std::endl;
 	//out <<"W_tr" <<'\t' <<W_tr <<std::endl;
 
+	out <<"errorMode" <<'\t' <<errorMode <<std::endl;
 	out <<"targetError" <<'\t' <<targetError <<std::endl;
 	out <<"targetParticles" <<'\t' <<targetParticles <<std::endl;
 	out <<"hitRatioLimit" <<'\t' <<hitRatioLimit <<std::endl;
-	out <<"t_min" <<'\t' <<t_min <<std::endl;
 
+	out <<"t_min" <<'\t' <<t_min <<std::endl;
 	out <<"t_max" <<"\t" <<t_max<<std::endl;
 	out <<"maxTimePerIt" <<"\t" <<maxTimePerIt<<std::endl;
 
