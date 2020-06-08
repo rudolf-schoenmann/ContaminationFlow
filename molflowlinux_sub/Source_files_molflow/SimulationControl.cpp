@@ -132,11 +132,11 @@ DWORD GetSeed() {
 
 
 bool LoadSimulation(Databuff *databuffer) {
-	double t1, t0;
+	//double t1, t0;
 	DWORD seed;
 	//char err[128];
 
-	t0 = GetTick();
+	//t0 = GetTick();
 
 	sHandle->loadOK = false;
 
@@ -489,7 +489,7 @@ bool LoadSimulation(Databuff *databuffer) {
 	seed = GetSeed();
 	rseed(seed);
 	sHandle->loadOK = true;
-	t1 = GetTick();
+	//t1 = GetTick();
 	//(Rudi) Should I keep the (following) messages?
 	/*
 	printf("  Load %s successful\n", sHandle->sh.name.c_str());

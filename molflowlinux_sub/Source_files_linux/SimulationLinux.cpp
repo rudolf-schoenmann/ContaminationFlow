@@ -171,7 +171,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 }
 //-----------------------------------------------------------
 //helpful functions
-double convertunit(double simutime, const char* unit){
+double convertunit(double simutime, std::string unit){
 	for(int i=0; i<8;i++){
 		// year to seconds to MS
 			if(unit==year[i]) return (simutime*365.25*24.0*3600.0*1000.0);
@@ -233,11 +233,11 @@ ProblemDef::ProblemDef(){
 
 	maxTime=10.0;
 	maxUnit="y";
-	maxTimeS=convertunit(maxTime, maxUnit.c_str())/1000.0;
+	maxTimeS=convertunit(maxTime, maxUnit)/1000.0;
 
 	simulationTime = 10.0;
 	unit = "s";
-	simulationTimeMS = (int) (convertunit(simulationTime, unit.c_str()) + 0.5);
+	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
 
 	saveResults=true;
 
@@ -275,7 +275,7 @@ void ProblemDef::createOutput(int save){
 		resultpath=test2+"/results/"+std::to_string(time(0));
 		mkdir(resultpath.c_str(),S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
-		resultbufferPath=resultpath+"/resultbuffer";
+		//resultbufferPath=resultpath+"/resultbuffer";
 		//outFile.open(resultpath+"/console.txt", std::fstream::app);
 		saveResults=true;
 	}
@@ -296,15 +296,17 @@ void ProblemDef::readArg(int argc, char *argv[], int rank){
 	simulationTime = argc > 4? std::atof(argv[4]): simulationTime;
 	unit = argc > 5? argv[5]:unit;
 
-	simulationTimeMS = (int) (convertunit(simulationTime, unit.c_str()) + 0.5);
+	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
 
 	if(saveResults)
 		writeInputfile(resultpath+"/InputFile.txt",rank);
 
 }
 
-void ProblemDef::readInputfile(std::string filename, int rank, int save){
+bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 	createOutput(save);
+
+	bool valid=true;
 
 	std::string line;
 	std::ifstream input(filename,std::ifstream::in);
@@ -335,7 +337,7 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 		//else if(stringIn =="W_tr"){is >> doubleIn; W_tr=doubleIn>0.0?doubleIn:0.0;}
 		else if(stringIn =="sticking"){is >> doubleIn; sticking=doubleIn>0.0?doubleIn:0.0;}
 
-		else if(stringIn == "errorMode") {is >> stringIn; errorMode=(stringIn=="covering"||stringIn=="event")?stringIn:errorMode;}
+		else if(stringIn == "errorMode") {is >> stringIn; errorMode=stringIn;}
 		else if(stringIn =="targetParticles"){is >> intIn; targetParticles=intIn>0?intIn:0;}
 		else if(stringIn == "targetError") {is >>doubleIn; targetError = doubleIn>0.0?doubleIn:0.0;}
 		else if(stringIn == "hitRatioLimit") {is >>doubleIn; hitRatioLimit = doubleIn>0.0?doubleIn:0.0;}
@@ -384,20 +386,39 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 			}
 		}
 
-		else{if(rank==0) std::cout <<stringIn <<" not a valid argument." <<std::endl;}
+		else{
+			if(rank==0){
+				std::ostringstream tmpstream (std::ostringstream::app);
+				tmpstream <<stringIn <<" not a valid argument." <<std::endl;
+				printStream(tmpstream.str());
+			}
+			valid=false;
+		}
 
 	}
-	simulationTimeMS = (int) (convertunit(simulationTime, unit.c_str()) + 0.5);
-	maxTimeS=convertunit(maxTime, maxUnit.c_str())/1000.0;
+	if(!(errorMode=="covering"||errorMode=="event")){
+		if(rank==0){
+			std::ostringstream tmpstream (std::ostringstream::app);
+			tmpstream <<errorMode <<" not a valid argument for errorMode." <<std::endl;
+			printStream(tmpstream.str());
+		}
+		valid=false;
+	}
+
+	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
+	maxTimeS=convertunit(maxTime, maxUnit)/1000.0;
 
 	if(saveResults)
 		writeInputfile(resultpath+"/InputFile.txt",rank);
+
+	return valid;
 }
 
 void ProblemDef::writeInputfile(std::string filename, int rank){
 	if(rank==0){
 		std::ofstream outfile(filename,std::ofstream::out|std::ios::trunc);
 		printInputfile(outfile, false);
+		outfile.close();
 	}
 }
 
@@ -407,7 +428,7 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 	if(printConversion) out  <<"resultPath" <<'\t' <<resultpath <<std::endl;
 	out  <<"loadbufferPath" <<'\t' <<loadbufferPath <<std::endl;
 	out  <<"hitbufferPath" <<'\t' <<hitbufferPath <<std::endl;
-	if(printConversion) out  <<"resultbufferPath" <<'\t' <<resultbufferPath <<std::endl;
+	//if(printConversion) out  <<"resultbufferPath" <<'\t' <<resultbufferPath <<std::endl;
 	if(printConversion) out <<std::endl;
 
 	out  <<"simulationTime" <<'\t' <<simulationTime <<std::endl;
@@ -731,7 +752,10 @@ void SimulationHistory::print(bool write){
 
 void SimulationHistory::write(std::string path){
 	coveringList.write(path+"/covering.txt", p->histSize);
-	errorList_covering.write(path+"/errorCovering.txt", p->histSize);
+	if(p->errorMode=="covering")
+		errorList_covering.write(path+"/errorCovering.txt", p->histSize);
+	else if(p->errorMode=="event")
+		errorList_event.write(path+"/errorEvent.txt", p->histSize);
 	particleDensityList.write(path+"/particleDensity.txt", p->histSize);
 	pressureList.write(path+"/pressure.txt", p->histSize);
 }
