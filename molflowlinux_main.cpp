@@ -72,9 +72,9 @@ bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 	}
 	else if(argc<4 && argc>1){ // Read input file
 		if(checkReadable(argv[1])){
-			p->readInputfile(argv[1],rank, argc==3?(int)std::atof(argv[2]):1);
+			bool valid = p->readInputfile(argv[1],rank, argc==3?(int)std::atof(argv[2]):1);
 			if(!checkReadable(p->hitbufferPath)||!checkReadable(p->loadbufferPath)){return false;}
-			return true;}
+			return valid;}
 		}
 	return false;
 	}
@@ -398,8 +398,10 @@ int main(int argc, char *argv[]) {
 					tmpstream <<"Simulation converged. Average ratio std/mean target reached: " <<currentRatio <<" <= "<<p->convergenceTarget <<std::endl;
 					if(p->stopConverged && simHistory->lastTime>=p->convergenceTime)
 						tmpstream <<"Computation Time (Simulation only): " <<computationTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computationTime/1000.0) <<std::endl;
+					else if(!p->stopConverged)
+						tmpstream <<"p->stopConverged=false. Continue Simulation."<<std::endl;
 					else
-						tmpstream <<"Continue Simulation."<<std::endl;
+						tmpstream <<"Convergence time not reached: "<<simHistory->lastTime <<"s < " <<p->convergenceTime <<"s. Continue Simulation."<<std::endl;
 					printStream(tmpstream.str());
 				}
 				if(p->stopConverged && simHistory->lastTime>=p->convergenceTime)
@@ -419,13 +421,12 @@ int main(int argc, char *argv[]) {
 
 		if(p->saveResults){
 			// Write result files
-			simHistory->write(p->resultpath);
-
-			// Export hitbuffer
 			std::ostringstream tmpstream (std::ostringstream::app);
-			tmpstream << "Process 0 exporting final hitbuffer" << std::endl <<std::endl;
+			tmpstream << "Process 0 exporting simHistory" << std::endl <<std::endl;
 			printStream(tmpstream.str());
-			exportBuff(p->resultbufferPath,&hitbuffer_sum);//export hitbuffer_sum
+
+			simHistory->write(p->resultpath);
+			//exportBuff(p->resultbufferPath,&hitbuffer_sum);//export hitbuffer_sum
 		}
 	}
 	MPI_Barrier(MPI_COMM_WORLD);

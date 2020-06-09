@@ -87,7 +87,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 
 	// Print total error and error per facet of this iteration
 	std::ostringstream tmpstream (std::ostringstream::app);
-	tmpstream <<"Target Error (covering only) "<<p->targetError <<std::endl <<std::endl;
+	tmpstream <<"Target Error (only "+p->errorMode+" monitored) "<<p->targetError <<std::endl <<std::endl;
 	tmpstream <<"Total Error (event) averaged over facets "<<total_error_event <<std::endl;
 	simHistory->errorList_event.printCurrent(tmpstream);
 	tmpstream << std::endl<<"Total Error (covering) averaged over facets "<<total_error_covering<<std::endl;
@@ -102,7 +102,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 	}
 
 	//if targetError not reached: do not update currentstep
-	if(checkErrorSub(p->targetError, total_error_covering, 1.0)){simHistory->currentStep += 1;}
+	if(checkErrorSub(p->targetError, total_error_covering, 1.0, p->errorMode)){simHistory->currentStep += 1;}
 
 	tmpstream <<"Krealvirt = " << Krealvirt << std::endl;
 	tmpstream << "Covering difference will be multiplied by Krealvirt: " << Krealvirt << std::endl;

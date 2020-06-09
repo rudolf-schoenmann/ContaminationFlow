@@ -34,11 +34,11 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 //#include <boost/accumulators/statistics/rolling_variance.hpp>
 //#include <boost/accumulators/statistics/rolling_mean.hpp>
 
-static const char *year[]={"Years","years","Year","year","Yr","yr","Y","y"};
-static const char *month[]={"Months","months","Month","month","Mth","mth","mo","Mo"};
-static const char *day[]={"day","Day","days","Days","d","D"};
-static const char *hour[]={"hour","Hour","hours","Hours","h","H","hr","Hr"};
-static const char *min[]={"Minutes","minutes","Minute","minute","min","Min","m","M"};
+static std::string year[]={"Years","years","Year","year","Yr","yr","Y","y"};
+static std::string month[]={"Months","months","Month","month","Mth","mth","mo","Mo"};
+static std::string day[]={"day","Day","days","Days","d","D"};
+static std::string hour[]={"hour","Hour","hours","Hours","h","H","hr","Hr"};
+static std::string min[]={"Minutes","minutes","Minute","minute","min","Min","m","M"};
 
 const double diameterH2O = 2.76E-10;
 const double kb = 1.38E-23;
@@ -361,14 +361,14 @@ public:
 
 	void createOutput(int save);
 	void readArg(int argc, char *argv[], int rank=1);
-	void readInputfile(std::string filename, int rank=1, int save=1);
+	bool readInputfile(std::string filename, int rank=1, int save=1);
 	void writeInputfile(std::string filename, int rank=1);
 	void printInputfile(std::ostream& out, bool printConversion=true);
 
 	bool saveResults;
 
 	std::string resultpath;
-	std::string resultbufferPath;
+	//std::string resultbufferPath;
 	std::ofstream outFile;
 
 	// These can be given as parameters directly
@@ -390,6 +390,7 @@ public:
 	double H_vap;
 	//double W_tr;
 
+	std::string errorMode;
 	int targetParticles;
 	double targetError;
 
@@ -499,7 +500,7 @@ std::tuple<double,double> UpdateErrorAll(int it=-1);
 void UpdateErrorList(Databuff *hitbuffer_sum);
 double UpdateError(std::string mode);
 void UpdateErrorSub();
-bool checkErrorSub(double targetError, double currentError, double factor, std::string mode="covering");
+bool checkErrorSub(double targetError, double currentError, double factor, std::string mode);
 
 
 void UpdateMCSubHits(Databuff *databuffer, int rank);

@@ -7,7 +7,7 @@
 \item Parallel simulation on several sub processes
 \item Processing and control of data in main process
 \item Update and accumulation of hit counters and other information such as profiles
-\item \codew{SimulationHistory}, final \codew{hitbuffer} and used parameters exported to results folder
+\item \codew{SimulationHistory}, simulation parameters, console output exported to results folder
 \end{itemize}
 \smallskip
 \begin{figure}[hb]
@@ -84,13 +84,13 @@
 	\node (pNhit)[textboxmed, rectangle split, rectangle split parts=2] at (10.6,0.7)
 	{
 		\textbf{Sub Process K}
-		\nodepart{second} Save information in hitbuffer\_N-1
+		\nodepart{second} Save information in hitbuffer\_K
 	};
 
 	\node (p0pNhit)[textboxmed, rectangle split, rectangle split parts=2] at (0,-2.5)
 	{
 		\textbf{Main Process 0}
-		\nodepart{second} hitbuffer += hitbuffer\_N-1
+		\nodepart{second} hitbuffer += hitbuffer\_K
 	};
 
 	\node (p0upd)[textboxmed, rectangle split, rectangle split parts=2] at (0,-4.7)
@@ -173,20 +173,22 @@
 \item Defines parameters used for simulation
 \item Possible adaptation of default paramaters through input file
 %\item Conducts some intern conversions
-\item Creates result folder for simulation if desired
+\item Creates result folder for simulation if desired:
 	\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-	\item Final resultbuffer
-	\item Final covering, input file and console output as text files
+	%\item Final hitbuffer
+	\item Final covering, error, pressure, particle density as text files
+	\item Input file and console output as text files
 	\end{itemize}
 \end{itemize}
 %\bigskip
 
 \subsubsection{Application with custom parameters using input file}
+\textbf{Requirements:} Input and buffer files readable, N $\geq$ 2, zero moments in loadbuffer\\[4pt]
 Call of ContaminationFlow Linux application in the command line:
 \code{
 \$ module load mpi\\
 \$ mpirun -n N\ MolflowLinux inputfile save}
-\smallskip
+\leavevmode\\[-8pt]
 with the following command line parameters:
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item \codew{N}: desired number of worker processes; simulation on K=N-1 worker processes
@@ -194,8 +196,7 @@ with the following command line parameters:
 \item \codew{inputfile}: path to file that defines simulation parameters
 \item \codew{save}: determines whether result directory is created (1: true, 0:false); default:\codew{1}
 \end{itemize}
-\smallskip
-\smallskip
+\bigskip
 and the input file defining the following parameters:
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item \codew{$loadbufferPath$}: path to loadbuffer file, contains geometry, e.g.\ \codew{\textasciitilde/loadbuffer}
@@ -216,6 +217,7 @@ and the input file defining the following parameters:
 %\item \codew{$W_{tr}$}: transition width between monolayer and multilayer properties; default:\codew{1}
 \item \codew{$sticking$}: constant sticking coefficient for all facets; default:\codew{0}
 %\item \codew{$coveringLimit$}: threshold for zero desoprtion; default:\codew{0}
+\item \codew{$errorMode$}: Type of error monitored, "covering" or "event"; default: \codew{covering}
 \item \codew{$targetPaticles$}: min.\ number of desorbed particles per iteration; default: \codew{1000}
 \item \codew{$targetError$}: avg.\ statistical uncertainty (error) to be achieved for each iteration, calculated as the avg.\ (weighted with the facets area) of the normalized standard deviation of events per facet; default: \codew{0.001}
 \item \codew{$hitRatioLimit$}: Ratio (facet/all), e.g., number events or covering change, at which facet is ignored for error calculation; default: \codew{0}
@@ -231,6 +233,7 @@ and the input file defining the following parameters:
 \item \codew{$rollingWindowSize$}: Number of iterations for avg.\ statistics; default: \codew{10}
 \item \codew{$convergenceTarget$}: Target for avg.\ statistics to indicate convergence; default: \codew{1}
 \item \codew{$stopConverged$}: Stop simulation if avg.\ statistics indicate convergence; default: \codew{1}
+\item \codew{$convergenceTime$}: Min.\ simulated time to stop simulation if converged; default: \codew{0}
 \end{itemize}
 %\section{General Changes}
 %
@@ -249,7 +252,7 @@ and the input file defining the following parameters:
 \subsubsection{Terminology}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Simulation time: desired computation time until check if target is reached for iteration
-\item Simulated time: physical time in the simulated system, e.g.\ flight time or residence time of a particle
+\item Simulated time: physical time in the simulated system, e.g.\ flight time of particle
 \item Maximum simulated time: desired total simulated time
 \item Step size: desired simulated time per particle for iteration
 \end{itemize}
@@ -264,13 +267,13 @@ and the input file defining the following parameters:
 	\hphantom{\quad}BYTE *buff;\\
 \} Databuff;}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item New functions \codew{importBuff($\cdot$)} and \codew{exportBuff($\cdot$)} for import of buffer files and export of Databuff struct
-\item New functions \codew{checkReadable($\cdot$)} and \codew{checkWriteable($\cdot$)} to check if file is readable or writeable
+\item New functions \codew{importBuff($\cdot$)}/\codew{exportBuff($\cdot$)} to import buffer/export Databuff struct
+\item New functions \codew{checkReadable($\cdot$)}/\codew{checkWriteable($\cdot$)} to check if file is readable/writeable
 \end{itemize}
 
 \subsubsection{Communication between worker processes via MPI}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Main process 0 sends Databuff struct containing loadbuffer and Databuff struct containing hitbuffer and required simulationHistory values to sub processes using \codew{MPI\_Bcast($\cdot$)}
+\item Main process 0 sends Databuff structs containing loadbuffer/hitbuffer and required simulationHistory values to sub processes using \codew{MPI\_Bcast($\cdot$)}
 \item Sub processes send updated Databuff struct containing hitbuffer and required simulationHistory values to main process 0 using \codew{MPI\_Send($\cdot$)} and \codew{MPI\_Recv($\cdot$)}
 \end{itemize}
 
@@ -411,11 +414,11 @@ and the input file defining the following parameters:
 	\hphantom{\enskip}SimulationHistory();\\
 	\hphantom{\enskip}SimulationHistory(Databuff *hitbuffer);\\
 	[0.5\baselineskip]
-	\hphantom{\enskip}HistoryList<uint\_128t> coveringList;\\
-	\hphantom{\enskip}HistoryList<llong> desorbedList;\\
-	\hphantom{\enskip}HistoryList<double> hitList;\\
-	\hphantom{\enskip}HistoryList<double> errorList\_event;\\
-	\hphantom{\enskip}HistoryList<double> errorList\_covering;\\
+	\hphantom{\enskip}HistoryList<uint\_128t> coveringList;{\color{gray}//covering}\\
+	\hphantom{\enskip}HistoryList<llong> desorbedList;{\color{gray}//Number desorbed paticles}\\
+	\hphantom{\enskip}HistoryList<double> hitList;{\color{gray}//MC hits}\\
+	\hphantom{\enskip}HistoryList<double> errorList\_event;{\color{gray}//error event: hits \& desorbed particles}\\
+	\hphantom{\enskip}HistoryList<double> errorList\_covering;{\color{gray}//error covering: desorbed \& adsorbed}\\
 	\hphantom{\enskip}HistoryList<double> particleDensityList;\\
 	\hphantom{\enskip}HistoryList<double> pressureList;\\
 	[0.5\baselineskip]
@@ -461,12 +464,12 @@ and the input file defining the following parameters:
 	\draw let \p1=(time3.east), \p2=(covthresh.west) in [->, line width=0.04cm] (\p1) -- (\p2);%node[midway, above]{false};
 	\draw let \p1=(exist.east), \p2=(covthresh.north) in [->, line width=0.04cm] (\p1) --(\x1+1cm,\y1)node[midway, above]{true}--(\x2,\y1)-- (\p2);
 
-	\node[neuron](facet) at (6,-7.4) {Find next facet};
+	\node[condition, aspect=1.5](facet) at (6,-7.4) {Next facet\\found?};
 	\draw let \p1=(covthresh.south), \p2=(facet.east) in [->, line width=0.04cm] (\p1) -- (\x1,\y2) node[midway, right]{false} --(\p2);
 	\path let \p1=(covthresh.south), \p2=(facet.east) in node[dot] at (\x1,\y2){};
 
 	\node[condition, aspect=1.5](time1) at (1,-9.2){flight time$>$\\step size?};
-	\draw let \p1=(facet.west), \p2=(time1.north) in [->, line width=0.04cm] (\p1) --  (\x2,\y1)--(\p2);
+	\draw let \p1=(facet.west), \p2=(time1.north) in [->, line width=0.04cm] (\p1) -- ([xshift=-1cm]\p1)node[midway, above]{true} --  (\x2,\y1)--(\p2);
 
 	\node[neuron](sojourn) at (6,-9.2) {Add residence time};
 	\draw let \p1=(time1.east), \p2=(sojourn.west) in [->, line width=0.04cm] (\p1) -- (\p2) node[midway, above]{false};
@@ -484,7 +487,9 @@ and the input file defining the following parameters:
 	%\draw let \p1=(time3.south),\p2=(absorb.west) in [->, line width=0.04cm](\p1) --(\x1,\y1-0.2cm) --node[midway, above]{true}(\x1-1.5cm,\y1-0.2cm)--(\x2-0.33cm,\y1-0.2cm)--(\x2-0.33cm,\y2)--(\p2);
 
 	\node[condition, aspect=1.5](steps) at (1,-13.8){No.steps\\reached?};
+	\path let \p1=(absorb.south) in node[dot](dotabs) at (\x1,\y1-0.6cm){};
 	\draw let \p1=(absorb.south), \p2=(steps.north) in [->, line width=0.04cm] (\p1) -- (\p2);
+	\draw let \p1=(facet.north), \p2=(dotabs) in [ line width=0.04cm] (\p1) --(\x1,\y1+0.2cm)--(\x1-1.5cm,\y1+0.2cm)node[midway, above]{false}--(\x2-2cm,\y1+0.2cm)--(\x2-2cm,\y2)--(\p2);
 	\draw let \p1=(steps.west), \p2=(particle.west) in [->, line width=0.04cm] (\p1) --(\x1-0.66cm,\y1)-- node[midway, right]{false}(\x1-0.66cm,\y1+1cm)-- (\x1-0.66cm,\y2) -- (\p2);
 
 	%\node[condition, aspect=1.5](steps2) at (11,-14.3){No.steps\\reached?};
@@ -756,7 +761,7 @@ and the input file defining the following parameters:
 	\item[$\bullet$] Update real covering in hitbuffer of main process in \codew{UpdateCoveringphys($\cdot$)} (\codew{UpdateMainProcess.cpp})
 	\item[$\bullet$] Update statistics using \codew{simHistory$\rightarrow$coveringList.updateStatistics($\cdot$)}
 	\end{itemize}\smallskip
-\item Export final results (hitbuffer and simulationHistory) to results folder
+\item Export final results (\codew{simHistory} lists) to results folder
 \item Close MPI
 \end{itemize}
 \newpage

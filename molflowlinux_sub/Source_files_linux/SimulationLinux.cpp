@@ -77,7 +77,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 
 	// Run Simulation for timestep milliseconds
 	// Termination condition: maximum number of iteration reached or target error & number of desorbed particles reached or maximum desoption/covering threshold reached
-	for(int j=0; totalTime<p->maxTimePerIt*1000.0 && !(j>0 && simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))&& !eos; j++){
+	for(int j=0; totalTime<p->maxTimePerIt*1000.0 && !(j>0 && simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5),p->errorMode))&& !eos; j++){
 		for(i=0; i<(double)(simutime) && !eos;i+=realtimestep){
 			// Until simutime is reached, do simulation
 			if(i>=(double(simutime)*0.99)){break;}
@@ -109,7 +109,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 		}
 
 		// Calculate error for this iteration step
-		totalError=UpdateError("covering");
+		totalError=UpdateError(p->errorMode);
 
 		for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
@@ -117,7 +117,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 			}
 		}
 
-		if(j_print || (simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5)))|| eos || totalTime >= p->maxTimePerIt*1000.0){
+		if(j_print || (simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5), p->errorMode))|| eos || totalTime >= p->maxTimePerIt*1000.0){
 			// Print current history lists every 30s or if target reached
 			std::ostringstream tmpstream (std::ostringstream::app);
 			tmpstream <<" Subprocess "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Adsorbed particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
@@ -133,8 +133,10 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 			simHistory->hitList.printCurrent(tmpstream, std::to_string(rank)+": hitlist");
 			simHistory->desorbedList.printCurrent(tmpstream, std::to_string(rank)+": desorbedlist");
 			simHistory->coveringList.printCurrent(tmpstream, std::to_string(rank)+": coveringlist");
-			//simHistory->errorList_event.printCurrent(tmpstream, std::to_string(rank)+": errorlist_event");
-			simHistory->errorList_covering.printCurrent(tmpstream, std::to_string(rank)+": errorlist_covering");
+			if(p->errorMode=="event")
+				simHistory->errorList_event.printCurrent(tmpstream, std::to_string(rank)+": errorlist_event");
+			else if(p->errorMode=="covering")
+				simHistory->errorList_covering.printCurrent(tmpstream, std::to_string(rank)+": errorlist_covering");
 			tmpstream <<std::endl;
 
 			printStream(tmpstream.str());
@@ -239,11 +241,12 @@ ProblemDef::ProblemDef(){
 
 	saveResults=true;
 
+	errorMode="covering";
 	targetParticles=1000;
 	targetError=0.001;
 	hitRatioLimit=0;
-	t_min=1E-4;
 
+	t_min=1E-4;
 	t_max=std::numeric_limits<double>::max();
 	maxTimePerIt=std::numeric_limits<int>::max();
 	histSize=std::numeric_limits<int>::max();
@@ -272,7 +275,7 @@ void ProblemDef::createOutput(int save){
 		resultpath=test2+"/results/"+std::to_string(time(0));
 		mkdir(resultpath.c_str(),S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
-		resultbufferPath=resultpath+"/resultbuffer";
+		//resultbufferPath=resultpath+"/resultbuffer";
 		//outFile.open(resultpath+"/console.txt", std::fstream::app);
 		saveResults=true;
 	}
@@ -300,8 +303,10 @@ void ProblemDef::readArg(int argc, char *argv[], int rank){
 
 }
 
-void ProblemDef::readInputfile(std::string filename, int rank, int save){
+bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 	createOutput(save);
+
+	bool valid=true;
 
 	std::string line;
 	std::ifstream input(filename,std::ifstream::in);
@@ -332,6 +337,7 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 		//else if(stringIn =="W_tr"){is >> doubleIn; W_tr=doubleIn>0.0?doubleIn:0.0;}
 		else if(stringIn =="sticking"){is >> doubleIn; sticking=doubleIn>0.0?doubleIn:0.0;}
 
+		else if(stringIn == "errorMode") {is >> stringIn; errorMode=stringIn;}
 		else if(stringIn =="targetParticles"){is >> intIn; targetParticles=intIn>0?intIn:0;}
 		else if(stringIn == "targetError") {is >>doubleIn; targetError = doubleIn>0.0?doubleIn:0.0;}
 		else if(stringIn == "hitRatioLimit") {is >>doubleIn; hitRatioLimit = doubleIn>0.0?doubleIn:0.0;}
@@ -380,20 +386,39 @@ void ProblemDef::readInputfile(std::string filename, int rank, int save){
 			}
 		}
 
-		else{if(rank==0) std::cout <<stringIn <<" not a valid argument." <<std::endl;}
+		else{
+			if(rank==0){
+				std::ostringstream tmpstream (std::ostringstream::app);
+				tmpstream <<stringIn <<" not a valid argument." <<std::endl;
+				printStream(tmpstream.str());
+			}
+			valid=false;
+		}
 
 	}
+	if(!(errorMode=="covering"||errorMode=="event")){
+		if(rank==0){
+			std::ostringstream tmpstream (std::ostringstream::app);
+			tmpstream <<errorMode <<" not a valid argument for errorMode." <<std::endl;
+			printStream(tmpstream.str());
+		}
+		valid=false;
+	}
+
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
 	maxTimeS=convertunit(maxTime, maxUnit)/1000.0;
 
 	if(saveResults)
 		writeInputfile(resultpath+"/InputFile.txt",rank);
+
+	return valid;
 }
 
 void ProblemDef::writeInputfile(std::string filename, int rank){
 	if(rank==0){
 		std::ofstream outfile(filename,std::ofstream::out|std::ios::trunc);
 		printInputfile(outfile, false);
+		outfile.close();
 	}
 }
 
@@ -403,7 +428,7 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 	if(printConversion) out  <<"resultPath" <<'\t' <<resultpath <<std::endl;
 	out  <<"loadbufferPath" <<'\t' <<loadbufferPath <<std::endl;
 	out  <<"hitbufferPath" <<'\t' <<hitbufferPath <<std::endl;
-	if(printConversion) out  <<"resultbufferPath" <<'\t' <<resultbufferPath <<std::endl;
+	//if(printConversion) out  <<"resultbufferPath" <<'\t' <<resultbufferPath <<std::endl;
 	if(printConversion) out <<std::endl;
 
 	out  <<"simulationTime" <<'\t' <<simulationTime <<std::endl;
@@ -420,11 +445,12 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 	out <<"H_vap" <<'\t' <<H_vap <<std::endl;
 	//out <<"W_tr" <<'\t' <<W_tr <<std::endl;
 
+	out <<"errorMode" <<'\t' <<errorMode <<std::endl;
 	out <<"targetError" <<'\t' <<targetError <<std::endl;
 	out <<"targetParticles" <<'\t' <<targetParticles <<std::endl;
 	out <<"hitRatioLimit" <<'\t' <<hitRatioLimit <<std::endl;
-	out <<"t_min" <<'\t' <<t_min <<std::endl;
 
+	out <<"t_min" <<'\t' <<t_min <<std::endl;
 	out <<"t_max" <<"\t" <<t_max<<std::endl;
 	out <<"maxTimePerIt" <<"\t" <<maxTimePerIt<<std::endl;
 
@@ -726,7 +752,10 @@ void SimulationHistory::print(bool write){
 
 void SimulationHistory::write(std::string path){
 	coveringList.write(path+"/covering.txt", p->histSize);
-	errorList_covering.write(path+"/errorCovering.txt", p->histSize);
+	if(p->errorMode=="covering")
+		errorList_covering.write(path+"/errorCovering.txt", p->histSize);
+	else if(p->errorMode=="event")
+		errorList_event.write(path+"/errorEvent.txt", p->histSize);
 	particleDensityList.write(path+"/particleDensity.txt", p->histSize);
 	pressureList.write(path+"/pressure.txt", p->histSize);
 }
