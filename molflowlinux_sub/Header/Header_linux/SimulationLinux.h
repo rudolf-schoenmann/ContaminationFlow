@@ -39,12 +39,20 @@ static std::string month[]={"Months","months","Month","month","Mth","mth","mo","
 static std::string day[]={"day","Day","days","Days","d","D"};
 static std::string hour[]={"hour","Hour","hours","Hours","h","H","hr","Hr"};
 static std::string min[]={"Minutes","minutes","Minute","minute","min","Min","m","M"};
+static std::string sec[]={"Seconds","seconds","Second","second","sec","Sec","s","S"};
+
 
 const double diameterH2O = 2.76E-10;
 const double kb = 1.38E-23;
 //const double tau = 1E-13;
 const double h= 6.626E-34;
 const double tuneE=2.64665;//tanh(2.64665)~0,99
+
+//-----------------------------------------------------------
+
+std::string home_to_tilde(std::string path);
+
+//-----------------------------------------------------------
 
 template <typename T> class HistoryList{
 public:
@@ -333,7 +341,7 @@ public:
 
 		}
 		out.close();
-		std::cout <<"Results saved to " <<filename <<std::endl;
+		std::cout <<"Results saved to " <<home_to_tilde(filename) <<std::endl;
 	}
 
 	void erase(int idx){
@@ -501,6 +509,7 @@ void UpdateErrorList(Databuff *hitbuffer_sum);
 double UpdateError(std::string mode);
 void UpdateErrorSub();
 bool checkErrorSub(double targetError, double currentError, double factor, std::string mode);
+HistoryList<double>* getErrorList(std::string mode);
 
 
 void UpdateMCSubHits(Databuff *databuffer, int rank);

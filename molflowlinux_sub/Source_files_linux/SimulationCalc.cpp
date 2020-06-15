@@ -110,15 +110,10 @@ double calcNmono(SubprocessFacet *iFacet){//Calculates the Number of (carbon equ
 	return (iFacet->sh.area*1E-4)/(pow(p->particleDia, 2));
 }
 
-double calcdNsurf(){//Calculates the (carbon equivalent relative) mass factor
-	// gas mass / carbon mass
-	return sHandle->wp.gasMass/12.011;
-}
-
 boost::multiprecision::float128 calcCoverage(SubprocessFacet *iFacet){ // calculates coverage depending on covering (number particles on facet)
 	boost::multiprecision::uint128_t covering = getCovering(iFacet);
 
-	return boost::multiprecision::float128(covering) /boost::multiprecision::float128(calcNmono(iFacet)/calcdNsurf());
+	return boost::multiprecision::float128(covering) /boost::multiprecision::float128(calcNmono(iFacet));
 }
 
 boost::multiprecision::float128 calctotalDesorption(){// calculates the desorbed particles of all facets
@@ -196,7 +191,7 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 			desorption = coverage - boost::multiprecision::float128(1) + (boost::multiprecision::float128(1) - boost::multiprecision::exp(-time_step_subst/tau_subst));//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
 		}
 	}
-	return desorption * boost::multiprecision::float128(calcNmono(iFacet)/calcdNsurf());//This returns Delta'covering' in units of [1]. 1 means one particle.
+	return desorption * boost::multiprecision::float128(calcNmono(iFacet));//This returns Delta'covering' in units of [1]. 1 means one particle.
 }
 
 double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f){

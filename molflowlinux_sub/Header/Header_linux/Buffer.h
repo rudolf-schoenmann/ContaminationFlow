@@ -33,8 +33,8 @@ typedef struct {
 	BYTE *buff;
 }Databuff;
 
-bool checkReadable(std::string fileName);
-bool checkWriteable(std::string fileName);
+bool checkReadable(std::string fileName, int rank);
+bool checkWriteable(std::string fileName, int rank);
 
 void importBuff(const char *fileName, Databuff *databuffer);
 void exportBuff(const char *fileName, Databuff *databuffer);

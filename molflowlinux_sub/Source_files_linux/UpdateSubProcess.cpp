@@ -67,48 +67,6 @@ void UpdateSojourn(){
 
 void UpdateErrorSub(){
 	UpdateErrorList(NULL);
-	/*
-	double num_hit_it=0;
-	double num_des_ad_it=0;
-	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) { //save current num total hits in currentList, add difference current-old to num_hit_it
-		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			num_hit_it+=f.sh.opacity * (f.tmpCounter[0].hit.nbHitEquiv + (double)f.tmpCounter[0].hit.nbDesorbed);
-			num_des_ad_it+=f.sh.opacity * (f.tmpCounter[0].hit.nbAbsEquiv + (double)f.tmpCounter[0].hit.nbDesorbed);
-		}
-	}
-
-	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			double num_hit_f=f.sh.opacity * ( f.tmpCounter[0].hit.nbHitEquiv + (double)f.tmpCounter[0].hit.nbDesorbed);
-			double num_des_ad_f=f.sh.opacity * ( f.tmpCounter[0].hit.nbAbsEquiv + (double)f.tmpCounter[0].hit.nbDesorbed);
-
-			//neglect hits if very small compared to total hits
-			if(num_hit_f/num_hit_it<(p->hitRatioLimit)/pow(simHistory->numSubProcess,0.5)){// To be consistent with the ignored facets for calculating the error after summation
-				//over all subprocesses, here the hitRationLimit must be reduced with the correction factor due to multiple subprocesses.
-				num_hit_it-=num_hit_f;
-				num_hit_f=0;
-			}
-			if(num_des_ad_f/num_des_ad_it<(p->hitRatioLimit)/pow(simHistory->numSubProcess,0.5)){// To be consistent with the ignored facets for calculating the error after summation
-				//over all subprocesses, here the hitRationLimit must be reduced with the correction factor due to multiple subprocesses.
-				num_des_ad_it-=num_des_ad_f;
-				num_des_ad_f=0;
-			}
-
-			if(f.sh.opacity==0){
-				simHistory->errorList_event.setCurrent(&f, 0.0);
-				simHistory->errorList_covering.setCurrent(&f, 0.0);
-			}
-			else{
-				double error_event=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
-				double error_covering=pow((1/num_des_ad_f)*(1-num_des_ad_f/num_des_ad_it),0.5);
-				simHistory->errorList_event.setCurrent(&f, error_event);
-				simHistory->errorList_covering.setCurrent(&f, error_covering);
-			}
-			simHistory->hitList.setCurrent(&f,f.tmpCounter[0].hit.nbHitEquiv);
-			simHistory->desorbedList.setCurrent(&f,f.tmpCounter[0].hit.nbDesorbed);
-		}
-	}
-	*/
 }
 
 std::tuple<double,double,double> getErrorVariables(SubprocessFacet* f, Databuff *hitbuffer_sum){
@@ -220,20 +178,30 @@ std::tuple<double,double> UpdateErrorAll(int it){//calculates the averaged total
 bool checkErrorSub(double targetError, double currentError, double factor, std::string mode){
 	bool vipCheck = currentError<=targetError;
 	if(!p->vipFacets.empty()){
+		HistoryList<double> *listptr;
+		listptr = getErrorList(mode);
+		if(listptr==NULL){
+			return true;
+		}
+
 		for(unsigned int i = 0; i < p->vipFacets.size(); i++){
-			if(mode=="covering"){
-				vipCheck = vipCheck && (simHistory->errorList_covering.getCurrent(p->vipFacets[i].first)== std::numeric_limits<double>::infinity() || simHistory->errorList_covering.getCurrent(p->vipFacets[i].first) <= p->vipFacets[i].second * factor);
-			}
-			else if(mode=="event"){
-				vipCheck = vipCheck && (simHistory->errorList_event.getCurrent(p->vipFacets[i].first)== std::numeric_limits<double>::infinity() || simHistory->errorList_event.getCurrent(p->vipFacets[i].first) <= p->vipFacets[i].second * factor);
-			}
-			else{
-				std::cout<<"------------! Error mode '"<<mode <<"' not implemented !------------\n";
-				return true;
-			}
+			vipCheck = vipCheck && (listptr->getCurrent(p->vipFacets[i].first)== std::numeric_limits<double>::infinity() || listptr->getCurrent(p->vipFacets[i].first) <= p->vipFacets[i].second * factor);
 		}
 	}
 	return vipCheck;
+}
+
+HistoryList<double>* getErrorList(std::string mode){
+	if(mode=="covering"){
+		return &simHistory->errorList_covering;
+	}
+	else if(mode=="event"){
+		return &simHistory->errorList_event;
+	}
+	else{
+		std::cout<<"------------! Error mode '"<<mode <<"' not implemented !------------\n";
+		return NULL;
+	}
 }
 
 //-----------------------------------------------------------

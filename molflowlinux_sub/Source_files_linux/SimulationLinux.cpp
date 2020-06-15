@@ -192,11 +192,16 @@ double convertunit(double simutime, std::string unit){
 		// minute to seconds to MS
 			if(unit==min[i]) return (simutime*60.0*1000.0);
 		}
+	for(int i=0; i<8;i++){
+		// seconds to MS
+			if(unit==sec[i]) return (simutime*1000.0);
+		}
 	//default: seconds to MS
-	return simutime*1000.0;
+	return -1000.0;
 
 }
 
+//----Print to console and output file
 void printStream(std::string string, bool print){
 	if(print)
 		std::cout <<string;
@@ -218,11 +223,68 @@ std::string get_path( )
         return std::string( exepath );
 }
 
+//----exchange ~ and home directory
+std::string tilde_to_home(std::string path){
+	std::string home=getenv("HOME"); //expand ~
+	if(path[0]=='~') path.replace(0,1,home);
+	return path;
+}
+
+std::string home_to_tilde(std::string path){
+	std::string home=getenv("HOME"); //expand ~
+	if(path.substr(0,home.length())==home) path.replace(0,home.length(),"~");
+	return path;
+}
+
+//----check for small covering
+void checkSmallCovering(int rank, Databuff *hitbuffer_sum){
+	BYTE *buffer_sum;
+	buffer_sum = hitbuffer_sum->buff;
+
+	llong smallCoveringFactor=1;
+	boost::multiprecision::uint128_t covering;
+	boost::multiprecision::uint128_t mincov = boost::multiprecision::uint128_t(p->coveringMinThresh);
+
+	bool smallCovering=false;
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			covering = getCovering(&f);
+
+			if(llong(covering)<p->coveringMinThresh && f.sh.desorption>0.0 && covering >0){
+				smallCovering=true;
+				if(covering<mincov){
+					mincov=covering;
+				}
+				//std::cout <<"Facet "<<numFacet-1 <<": "<<llong(covering) <<" smaller than " <<p->coveringMinThresh <<std::endl;
+			}
+		}
+	}
+
+	if(smallCovering){
+		smallCoveringFactor=llong(1.0+1.1*double(p->coveringMinThresh)/(double(mincov)));
+		/*
+		std::cout <<"Small covering found for rank " << rank << ": multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
+		p->outFile<<"Small covering found for rank " << rank << ": multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
+		*/
+		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+			for (SubprocessFacet& f : sHandle->structures[s].facets) {
+				FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
+				facetHitSum->hit.covering *=smallCoveringFactor;
+				f.tmpCounter[0].hit.covering *=smallCoveringFactor;
+				sHandle->coveringThreshold[getFacetIndex(&f)] *= smallCoveringFactor;
+			}
+		}
+	}
+	simHistory->smallCoveringFactor=smallCoveringFactor;
+}
+
 //-----------------------------------------------------------
 //----ProblemDef class
 ProblemDef::ProblemDef(){
-	loadbufferPath= "/home/van/Buffer/loadbuffer_alle_RT";
-	hitbufferPath="/home/van/Buffer/hitbuffer_allee-6";
+	loadbufferPath= "~/Buffer/loadbuffer_alle_RT";
+	hitbufferPath="~/Buffer/hitbuffer_allee-6";
+	loadbufferPath=tilde_to_home(loadbufferPath);
+	hitbufferPath=tilde_to_home(hitbufferPath);
 
 	iterationNumber = 43200;
 	particleDia=diameterH2O;
@@ -292,6 +354,8 @@ void ProblemDef::readArg(int argc, char *argv[], int rank){
 	loadbufferPath= argc > 1 ? argv[1] :loadbufferPath;
 	hitbufferPath=argc > 2 ? argv[2]:hitbufferPath;
 
+	loadbufferPath=tilde_to_home(loadbufferPath);
+	hitbufferPath=tilde_to_home(hitbufferPath);
 
 	simulationTime = argc > 4? std::atof(argv[4]): simulationTime;
 	unit = argc > 5? argv[5]:unit;
@@ -324,11 +388,11 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 
 		if(stringIn == "loadbufferPath") {is >> stringIn; loadbufferPath=stringIn;}
 		else if(stringIn == "hitbufferPath") {is >> stringIn; hitbufferPath=stringIn;}
-		else if(stringIn == "simulationTime") {is >>doubleIn; simulationTime = doubleIn>0.0?doubleIn:0.0;}
+		else if(stringIn == "simulationTime") {is >>doubleIn; simulationTime = doubleIn;}
 		else if(stringIn == "unit"){is >> stringIn; unit=stringIn;}
 
 		else if(stringIn =="iterationNumber"){is >> intIn; iterationNumber=intIn>0?intIn:0;}
-		else if(stringIn == "maxTime") {is >>doubleIn; maxTime = doubleIn>0.0?doubleIn:0.0;}
+		else if(stringIn == "maxTime") {is >>doubleIn; maxTime = doubleIn;}
 		else if(stringIn == "maxUnit"){is >> stringIn; maxUnit=stringIn;}
 
 		else if(stringIn =="particleDia"){is >> doubleIn; particleDia=doubleIn>0.0?doubleIn:0.0;}
@@ -408,6 +472,18 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
 	maxTimeS=convertunit(maxTime, maxUnit)/1000.0;
 
+	if(simulationTimeMS<0 || maxTimeS < 0.0){
+		if(rank==0){
+			std::ostringstream tmpstream (std::ostringstream::app);
+			tmpstream <<"Invalid simulation time or maximum simulated time." <<std::endl;
+			printStream(tmpstream.str());
+		}
+		valid=false;
+	}
+
+	loadbufferPath=tilde_to_home(loadbufferPath);
+	hitbufferPath=tilde_to_home(hitbufferPath);
+
 	if(saveResults)
 		writeInputfile(resultpath+"/InputFile.txt",rank);
 
@@ -423,11 +499,12 @@ void ProblemDef::writeInputfile(std::string filename, int rank){
 }
 
 void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std::cout or p->outFile
+
 	if(printConversion) out  <<std::endl<<"Print input arguments"<<std::endl;
 
-	if(printConversion) out  <<"resultPath" <<'\t' <<resultpath <<std::endl;
-	out  <<"loadbufferPath" <<'\t' <<loadbufferPath <<std::endl;
-	out  <<"hitbufferPath" <<'\t' <<hitbufferPath <<std::endl;
+	if(printConversion) out  <<"resultPath" <<'\t' <<home_to_tilde(resultpath) <<std::endl;
+	out  <<"loadbufferPath" <<'\t' <<home_to_tilde(loadbufferPath) <<std::endl;
+	out  <<"hitbufferPath" <<'\t' <<home_to_tilde(hitbufferPath) <<std::endl;
 	//if(printConversion) out  <<"resultbufferPath" <<'\t' <<resultbufferPath <<std::endl;
 	if(printConversion) out <<std::endl;
 
@@ -481,47 +558,6 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 }
 
 //-----------------------------------------------------------
-void checkSmallCovering(int rank, Databuff *hitbuffer_sum){
-	BYTE *buffer_sum;
-	buffer_sum = hitbuffer_sum->buff;
-
-	llong smallCoveringFactor=1;
-	boost::multiprecision::uint128_t covering;
-	boost::multiprecision::uint128_t mincov = boost::multiprecision::uint128_t(p->coveringMinThresh);
-
-	bool smallCovering=false;
-	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			covering = getCovering(&f);
-
-			if(llong(covering)<p->coveringMinThresh && f.sh.desorption>0.0 && covering >0){
-				smallCovering=true;
-				if(covering<mincov){
-					mincov=covering;
-				}
-				//std::cout <<"Facet "<<numFacet-1 <<": "<<llong(covering) <<" smaller than " <<p->coveringMinThresh <<std::endl;
-			}
-		}
-	}
-
-	if(smallCovering){
-		smallCoveringFactor=llong(1.0+1.1*double(p->coveringMinThresh)/(double(mincov)));
-		/*
-		std::cout <<"Small covering found for rank " << rank << ": multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
-		p->outFile<<"Small covering found for rank " << rank << ": multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
-		*/
-		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-			for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
-				facetHitSum->hit.covering *=smallCoveringFactor;
-				f.tmpCounter[0].hit.covering *=smallCoveringFactor;
-				sHandle->coveringThreshold[getFacetIndex(&f)] *= smallCoveringFactor;
-			}
-		}
-	}
-	simHistory->smallCoveringFactor=smallCoveringFactor;
-}
-
 //----SimulationHistory class
 
 SimulationHistory::SimulationHistory(int world_size){

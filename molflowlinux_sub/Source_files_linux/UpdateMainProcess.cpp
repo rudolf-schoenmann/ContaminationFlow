@@ -93,10 +93,12 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 	tmpstream << std::endl<<"Total Error (covering) averaged over facets "<<total_error_covering<<std::endl;
 	simHistory->errorList_covering.printCurrent(tmpstream);
 
+	HistoryList<double> *listptr;
+	listptr = getErrorList(p->errorMode);
 	if(!p->vipFacets.empty()){
 		tmpstream <<"Vip Facets:"<<std::endl;
 		for(unsigned int i = 0; i < p->vipFacets.size(); i++){
-			tmpstream <<"\t"<<p->vipFacets[i].first <<"\t" << simHistory->errorList_event.getCurrent(p->vipFacets[i].first)<<std::endl;
+			tmpstream <<"\t"<<p->vipFacets[i].first <<"\t" << listptr->getCurrent(p->vipFacets[i].first)<<std::endl;
 		}
 		tmpstream <<std::endl;
 	}
@@ -193,49 +195,7 @@ void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
 
 void UpdateErrorMain(Databuff *hitbuffer_sum){
 	UpdateErrorList(hitbuffer_sum);
-	/*
-	double num_hit_it=0;
-	double num_des_ad_it =0;
 
-	//count all hits and all desorption events for all facets in num_hit_it
-	//count all adsorption and all desorption events for all facets in num_des_ad_it
-	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			num_hit_it+=  f.sh.opacity * (getHits(&f,hitbuffer_sum) + (double)getnbDesorbed(&f, hitbuffer_sum) );
-			num_des_ad_it += f.sh.opacity * (getnbAdsorbed(&f,hitbuffer_sum) + (double)getnbDesorbed(&f, hitbuffer_sum) );
-		}
-	}
-
-	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			double num_hit_f= f.sh.opacity * ( getHits(&f,hitbuffer_sum) + (double)getnbDesorbed(&f, hitbuffer_sum) );
-			double num_des_ad_f= f.sh.opacity * ( getnbAdsorbed(&f,hitbuffer_sum) + (double)getnbDesorbed(&f, hitbuffer_sum) );
-
-			if(num_hit_f/num_hit_it<p->hitRatioLimit){// threshold. If reached, small number of hits neglected
-				num_hit_it-=num_hit_f;
-				num_hit_f=0;
-			}
-			if(num_des_ad_f/num_des_ad_it<p->hitRatioLimit){// threshold. If reached, small number of hits neglected
-				num_des_ad_it-=num_des_ad_f;
-				num_des_ad_f=0;
-			}
-
-			if(f.sh.opacity==0){
-				simHistory->errorList_event.setCurrent(&f, 0.0);
-				simHistory->errorList_covering.setCurrent(&f, 0.0);
-			}
-			else{
-				double error_event=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
-				simHistory->errorList_event.setCurrent(&f, error_event);
-				double error_covering=pow((1/num_des_ad_f)*(1-num_des_ad_f/num_des_ad_it),0.5);
-				simHistory->errorList_covering.setCurrent(&f, error_covering);
-			}
-
-			simHistory->hitList.setLast(&f,getHits(&f,hitbuffer_sum));
-			simHistory->desorbedList.setLast(&f,getnbDesorbed(&f,hitbuffer_sum));
-		}
-	}
-	*/
 	simHistory->errorList_event.appendCurrent(simHistory->lastTime);
 	simHistory->errorList_covering.appendCurrent(simHistory->lastTime);
 	//simHistory->hitList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain

@@ -64,16 +64,16 @@ bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 		else{ //Read input arguments
 			if(rank==0){std::cout<<"Read arguments" <<std::endl;}
 
-			if(!checkReadable(argv[1])||!checkReadable(argv[2])||std::atof(argv[4])<0.0) // check if parameters are feasible
+			if(!checkReadable(argv[1],rank)||!checkReadable(argv[2],rank)||std::atof(argv[4])<0.0) // check if parameters are feasible
 				{return false;}
 			p->readArg(argc, argv, rank);
 			return true;
 		}
 	}
 	else if(argc<4 && argc>1){ // Read input file
-		if(checkReadable(argv[1])){
+		if(checkReadable(argv[1],rank)){
 			bool valid = p->readInputfile(argv[1],rank, argc==3?(int)std::atof(argv[2]):1);
-			if(!checkReadable(p->hitbufferPath)||!checkReadable(p->loadbufferPath)){return false;}
+			if(!checkReadable(p->hitbufferPath,rank)||!checkReadable(p->loadbufferPath,rank)){return false;}
 			return valid;}
 		}
 	return false;
