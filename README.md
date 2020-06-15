@@ -20,30 +20,33 @@ We use [Eclipse IDE for C/C++ Developers](https://www.eclipse.org/downloads/pack
 mpirun -n N /path-to-MolflowLinux/Debug/MolflowLinux /path-to-an-Inputfile/InputFile.txt save
 
 ```
+
 with
-Parameter| Valid Input | Description
------------- | -------------| -------------
-N| int value, N > 1|Number of processes. 1 main process, N-1 simulation processes
-path-to-MolflowLinux| Directory | path to github repository
-/path-to-an-Inputfile/InputFile.txt| Readable text file | path to an input file that defines simulation parameters
-save| int value | 1 (default) simulation results saved, 0 not saved
+
+|Parameter| Valid Input | Description|
+|------------ | -------------| -------------|
+|N| int value, N > 1|Number of processes. 1 main process, N-1 simulation processes|
+|path-to-MolflowLinux| Directory | path to github repository|
+|/path-to-an-Inputfile/InputFile.txt| Readable text file | path to an input file that defines simulation parameters|
+|save| int value | 1 (default) simulation results saved, 0 not saved|
 
 Important input file parameters:
-Parameter Name| Valid Input | Description
------------- | -------------| -------------
-loadbufferPath|Readable file|Loadbuffer file
-hitbufferPath|Readble file | Hitbuffer file
-simulationTime|Double value | "Number" of simulation time (=computation time before targets are reached)
-unit|String|"Unit" of simulation time (=computation time before targets are reached)
-iterationNumber|Int value|Number of desired iterations
-maxTime| Double value| "Number" of maximum simulated time (=total time in simulated system)
-maxUnit| String|"unit" of maximum simulated time (=total time in simulated system)
-errorMode|String: covering,event| Desired error that is tracked
-targetParticles|Int value| Number of target particles per iteration
-targetError|Double value| Target error per iteration
-t_min|Double value| Minimum time step (=simulated time between desorb and adsorb)
-rollingWindowSize|Int value| Number of precedings iterations used to calculate statistics
-vipFacets|Alterning sequence: int double| Alterning sequence of facet number and respective target errors, seperated by tabs
+
+|Parameter Name| Valid Input | Description|
+|------------ | -------------| -------------|
+|loadbufferPath|Readable file|Loadbuffer file|
+|hitbufferPath|Readble file | Hitbuffer file|
+|simulationTime|Double value | "Number" of simulation time (=computation time before targets are reached)|
+|unit|String|"Unit" of simulation time (=computation time before targets are reached)|
+|iterationNumber|Int value|Number of desired iterations|
+|maxTime| Double value| "Number" of maximum simulated time (=total time in simulated system)|
+|maxUnit| String|"unit" of maximum simulated time (=total time in simulated system)|
+|errorMode|String: covering,event| Desired error that is tracked|
+|targetParticles|Int value| Number of target particles per iteration|
+|targetError|Double value| Target error per iteration|
+|t_min|Double value| Minimum time step (=simulated time between desorb and adsorb)|
+|rollingWindowSize|Int value| Number of precedings iterations used to calculate statistics|
+|vipFacets|Alterning sequence: int double| Alterning sequence of facet number and respective target errors, seperated by tabs|
 
 For more information on input file see **ContaminationFlow_doc/main.pdf**.
 
