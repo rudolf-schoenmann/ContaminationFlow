@@ -77,13 +77,10 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 
 	// Run Simulation for timestep milliseconds
 	// Termination condition: maximum number of iteration reached or target error & number of desorbed particles reached or maximum desoption/covering threshold reached
-	for(int j=0; totalTime<p->maxTimePerIt*1000.0 && !(j>0 && simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5),p->errorMode))&& !eos; j++){
+	for(int j=0; totalTime<p->maxTimePerIt*1000.0 && !(j>0 && simHistory->nParticles>targetParticles && checkError(targetError, totalError, pow(simHistory->numSubProcess,0.5),p->errorMode))&& !eos; j++){
 		for(i=0; i<(double)(simutime) && !eos;i+=realtimestep){
 			// Until simutime is reached, do simulation
 			if(i>=(double(simutime)*0.99)){break;}
-			if(simHistory->coveringList.empty()){
-				simHistory->appendList(i); //append list with initial covering
-				}
 
 			if(i+timestep>=(double)(simutime)){ //last timestep
 				std::tie(eos,realtimestep) = SimulationRun((double)simutime-i); // Some additional simulation to reach desired simutime, as iteration step  does not run for exactly timestep ms
@@ -109,7 +106,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 		}
 
 		// Calculate error for this iteration step
-		totalError=UpdateError(p->errorMode);
+		totalError=CalcErrorSub(p->errorMode);
 
 		for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
@@ -117,7 +114,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 			}
 		}
 
-		if(j_print || (simHistory->nParticles>targetParticles && checkErrorSub(targetError, totalError, pow(simHistory->numSubProcess,0.5), p->errorMode))|| eos || totalTime >= p->maxTimePerIt*1000.0){
+		if(j_print || (simHistory->nParticles>targetParticles && checkError(targetError, totalError, pow(simHistory->numSubProcess,0.5), p->errorMode))|| eos || totalTime >= p->maxTimePerIt*1000.0){
 			// Print current history lists every 30s or if target reached
 			std::ostringstream tmpstream (std::ostringstream::app);
 			tmpstream <<" Subprocess "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Adsorbed particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
@@ -238,9 +235,6 @@ std::string home_to_tilde(std::string path){
 
 //----check for small covering
 void checkSmallCovering(int rank, Databuff *hitbuffer_sum){
-	BYTE *buffer_sum;
-	buffer_sum = hitbuffer_sum->buff;
-
 	llong smallCoveringFactor=1;
 	boost::multiprecision::uint128_t covering;
 	boost::multiprecision::uint128_t mincov = boost::multiprecision::uint128_t(p->coveringMinThresh);
@@ -262,14 +256,14 @@ void checkSmallCovering(int rank, Databuff *hitbuffer_sum){
 
 	if(smallCovering){
 		smallCoveringFactor=llong(1.0+1.1*double(p->coveringMinThresh)/(double(mincov)));
-		/*
-		std::cout <<"Small covering found for rank " << rank << ": multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
-		p->outFile<<"Small covering found for rank " << rank << ": multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
-		*/
+		if(rank==0){
+			std::ostringstream tmpstream (std::ostringstream::app);
+			tmpstream <<"Small covering found for rank " << rank << ": multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
+			printStream(tmpstream.str());
+		}
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
-				facetHitSum->hit.covering *=smallCoveringFactor;
+				getFacetHitBuffer(&f,hitbuffer_sum)->hit.covering *=smallCoveringFactor;
 				f.tmpCounter[0].hit.covering *=smallCoveringFactor;
 				sHandle->coveringThreshold[getFacetIndex(&f)] *= smallCoveringFactor;
 			}
@@ -753,14 +747,6 @@ void SimulationHistory::updateStepSize(){
 	}
 }
 
-void SimulationHistory::appendList(double time){
-
-	if(time==-1.0) //One step
-		time=coveringList.historyList.first.back()+1.0;
-
-	coveringList.appendCurrent(time);
-}
-
 void SimulationHistory::erase(int idx){
 	coveringList.erase(idx);
 	errorList_event.erase(idx);
@@ -769,18 +755,18 @@ void SimulationHistory::erase(int idx){
 	pressureList.erase(idx);
 }
 
-void SimulationHistory::print(bool write){
+void SimulationHistory::print(){
 	std::vector<double> errorPerIt_event;//This is the error_event (Desorb + Hit)
 	std::vector<double> errorPerIt_covering;//This is the error_event (Desorb + Adsorb)
 	std::vector<boost::multiprecision::uint128_t> covPerIt;
 	std::tie(errorPerIt_event, errorPerIt_covering,covPerIt) = CalcPerIteration();
 
 	std::ostringstream tmpstream (std::ostringstream::app);
-	coveringList.print(tmpstream,covPerIt, "Accumulative covering", p->histSize);
-	//hitList.print(tmpstream, "Accumulative number hits", p->histSize, true,write);//Since we do not accumulate hits anymore over all iterations, we do not need this anymore.
-	//desorbedList.print(tmpstream, "Accumulative number desorbed", p->histSize,true,write);//Since we do not accumulate desorbs anymore over all iterations, we do not need this anymore.
-	errorList_event.print(tmpstream,errorPerIt_event, "Error Event (Desorb + Hit) per iteration", p->histSize);
-	errorList_covering.print(tmpstream, errorPerIt_covering, "Error Covering (Desorb + Adsorb) per iteration", p->histSize);
+	coveringList.print(tmpstream, "Accumulative covering", p->histSize,covPerIt);
+	//hitList.print(tmpstream, "Accumulative number hits", p->histSize);//Since we do not accumulate hits anymore over all iterations, we do not need this anymore.
+	//desorbedList.print(tmpstream, "Accumulative number desorbed", p->histSize);//Since we do not accumulate desorbs anymore over all iterations, we do not need this anymore.
+	errorList_event.print(tmpstream, "Error Event (Desorb + Hit) per iteration", p->histSize,errorPerIt_event);
+	errorList_covering.print(tmpstream, "Error Covering (Desorb + Adsorb) per iteration", p->histSize, errorPerIt_covering);
 	particleDensityList.print(tmpstream, "Particle density per iteration", p->histSize);
 	pressureList.print(tmpstream, "Pressure per iteration", p->histSize);
 	printStream(tmpstream.str());
@@ -1006,5 +992,13 @@ void SimulationHistory::appendList(Databuff *hitbuffer, double time){
 		}
 	}
 	coveringList.appendList(currentCov, time);
+}
+
+void SimulationHistory::appendList(double time){
+
+	if(time==-1.0) //One step
+		time=coveringList.historyList.first.back()+1.0;
+
+	coveringList.appendCurrent(time);
 }
 */

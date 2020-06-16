@@ -417,7 +417,7 @@ int main(int argc, char *argv[]) {
 	if(rank==0){
 		//----Write simulation results to new buffer file. This has to be read in by Windows-Molflow.
 		// Print history lists
-		simHistory->print(true);
+		simHistory->print();
 
 		if(p->saveResults){
 			// Write result files

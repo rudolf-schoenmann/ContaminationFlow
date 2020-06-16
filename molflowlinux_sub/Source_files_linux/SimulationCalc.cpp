@@ -50,12 +50,12 @@ int getFacetIndex(SubprocessFacet *iFacet){ // finds index of facet. index used 
 	return -1;
 }
 
-llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns covering from hitbuffer
-	BYTE *buffer;
-	buffer = hitbuffer->buff;
-	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
+FacetHitBuffer* getFacetHitBuffer(SubprocessFacet *iFacet, Databuff *hitbuffer){
+	return (FacetHitBuffer *)(hitbuffer->buff + iFacet->sh.hitOffset);
+}
 
-	return facetHitBuffer->hit.covering;
+llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns covering from hitbuffer
+	return getFacetHitBuffer(iFacet,hitbuffer)->hit.covering;
 }
 
 boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet){ // returns covering from simHistory
@@ -63,44 +63,30 @@ boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet){ // return
 }
 
 double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number of hits from hitbuffer
-	BYTE *buffer;
-	buffer = hitbuffer->buff;
-	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
-
-	return facetHitBuffer->hit.nbHitEquiv; //TODO nbMCHit or nbHitEquiv?
+	return getFacetHitBuffer(iFacet,hitbuffer)->hit.nbHitEquiv; //TODO nbMCHit or nbHitEquiv?
 }
 
 llong getnbDesorbed(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number of desorbed testparticles from hitbuffer
-	BYTE *buffer;
-	buffer = hitbuffer->buff;
-	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
-
-	return facetHitBuffer->hit.nbDesorbed;
+	return getFacetHitBuffer(iFacet,hitbuffer)->hit.nbDesorbed;
 }
 llong getnbAdsorbed(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number of adsorbed testparticles from hitbuffer
-	BYTE *buffer;
-	buffer = hitbuffer->buff;
-	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
-
-	return facetHitBuffer->hit.nbAbsEquiv;
+	return getFacetHitBuffer(iFacet,hitbuffer)->hit.nbAbsEquiv;
 }
 
 llong getnbDesorbed(Databuff *hitbuffer_sum){
-	BYTE *buffer;
-	buffer = hitbuffer_sum->buff;
 	GlobalHitBuffer *gHits;
-	gHits = (GlobalHitBuffer *)buffer;
+	gHits = (GlobalHitBuffer *)hitbuffer_sum->buff;
 
 	return gHits->globalHits.hit.nbDesorbed;
 }
-
+/*
 std::tuple<double, double, double> getVelocities(SubprocessFacet *iFacet, Databuff *hitbuffer_sum){
 	BYTE *buffer;
 	buffer = hitbuffer_sum->buff;
 	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
 
 	return {std::make_tuple(facetHitBuffer->hit.sum_1_per_ort_velocity,facetHitBuffer->hit.sum_v_ort, facetHitBuffer->hit.sum_1_per_velocity)};
-}
+}*/
 
 //-----------------------------------------------------------
 
@@ -152,7 +138,7 @@ void calcSticking(SubprocessFacet *iFacet) {//Calculates sticking coefficient de
 
 	llong covering=getCovering(iFacet).convert_to<llong>();
 	// sticking constant, zero if no covering
-	if (covering>=0){
+	if (covering>0){
 		iFacet->sh.sticking = p->sticking;}
 	else{
 		iFacet->sh.sticking = 0.0;
