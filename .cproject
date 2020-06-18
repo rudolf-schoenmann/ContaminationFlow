@@ -54,7 +54,7 @@
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.693312432" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug"/>
 							<tool command="mpic++" id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.512143227" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.link.option.paths.1160157421" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" useByScannerDiscovery="false" valueType="libPaths">
-									<listOptionValue builtIn="false" value="/usr/include/gsl"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MolflowLinux/molflowlinux_sub/gsl}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.link.option.libs.1908662118" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" value="gsl"/>
