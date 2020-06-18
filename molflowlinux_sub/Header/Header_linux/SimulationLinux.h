@@ -197,7 +197,7 @@ public:
 	}
 
 	// Print historyList
-	void print(std::ostream& outstream, std::string msg= "", int histSize = std::numeric_limits<int>::infinity(), std::vector<T> totalvec =std::vector<T>(), int entryWidth=7){
+	void print(std::ostream& outstream, std::string msg= "", int histSize = std::numeric_limits<int>::infinity(), std::vector<T> totalvec =std::vector<T>(), int entryWidth=7, bool convertToFloat=true){
 		std::ostringstream out (std::ostringstream::app);
 
 		uint offset_table=0;
@@ -227,7 +227,10 @@ public:
 
 			for(uint j=0; j<historyList.second.size();j++)
 			{
-				out <<"\t" <<std::setw(5+entryWidth)<<std::right <<boost::multiprecision::float128(historyList.second[j][i]);
+				if(convertToFloat)
+					out <<"\t" <<std::setw(5+entryWidth)<<std::right <<boost::multiprecision::float128(historyList.second[j][i]);
+				else
+					out <<"\t" <<std::setw(5+entryWidth)<<std::right <<historyList.second[j][i];
 			}
 			if(totalvec.size()==historyList.first.size())
 				out<<"\t"<<std::setw(20)<<std::right<<totalvec[i];
@@ -270,7 +273,7 @@ public:
 	// Write historyList to file
 	void write(std::string filename, int histSize = std::numeric_limits<int>::infinity()){
 		std::ostringstream tmpstream (std::ostringstream::app);
-		print(tmpstream,"",histSize,std::vector<T>(),15);
+		print(tmpstream,"",histSize,std::vector<T>(),15, false);
 
 		std::ofstream out(filename,std::ofstream::out|std::ios::trunc);
 		out<<tmpstream.str();
@@ -324,6 +327,7 @@ public:
 	bool saveResults;
 
 	std::string resultpath;
+	std::string molflowpath;
 	//std::string resultbufferPath;
 	std::ofstream outFile;
 

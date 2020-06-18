@@ -144,7 +144,7 @@ int main(int argc, char *argv[]) {
 		p->printInputfile(tmpstream);
 		printStream(tmpstream.str(),false);
 
-		//Read in buffer file (exported by Windows-Molflow). File given as first argument to main().
+		//Read in buffer files
 		importBuff(p->loadbufferPath,&loadbuffer);
 		importBuff(p->hitbufferPath,&hitbuffer);
 
@@ -178,7 +178,7 @@ int main(int argc, char *argv[]) {
 		//Creates sHandle instance for process 0 and all subprocesses (before the first iteration step starts)
 		InitSimulation();
 		// Load geometry from buffer to sHandle
-		if (!LoadSimulation(&loadbuffer)) {
+		if (!LoadSimulation(&loadbuffer)) { // Check if geometry in loadbuffer can be loaded
 			if(rank==0){
 				std::ostringstream tmpstream (std::ostringstream::app);
 				tmpstream << "Geometry not loaded." << std::endl;
@@ -188,7 +188,7 @@ int main(int argc, char *argv[]) {
 			MPI_Finalize();
 			return 0;
 		}
-		if(sHandle->moments.size()){
+		if(sHandle->moments.size()){ // Check if there are zero moments
 			if(rank==0){
 				std::ostringstream tmpstream (std::ostringstream::app);
 				tmpstream << "Number of moments "<<sHandle->moments.size() <<" > 0. ContaminationFlowLinux only implemented for 0 moments."<< std::endl;
@@ -237,7 +237,7 @@ int main(int argc, char *argv[]) {
 				printStream(tmpstream.str());
 			}
 
-			//----Send coveringList content to all subprocesses
+			//---- Reset buffers and send coveringList content to all subprocesses
 			// reset hitbuffer_sum (except covering) before sending to sub processes
 			initbufftozero(&hitbuffer);
 			if(rank==0){
@@ -249,12 +249,7 @@ int main(int argc, char *argv[]) {
 				MPI_Bcast(&simHistory->coveringList.currentList[i], 16, MPI::BYTE,0,MPI_COMM_WORLD);
 			}
 
-			/*
-			for(int i=0; i<world_size;i++){
-				MPI_Barrier(MPI_COMM_WORLD);
-				if(rank==i)
-					simHistory->coveringList.printCurrent(std::cout,std::to_string(rank)+": coveringList at beginning of iteration");}
-			*/
+			// Send currentStep -> used to calculate stepSize
 			MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
 			MPI_Barrier(MPI_COMM_WORLD);
 
@@ -271,7 +266,7 @@ int main(int argc, char *argv[]) {
 
 			CalcTotalOutgassingWorker();// Calculate outgassing values for this iteration
 			if(!UpdateDesorption()){// Write desorption into sHandle for all subprocesses
-				// End simulation for very small desorption + outgassing particles
+				// End simulation for very small desorbed + outgassing particles
 				if(rank==0) {
 					std::ostringstream tmpstream (std::ostringstream::app);
 					tmpstream <<"Desorption smaller than 1E-50. Ending Simulation." <<std::endl;
@@ -290,10 +285,10 @@ int main(int argc, char *argv[]) {
 				//Do the simulation
 				bool eos; std::vector<int> facetNum;
 				std::tie(eos, facetNum) = simulateSub2(&hitbuffer, rank, p->simulationTimeMS);
-				//p->outFile<<testString;
+
 				std::ostringstream tmpstream (std::ostringstream::app);
 				if (eos) {
-					tmpstream << "Iteration ended early. "<<std::endl;
+					tmpstream << "Iteration ended early for process "<<rank <<"."<<std::endl;
 					if(sHandle->posCovering)
 						{tmpstream << "Maximum desorption reached for process "<<rank << "."<< std::endl;}
 					else{
@@ -357,11 +352,11 @@ int main(int argc, char *argv[]) {
 
 			//----Update History: particle density, pressure, error, covering
 			if (rank == 0) {
-				UpdateParticleDensityAndPressure(&hitbuffer_sum);
-				UpdateErrorMain(&hitbuffer_sum); // !! If order changes, adapt "time" entry in errorList !!
-				UpdateCovering(&hitbuffer_sum);
+				UpdateParticleDensityAndPressure(&hitbuffer_sum); // !! If order changes, adapt "time" entry in pressure/density lists !!
+				UpdateErrorMain(&hitbuffer_sum); // !! If order changes, adapt "time" entry in errorLists !!
+				UpdateCovering(&hitbuffer_sum); // Calculate real covering after iteration
 
-				UpdateCoveringphys(&hitbuffer_sum, &hitbuffer);
+				UpdateCoveringphys(&hitbuffer_sum, &hitbuffer); // Update real covering in buffers
 
 				// Adapt size of history lists if p->histSize is exceeded
 				if(p->histSize != std::numeric_limits<int>::infinity() && simHistory->coveringList.historyList.first.size() > uint(p->histSize+1)){
@@ -371,6 +366,7 @@ int main(int argc, char *argv[]) {
 				std::ostringstream tmpstream (std::ostringstream::app);
 				simHistory->coveringList.print(tmpstream,"Accumulative covering after iteration "+std::to_string(it),p->histSize);
 
+				// Calculate and print statistics
 				simHistory->coveringList.updateStatistics(p->rollingWindowSize);
 
 				currentRatio=double(simHistory->coveringList.getAverageStatistics(sHandle,true));
@@ -380,11 +376,11 @@ int main(int argc, char *argv[]) {
 
 			if (rank == 0) {std::cout << "ending iteration " << it <<std::endl;}
 
-			// Check if maximum simulated time is reached
+			// Check if simulation has ended
 			MPI_Barrier(MPI_COMM_WORLD);
 			MPI_Bcast(&simHistory->lastTime, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
 			MPI_Bcast(&currentRatio, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
-			if((int)(simHistory->lastTime+0.5) >= p->maxTimeS){
+			if((int)(simHistory->lastTime+0.5) >= p->maxTimeS){ // Maximum simulated time reached
 				if(rank==0) {
 					std::ostringstream tmpstream (std::ostringstream::app);
 					tmpstream <<"Maximum simulated time reached: " <<simHistory->lastTime  <<" >= " <<p->maxTimeS <<std::endl;
@@ -392,7 +388,7 @@ int main(int argc, char *argv[]) {
 					printStream(tmpstream.str());
 				}
 				break;
-			} else if (currentRatio<=p->convergenceTarget){
+			} else if (currentRatio<=p->convergenceTarget){ // Simulation has converged
 				if(rank==0) {
 					std::ostringstream tmpstream (std::ostringstream::app);
 					tmpstream <<"Simulation converged. Average ratio std/mean target reached: " <<currentRatio <<" <= "<<p->convergenceTarget <<std::endl;
@@ -404,7 +400,7 @@ int main(int argc, char *argv[]) {
 						tmpstream <<"Convergence time not reached: "<<simHistory->lastTime <<"s < " <<p->convergenceTime <<"s. Continue Simulation."<<std::endl;
 					printStream(tmpstream.str());
 				}
-				if(p->stopConverged && simHistory->lastTime>=p->convergenceTime)
+				if(p->stopConverged && simHistory->lastTime>=p->convergenceTime) // End simulation only if "allowed" and convergenceTime reached
 					break;
 			}
 

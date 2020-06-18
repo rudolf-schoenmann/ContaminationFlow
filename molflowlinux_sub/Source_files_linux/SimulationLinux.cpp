@@ -69,11 +69,9 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 
 	//----Simulation
 
-	// Start Simulation = create first particle
+	// Start Simulation = create first particle if it does not exist yet
 	if(!StartSimulation())
 		return {std::make_tuple(true,facetNum)};
-
-
 
 	// Run Simulation for timestep milliseconds
 	// Termination condition: maximum number of iteration reached or target error & number of desorbed particles reached or maximum desoption/covering threshold reached
@@ -92,14 +90,13 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 		}
 		totalTime+=i;
 		j_old=j;
-		if(i/simutime>=2.0*simutime/1000.0){
-			//j+=int(i/simutime -1); // correct number of steps for significantly longer simulation MCSteps: for small sojourn time, sHandle->stepPerSec can be smaller than 1 => 1 MCStep can take significantly longer than 1 second
+		if(i/simutime>=2.0*simutime/1000.0){ // correct number of steps for significantly longer simulation MCSteps: for small sojourn time, sHandle->stepPerSec can be smaller than 1 => 1 particle from desorption to adsorption can take significantly longer than 1 second
 			j=int((totalTime-simutime)/1000.0);
 		}
 
 		j_print=false;
 		for(; j_old<=j;j_old++){
-			if(j_old%(int)(30000/simutime)==0){
+			if(j_old%(int)(30000/simutime)==0){ // check if 30second interval for printing is within this iteration step
 				j_print=true;
 				break;
 			}
@@ -108,25 +105,29 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 		// Calculate error for this iteration step
 		totalError=CalcErrorSub(p->errorMode);
 
-		for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-			for (SubprocessFacet& f : sHandle->structures[j].facets) {
+		// Update covering values in currentList
+		for (size_t k = 0; k < sHandle->sh.nbSuper; k++) {
+			for (SubprocessFacet& f : sHandle->structures[k].facets) {
 				simHistory->coveringList.setCurrent(&f, (boost::multiprecision::uint128_t)f.tmpCounter[0].hit.covering);
 			}
 		}
 
+		// Check if update has to be printed: every 30 Seconds, target reached, eos flag or maxTimePerIt reached
 		if(j_print || (simHistory->nParticles>targetParticles && checkError(targetError, totalError, pow(simHistory->numSubProcess,0.5), p->errorMode))|| eos || totalTime >= p->maxTimePerIt*1000.0){
-			// Print current history lists every 30s or if target reached
 			std::ostringstream tmpstream (std::ostringstream::app);
+			// Summary
 			tmpstream <<" Subprocess "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Adsorbed particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
 			tmpstream << " Facet" << std::setw(23)<<std::right<< "";
 			int num;
-			for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-				for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			// "Table header"
+			for (size_t k = 0; k < sHandle->sh.nbSuper; k++) {
+				for (SubprocessFacet& f : sHandle->structures[k].facets) {
 						num=getFacetIndex(&f);
 						tmpstream <<"\t"<< std::setw(12)<<std::right << num;
 				}
 			}
 			tmpstream << std::endl;
+			// Print currentLists
 			simHistory->hitList.printCurrent(tmpstream, std::to_string(rank)+": hitlist");
 			simHistory->desorbedList.printCurrent(tmpstream, std::to_string(rank)+": desorbedlist");
 			simHistory->coveringList.printCurrent(tmpstream, std::to_string(rank)+": coveringlist");
@@ -146,12 +147,6 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			if(f.sh.desorption==0) continue;
 			num=getFacetIndex(&f);
-
-			/* Just output stuff
-			llong cv = f.tmpCounter[0].hit.covering;
-			std::cout << "At the end of the calculation rank " << rank << " f.tmpCounter[0].hit.covering = " << cv << std::endl;
-			p->outFile << "At the end of the calculation rank " << rank << " f.tmpCounter[0].hit.covering = " << cv << std::endl;
-			*/
 
 			if(f.tmpCounter[0].hit.covering<=sHandle->coveringThreshold[num]) {facetNum.push_back(num);}
 		}
@@ -210,14 +205,26 @@ void printStream(std::string string, bool print){
 }
 
 //----get path of executable
-std::string get_path( )
-{
+std::string get_path(){
         char arg1[20];
         char exepath[256] = {0};
 
         sprintf( arg1, "/proc/%d/exe", getpid() );
         readlink( arg1, exepath, sizeof(exepath) );
         return std::string( exepath );
+}
+
+//----convert molflow directory
+std::string convert_from_molflowdir(std::string path){
+	std::string molflowdir="molflowdir";
+	if(path.substr(0,molflowdir.length())==molflowdir) path.replace(0,molflowdir.length(),p->molflowpath);
+	return path;
+}
+
+std::string convert_to_molflowdir(std::string path){
+	std::string molflowdir="molflowdir";
+	if(path.substr(0,p->molflowpath.length())==p->molflowpath) path.replace(0,p->molflowpath.length(),molflowdir);
+	return path;
 }
 
 //----exchange ~ and home directory
@@ -246,10 +253,7 @@ void checkSmallCovering(int rank, Databuff *hitbuffer_sum){
 
 			if(llong(covering)<p->coveringMinThresh && f.sh.desorption>0.0 && covering >0){
 				smallCovering=true;
-				if(covering<mincov){
-					mincov=covering;
-				}
-				//std::cout <<"Facet "<<numFacet-1 <<": "<<llong(covering) <<" smaller than " <<p->coveringMinThresh <<std::endl;
+				if(covering<mincov){mincov=covering;}
 			}
 		}
 	}
@@ -327,16 +331,13 @@ void ProblemDef::createOutput(int save){
 		std::string path=get_path();
 		//std::cout <<path <<std::endl;
 		char *test=&path[0u];
-		std::string test2(dirname(dirname(test)));
-		resultpath=test2+"/results/"+std::to_string(time(0));
+		molflowpath=std::string(dirname(dirname(test)));
+		resultpath=molflowpath+"/results/"+std::to_string(time(0));
 		mkdir(resultpath.c_str(),S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
-		//resultbufferPath=resultpath+"/resultbuffer";
-		//outFile.open(resultpath+"/console.txt", std::fstream::app);
 		saveResults=true;
 	}
 	else{
-		//outFile.setstate(std::ios_base::badbit);
 		saveResults=false;
 	}
 }
@@ -364,7 +365,7 @@ void ProblemDef::readArg(int argc, char *argv[], int rank){
 bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 	createOutput(save);
 
-	bool valid=true;
+	bool valid=true; // simulation terminated if false
 
 	std::string line;
 	std::ifstream input(filename,std::ifstream::in);
@@ -418,25 +419,23 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 
 		else if(stringIn=="vipFacets"){
 			int vipf = 0; double vipe=0.0;
-			unsigned int vipfacet=0;
+			unsigned int vipfacet=0; // index of vipFacet input list
 			while(is>>doubleIn){
-				if(vipfacet%2==0){
-					if(rint(doubleIn)==doubleIn){
+				if(vipfacet%2==0){ // even index: facet number
+					if(rint(doubleIn)==doubleIn){ // check if facet number is int
 						vipf=rint(doubleIn);
 					}
 					else{
 						break;
 					}
 				}
-				else{
+				else{ // uneven index: facet error
 					vipe = doubleIn;
 					vipFacets.push_back(std::make_pair(vipf,vipe));
 				}
-
-
 				vipfacet+=1;
 			}
-			if(rank==0) {
+			if(rank==0) { // print vipFacet list
 				std::cout <<vipFacets.size()<<" vip facet(s)" <<std::endl;
 				for(vipfacet=0; vipfacet<vipFacets.size(); vipfacet++){
 					std::cout <<"\t"<<vipFacets[vipfacet].first <<"\t" <<vipFacets[vipfacet].second <<std::endl;
@@ -444,7 +443,7 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 			}
 		}
 
-		else{
+		else{ // No valid input.
 			if(rank==0){
 				std::ostringstream tmpstream (std::ostringstream::app);
 				tmpstream <<stringIn <<" not a valid argument." <<std::endl;
@@ -454,7 +453,7 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 		}
 
 	}
-	if(!(errorMode=="covering"||errorMode=="event")){
+	if(!(errorMode=="covering"||errorMode=="event")){ // No valid error mode. Currently "covering" and "event" supported
 		if(rank==0){
 			std::ostringstream tmpstream (std::ostringstream::app);
 			tmpstream <<errorMode <<" not a valid argument for errorMode." <<std::endl;
@@ -466,7 +465,7 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
 	maxTimeS=convertunit(maxTime, maxUnit)/1000.0;
 
-	if(simulationTimeMS<0 || maxTimeS < 0.0){
+	if(simulationTimeMS<0 || maxTimeS < 0.0){ // Negative simulation time id negative "number" or invalid "unit"
 		if(rank==0){
 			std::ostringstream tmpstream (std::ostringstream::app);
 			tmpstream <<"Invalid simulation time or maximum simulated time." <<std::endl;
@@ -475,6 +474,7 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 		valid=false;
 	}
 
+	// Convert ~ to home directory
 	loadbufferPath=tilde_to_home(loadbufferPath);
 	hitbufferPath=tilde_to_home(hitbufferPath);
 
