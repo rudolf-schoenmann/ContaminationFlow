@@ -41,8 +41,8 @@ void CalcTotalOutgassingWorker() {
 			if (f.sh.desorbType != DES_NONE) { //there is a kind of desorption
 				if (f.sh.useOutgassingFile) { //outgassing file
 					for (unsigned int l = 0; l < (f.sh.outgassingMapWidth*f.sh.outgassingMapHeight); l++) {
-						sHandle->wp.totalDesorbedMolecules += sHandle->wp.latestMoment * f.outgassingMap[l] / (1.38E-23*f.sh.temperature);
-						sHandle->wp.finalOutgassingRate += f.outgassingMap[l] / (1.38E-23*f.sh.temperature);
+						sHandle->wp.totalDesorbedMolecules += sHandle->wp.latestMoment * f.outgassingMap[l] / (kb*f.sh.temperature);
+						sHandle->wp.finalOutgassingRate += f.outgassingMap[l] / (kb*f.sh.temperature);
 						sHandle->wp.finalOutgassingRate_Pa_m3_sec += f.outgassingMap[l];
 
 						sHandle->wp.totalOutgassingParticles += f.outgassingMap[l] * calcOutgassingFactor(&f); // Number of particles outgassing in time stepSize_outgassing
@@ -53,8 +53,8 @@ void CalcTotalOutgassingWorker() {
 				else { //regular outgassing
 					if (f.sh.outgassing_paramId == -1) { //constant outgassing
 						//This following three lines are still the old code.
-						sHandle->wp.totalDesorbedMolecules += sHandle->wp.latestMoment * f.sh.outgassing / (1.38E-23*f.sh.temperature);
-						sHandle->wp.finalOutgassingRate += f.sh.outgassing / (1.38E-23*f.sh.temperature);  //Outgassing molecules/sec
+						sHandle->wp.totalDesorbedMolecules += sHandle->wp.latestMoment * f.sh.outgassing / (kb*f.sh.temperature);
+						sHandle->wp.finalOutgassingRate += f.sh.outgassing / (kb*f.sh.temperature);  //Outgassing molecules/sec
 						sHandle->wp.finalOutgassingRate_Pa_m3_sec += f.sh.outgassing;
 
 						sHandle->wp.totalOutgassingParticles +=f.sh.outgassing * calcOutgassingFactor(&f); // Number of particles outgassing in time stepSize_outgassing

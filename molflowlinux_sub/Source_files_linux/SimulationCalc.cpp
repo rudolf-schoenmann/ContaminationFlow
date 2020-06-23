@@ -50,12 +50,12 @@ int getFacetIndex(SubprocessFacet *iFacet){ // finds index of facet. index used 
 	return -1;
 }
 
-llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns covering from hitbuffer
-	BYTE *buffer;
-	buffer = hitbuffer->buff;
-	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
+FacetHitBuffer* getFacetHitBuffer(SubprocessFacet *iFacet, Databuff *hitbuffer){
+	return (FacetHitBuffer *)(hitbuffer->buff + iFacet->sh.hitOffset);
+}
 
-	return facetHitBuffer->hit.covering;
+llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns covering from hitbuffer
+	return getFacetHitBuffer(iFacet,hitbuffer)->hit.covering;
 }
 
 boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet){ // returns covering from simHistory
@@ -63,44 +63,30 @@ boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet){ // return
 }
 
 double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number of hits from hitbuffer
-	BYTE *buffer;
-	buffer = hitbuffer->buff;
-	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
-
-	return facetHitBuffer->hit.nbHitEquiv; //TODO nbMCHit or nbHitEquiv?
+	return getFacetHitBuffer(iFacet,hitbuffer)->hit.nbHitEquiv; //TODO nbMCHit or nbHitEquiv?
 }
 
 llong getnbDesorbed(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number of desorbed testparticles from hitbuffer
-	BYTE *buffer;
-	buffer = hitbuffer->buff;
-	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
-
-	return facetHitBuffer->hit.nbDesorbed;
+	return getFacetHitBuffer(iFacet,hitbuffer)->hit.nbDesorbed;
 }
 llong getnbAdsorbed(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number of adsorbed testparticles from hitbuffer
-	BYTE *buffer;
-	buffer = hitbuffer->buff;
-	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
-
-	return facetHitBuffer->hit.nbAbsEquiv;
+	return getFacetHitBuffer(iFacet,hitbuffer)->hit.nbAbsEquiv;
 }
 
 llong getnbDesorbed(Databuff *hitbuffer_sum){
-	BYTE *buffer;
-	buffer = hitbuffer_sum->buff;
 	GlobalHitBuffer *gHits;
-	gHits = (GlobalHitBuffer *)buffer;
+	gHits = (GlobalHitBuffer *)hitbuffer_sum->buff;
 
 	return gHits->globalHits.hit.nbDesorbed;
 }
-
+/*
 std::tuple<double, double, double> getVelocities(SubprocessFacet *iFacet, Databuff *hitbuffer_sum){
 	BYTE *buffer;
 	buffer = hitbuffer_sum->buff;
 	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
 
 	return {std::make_tuple(facetHitBuffer->hit.sum_1_per_ort_velocity,facetHitBuffer->hit.sum_v_ort, facetHitBuffer->hit.sum_1_per_velocity)};
-}
+}*/
 
 //-----------------------------------------------------------
 
@@ -110,15 +96,10 @@ double calcNmono(SubprocessFacet *iFacet){//Calculates the Number of (carbon equ
 	return (iFacet->sh.area*1E-4)/(pow(p->particleDia, 2));
 }
 
-double calcdNsurf(){//Calculates the (carbon equivalent relative) mass factor
-	// gas mass / carbon mass
-	return sHandle->wp.gasMass/12.011;
-}
-
 boost::multiprecision::float128 calcCoverage(SubprocessFacet *iFacet){ // calculates coverage depending on covering (number particles on facet)
 	boost::multiprecision::uint128_t covering = getCovering(iFacet);
 
-	return boost::multiprecision::float128(covering) /boost::multiprecision::float128(calcNmono(iFacet)/calcdNsurf());
+	return boost::multiprecision::float128(covering) /boost::multiprecision::float128(calcNmono(iFacet));
 }
 
 boost::multiprecision::float128 calctotalDesorption(){// calculates the desorbed particles of all facets
@@ -157,7 +138,7 @@ void calcSticking(SubprocessFacet *iFacet) {//Calculates sticking coefficient de
 
 	llong covering=getCovering(iFacet).convert_to<llong>();
 	// sticking constant, zero if no covering
-	if (covering>=0){
+	if (covering>0){
 		iFacet->sh.sticking = p->sticking;}
 	else{
 		iFacet->sh.sticking = 0.0;
@@ -196,7 +177,7 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 			desorption = coverage - boost::multiprecision::float128(1) + (boost::multiprecision::float128(1) - boost::multiprecision::exp(-time_step_subst/tau_subst));//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
 		}
 	}
-	return desorption * boost::multiprecision::float128(calcNmono(iFacet)/calcdNsurf());//This returns Delta'covering' in units of [1]. 1 means one particle.
+	return desorption * boost::multiprecision::float128(calcNmono(iFacet));//This returns Delta'covering' in units of [1]. 1 means one particle.
 }
 
 double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f){

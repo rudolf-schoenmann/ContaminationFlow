@@ -31,28 +31,30 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 
 // check if files writeable/readable
-bool checkReadable(std::string fileName){
+bool checkReadable(std::string fileName,int rank){
 	std::filebuf fb;
 	if (fb.open(fileName, std::ios::in))
 	{
 		return true;
 	}
 	std::ostringstream tmpstream (std::ostringstream::app);
-	tmpstream <<fileName <<" not readable" <<std::endl;
-	printStream(tmpstream.str());
+	tmpstream <<home_to_tilde(fileName) <<" not readable" <<std::endl;
+	if(rank==0)
+		printStream(tmpstream.str());
 	return false;
 
 }
 
-bool checkWriteable(std::string fileName){
+bool checkWriteable(std::string fileName, int rank){
 	std::filebuf fb;
 	if (fb.open(fileName, std::ios::app))
 	{
 		return true;
 	}
 	std::ostringstream tmpstream (std::ostringstream::app);
-	tmpstream <<fileName <<" not writable" <<std::endl;
-	printStream(tmpstream.str());
+	tmpstream <<home_to_tilde(fileName) <<" not writable" <<std::endl;
+	if(rank==0)
+		printStream(tmpstream.str());
 	return false;
 
 }
@@ -84,9 +86,9 @@ void importBuff(const char *fileName, Databuff *databuffer)
 		fb.close();
 	}
 	else{
-		std::cout << "Could not open " << fileName <<" to read data from." << std::endl;
+		std::cout << "Could not open " << home_to_tilde(fileName) <<" to read data from." << std::endl;
 	}
-	std::cout << "Buffer '" << fileName <<"' imported. Buffersize (read in): " << databuffer->size << std::endl;
+	std::cout << "Buffer '" << home_to_tilde(fileName) <<"' imported. Buffersize (read in): " << databuffer->size << std::endl;
 }
 
 
