@@ -83,7 +83,7 @@ bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 //Main Function
 int main(int argc, char *argv[]) {
 
-	//std::cout << "Hello Test" << std::endl;
+	std::cout << "Hello!" << std::endl;
 	// Initialise data buffers
 	Databuff hitbuffer; //Hitbuffer for the data of the subprocesses
 	hitbuffer.buff=NULL;
