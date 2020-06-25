@@ -7,16 +7,62 @@ git clone https://gitlab.lrz.de/rudolf_schoenmann/MolflowLinux.git
 
 ```
 
+## Dependencies
+Install dependencies (_gsl-devel_, _openmpi-devel_)
+
+```
+# Fedora & dnf package manager
+dnf install gsl-devel
+dnf install openmpi-devel
+
+```
+
 ## Build
 
 We use [Eclipse IDE for C/C++ Developers](https://www.eclipse.org/downloads/packages/release/photon/r/eclipse-ide-cc-developers) version photon release (4.8.0).
+Open Eclipse via terminal:
+
+```
+# Optional: Check possible modules
+module avail #list should include mpi/openmpi-x86_64
+
+# Load mpi -- to find mpic++
+module load mpi/openmpi-x86_64
+
+# Optional: check if loaded correctly
+which mpic++ #e.g., /usr/lib64/openmpi/bin/mpic++
+
+# Open eclipse
+cd /path-to-eclipse-executable/
+./eclipse
+```
+### Create Molflow project
 * Create new workspace (**File->Switch Workspace->Other...** and insert the parent directory of MolflowLinux).
 * Add project (**File->Open Projects from File System...** and select MolflowLinux).
 * Build
 
+
+### Build Execulatbe
+The Molflow executable can be build via Ecplise (Note: always follow the steps above to open Eclipse).
+Alternatively, after the first build, it can be build via terminal:
+
+```
+# Load mpi
+module load mpi/openmpi-x86_64
+
+# Build MolflowLinux executable
+cd /path-to-MolflowLinux/Debug/
+make MolflowLinux
+```
+
+
 ## Run
 
 ```
+# Load mpi
+module load mpi/openmpi-x86_64
+
+# Run MolflowLinux executable
 mpirun -n N /path-to-MolflowLinux/Debug/MolflowLinux /path-to-an-Inputfile/InputFile.txt save
 
 ```
