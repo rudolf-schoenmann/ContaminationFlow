@@ -422,6 +422,14 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn =="rollingWindowSize"){is >> intIn; rollingWindowSize=intIn>1?intIn:1;}
 
 		else if(stringIn=="vipFacets"){
+			if(!vipFacets.empty()){ // Already initialized
+				if(rank==0){
+					std::ostringstream tmpstream (std::ostringstream::app);
+					tmpstream <<"vipFacets already initialized for this simulation." <<std::endl;
+					printStream(tmpstream.str());
+				}
+				valid=false;
+			}
 			int vipf = 0; double vipe=0.0;
 			unsigned int vipfacet=0; // index of vipFacet input list
 			while(is>>doubleIn){
@@ -448,6 +456,14 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 		}
 
 		else if(stringIn=="facetGroups"){
+			if(!facetGroups.empty()){ // Already initialized
+				if(rank==0){
+					std::ostringstream tmpstream (std::ostringstream::app);
+					tmpstream <<"facetGroups already initialized for this simulation." <<std::endl;
+					printStream(tmpstream.str());
+				}
+				valid=false;
+			}
 			std::vector<int> tmpvec=std::vector<int>();
 			while(is>>stringIn){
 				if(isdigit(stringIn[0])){
@@ -473,6 +489,14 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 		}
 
 		else if(stringIn=="focusGroup"){
+			if(!focusGroup.first.empty()){ // Already initialized
+				if(rank==0){
+					std::ostringstream tmpstream (std::ostringstream::app);
+					tmpstream <<"focusGroup already initialized for this simulation." <<std::endl;
+					printStream(tmpstream.str());
+				}
+				valid=false;
+			}
 			while(is>>intIn){
 				if(std::find(std::begin(focusGroup.first),std::end(focusGroup.first),intIn)==std::end(focusGroup.first)){
 					focusGroup.first.push_back(intIn);
@@ -606,7 +630,6 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 
 	if(!facetGroups.empty()){
 		out <<"facetGroups";
-		out <<facetGroups.size()<<" facet group(s) in total"<<std::endl;
 		for(unsigned int grp=0; grp<facetGroups.size();grp++){
 			for(int grpidx:facetGroups[grp]){
 				out <<"\t"<<grpidx;
