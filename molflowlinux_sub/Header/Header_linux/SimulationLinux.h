@@ -143,13 +143,16 @@ public:
 		}
 	}
 	// Statistics: sum over ratio std/mean weighted with area
-	boost::multiprecision::float128 getAverageStatistics(Simulation *sHandle,bool opacityCheck){
+	boost::multiprecision::float128 getAverageStatistics(Simulation *sHandle,bool opacityCheck, bool doFocusOnly=false, std::vector<int> focusFacets=std::vector<int>()){
 		double totalArea=0.0;
 		bool meanZero=true;
 		boost::multiprecision::float128 totalStatistics= boost::multiprecision::float128(0);
 		for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				double idx=getFacetIndex(&f);
+				// skip if not in focusGroup
+				if(doFocusOnly && std::find(std::begin(focusFacets),std::end(focusFacets),idx)==std::end(focusFacets)) continue;
+
 				if( (opacityCheck && f.sh.opacity!=0.0) || !opacityCheck){ // If opacity has to be checked (e.g. for covering): only consider facet if opacity is larger than 0
 					totalArea+=f.sh.area;
 					// area * std/mean
@@ -315,14 +318,14 @@ public:
 
 class ProblemDef{
 public:
-	ProblemDef(int argc, char *argv[]);
+	//ProblemDef(int argc, char *argv[]);
 	ProblemDef();
 
-	void createOutput(int save);
 	void readArg(int argc, char *argv[], int rank=1);
 	bool readInputfile(std::string filename, int rank=1, int save=1);
 	void writeInputfile(std::string filename, int rank=1);
 	void printInputfile(std::ostream& out, bool printConversion=true);
+	void SetFocusGroup(int facets);
 
 	bool saveResults;
 
@@ -374,10 +377,16 @@ public:
 	bool stopConverged;
 
 	std::vector< std::pair<int,double> > vipFacets;
+	std::vector< std::vector<int> > facetGroups; // vector that includes vector of facet groups
+	std::pair<std::vector<int>,std::vector<int>> focusGroup; // pair: facet group indices and corresponding facet indices
+	bool doFocusGroupOnly; // determines whether facets in focus groups are used for error/convergence or all facets
 
 	//These cannot be given, but are computed from other variables
 	int simulationTimeMS;
 	double maxTimeS;
+
+private:
+	void createOutput(int save);
 };
 
 class SimulationHistory{

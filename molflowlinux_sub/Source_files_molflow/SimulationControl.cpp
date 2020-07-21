@@ -26,14 +26,14 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 //#include <windows.h> // For GetTickCount()
 #include <Process.h> // For _getpid()
 #else
-#include <time.h>
+#include <ctime>
 #include <sys/time.h>
 #include <unistd.h> // (Rudi) For getpid
 #endif
 
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include "Simulation.h"
 #include "IntersectAABB_shared.h"
 #include "Random.h"

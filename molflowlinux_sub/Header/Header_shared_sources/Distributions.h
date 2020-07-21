@@ -28,7 +28,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 class FileReader;
 #include <vector>
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 
 template <class Datatype> class Distribution{ //All methods except Interpolate
 protected:

@@ -19,7 +19,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 */
 #include "Polygon.h"
 #include "GLApp/MathTools.h"
-#include <math.h>
+#include <cmath>
 #include <algorithm> //min max
 
 bool IsConvex(const GLAppPolygon &p,size_t idx) {

@@ -213,6 +213,12 @@ int main(int argc, char *argv[]) {
 			//simHistory contains the relevant results/quantities of the simulation. E.g., covering history, total simulated time, etc.
 			simHistory = new SimulationHistory (&hitbuffer, world_size);
 			//TODO: maybe add possibility of covering.txt file input
+
+			std::cout <<p->focusGroup.second.size() <<" facet(s) in focusGroup"<<std::endl;
+			for(int grpidx:p->focusGroup.second){
+				std::cout <<"\t"<<grpidx;
+			}
+			std::cout <<std::endl;
 		}
 		else{
 			//Initialize simHistory for subprocesses
@@ -225,6 +231,7 @@ int main(int argc, char *argv[]) {
 //----Simulation
 	int it = 0;
 	double currentRatio=0.0;
+	std::string monitoredFacets=(!p->doFocusGroupOnly||p->focusGroup.second.size()==simHistory->numFacet)?"all":"selected";
 	while(true){
 		it++;
 		// Start of Simulation
@@ -369,8 +376,9 @@ int main(int argc, char *argv[]) {
 				// Calculate and print statistics
 				simHistory->coveringList.updateStatistics(p->rollingWindowSize);
 
-				currentRatio=double(simHistory->coveringList.getAverageStatistics(sHandle,true));
-				simHistory->coveringList.printStatistics(tmpstream, "Rolling time window statistics over last "+std::to_string(p->rollingWindowSize)+" iterations. Mean ratio std/mean = "+std::to_string(currentRatio)+" with target ratio for convergence "+std::to_string(p->convergenceTarget));
+				currentRatio=double(simHistory->coveringList.getAverageStatistics(sHandle,true, p->doFocusGroupOnly,p->focusGroup.second));
+				//tmpstream <<"Rolling time window statistics over last "+std::to_string(p->rollingWindowSize)+" iterations. Mean ratio std/mean = "+std::to_string(double(simHistory->coveringList.getAverageStatistics(sHandle,true, !p->doFocusGroupOnly,p->focusGroup.second)))+" with target ratio for convergence "+std::to_string(p->convergenceTarget)<<std::endl;
+				simHistory->coveringList.printStatistics(tmpstream, "Rolling time window statistics over last "+std::to_string(p->rollingWindowSize)+" iterations for "+monitoredFacets+" facets. Mean ratio std/mean = "+std::to_string(currentRatio)+" with target ratio for convergence "+std::to_string(p->convergenceTarget));
 				printStream(tmpstream.str());
 			}
 

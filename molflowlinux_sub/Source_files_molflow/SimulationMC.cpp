@@ -21,7 +21,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 /*
  * This file contains the functions for the MC simulation.
  */
-#include <math.h>
+#include <cmath>
 //#include <stdio.h>
 //#include <stdlib.h>
 #include <sstream>

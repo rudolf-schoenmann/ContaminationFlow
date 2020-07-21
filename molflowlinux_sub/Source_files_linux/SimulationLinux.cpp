@@ -28,7 +28,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <sstream>
 #include <unistd.h>
 #include <libgen.h>
-#include <time.h>
+#include <ctime>
 #include <sys/stat.h>
 #include <mpi.h>
 
@@ -323,6 +323,11 @@ ProblemDef::ProblemDef(){
 	coveringMinThresh=1000000;
 
 	vipFacets = std::vector< std::pair<int,double> >();
+	facetGroups=std::vector< std::vector<int> > ();
+
+	focusGroup.first = std::vector<int> ();
+	focusGroup.second = std::vector<int> ();
+	doFocusGroupOnly=true;
 
 }
 
@@ -416,7 +421,6 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 
 		else if(stringIn =="rollingWindowSize"){is >> intIn; rollingWindowSize=intIn>1?intIn:1;}
 
-
 		else if(stringIn=="vipFacets"){
 			int vipf = 0; double vipe=0.0;
 			unsigned int vipfacet=0; // index of vipFacet input list
@@ -443,6 +447,48 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 			}
 		}
 
+		else if(stringIn=="facetGroups"){
+			std::vector<int> tmpvec=std::vector<int>();
+			while(is>>stringIn){
+				if(isdigit(stringIn[0])){
+					tmpvec.push_back(stoi(stringIn));
+				}
+				else if(!tmpvec.empty()){
+					facetGroups.push_back(tmpvec);
+					tmpvec.clear();
+				}
+			}
+			if(!tmpvec.empty()) facetGroups.push_back(tmpvec);
+
+			if(rank==0) { // print list of facet groups
+				std::cout <<facetGroups.size()<<" facet group(s) in total"<<std::endl;
+				for(unsigned int grp=0; grp<facetGroups.size();grp++){
+					for(int grpidx:facetGroups[grp]){
+						std::cout <<"\t"<<grpidx;
+					}
+					if(grp<facetGroups.size()-1) std::cout << "\t-";
+				}
+				std::cout<<std::endl;
+			}
+		}
+
+		else if(stringIn=="focusGroup"){
+			while(is>>intIn){
+				if(std::find(std::begin(focusGroup.first),std::end(focusGroup.first),intIn)==std::end(focusGroup.first)){
+					focusGroup.first.push_back(intIn);
+				}
+			}
+			if(rank==0) { // print list of facet group indices
+				std::cout <<focusGroup.first.size()<<" facet group(s) in focus group"<<std::endl;
+				for(int grpidx:focusGroup.first){
+					std::cout <<"\t"<<grpidx;
+				}
+				std::cout <<std::endl;
+			}
+		}
+
+		else if(stringIn =="doFocusGroupOnly"){is >> intIn; doFocusGroupOnly=intIn==0?false:true;}
+
 		else{ // No valid input.
 			if(rank==0){
 				std::ostringstream tmpstream (std::ostringstream::app);
@@ -465,13 +511,25 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
 	maxTimeS=convertunit(maxTime, maxUnit)/1000.0;
 
-	if(simulationTimeMS<0 || maxTimeS < 0.0){ // Negative simulation time id negative "number" or invalid "unit"
+	if(simulationTimeMS<0 || maxTimeS < 0.0){ // Negative simulation time if negative "number" or invalid "unit"
 		if(rank==0){
 			std::ostringstream tmpstream (std::ostringstream::app);
 			tmpstream <<"Invalid simulation time or maximum simulated time." <<std::endl;
 			printStream(tmpstream.str());
 		}
 		valid=false;
+	}
+
+	for(int currentGroup:focusGroup.first){
+		if(currentGroup >= (int)facetGroups.size()){ // focusGroup not valid (too large id)
+			if(rank==0){
+				std::ostringstream tmpstream (std::ostringstream::app);
+				tmpstream <<"Invalid focusGroup. Id=" <<currentGroup << " >= facetGroups.size()=" <<facetGroups.size() <<std::endl;
+				printStream(tmpstream.str());
+			}
+			valid=false;
+			break;
+		}
 	}
 
 	// Convert ~ to home directory
@@ -536,7 +594,7 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 	out <<"convergenceTarget" <<"\t" <<convergenceTarget <<std::endl;
 	out <<"convergenceTime" <<"\t" <<convergenceTime <<std::endl;
 	out <<"stopConverged" <<"\t" <<(stopConverged?1:0) <<std::endl;
-
+	out <<"doFocusGroupOnly" <<"\t" <<(doFocusGroupOnly?1:0) <<std::endl;
 
 	if(!vipFacets.empty()){
 		out <<"vipFacets";
@@ -545,9 +603,50 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 		}
 		out <<std::endl;
 	}
+
+	if(!facetGroups.empty()){
+		out <<"facetGroups";
+		out <<facetGroups.size()<<" facet group(s) in total"<<std::endl;
+		for(unsigned int grp=0; grp<facetGroups.size();grp++){
+			for(int grpidx:facetGroups[grp]){
+				out <<"\t"<<grpidx;
+			}
+			if(grp<facetGroups.size()-1) out << "\t-";
+		}
+		out<<std::endl;
+	}
+
+	if(!focusGroup.first.empty()){
+		out <<"focusGroup";
+		for(int grpidx:focusGroup.first){
+			out <<"\t"<<grpidx;
+		}
+		out <<std::endl;
+	}
 	if(printConversion){
 		out  << "Simulation time " << simulationTime << unit << " converted to " << simulationTimeMS << "ms" << std::endl;
 		out  << "Maximum simulated time " << maxTime << maxUnit << " converted to " << maxTimeS << "s" << std::endl<<std::endl;
+	}
+}
+
+void ProblemDef::SetFocusGroup(int facets){
+	// if list of facet group indices is empty or -1 is included -> all facets
+	if(focusGroup.first.empty()|| std::find(std::begin(focusGroup.first),std::end(focusGroup.first),-1)!=std::end(focusGroup.first)){
+		focusGroup.first=std::vector<int>(1,-1); // set list if indices to -1
+		focusGroup.second=std::vector<int>(facets);
+		std::iota(std::begin(focusGroup.second),std::end(focusGroup.second),0); // fill list of facets with all facets
+	}
+	// if list of facet group indices is given -> find facets
+	else{
+		focusGroup.second=std::vector<int>();
+		for(int i =0; i<facets;i++){ // for all facets
+			for(int j: focusGroup.first){ // for all facet groups
+				if (std::find(std::begin(facetGroups[j]),std::end(facetGroups[j]),i)!=std::end(facetGroups[j])){ // check if facet is in facet group
+					focusGroup.second.push_back(i); // append facet to list of facets
+					break;
+				}
+			}
+		}
 	}
 }
 
@@ -603,6 +702,8 @@ SimulationHistory::SimulationHistory(int world_size){
 
 	pressureList.initList(numFacet);
 	pressureList.initCurrent(numFacet);
+
+	p->SetFocusGroup(numFacet);
 }
 
 SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
@@ -673,6 +774,8 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 
 	numSubProcess=world_size-1;
 	smallCoveringFactor=1;
+
+	p->SetFocusGroup(numFacet);
 
 	//std::cout<<"Normal facets: ";
 	//for (unsigned int i =0; i< normalFacets.size(); i++){

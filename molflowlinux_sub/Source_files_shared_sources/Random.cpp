@@ -17,7 +17,7 @@ GNU General Public License for more details.
 
 Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 */
-#include <stdlib.h>
+#include <cstdlib>
 #include "Random.h"
 #include "GLApp/MathTools.h"
 

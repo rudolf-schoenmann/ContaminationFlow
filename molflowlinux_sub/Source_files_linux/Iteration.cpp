@@ -99,9 +99,9 @@ std::tuple<double,double> CalcErrorAll(int it){//calculates the averaged total e
 
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			if(f.sh.opacity==0) {continue;} //ignore facet if no opacity
-
 			int idx=getFacetIndex(&f);
+			if(f.sh.opacity==0||(p->doFocusGroupOnly && std::find(std::begin(p->focusGroup.second),std::end(p->focusGroup.second),idx)==std::end(p->focusGroup.second))) {continue;} //ignore facet if no opacity
+
 			double error_event_facet=(it==-1)?simHistory->errorList_event.getCurrent(idx):simHistory->errorList_event.historyList.second[idx][it];
 			if(!std::isinf(error_event_facet)){//ignore facet if no hits (=inf error)
 				error_event+=error_event_facet*f.sh.area;

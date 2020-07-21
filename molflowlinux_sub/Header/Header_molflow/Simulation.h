@@ -33,7 +33,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <tuple>
 #include "Buffer.h"
 #include "SMP.h"
-#include "string.h"
+#include <cstring>
 
 class Anglemap {
 public:
