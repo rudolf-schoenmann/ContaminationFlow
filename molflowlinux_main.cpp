@@ -20,9 +20,8 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 
 #include <iostream>
-#include <mpi.h>
 #include <string>
-#include <fstream>
+#include <mpi.h>
 #include "Buffer.h"
 #include <unistd.h>
 #include "Simulation.h"

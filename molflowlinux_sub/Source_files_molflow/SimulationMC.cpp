@@ -54,12 +54,12 @@ void CalcTotalOutgassing() {
 	}
 
 }
-
+/*
 double abs(double x){
 	double abs_temp = x >= 0? x : -1.0*x;
 	return abs_temp;
 }
-
+*/
 //void PolarToCartesian(SubprocessFacet *iFacet, double theta, double phi, bool reverse) {
 //
 //	Vector3d U, V, N;
@@ -1237,8 +1237,8 @@ double Anglemap::GetPhiCDFValue(const double & thetaIndex, const int & phiLowerI
 	else {
 		size_t thetaLowerIndex = (size_t)(thetaIndex - 0.5);
 		double thetaOvershoot = thetaIndex - 0.5 - (double)thetaLowerIndex;
-		double valueFromLowerCDF = (phiLowerIndex < anglemapParams.phiWidth) ? phi_CDFs[anglemapParams.phiWidth * thetaLowerIndex + phiLowerIndex] : 1.0 + phi_CDFs[anglemapParams.phiWidth * (thetaLowerIndex)];
-		double valueFromHigherCDF = (phiLowerIndex < anglemapParams.phiWidth) ? phi_CDFs[anglemapParams.phiWidth * (thetaLowerIndex + 1) + phiLowerIndex] : 1.0 + phi_CDFs[anglemapParams.phiWidth * (thetaLowerIndex + 1)];
+		double valueFromLowerCDF = (phiLowerIndex < (int)anglemapParams.phiWidth) ? phi_CDFs[anglemapParams.phiWidth * thetaLowerIndex + phiLowerIndex] : 1.0 + phi_CDFs[anglemapParams.phiWidth * (thetaLowerIndex)];
+		double valueFromHigherCDF = (phiLowerIndex < (int)anglemapParams.phiWidth) ? phi_CDFs[anglemapParams.phiWidth * (thetaLowerIndex + 1) + phiLowerIndex] : 1.0 + phi_CDFs[anglemapParams.phiWidth * (thetaLowerIndex + 1)];
 		return Weigh(valueFromLowerCDF, valueFromHigherCDF, thetaOvershoot);
 	}
 

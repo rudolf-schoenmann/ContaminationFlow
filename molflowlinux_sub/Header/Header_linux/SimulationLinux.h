@@ -28,6 +28,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <sstream>
 #include <iomanip>
 #include <limits>
+#include <numeric>
 //#include <boost/multiprecision/cpp_int.hpp>
 //#include <boost/multiprecision/float128.hpp>
 
@@ -104,7 +105,7 @@ public:
 		if(time==-1.0) //one step
 				time=historyList.first.back()+1.0;
 		historyList.first.push_back(time);
-		for(int j=0; j < currentList.size(); j++){
+		for(unsigned int j=0; j < currentList.size(); j++){
 			historyList.second[j].push_back(currentList[j]);
 		}
 		currIt+=1;
@@ -204,7 +205,7 @@ public:
 		std::ostringstream out (std::ostringstream::app);
 
 		uint offset_table=0;
-		if(histSize != std::numeric_limits<int>::infinity()&& currIt > histSize+1){
+		if(histSize != std::numeric_limits<int>::infinity()&& currIt > (unsigned int)histSize+1){
 			offset_table=currIt - uint(histSize)-1;
 		}
 		if(msg!="")

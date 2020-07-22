@@ -24,13 +24,12 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 #include "SimulationLinux.h"
 #include <array>
-#include <fstream>
-#include <sstream>
 #include <unistd.h>
 #include <libgen.h>
 #include <ctime>
 #include <sys/stat.h>
 #include <mpi.h>
+#include <string>
 
 extern SimulationHistory* simHistory;
 extern Simulation *sHandle;
