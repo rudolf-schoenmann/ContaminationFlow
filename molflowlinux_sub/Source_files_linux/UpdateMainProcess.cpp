@@ -24,7 +24,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 #include "SimulationLinux.h"
 #include "GLApp/MathTools.h"
-#include <math.h>
+#include <cmath>
 
 extern Simulation *sHandle;
 extern ProblemDef* p;
@@ -85,12 +85,14 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 	double total_error_covering=0.0;
 	std::tie(total_error_event,total_error_covering)=CalcErrorAll();
 
+	std::string monitoredFacets=(!p->doFocusGroupOnly||p->focusGroup.second.size()==simHistory->numFacet)?"all":"selected";
+
 	// Print total error and error per facet of this iteration
 	std::ostringstream tmpstream (std::ostringstream::app);
 	tmpstream <<"Target Error (only "+p->errorMode+" monitored) "<<p->targetError <<std::endl <<std::endl;
-	tmpstream <<"Total Error (event) averaged over facets "<<total_error_event <<std::endl;
+	tmpstream <<"Total Error (event) averaged over "+monitoredFacets+" facets "<<total_error_event <<std::endl;
 	simHistory->errorList_event.printCurrent(tmpstream);
-	tmpstream << std::endl<<"Total Error (covering) averaged over facets "<<total_error_covering<<std::endl;
+	tmpstream << std::endl<<"Total Error (covering) averaged over "+monitoredFacets+" facets "<<total_error_covering<<std::endl;
 	simHistory->errorList_covering.printCurrent(tmpstream);
 
 	HistoryList<double> *listptr;

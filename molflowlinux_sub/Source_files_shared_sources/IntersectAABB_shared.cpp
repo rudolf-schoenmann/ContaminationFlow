@@ -17,10 +17,9 @@ GNU General Public License for more details.
 
 Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 */
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
 #include "IntersectAABB_shared.h"
 #include "Random.h"
 #include "Polygon.h" //IsInPoly

@@ -24,8 +24,8 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 #include "SimulationLinux.h"
 #include "GLApp/MathTools.h"
-#include <math.h>
-#include <assert.h>
+#include <cmath>
+#include <cassert>
 #include <Random.h>
 
 // Global handles

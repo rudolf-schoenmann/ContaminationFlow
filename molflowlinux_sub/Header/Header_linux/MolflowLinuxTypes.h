@@ -25,8 +25,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #ifndef MOLFLOWLINUX_SUB_HEADER_HEADER_LINUX_TYPES_H_
 #define MOLFLOWLINUX_SUB_HEADER_HEADER_LINUX_TYPES_H_
 
-#include <stdint.h>
-//#include <cstdint>
+#include <cstdint>
 #define __int64 int64_t
 #define  llong uint64_t
 

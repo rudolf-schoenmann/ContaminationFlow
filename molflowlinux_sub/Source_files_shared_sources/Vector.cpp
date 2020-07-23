@@ -20,7 +20,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "Vector.h"
 #include "GLApp/MathTools.h" //PI
 #include "Random.h" //RandomPerpendicularVector
-#include <math.h> //sqrt
+#include <cmath> //sqrt
 
 Vector2d::Vector2d() {}
 

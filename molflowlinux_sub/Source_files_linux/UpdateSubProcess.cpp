@@ -25,8 +25,8 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 #include "SimulationLinux.h"
 extern Simulation *sHandle;
-extern ProblemDef* p;
-extern SimulationHistory* simHistory;
+//extern ProblemDef* p;
+//extern SimulationHistory* simHistory;
 
 //-----------------------------------------------------------
 //----Update values of subprocess
