@@ -25,7 +25,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MolflowLinux}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MolflowLinux/include/include/gsl}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MolflowLinux/molflowlinux_sub/}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MolflowLinux/molflowlinux_sub/include1}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MolflowLinux/molflowlinux_sub/Header}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MolflowLinux/molflowlinux_sub/cereal/external/rapidjson}&quot;"/>
@@ -51,9 +50,12 @@
 							<tool command="mpic++" id="cdt.managedbuild.tool.gnu.cpp.linker.base.1731393964" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.link.option.libs.72278281" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" value="gsl"/>
+									<listOptionValue builtIn="false" value="gslcblas"/>
 									<listOptionValue builtIn="false" value="quadmath"/>
 								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="true" id="gnu.cpp.link.option.paths.87496808" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" useByScannerDiscovery="false" valueType="libPaths"/>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.link.option.paths.87496808" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" useByScannerDiscovery="false" valueType="libPaths">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MolflowLinux/include/lib}&quot;"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.31878039" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
