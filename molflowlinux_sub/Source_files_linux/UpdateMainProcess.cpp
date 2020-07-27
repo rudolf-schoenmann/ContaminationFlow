@@ -106,7 +106,14 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 	}
 
 	//if targetError not reached: do not update currentstep
-	if(checkError(p->targetError, total_error_covering, 1.0, p->errorMode)){simHistory->currentStep += 1;}
+	double total_error;
+	if (p->errorMode == "covering"){
+			total_error = total_error_covering;
+	}
+	else{
+			total_error = total_error_event;
+	}
+	if(checkError(p->targetError, total_error, 1.0, p->errorMode)){simHistory->currentStep += 1;}
 
 	tmpstream <<"Krealvirt = " << Krealvirt << std::endl;
 	tmpstream << "Covering difference will be multiplied by Krealvirt: " << Krealvirt << std::endl;
