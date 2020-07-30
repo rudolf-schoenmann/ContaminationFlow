@@ -29,7 +29,7 @@
 	\node (p0hitbuffer)[textboxmed, rectangle split, rectangle split parts=2] at (0,5.7)
 	{
 		\textbf{Main Process 0}
-		\nodepart{second} Broadcast hitbuffer
+		\nodepart{second} Broadcast hitbuffer\\covering
 	};
 
 	\node (p1geo)[textboxmed, rectangle split, rectangle split parts=2] at (5,6.5)
@@ -96,7 +96,7 @@
 	\node (p0upd)[textboxmed, rectangle split, rectangle split parts=2] at (0,-4.7)
 	{
 		\textbf{Main Process 0}
-		\nodepart{second} Update real covering in hitbuffer
+		\nodepart{second} Update real covering in hitbuffer\\ Update SimulationHistory
 	};
 
 	\draw let \p1=(p0buffer.second west) in [->, line width=0.04cm] (\x1-1.5cm,\y1) -- (\p1);
@@ -146,7 +146,7 @@
 	\path let \p1=(p0p1hit.second east), \p2=(p1hit.second west) in node [above] at (0.5*\x1+0.5*\x2,\y1) {MPI};
 
 	\draw let \p1=(p0upd.second west) in [<-, line width=0.04cm] (\x1-1.5cm,\y1-0.2cm) -- (\x1,\y1-0.2cm);
-	\path let \p1=(p0upd.second west) in node [below] at (\x1-0.75cm,\y1-0.2cm) {Export};
+	\path let \p1=(p0upd.second west) in node [below, text width=1.5cm] at (\x1-0.75cm,\y1-0.2cm) {Export SimulationHistory};
 
 	%\draw[fill] (0,0.66) circle [radius=0.06];
 	%\draw[fill] (0,0.41) circle [radius=0.06];
@@ -187,9 +187,16 @@
 Call of ContaminationFlow Linux application in the command line:
 \code{
 \$ module load mpi\\
-\$ mpirun -n N\ MolflowLinux inputfile save}
+\$ mpirun -n N --options \ MolflowLinux inputfile save}
 \leavevmode\\[-8pt]
-with the following command line parameters:
+with the following MPI \codew{--options}:
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item  (No option): use processor cores (recommended if possible)
+\item \codew{--use-hwthread-cpus}: use hardware threads instead processor cores (recommended if N $>$ number cores)
+\item \codew{--oversubscribe}: ignore available slots, for any number of MPI processes
+\end{itemize}
+\bigskip
+and command line parameters:
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item \codew{N}: desired number of worker processes; simulation on K=N-1 worker processes
 \item \codew{MolflowLinux}: path to application, e.g.\ \codew{\textasciitilde/MolflowLinux/Debug/MolflowLinux}
@@ -234,6 +241,9 @@ and the input file defining the following parameters:
 \item \codew{$convergenceTarget$}: Target for avg.\ statistics to indicate convergence; default: \codew{1}
 \item \codew{$stopConverged$}: Stop simulation if avg.\ statistics indicate convergence; default: \codew{1}
 \item \codew{$convergenceTime$}: Min.\ simulated time to stop simulation if converged; default: \codew{0}
+\item \codew{$facetGroups$}:  Indices of facets belonging to a group, groups divided by -; default:\codew{[]}
+\item \codew{$focusGroup$}: Indices of facet groups to be monitored; default:\codew{[]}
+\item \codew{$doFocusGroupOnly$}: determines of only facetGroup facets are monitored facets; default:\codew{1}
 \end{itemize}
 %\section{General Changes}
 %
@@ -283,7 +293,7 @@ and the input file defining the following parameters:
 \item Increase precision for variables if required (float128, uint\_128t)
 \item Avoid overflow for integer and underflow for floating point numbers
 \end{itemize}
-%\newpage
+\newpage
 \section{New Quantities}
 \label{sub:quant}
 \subsubsection{New counter \codew{covering}}
@@ -737,8 +747,9 @@ and the input file defining the following parameters:
 \subsubsection{General Pipeline}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Initialize MPI, \codew{ProblemDef p} and \codew{SimulationHistory simHistory}
+\item Check if all simulation parameters are valid
 \item Load geometry into \codew{Simulation sHandle} using \codew{LoadSimulation()}
-\item Iteration until \codew{p$\rightarrow$maxTimeS} or \codew{p$\rightarrow$convergenceTarget} is reached: \smallskip
+\item Iteration until \codew{p$\rightarrow$maxTimeS} or\\ \codew{p$\rightarrow$convergenceTarget} (\codew{p$\rightarrow$convergenceTime},\codew{p$\rightarrow$stopConverged}) is reached: \smallskip
 	\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 	\item[$\bullet$] Reset hitbuffer counters using \codew{initbufftotero($\cdot$)}
 	\item[$\bullet$] Broadcast \codew{simHistory$\rightarrow$coveringList} using \codew{MPI\_Bcast($\cdot$)}
