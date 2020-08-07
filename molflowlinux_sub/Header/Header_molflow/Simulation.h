@@ -116,6 +116,15 @@ public:
 	void RegisterTransparentPass(); //Allows one shared Intersect routine between MolFlow and Synrad
 
 	double getArea(){return sh.area*(sh.is2sided ? 2.0 : 1.0);}
+
+	size_t GetHitsSize(size_t nbMoments)  { //for hits dataport
+		return   (1 + nbMoments)*(
+			sizeof(FacetHitBuffer) +
+			+(sh.texWidth*sh.texHeight * sizeof(TextureCell))
+			+ (sh.isProfile ? (PROFILE_SIZE * sizeof(ProfileSlice)) : 0)
+			+ (sh.countDirection ? (sh.texWidth*sh.texHeight * sizeof(DirectionCell)) : 0)
+			+ sh.facetHistogramParams.GetDataSize()
+			) + sh.anglemapParams.GetRecordedDataSize();}
 };
 
 // Local simulation structure
@@ -189,6 +198,20 @@ public:
 
 	// Particle coordinates (MC)
 	CurrentParticleStatus currentParticle;
+
+	size_t GetHitsSize() {
+
+		// Compute number of bytes allocated
+		size_t memoryUsage = 0;
+		memoryUsage += sizeof(GlobalHitBuffer)+(1+moments.size())*wp.globalHistogramParams.GetDataSize();
+		for (unsigned int s = 0; s < sh.nbSuper; s++) {
+			for (SubprocessFacet& f : structures[s].facets) {
+				memoryUsage += f.GetHitsSize(moments.size());
+			}
+		}
+
+		return memoryUsage;
+	}
 
 
 };

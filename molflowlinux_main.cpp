@@ -27,7 +27,6 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "Simulation.h"
 #include "SimulationLinux.h"
 
-
 //typedef void *HANDLE;
 
 // Global process variables
@@ -187,6 +186,19 @@ int main(int argc, char *argv[]) {
 			MPI_Finalize();
 			return 0;
 		}
+
+		if(sHandle->GetHitsSize()!=(unsigned int)hitbuffer.size){
+			if(rank==0){
+				std::ostringstream tmpstream (std::ostringstream::app);
+				tmpstream << "Hitbuffer size not correctly calculated." << std::endl;
+				tmpstream << "ContaminationFlowLinux is terminated now." << std::endl;
+				printStream(tmpstream.str());
+			}
+			MPI_Finalize();
+			return 0;
+		}
+
+
 		if(sHandle->moments.size()){ // Check if there are zero moments
 			if(rank==0){
 				std::ostringstream tmpstream (std::ostringstream::app);

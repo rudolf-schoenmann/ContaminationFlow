@@ -58,6 +58,18 @@ bool checkWriteable(std::string fileName, int rank){
 	return false;
 
 }
+//-----------------------------------------------------------
+//Init buffer Size
+
+
+void initBuffSize(Databuff *databuffer,size_t size){
+	databuffer->size = size;
+	if(databuffer->buff){
+		delete[] databuffer->buff;
+		databuffer->buff==NULL;
+	}
+	databuffer->buff = new BYTE[size];
+}
 
 //-----------------------------------------------------------
 //Import/export of buffer files with filename given as char* or std::string
