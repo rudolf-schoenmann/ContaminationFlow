@@ -736,6 +736,8 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 
 	//normalFacets = std::vector<unsigned int>();
 
+	bool twoSidedExist=false;
+
 	double numHit;
 	llong numDes;
 	boost::multiprecision::uint128_t covering;
@@ -751,6 +753,9 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 
 			f.tmpCounter[0].hit.covering=(llong)covering;
 
+			if(f.sh.is2sided && f.sh.opacity>0.0)
+				twoSidedExist=true;
+
 			if(!p->vipFacets.empty()){
 				for(unsigned int i =0; i< p->vipFacets.size(); i++ ){
 					if(int(numFacet)==p->vipFacets[i].first){
@@ -764,6 +769,13 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 			numFacet+=1;
 		}
 	}
+
+	if(twoSidedExist){
+		std::ostringstream tmpstream (std::ostringstream::app);
+		tmpstream << "!!! Warning: There is a two sided facet with opacity. This might cause problems. !!!" << std::endl;
+		printStream(tmpstream.str());
+	}
+
 	coveringList.initList(numFacet);
 	coveringList.appendCurrent(0);
 	coveringList.initStatistics(numFacet);

@@ -29,8 +29,8 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <iomanip>
 #include <limits>
 #include <numeric>
-//#include <boost/multiprecision/cpp_int.hpp>
-//#include <boost/multiprecision/float128.hpp>
+#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/float128.hpp>
 
 //#include <boost/accumulators/statistics/rolling_variance.hpp>
 //#include <boost/accumulators/statistics/rolling_mean.hpp>

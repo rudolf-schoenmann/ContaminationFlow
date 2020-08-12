@@ -186,7 +186,6 @@ int main(int argc, char *argv[]) {
 			MPI_Finalize();
 			return 0;
 		}
-
 		if(sHandle->GetHitsSize()!=(unsigned int)hitbuffer.size){
 			if(rank==0){
 				std::ostringstream tmpstream (std::ostringstream::app);

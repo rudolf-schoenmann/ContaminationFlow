@@ -239,6 +239,11 @@ double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b){
 					t_start = rand_t * time_step;
 				}
 				else{//(coverage - 1) < (time_step/tau_ads): There are less layers (excluding the first monolayer), than desorbing while the iteration time.
+
+					std::ostringstream tmpstream (std::ostringstream::app);
+					tmpstream << "Facet "<<getFacetIndex(iFacet) <<" is predicted to reach monolayer this iteration" << std::endl;
+					printStream(tmpstream.str());
+
 					boost::multiprecision::float128 time_step_ads = tau_ads*(coverage - boost::multiprecision::float128(1));
 					boost::multiprecision::float128 time_step_subst = time_step - time_step_ads;
 
