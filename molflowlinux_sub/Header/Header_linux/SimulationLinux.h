@@ -362,7 +362,7 @@ public:
 	double t_min; // [s]
 
 	double t_max; // [s]
-	int maxTimePerIt;
+	int maxTimePerIt; //[s]
 
 	llong coveringMinThresh;
 
@@ -496,7 +496,7 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet);
 double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f);
 double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f);
 
-double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b);
+double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b, bool printWarning=false);
 
 //-----------------------------------------------------------
 //Iteration.cpp

@@ -61,6 +61,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 
 	int j_old=0;
 	bool j_print=false;
+	bool printWarning=true;
 
 	// Facets that have reached the covering threshold
 	std::vector<int> facetNum;
@@ -84,6 +85,13 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 				}
 			else{
 				std::tie(eos, realtimestep) = SimulationRun(timestep);      // Run for timestep ms, performs MC steps
+			}
+
+			if(printWarning && sHandle->stepPerSec<1.0){
+				std::ostringstream tmpstream (std::ostringstream::app);
+				tmpstream<< std::endl << "!!! Warning: Subprocess "<<rank <<" simulates less than 1 step per second. !!!" << std::endl<< std::endl;
+				printStream(tmpstream.str());
+				printWarning=false;
 			}
 
 		}

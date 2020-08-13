@@ -77,6 +77,60 @@ bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 	return false;
 	}
 
+bool loadAndCheckSHandle(int rank, Databuff* hitbuffer, Databuff* loadbuffer){
+	bool valid=true;
+
+	// Load geometry from buffer to sHandle
+	if (!LoadSimulation(loadbuffer)) { // Check if geometry in loadbuffer can be loaded
+		if(rank==0){
+			std::ostringstream tmpstream (std::ostringstream::app);
+			tmpstream << "Geometry not loaded." << std::endl;
+			tmpstream << "ContaminationFlowLinux is terminated now." << std::endl;
+			printStream(tmpstream.str());
+		}
+		valid=false;
+	}
+
+	// Check for inconsistent hitbuffer size
+	if(sHandle->GetHitsSize()!=(unsigned int)hitbuffer->size){
+		if(rank==0){
+			std::ostringstream tmpstream (std::ostringstream::app);
+			tmpstream << "Hitbuffer size not correctly calculated." << std::endl;
+			tmpstream << "ContaminationFlowLinux is terminated now." << std::endl;
+			printStream(tmpstream.str());
+		}
+		valid=false;
+	}
+
+	// Check if there are zero moments
+	if(sHandle->moments.size()){
+		if(rank==0){
+			std::ostringstream tmpstream (std::ostringstream::app);
+			tmpstream << "Number of moments "<<sHandle->moments.size() <<" > 0. ContaminationFlowLinux only implemented for 0 moments."<< std::endl;
+			tmpstream << "ContaminationFlowLinux is terminated now." << std::endl;
+			printStream(tmpstream.str());
+		}
+		valid=false;
+	}
+
+	// Check for two sided facet with opacity
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			if(f.sh.is2sided && f.sh.opacity>0.0){
+				if(rank==0){
+					std::ostringstream tmpstream (std::ostringstream::app);
+					tmpstream << "There is a two sided facet with opacity. This might cause undefined behavior." << std::endl;
+					tmpstream << "ContaminationFlowLinux is terminated now." << std::endl;
+					printStream(tmpstream.str());
+				}
+				valid=false;
+			}
+		}
+	}
+
+	return valid;
+}
+
 //-----------------------------------------------------------
 //Main Function
 int main(int argc, char *argv[]) {
@@ -175,40 +229,11 @@ int main(int argc, char *argv[]) {
 	if (p->simulationTimeMS != 0) {
 		//Creates sHandle instance for process 0 and all subprocesses (before the first iteration step starts)
 		InitSimulation();
-		// Load geometry from buffer to sHandle
-		if (!LoadSimulation(&loadbuffer)) { // Check if geometry in loadbuffer can be loaded
-			if(rank==0){
-				std::ostringstream tmpstream (std::ostringstream::app);
-				tmpstream << "Geometry not loaded." << std::endl;
-				tmpstream << "ContaminationFlowLinux is terminated now." << std::endl;
-				printStream(tmpstream.str());
-			}
+		// Load geometry from buffer to sHandle and check for invalid values
+		if(!loadAndCheckSHandle(rank,&hitbuffer,&loadbuffer)){
 			MPI_Finalize();
 			return 0;
 		}
-		if(sHandle->GetHitsSize()!=(unsigned int)hitbuffer.size){
-			if(rank==0){
-				std::ostringstream tmpstream (std::ostringstream::app);
-				tmpstream << "Hitbuffer size not correctly calculated." << std::endl;
-				tmpstream << "ContaminationFlowLinux is terminated now." << std::endl;
-				printStream(tmpstream.str());
-			}
-			MPI_Finalize();
-			return 0;
-		}
-
-
-		if(sHandle->moments.size()){ // Check if there are zero moments
-			if(rank==0){
-				std::ostringstream tmpstream (std::ostringstream::app);
-				tmpstream << "Number of moments "<<sHandle->moments.size() <<" > 0. ContaminationFlowLinux only implemented for 0 moments."<< std::endl;
-				tmpstream << "ContaminationFlowLinux is terminated now." << std::endl;
-				printStream(tmpstream.str());
-			}
-			MPI_Finalize();
-			return 0;
-		}
-
 		initCoveringThresh();
 		UpdateSojourn();
 
@@ -299,6 +324,7 @@ int main(int argc, char *argv[]) {
 				sHandle->posCovering=true;//assumption that negative covering has been resolved before: implemented through covering threshold in sub processes and smallCovering workaoround
 				checkSmallCovering(rank, &hitbuffer); // Calculate smallCoveringFactor for this iteration
 
+				MPI_Barrier(MPI_COMM_WORLD);
 				//Do the simulation
 				bool eos; std::vector<int> facetNum;
 				std::tie(eos, facetNum) = simulateSub2(&hitbuffer, rank, p->simulationTimeMS);
@@ -323,6 +349,12 @@ int main(int argc, char *argv[]) {
 			else{
 				t0 = GetTick();
 				checkSmallCovering(rank, &hitbuffer_sum); // Calculate smallCoveringFactor for this iteration
+				for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+					for (SubprocessFacet& f : sHandle->structures[s].facets) {
+						calcStartTime(&f,true,true);
+					}
+				}
+				MPI_Barrier(MPI_COMM_WORLD);
 				MPI_Barrier(MPI_COMM_WORLD);
 				t1 = GetTick();
 				computationTime+=t1-t0; // Add calculation time of current iteration
