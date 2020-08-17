@@ -283,11 +283,65 @@ void checkSmallCovering(int rank, Databuff *hitbuffer_sum){
 	simHistory->smallCoveringFactor=smallCoveringFactor;
 }
 
+bool readCovering(Databuff* hitbuffer, std::string coveringFile, int rank){
+	std::ifstream input(coveringFile,std::ifstream::in);
+	std::string inp;
+	std::string mode;
+	input>>mode;
+
+	std::vector<llong>covering{};
+	std::vector<double>coverage{};
+
+	if(mode=="covering"){
+		llong cov;
+		while(input>>cov){
+			covering.push_back(cov);
+		}
+		if(covering.size()!=sHandle->sh.nbFacet)
+			return false;
+	}
+	else if(mode=="coverage"){
+		double cov;
+		while(input>>cov){
+			coverage.push_back(cov);
+			covering.push_back(0);
+		}
+		if(coverage.size()!=sHandle->sh.nbFacet)
+			return false;
+
+		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+			for (SubprocessFacet& f : sHandle->structures[s].facets) {
+				int idx=getFacetIndex(&f);
+				covering[idx] = llong(coverage[idx]*calcNmono(&f));
+			}
+		}
+	}
+	else
+		return false;
+
+	if(rank==0){
+		std::ostringstream tmpstream (std::ostringstream::app);
+		tmpstream << "New covering loaded from "<<home_to_tilde(p->coveringPath) << std::endl;
+		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+			for (SubprocessFacet& f : sHandle->structures[s].facets) {
+				llong cov=covering[getFacetIndex(&f)];
+				getFacetHitBuffer(&f,hitbuffer)->hit.covering = cov;
+				tmpstream <<"\t"<<double(cov);
+				//f.tmpCounter[0].hit.covering =cov;
+			}
+		}
+		tmpstream<<std::endl;
+		printStream(tmpstream.str());
+	}
+	return true;
+}
+
 //-----------------------------------------------------------
 //----ProblemDef class
 ProblemDef::ProblemDef(){
 	loadbufferPath= "~/Buffer/loadbuffer_alle_RT";
 	hitbufferPath="~/Buffer/hitbuffer_allee-6";
+	coveringPath="";
 	loadbufferPath=tilde_to_home(loadbufferPath);
 	hitbufferPath=tilde_to_home(hitbufferPath);
 
@@ -395,6 +449,7 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 
 		if(stringIn == "loadbufferPath") {is >> stringIn; loadbufferPath=stringIn;}
 		else if(stringIn == "hitbufferPath") {is >> stringIn; hitbufferPath=stringIn;}
+		else if(stringIn == "coveringPath") {is >> stringIn; coveringPath=stringIn;}
 		else if(stringIn == "simulationTime") {is >>doubleIn; simulationTime = doubleIn;}
 		else if(stringIn == "unit"){is >> stringIn; unit=stringIn;}
 
@@ -566,6 +621,7 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 	// Convert ~ to home directory
 	loadbufferPath=tilde_to_home(loadbufferPath);
 	hitbufferPath=tilde_to_home(hitbufferPath);
+	coveringPath=tilde_to_home(coveringPath);
 
 	if(saveResults)
 		writeInputfile(resultpath+"/InputFile.txt",rank);
@@ -588,6 +644,7 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 	if(printConversion) out  <<"resultPath" <<'\t' <<home_to_tilde(resultpath) <<std::endl;
 	out  <<"loadbufferPath" <<'\t' <<home_to_tilde(loadbufferPath) <<std::endl;
 	out  <<"hitbufferPath" <<'\t' <<home_to_tilde(hitbufferPath) <<std::endl;
+	out  <<"coveringPath" <<'\t' <<home_to_tilde(coveringPath) <<std::endl;
 	//if(printConversion) out  <<"resultbufferPath" <<'\t' <<resultbufferPath <<std::endl;
 	if(printConversion) out <<std::endl;
 

@@ -338,6 +338,7 @@ public:
 	// These can be given as parameters directly
 	std::string loadbufferPath;
 	std::string hitbufferPath;
+	std::string coveringPath;
 	double simulationTime;
 	std::string unit;
 
@@ -438,6 +439,7 @@ std::tuple<bool, std::vector<int>>  simulateSub2(Databuff *hitbuffer, int rank, 
 double convertunit(double simutime, std::string unit);
 void printStream(std::string string, bool print=true);
 void checkSmallCovering(int rank, Databuff *hitbuffer_sum);
+bool readCovering(Databuff* hitbuffer, std::string coveringFile, int rank);
 
 //ProblemDef
 //SimulationHistory
@@ -471,6 +473,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 //-----------------------------------------------------------
 //SimulationCalc.cpp
 FacetHitBuffer* getFacetHitBuffer(SubprocessFacet *iFacet, Databuff *hitbuffer);
+double calcNmono(SubprocessFacet *iFacet);
 
 llong getnbDesorbed(Databuff *hitbuffer_sum);
 llong getnbDesorbed(SubprocessFacet *iFacet, Databuff *hitbuffer);

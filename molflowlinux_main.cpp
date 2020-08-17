@@ -71,7 +71,7 @@ bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 	else if(argc<4 && argc>1){ // Read input file
 		if(checkReadable(argv[1],rank)){
 			bool valid = p->readInputfile(argv[1],rank, argc==3?(int)std::atof(argv[2]):1);
-			if(!checkReadable(p->hitbufferPath,rank)||!checkReadable(p->loadbufferPath,rank)){return false;}
+			if(!checkReadable(p->hitbufferPath,rank)||!checkReadable(p->loadbufferPath,rank)||(p->coveringPath!=""&&!checkReadable(p->coveringPath,rank))){return false;}
 			return valid;}
 		}
 	return false;
@@ -128,7 +128,47 @@ bool loadAndCheckSHandle(int rank, Databuff* hitbuffer, Databuff* loadbuffer){
 		}
 	}
 
+	//Read coveringFile
+	if(p->coveringPath!=""){
+		if(!readCovering(hitbuffer,p->coveringPath,rank)){
+			if(rank==0){
+				std::ostringstream tmpstream (std::ostringstream::app);
+				tmpstream << "Invalid covering file "<<home_to_tilde(p->coveringPath) << std::endl;
+				tmpstream << "ContaminationFlowLinux is terminated now." << std::endl;
+				printStream(tmpstream.str());
+			}
+			valid=false;
+		}
+	}
 	return valid;
+}
+
+void clearAll(Databuff* hitbuffer, Databuff* hitbuffer_sum, Databuff* loadbuffer){
+	//--delete buffers
+	if (hitbuffer->buff != NULL) {
+		delete[] hitbuffer->buff;
+		hitbuffer->buff = NULL;
+	}
+	if (hitbuffer_sum->buff != NULL) {
+		delete[] hitbuffer_sum->buff;
+		hitbuffer_sum->buff = NULL;
+	}
+	if (loadbuffer->buff != NULL) {
+		delete[] loadbuffer->buff;
+		loadbuffer->buff = NULL;
+	}
+	if (simHistory!=NULL){
+		delete simHistory;
+		simHistory=NULL;
+	}
+	if(p!=NULL){
+		delete p;
+		p=NULL;
+	}
+	if(sHandle!=NULL){
+		delete sHandle;
+		sHandle=NULL;
+	}
 }
 
 //-----------------------------------------------------------
@@ -171,6 +211,7 @@ int main(int argc, char *argv[]) {
 			tmpstream <<"Minimum number of 2 processes needed. Currently "<<world_size <<std::endl;
 			printStream(tmpstream.str());
 		}
+		clearAll(&hitbuffer, &hitbuffer_sum,&loadbuffer);
 		MPI_Finalize();
 		return 0;
 	}
@@ -186,7 +227,7 @@ int main(int argc, char *argv[]) {
 			tmpstream <<"Ending Simulation." <<std::endl;
 			printStream(tmpstream.str());
 		}
-
+		clearAll(&hitbuffer, &hitbuffer_sum,&loadbuffer);
 		MPI_Finalize();
 		return 0;
 	}
@@ -231,6 +272,8 @@ int main(int argc, char *argv[]) {
 		InitSimulation();
 		// Load geometry from buffer to sHandle and check for invalid values
 		if(!loadAndCheckSHandle(rank,&hitbuffer,&loadbuffer)){
+			MPI_Barrier(MPI_COMM_WORLD);
+			clearAll(&hitbuffer, &hitbuffer_sum,&loadbuffer);
 			MPI_Finalize();
 			return 0;
 		}
@@ -247,7 +290,6 @@ int main(int argc, char *argv[]) {
 			// Initialize simHistory for main process from hitbuffer
 			//simHistory contains the relevant results/quantities of the simulation. E.g., covering history, total simulated time, etc.
 			simHistory = new SimulationHistory (&hitbuffer, world_size);
-			//TODO: maybe add possibility of covering.txt file input
 
 			std::cout <<p->focusGroup.second.size() <<" facet(s) in focusGroup"<<std::endl;
 			for(int grpidx:p->focusGroup.second){
@@ -259,6 +301,7 @@ int main(int argc, char *argv[]) {
 			//Initialize simHistory for subprocesses
 			simHistory = new SimulationHistory(world_size);
 		}
+
 		//Send hitbuffer to all subprocesses
 		MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 	}
@@ -476,20 +519,8 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
-
-	//--delete buffers
-	if (hitbuffer.buff != NULL) {
-		delete[] hitbuffer.buff;
-		hitbuffer.buff = NULL;
-	}
-	if (hitbuffer_sum.buff != NULL) {
-		delete[] hitbuffer_sum.buff;
-		hitbuffer_sum.buff = NULL;
-	}
-	if (loadbuffer.buff != NULL) {
-		delete[] loadbuffer.buff;
-		loadbuffer.buff = NULL;
-	}
+	// Clear memory
+	clearAll(&hitbuffer, &hitbuffer_sum,&loadbuffer);
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	if (rank == 0)
