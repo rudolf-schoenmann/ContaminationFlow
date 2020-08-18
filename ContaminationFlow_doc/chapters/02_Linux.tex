@@ -206,34 +206,35 @@ and command line parameters:
 \bigskip
 and the input file defining the following parameters:
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item \codew{$loadbufferPath$}: path to loadbuffer file, contains geometry, e.g.\ \codew{\textasciitilde/loadbuffer}
-\item \codew{$hitbufferPath$}: path to hitbuffer file, contains counters, etc., e.g.\ \codew{\textasciitilde/hitbuffer}
+\item \codew{$loadbufferPath$}: Path to loadbuffer file, contains geometry, e.g.\ \codew{\textasciitilde/loadbuffer}
+\item \codew{$hitbufferPath$}: Path to hitbuffer file, contains counters, etc., e.g.\ \codew{\textasciitilde/hitbuffer}
+\item \codew{$coveringPath$}: Path to covering file, contains either covering or coverage per facet, file can be exported from ContaminationFlow Windows, etc., e.g.\ \codew{\textasciitilde/covering.txt}; default: \codew{""}
 %\item resultbufferPath: path to resultbuffer file, where the final hitbuffer is exported to,\\ e.g.\ \codew{\textasciitilde/resultbuffer}
-\item \codew{$simulationTime$}: simulation time per iteration step; default: \codew{10.0}
-\item \codew{$unit$}: simulation time unit; default: \codew{s}
-\item \codew{$maxTime$}: max.\ simulated time; default: \codew{10.0}
-\item \codew{$maxUnit$}: max.\ simulated time unit; default: \codew{y}
-\item \codew{$iterationNumber$}: number of iterations; default: 43200
+\item \codew{$simulationTime$}: Simulation time per iteration step; default: \codew{10.0}
+\item \codew{$unit$}: Simulation time unit; default: \codew{s}
+\item \codew{$maxTime$}: Max.\ simulated time; default: \codew{10.0}
+\item \codew{$maxUnit$}: Max.\ simulated time unit; default: \codew{y}
+\item \codew{$iterationNumber$}: Number of iterations; default: 43200
 %\item \codew{$s_1$}, coefficient used for calculation of sticking coefficient; default:\codew{1}
 %\item \codew{$s_2$}, coefficient used for calculation of sticking coefficient; default:\codew{0.2}
 %\item \codew{$E_{ad}$}, energy used for calculation of sticking coefficient; default:\codew{1\text{E}-21}
 %\item\codew{$d$}: power for base of coverage used for calculation of desorption; default:\codew{1}
-\item \codew{$particleDia$}: diameter of particles; default:\codew{2.76\text{E}-10}
-\item \codew{$E_{de}$}: binding energy of a particle on pure substrate; default:\codew{1.6\text{E}-19}
-\item \codew{$H_{vap}$}: vaporization enthalpy of a particle if multilayer contamination; default:\codew{0.8\text{E}-19}
+\item \codew{$particleDia$}: Diameter of particles; default:\codew{2.76\text{E}-10}
+\item \codew{$E_{de}$}: Binding energy of a particle on pure substrate; default:\codew{1.6\text{E}-19}
+\item \codew{$H_{vap}$}: Vaporization enthalpy of a particle if multilayer contamination; default:\codew{0.8\text{E}-19}
 %\item \codew{$W_{tr}$}: transition width between monolayer and multilayer properties; default:\codew{1}
-\item \codew{$sticking$}: constant sticking coefficient for all facets; default:\codew{0}
+\item \codew{$sticking$}: Constant sticking coefficient for all facets; default:\codew{0}
 %\item \codew{$coveringLimit$}: threshold for zero desoprtion; default:\codew{0}
 \item \codew{$errorMode$}: Type of error monitored, "covering" or "event"; default: \codew{covering}
-\item \codew{$targetPaticles$}: min.\ number of desorbed particles per iteration; default: \codew{1000}
-\item \codew{$targetError$}: avg.\ statistical uncertainty (error) to be achieved for each iteration, calculated as the avg.\ (weighted with the facets area) of the normalized standard deviation of events per facet; default: \codew{0.001}
+\item \codew{$targetPaticles$}: Min.\ number of desorbed particles per iteration; default: \codew{1000}
+\item \codew{$targetError$}: Avg.\ statistical uncertainty (error) to be achieved for each iteration, calculated as the avg.\ (weighted with the facets area) of the normalized standard deviation of events per facet; default: \codew{0.001}
 \item \codew{$hitRatioLimit$}: Ratio (facet/all), e.g., number events or covering change, at which facet is ignored for error calculation; default: \codew{0}
-\item \codew {$t\_min$}: min.\ time for step size; default:\codew{1\text{E}-4}
-\item \codew{$t\_max$}: max.\ time for step size; default:\codew{max}
-\item \codew{$maxTimePerIt$}: max.\ simulation time [s] per iteration; default:\codew{max}
-\item \codew{$coveringMinThresh$}: min.\ covering (through multiplication); default:\codew{1000000}
+\item \codew {$t\_min$}: Min.\ time for step size; default:\codew{1\text{E}-4}
+\item \codew{$t\_max$}: Max.\ time for step size; default:\codew{max}
+\item \codew{$maxTimePerIt$}: Max.\ simulation time [s] per iteration; default:\codew{max}
+\item \codew{$coveringMinThresh$}: Min.\ covering (through multiplication); default:\codew{1000000}
 \item \codew{$histsize$}: Size of history lists; default:\codew{max}
-\item \codew{$vipFacets$}: very important facets: facets with own target error. Alternating sequence of facet numbers and respective target errors separated via blanks; default:\codew{[]}
+\item \codew{$vipFacets$}: Very important facets: facets with own target error. Alternating sequence of facet numbers and respective target errors separated via blanks; default:\codew{[]}
 \item \codew{$outgassingTimeWindow$}: Duration [s] of outgassing impulse; default: \codew{0.0}
 \item \codew{$counterWindowPercent$}: Percentage of step size (posterior) at which velocity counters are increased; default: \codew{0.1}
 \item \codew{$desWindowPercent$}: Percentage of step size (anterior) at which desorption occurs; default: \codew{1.0}
@@ -243,7 +244,13 @@ and the input file defining the following parameters:
 \item \codew{$convergenceTime$}: Min.\ simulated time to stop simulation if converged; default: \codew{0}
 \item \codew{$facetGroups$}:  Indices of facets belonging to a group, groups divided by -; default:\codew{[]}
 \item \codew{$focusGroup$}: Indices of facet groups to be monitored; default:\codew{[]}
-\item \codew{$doFocusGroupOnly$}: determines of only facetGroup facets are monitored facets; default:\codew{1}
+\item \codew{$doFocusGroupOnly$}: Determines of only facetGroup facets are monitored facets; default:\codew{1}
+\end{itemize}
+\bigskip
+Optional covering file to overwrite hitbuffer. There are two options (that can both be exported from ContaminationFlow Windows):
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item  set covering: \codew{covering} followed by covering values per facet, seperated via blanks
+\item  set coverage: \codew{coverage} followed by coverage values per facet, seperated via blanks
 \end{itemize}
 %\section{General Changes}
 %
@@ -748,7 +755,14 @@ and the input file defining the following parameters:
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Initialize MPI, \codew{ProblemDef p} and \codew{SimulationHistory simHistory}
 \item Check if all simulation parameters are valid
-\item Load geometry into \codew{Simulation sHandle} using \codew{LoadSimulation()}
+\item Load geometry into \codew{Simulation sHandle} and check if values are valid using \codew{loadAndCheckSHandle()}
+	\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+		\item[$\bullet$] Load geometry using \codew{LoadSimulation}
+		\item[$\bullet$] Check for correct hitbuffer size
+		\item[$\bullet$] Check for zero moments
+		\item[$\bullet$] Check for no two-sided facets with opacity
+		\item[$\bullet$] Check for valid covering file
+	\end{itemize}
 \item Iteration until \codew{p$\rightarrow$maxTimeS} or\\ \codew{p$\rightarrow$convergenceTarget} (\codew{p$\rightarrow$convergenceTime},\codew{p$\rightarrow$stopConverged}) is reached: \smallskip
 	\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 	\item[$\bullet$] Reset hitbuffer counters using \codew{initbufftotero($\cdot$)}

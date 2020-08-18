@@ -336,6 +336,7 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \rule{0pt}{3ex} outFile& Path of file that contains terminal output\\
 \rule{0pt}{3ex} loadbufferPath& Path of loadbuffer file\\
 \rule{0pt}{3ex} hitbufferPath& Path of hitbuffer file\\
+\rule{0pt}{3ex} coveringPath& Path of covering file\\
 \rule{0pt}{3ex} saveResults& 1: save all results, 0: donot save results\\
 \rule{0pt}{3ex} simulationTime, unit& \multirow{2}{*}{Computation time of each iteration in milliseconds}\\
 \enskip$\Rightarrow$simulationTimeMS&\\
@@ -355,8 +356,8 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \rule{0pt}{3ex}  histSize&  Size of historyList objects (most recent values in memory)\\
 \rule{0pt}{3ex}  vipFacets&  alterning: vip facet and target error, e.g.\ 1 0.001 3 0.002\\
 \rule{0pt}{3ex}  outgassingTimeWindow&  Duration of outgassing impulse\\
-\rule{0pt}{3ex}  \multirow{2}{*}{counterWindowPercent}&  Percentage of step size (posterior)\\ & at which velocity counters are increased\\
-\rule{0pt}{3ex}  desWindowPercent&  Percentage of step size (anterior) for desorption\\
+\rule{0pt}{3ex}  counterWindowPercent&  [\%] of step size (posterior) at which velocity counters are increased\\
+\rule{0pt}{3ex}  desWindowPercent&  [\%] of step size (anterior) for desorption\\
 \rule{0pt}{3ex}  rollingWindowSize&  Number of iterations over which statistics are calculated\\
 \rule{0pt}{3ex}  convergenceTarget&  Target for average ratio (std/mean) for convergence\\
 \rule{0pt}{3ex}  stopConverged&  1: stop simulation at convergence, 0: continue simulation\\
@@ -384,7 +385,7 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \rule{0pt}{3ex} \multirow{2}{*}{parametercheck()}& Checks validity of input parameters from input file\\& Defines values for ProblemDef object \codew{p} \\
 \rule{0pt}{3ex} importBuff()& Import load- and hitbuffer to main process\\
 \rule{0pt}{3ex} MPI\_Bcast()& Send loadbuffer to sub processes\\
-\rule{0pt}{3ex} LoadSimulation()& Load geometry from loadbuffer\\
+\rule{0pt}{3ex} loadAndCheckSHandle()& Load geometry from loadbuffer and check values\\
 \rule{0pt}{3ex} initCoveringThresh()& Initialize covering threshold\\
 \rule{0pt}{3ex} UpdateSojourn()& Enable sojourn time for each facet\\
 \rule{0pt}{3ex} \codew{simHistory}& Initialize SimulationHistory object\\
@@ -414,7 +415,7 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \rule{0pt}{3ex} UpdateCovering()& Calculate and save new covering to simHistory\\
 \rule{0pt}{3ex} UpdateCoveringphys()& Save current covering to hitbuffer\\
 \rule{0pt}{3ex} \codew{simHistory$\rightarrow$erase()}& Adapt historyList size of to \codew{p$\rightarrow$histSize}\\ 
-\rule{0pt}{3ex}\footnotesize updateStatistics(), getAverageStatistics()& Statistics over \codew{p$\rightarrow$rollingWindowSize} iterations\\ 
+\rule{0pt}{3ex} \footnotesize updateStatistics(), getAverageStatistics()& Statistics over \codew{p$\rightarrow$rollingWindowSize} iterations\\ 
 \hline
 \multicolumn{2}{|c|}{\rule{0pt}{2.5ex}End simulation if \codew{p$\rightarrow$maxTimeS} or \codew{p$\rightarrow$convergenceTarget} is reached}\\
 \hline
@@ -435,8 +436,8 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}simulateSub()}\\
 \hline
 \rule{0pt}{3ex}\codew{simHistory->updateHistory()}& Update SimulationHistory object from \codew{sHandle}\\
-\rule{0pt}{3ex}\multirow{2}{*}{ smallCoveringFactor}& If covering is small: Covering is multiplied by\\ & smallCoveringFactor to be able to have statistics\\ & without overflow of the covering variable\\
-\rule{0pt}{3ex}\multirow{2}{*}{ targetParticles, targetError}& Calculate target values from overall target\\& and number sub processes\\
+\rule{0pt}{3ex}\multirow{2}{*}{ smallCoveringFactor}& If covering is small: multiplied by smallCoveringFactor to be\\ & able to have statistics without overflow of covering variable\\
+\rule{0pt}{3ex} targetParticles, targetError& Calculate target values from overall target /\# sub processes\\
 %\rule{0pt}{3ex} StartSimulation()& Create first particle\\
 \rule{0pt}{3ex} SimulationRun()& Simulate for desired simulation time\\
 \rule{0pt}{3ex} UpdateError()& Calculate current error of sub process\\
@@ -448,13 +449,14 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \hline
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}Small covering}\\
 \hline
-\rule{0pt}{3ex} \multirow{2}{*}{CheckSmallCovering()}& If covering is small, find smallCoveringFactor \\& to reach \codew{p$\rightarrow$coveringMinThresh}\\
+\rule{0pt}{3ex} CheckSmallCovering()& Find smallCoveringFactor to reach \codew{p$\rightarrow$coveringMinThresh}\\
 \rule{0pt}{3ex} Undo multiplication& In \codew{UpdateCovering()}\\
 \hline
 \multicolumn{2}{l}{}\\
 \hline
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}Others}\\
 \hline
+\rule{0pt}{3ex} readCovering() & Reads covering or covereage values, save to buffer\\
 \rule{0pt}{3ex} get\_path() & Get path of executable\\
 \rule{0pt}{3ex} printStream() & Print input string to terminal and file\\
 \rule{0pt}{3ex} tilde\_to\_home(),home\_to\_tilde() & Exchange \textasciitilde\ and home directory\\
@@ -500,6 +502,7 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \hline
 \rule{0pt}{3ex}  \multirow{2}{*}{Databuff struct()}& signed int size \\& BYTE *buff\\
 \hline
+\rule{0pt}{3ex} initBuffSize()& Initialize size of buffer (without content)\\
 \rule{0pt}{3ex} checkReadable()& Check if file can be opened for reading\\
 \rule{0pt}{3ex} checkWriteable()&  Check if file can be openend or created for writing\\
 \rule{0pt}{3ex} importBuff()& Import buffer file to Databuff struct\\
@@ -516,10 +519,8 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \hline
 \rule{0pt}{3ex} getCovering()& Get covering from hitbuffer or \codew{simHistory}\\
 \rule{0pt}{3ex} getHits()& Get number of hits from hitbuffer\\
-\rule{0pt}{3ex} \multirow{2}{*}{getnbDesorbed()}& Get number of total desorbed\\
-&molecules from hitbuffer\\
-\rule{0pt}{3ex} \multirow{2}{*}{getnbAdsorbed()}& Get number of total adsorbed\\
-&molecules from hitbuffer\\
+\rule{0pt}{3ex} getnbDesorbed()& Get number of total desorbed molecules from hitbuffer\\
+\rule{0pt}{3ex} getnbAdsorbed()& Get number of total adsorbed molecules from hitbuffer\\
 \rule{0pt}{3ex} calcNmono()& see eq.\ \ref{eq:nmono} \\
 %\rule{0pt}{3ex} calcdNsurf()& see eq.\ \ref{eq:nsurf} \\
 \rule{0pt}{3ex} calcCoverage()& see eq.\ \ref{eq:cov} \\
@@ -528,12 +529,11 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \rule{0pt}{3ex} calcStickingnew()& see eq.\ \ref{eq:sticking} \\
 \rule{0pt}{3ex} calcDesorption()& see eq.\ \ref{eq:des} \\
 \rule{0pt}{3ex} GetMoleculesPerTP()& see eq.\ \ref{eq:krealvirt} \\
-\rule{0pt}{3ex} \multirow{2}{*}{calctotalDesorption}& Calculate desorption for\\
-&\codew{startFromSource()} \\
+\rule{0pt}{3ex} calctotalDesorption& Calculate desorption for \codew{startFromSource()} \\
 \rule{0pt}{3ex} calcOutgassingFactor()& Calculate factor to determine outgassing particles\\
 \rule{0pt}{3ex} calcPressure()& see eq.\ \ref{eq:pressure} \\
 \rule{0pt}{3ex} calcParticleDensity()& see eq.\ \ref{eq:density} \\
-\rule{0pt}{3ex}\multirow{2}{*}{ calcStartTime()}& Calculate start time of particle\\& depending on desorption/outgassing distribution \\
+\rule{0pt}{3ex}\multirow{2}{*}{ calcStartTime()}& Calculate start time of particle depending on\\& desorption/outgassing distribution \\
 \hline
 \multicolumn{2}{l}{}\\
 \hline

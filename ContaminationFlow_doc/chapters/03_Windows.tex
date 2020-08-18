@@ -4,12 +4,17 @@
 \chapter{ContaminationFlow Windows}\label{chapter:Windows}
 
 \begin{itemize}[noitemsep,topsep=0pt]
+\item Expansion of original Molflow for contamination
 \item Create Geometry and set parameters such as initial coverage and temperature
+\item Import and export of buffer files
+\item Export of facet groups and covering file
 \end{itemize}
 %\smallskip
 
 \section{Graphical User Interface}
-Add screenshot of GUI
+\begin{figure}[h]
+\includegraphics[width=\linewidth]{figures/ContWin}
+\end{figure}
 
 \subsubsection{New GUI elements}
 \begin{itemize}[noitemsep,topsep=0pt]
@@ -26,13 +31,18 @@ Add screenshot of GUI
 \item Concentration and gas mass
 \end{itemize}
 %\item Text field for new sticking coefficient
-\item Window for CoveringHistory (reworked to SimulationHistory in ContaminationFlow Linux)
-\item PressureEvolution window expanded
-	\begin{itemize}[noitemsep,topsep=0pt]
-	\item Added list that contains information of graph
-	\item Option to show only selected facets or all
-	\item List exportable
-	\end{itemize}
+%\item Window for CoveringHistory (reworked to SimulationHistory in ContaminationFlow Linux)
+%\item PressureEvolution window expanded
+%	\begin{itemize}[noitemsep,topsep=0pt]
+%	\item Added list that contains information of graph
+%	\item Option to show only selected facets or all
+%	\item List exportable
+%	\end{itemize}
+\item New menu options
+\begin{itemize}[noitemsep,topsep=0pt]
+\item File: Export buffer, Import buffer, Export Cov.
+\item Selection: Export Selections
+\end{itemize}
 \end{itemize}
 
 %\section{Application}
@@ -43,16 +53,30 @@ Add screenshot of GUI
 	\hphantom{\quad}signed int size;\\
 	\hphantom{\quad}BYTE *buff;\\
 }Databuff;}
-\item New functions \codew{importBuff($\cdot$)} and \codew{exportBuff($\cdot$)} for import and export of buffer files/Databuff struct
-\item New options in file menu: \codew{Export buffer} and \codew{Import buffer}
+\item New functions \codew{importBuff($\cdot$)} and \codew{exportBuff($\cdot$)} for import and export of buffer files/Databuff
+\item New options in \codew{File} menu: \codew{Export buffer} and \codew{Import buffer}
 \end{itemize}
+
+\subsubsection{Export of Facet Groups}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item New functions to output (text file or text field line) correct formating of facet groups for input file for ContaminationFlow Linux
+\item New options in \codew{Selection} menu: \codew{Export Selections}
+\end{itemize}
+
+\subsubsection{Export of Covering/Coverage File}
+\begin{itemize}[noitemsep,topsep=0pt]
+\item Two output options: covering or coverage per facet
+\item New functions to output (text file or text field line) correct formating of covering/coverage file for ContaminationFlow Linux
+\item New options in \codew{File} menu: \codew{Export Cov.}
+\end{itemize}
+
 
 \section{New Quantities}
 \subsubsection{New counter \codew{covering}}
 \begin{itemize}[noitemsep,topsep=0pt]
-\item Covering computed in \codew{SimulationMC.cpp} file in \codew{updatecovering($\cdot$)}
 \item Added covering counter to hitbuffer
 \item Added covering to GUI, can be defined through textfield
+\item Covering increased at adsorb
 \end{itemize}
 
 \subsubsection{New facet property \codew{effetiveSurfaceFactor}}
@@ -85,14 +109,14 @@ Add screenshot of GUI
 \item Flow not needed for iterative Algorithm
 \end{itemize}
 
-\section{Iterative algorithm}
-\subsubsection{New class to store covering for all facets at any time} 
-\begin{itemize}[noitemsep,topsep=0pt]
-\item In \codew{HistoryWin.cpp} and \codew{HistoryWin.h} file
-\item \codew{std::vector<std::pair<double,std::vector<double>\,>\,> pointintime\_list} to store points in time and respective covering for all facets
-\item New GUI option to add and remove entries for \codew{pointintime\_list}
-\item New GUI option to export or import a complete list
-\end{itemize}
+%\section{Iterative algorithm}
+%\subsubsection{New class to store covering for all facets at any time} 
+%\begin{itemize}[noitemsep,topsep=0pt]
+%\item In \codew{HistoryWin.cpp} and \codew{HistoryWin.h} file
+%\item \codew{std::vector<std::pair<double,std::vector<double>\,>\,> pointintime\_list} to store points in time and respective covering for all facets
+%\item New GUI option to add and remove entries for \codew{pointintime\_list}
+%\item New GUI option to export or import a complete list
+%\end{itemize}
 
 %\section{Adaptation of Existing Code}
 %\subsubsection{Thats changed}
