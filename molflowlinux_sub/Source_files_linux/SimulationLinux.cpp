@@ -124,7 +124,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 			std::ostringstream tmpstream (std::ostringstream::app);
 			// Summary
 			tmpstream <<" Subprocess "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Adsorbed particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
-			tmpstream << " Facet" << std::setw(23)<<std::right<< "";
+			tmpstream << " Facet" << std::setw(18)<<std::right<< "";
 			int num;
 			// "Table header"
 			for (size_t k = 0; k < sHandle->sh.nbSuper; k++) {
@@ -205,7 +205,7 @@ void printStream(std::string string, bool print){
 	if(print)
 		std::cout <<string;
 	if(p->saveResults){
-		p->outFile.open(p->resultpath+"/console.txt", std::fstream::app);
+		p->outFile.open(p->resultPath+"/console.txt", std::fstream::app);
 		p->outFile <<string;
 		p->outFile.close();
 	}
@@ -221,27 +221,29 @@ std::string get_path(){
         return std::string( exepath );
 }
 
-//----convert molflow directory
-std::string convert_from_molflowdir(std::string path){
-	std::string molflowdir="molflowdir";
-	if(path.substr(0,molflowdir.length())==molflowdir) path.replace(0,molflowdir.length(),p->molflowpath);
+//----convert ContaminationFlow directory
+std::string convert_from_contflowdir(std::string path){
+	std::string contflowdir="CONTFLOWDIR";
+	if(path.substr(0,contflowdir.length())==contflowdir) path.replace(0,contflowdir.length(),p->contaminationFlowPath);
 	return path;
 }
 
-std::string convert_to_molflowdir(std::string path){
-	std::string molflowdir="molflowdir";
-	if(path.substr(0,p->molflowpath.length())==p->molflowpath) path.replace(0,p->molflowpath.length(),molflowdir);
+std::string convert_to_contflowdir(std::string path){
+	std::string contflowdir="CONTFLOWDIR";
+	if(path.substr(0,p->contaminationFlowPath.length())==p->contaminationFlowPath) path.replace(0,p->contaminationFlowPath.length(),contflowdir);
 	return path;
 }
 
 //----exchange ~ and home directory
 std::string tilde_to_home(std::string path){
+	//path=convert_to_contflowdir(path); //optional: convert ContaminationFlow directory
 	std::string home=getenv("HOME"); //expand ~
 	if(path[0]=='~') path.replace(0,1,home);
 	return path;
 }
 
 std::string home_to_tilde(std::string path){
+	//path=convert_from_contflowdir(path); //optional: convert ContaminationFlow directory
 	std::string home=getenv("HOME"); //expand ~
 	if(path.substr(0,home.length())==home) path.replace(0,home.length(),"~");
 	return path;
@@ -321,7 +323,7 @@ bool readCovering(Databuff* hitbuffer, std::string coveringFile, int rank){
 
 	if(rank==0){
 		std::ostringstream tmpstream (std::ostringstream::app);
-		tmpstream << "New covering loaded from "<<home_to_tilde(p->coveringPath) << std::endl;
+		tmpstream << "Covering loaded from "<<home_to_tilde(coveringFile) << std::endl;
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				llong cov=covering[getFacetIndex(&f)];
@@ -390,6 +392,8 @@ ProblemDef::ProblemDef(){
 	focusGroup.second = std::vector<int> ();
 	doFocusGroupOnly=true;
 
+	doCoveringFile=false;
+
 }
 
 void ProblemDef::createOutput(int save){
@@ -397,9 +401,9 @@ void ProblemDef::createOutput(int save){
 		std::string path=get_path();
 		//std::cout <<path <<std::endl;
 		char *test=&path[0u];
-		molflowpath=std::string(dirname(dirname(test)));
-		resultpath=molflowpath+"/results/"+std::to_string(time(0));
-		mkdir(resultpath.c_str(),S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+		contaminationFlowPath=std::string(dirname(dirname(test)));
+		resultPath=contaminationFlowPath+"/results/"+std::to_string(time(0));
+		mkdir(resultPath.c_str(),S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
 		saveResults=true;
 	}
@@ -424,7 +428,7 @@ void ProblemDef::readArg(int argc, char *argv[], int rank){
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
 
 	if(saveResults)
-		writeInputfile(resultpath+"/InputFile.txt",rank);
+		writeInputfile(resultPath+"/InputFile.txt",rank);
 
 }
 
@@ -449,7 +453,7 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 
 		if(stringIn == "loadbufferPath") {is >> stringIn; loadbufferPath=stringIn;}
 		else if(stringIn == "hitbufferPath") {is >> stringIn; hitbufferPath=stringIn;}
-		else if(stringIn == "coveringPath") {is >> stringIn; coveringPath=stringIn;}
+		else if(stringIn == "coveringPath") {if(is >> stringIn){coveringPath=stringIn; doCoveringFile=true;}} //First check if value is not empty string ""
 		else if(stringIn == "simulationTime") {is >>doubleIn; simulationTime = doubleIn;}
 		else if(stringIn == "unit"){is >> stringIn; unit=stringIn;}
 
@@ -624,7 +628,7 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 	coveringPath=tilde_to_home(coveringPath);
 
 	if(saveResults)
-		writeInputfile(resultpath+"/InputFile.txt",rank);
+		writeInputfile(resultPath+"/InputFile.txt",rank);
 
 	return valid;
 }
@@ -641,7 +645,7 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 
 	if(printConversion) out  <<std::endl<<"Print input arguments"<<std::endl;
 
-	if(printConversion) out  <<"resultPath" <<'\t' <<home_to_tilde(resultpath) <<std::endl;
+	if(printConversion) out  <<"resultPath" <<'\t' <<home_to_tilde(resultPath) <<std::endl;
 	out  <<"loadbufferPath" <<'\t' <<home_to_tilde(loadbufferPath) <<std::endl;
 	out  <<"hitbufferPath" <<'\t' <<home_to_tilde(hitbufferPath) <<std::endl;
 	out  <<"coveringPath" <<'\t' <<home_to_tilde(coveringPath) <<std::endl;

@@ -71,7 +71,7 @@ bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 	else if(argc<4 && argc>1){ // Read input file
 		if(checkReadable(argv[1],rank)){
 			bool valid = p->readInputfile(argv[1],rank, argc==3?(int)std::atof(argv[2]):1);
-			if(!checkReadable(p->hitbufferPath,rank)||!checkReadable(p->loadbufferPath,rank)||(p->coveringPath!=""&&!checkReadable(p->coveringPath,rank))){return false;}
+			if((!p->doCoveringFile&&!checkReadable(p->hitbufferPath,rank))||!checkReadable(p->loadbufferPath,rank)||(p->doCoveringFile&&!checkReadable(p->coveringPath,rank))){return false;}
 			return valid;}
 		}
 	return false;
@@ -91,8 +91,14 @@ bool loadAndCheckSHandle(int rank, Databuff* hitbuffer, Databuff* loadbuffer){
 		valid=false;
 	}
 
+	size_t hitsize=sHandle->GetHitsSize();
+	if(p->doCoveringFile){
+		initBuffSize(hitbuffer,hitsize);
+		initbufftozero(hitbuffer);
+	}
+
 	// Check for inconsistent hitbuffer size
-	if(sHandle->GetHitsSize()!=(unsigned int)hitbuffer->size){
+	if(hitsize!=(unsigned int)hitbuffer->size){
 		if(rank==0){
 			std::ostringstream tmpstream (std::ostringstream::app);
 			tmpstream << "Hitbuffer size not correctly calculated." << std::endl;
@@ -129,7 +135,7 @@ bool loadAndCheckSHandle(int rank, Databuff* hitbuffer, Databuff* loadbuffer){
 	}
 
 	//Read coveringFile
-	if(p->coveringPath!=""){
+	if(p->doCoveringFile){
 		if(!readCovering(hitbuffer,p->coveringPath,rank)){
 			if(rank==0){
 				std::ostringstream tmpstream (std::ostringstream::app);
@@ -239,9 +245,11 @@ int main(int argc, char *argv[]) {
 
 		//Read in buffer files
 		importBuff(p->loadbufferPath,&loadbuffer);
-		importBuff(p->hitbufferPath,&hitbuffer);
+		if(!p->doCoveringFile){
+			importBuff(p->hitbufferPath,&hitbuffer);
+		}
 
-		std::cout << "Buffers sent. Wait for a few seconds. " << std::endl;
+		std::cout << "Sending buffers. Wait for a few seconds. " << std::endl;
 	}
 
 //---- Send load-buffer to all other processes
@@ -258,12 +266,14 @@ int main(int argc, char *argv[]) {
 	MPI_Barrier(MPI_COMM_WORLD);
 
 //----Send hit-buffer size to all other processes.
-	// Send size of hitbuffer from main process to subprocesses in subprocesses
-	MPI_Bcast(&hitbuffer.size, sizeof(hitbuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
-	MPI_Barrier(MPI_COMM_WORLD);
-	// Allocate memory for hitbuffer
-	if (rank != 0) {
-		hitbuffer.buff = new BYTE[hitbuffer.size];
+	if(!p->doCoveringFile){
+		// Send size of hitbuffer from main process to subprocesses in subprocesses
+		MPI_Bcast(&hitbuffer.size, sizeof(hitbuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
+		MPI_Barrier(MPI_COMM_WORLD);
+		// Allocate memory for hitbuffer
+		if (rank != 0) {
+			hitbuffer.buff = new BYTE[hitbuffer.size];
+		}
 	}
 
 //----Create Simulation handle and preprocess hitbuffer
@@ -514,7 +524,7 @@ int main(int argc, char *argv[]) {
 			tmpstream << "Process 0 exporting simHistory" << std::endl <<std::endl;
 			printStream(tmpstream.str());
 
-			simHistory->write(p->resultpath);
+			simHistory->write(p->resultPath);
 			//exportBuff(p->resultbufferPath,&hitbuffer_sum);//export hitbuffer_sum
 		}
 	}

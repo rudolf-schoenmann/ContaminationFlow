@@ -66,7 +66,7 @@ void initBuffSize(Databuff *databuffer,size_t size){
 	databuffer->size = size;
 	if(databuffer->buff){
 		delete[] databuffer->buff;
-		databuffer->buff==NULL;
+		databuffer->buff=NULL;
 	}
 	databuffer->buff = new BYTE[size];
 }
@@ -76,8 +76,13 @@ void initBuffSize(Databuff *databuffer,size_t size){
 
 void importBuff(const char *fileName, Databuff *databuffer)
 {
+	if(databuffer->buff){
+		delete[] databuffer->buff;
+		databuffer->buff=NULL;
+	}
+	std::ostringstream tmpstream (std::ostringstream::app);
+
 	std::filebuf fb;
-	databuffer->buff=NULL;
 	if (fb.open(fileName, std::ios::in))
 	{
 		std::istream is(&fb);
@@ -96,11 +101,12 @@ void importBuff(const char *fileName, Databuff *databuffer)
 			databuffer->buff = (BYTE*)temp;
 		}
 		fb.close();
+		tmpstream << "Buffer imported from " << home_to_tilde(fileName) <<". Buffersize (read in): " << databuffer->size << std::endl;
 	}
 	else{
-		std::cout << "Could not open " << home_to_tilde(fileName) <<" to read data from." << std::endl;
+		tmpstream << "Could not open " << home_to_tilde(fileName) <<" to read data from." << std::endl;
 	}
-	std::cout << "Buffer '" << home_to_tilde(fileName) <<"' imported. Buffersize (read in): " << databuffer->size << std::endl;
+	printStream(tmpstream.str());
 }
 
 
@@ -108,6 +114,8 @@ void importBuff(const char *fileName, Databuff *databuffer)
 
 void exportBuff(const char *fileName, Databuff *databuffer)
 {
+	std::ostringstream tmpstream (std::ostringstream::app);
+
 	std::filebuf f;
 	if (f.open(fileName, std::ios::out))
 	{
@@ -119,9 +127,10 @@ void exportBuff(const char *fileName, Databuff *databuffer)
 			os.write(reinterpret_cast<const char *>(databuffer->buff), length);
 		}
 		f.close();
+		tmpstream << "Buffersize (write in file): " << databuffer->size << std::endl;
 	}
-	else {std::cout << "Could not open file to write data in." << std::endl;}
-	std::cout << "Buffersize (write in file): " << databuffer->size << std::endl;
+	else {tmpstream << "Could not open file to write data in." << std::endl;}
+	printStream(tmpstream.str());
 }
 
 void importBuff(std::string fileName, Databuff *databuffer)

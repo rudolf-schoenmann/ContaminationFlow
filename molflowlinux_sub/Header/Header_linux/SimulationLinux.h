@@ -330,8 +330,8 @@ public:
 
 	bool saveResults;
 
-	std::string resultpath;
-	std::string molflowpath;
+	std::string resultPath;
+	std::string contaminationFlowPath;
 	//std::string resultbufferPath;
 	std::ofstream outFile;
 
@@ -386,6 +386,7 @@ public:
 	//These cannot be given, but are computed from other variables
 	int simulationTimeMS;
 	double maxTimeS;
+	bool doCoveringFile;
 
 private:
 	void createOutput(int save);
