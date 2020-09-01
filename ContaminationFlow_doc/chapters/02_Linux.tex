@@ -14,10 +14,10 @@
 \centering
 \begin{tikzpicture}[node distance=2cm, font=\scriptsize]
 %\draw [help lines] (0,0) grid (4,4);
-	\node (p0buffer)[textboxmed, rectangle split, rectangle split parts=2] at (0,9.8)
+	\node (p0buffer)[textboxmed, rectangle split, rectangle split parts=2, text width=5.5cm] at (1,10.8)
 	{
 		\textbf{Main Process 0}
-		\nodepart{second} loadbuffer, hitbuffer
+		\nodepart{second}\begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Input file: sets simulation parameters\item loadbuffer: directly imported \item hitbuffer: directly imported or indirectly by covering file\end{itemize}
 	};
 
 	\node (p0loadbuffer)[textboxmed, rectangle split, rectangle split parts=2] at (0,8)
@@ -26,10 +26,10 @@
 		\nodepart{second} Broadcast loadbuffer
 	};
 
-	\node (p0hitbuffer)[textboxmed, rectangle split, rectangle split parts=2] at (0,5.7)
+	\node (p0hitbuffer)[textboxmed, rectangle split, rectangle split parts=2] at (0,6)
 	{
 		\textbf{Main Process 0}
-		\nodepart{second} Broadcast hitbuffer\\covering
+		\nodepart{second} Broadcast covering, currentStep from SimulationHistory
 	};
 
 	\node (p1geo)[textboxmed, rectangle split, rectangle split parts=2] at (5,6.5)
@@ -41,7 +41,7 @@
 	\node (p1upd)[textboxmed, rectangle split, rectangle split parts=2] at (5,4.5)
 	{
 		\textbf{Sub Process 1}
-		\nodepart{second} Update Quantities from hitbuffer
+		\nodepart{second} Update Quantities from SimulationHistory
 	};
 
 	\node (p1sim)[textboxmed, rectangle split, rectangle split parts=2] at (5,2.4)
@@ -72,7 +72,7 @@
 	\node (pNupd)[textboxmed, rectangle split, rectangle split parts=2] at (10.6,4.5)
 	{
 		\textbf{Sub Process 1}
-		\nodepart{second} Update Quantities from hitbuffer
+		\nodepart{second} Update Quantities from SimulationHistory
 	};
 
 	\node (pNsim)[textboxmed, rectangle split, rectangle split parts=2] at (10.6,2.4)
@@ -96,13 +96,13 @@
 	\node (p0upd)[textboxmed, rectangle split, rectangle split parts=2] at (0,-4.7)
 	{
 		\textbf{Main Process 0}
-		\nodepart{second} Update real covering in hitbuffer\\ Update SimulationHistory
+		\nodepart{second} \begin{itemize}[noitemsep,topsep=0pt,leftmargin=*]\item Update real covering in hitbuffer\item Update SimulationHistory\end{itemize}
 	};
 
 	\draw let \p1=(p0buffer.second west) in [->, line width=0.04cm] (\x1-1.5cm,\y1) -- (\p1);
 	\path let \p1=(p0buffer.second west) in node [above] at (\x1-0.75cm,\y1) {Import};
 
-	\draw[->, line width=0.04cm] (p0buffer.south)--(p0loadbuffer.north);
+	\draw[->, line width=0.04cm] ([xshift=-1cm]p0buffer.south)--(p0loadbuffer.north);
 
 	%\draw[->, line width=0.04cm] (1.9,7) -- (11.5,7)--(11.5,6.6);
 	\draw let \p1=(p0loadbuffer.second east), \p2=(pNgeo.north) in [->, line width=0.04cm] (\p1) -- (\x2,\y1)-- (\p2);
@@ -208,7 +208,7 @@ and the input file defining the following parameters:
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item \codew{$loadbufferPath$}: Path to loadbuffer file, contains geometry, e.g.\ \codew{\textasciitilde/loadbuffer}
 \item \codew{$hitbufferPath$}: Path to hitbuffer file, contains counters, etc., e.g.\ \codew{\textasciitilde/hitbuffer}
-\item \codew{$coveringPath$}: Path to covering file, contains either covering or coverage per facet, file can be exported from ContaminationFlow Windows, etc., e.g.\ \codew{\textasciitilde/covering.txt}; default: \codew{""}
+\item \codew{$coveringPath$}: Path to covering file, contains either covering or coverage per facet, file can be exported from ContaminationFlow Windows, e.g.\ \codew{\textasciitilde/covering.txt}; default: \codew{""}
 %\item resultbufferPath: path to resultbuffer file, where the final hitbuffer is exported to,\\ e.g.\ \codew{\textasciitilde/resultbuffer}
 \item \codew{$simulationTime$}: Simulation time per iteration step; default: \codew{10.0}
 \item \codew{$unit$}: Simulation time unit; default: \codew{s}
@@ -247,7 +247,7 @@ and the input file defining the following parameters:
 \item \codew{$doFocusGroupOnly$}: Determines of only facetGroup facets are monitored facets; default:\codew{1}
 \end{itemize}
 \bigskip
-Optional covering file to overwrite hitbuffer. There are two options (that can both be exported from ContaminationFlow Windows):
+Optional covering file to replace hitbuffer. Hitbuffer will not be imported if covering file is given. There are two options (that can both be exported from ContaminationFlow Windows):
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item  set covering: \codew{covering} followed by covering values per facet, seperated via blanks
 \item  set coverage: \codew{coverage} followed by coverage values per facet, seperated via blanks
@@ -284,6 +284,7 @@ Optional covering file to overwrite hitbuffer. There are two options (that can b
 	\hphantom{\quad}BYTE *buff;\\
 \} Databuff;}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item New function \codew{initBuffSize($\cdot$)} to initialize buffer size
 \item New functions \codew{importBuff($\cdot$)}/\codew{exportBuff($\cdot$)} to import buffer/export Databuff struct
 \item New functions \codew{checkReadable($\cdot$)}/\codew{checkWriteable($\cdot$)} to check if file is readable/writeable
 \end{itemize}
@@ -402,14 +403,22 @@ Optional covering file to overwrite hitbuffer. There are two options (that can b
 	\node[neuron](input) at (0,-2) {Load parameters\\from input file};
 	\draw let \p1=(start.south), \p2=(input.north) in [->, line width=0.04cm] (\p1) -- (\p2);
 
-	\node[neuron](load) at (5,-2) {Main process:\\Import loadbuffer\\and broadcast};
-	\draw let \p1=(input.east), \p2=(load.west) in [->, line width=0.04cm] (\p1) -- (\p2);
-
-	\node[neuron](geom) at (10,-2) {Load geometry \&\\init simHistory};
+	\node[neuron](load) at (0,-3.5) {Main process:\\Import loadbuffer\\and broadcast};
+	\draw let \p1=(input.south), \p2=(load.north) in [->, line width=0.04cm] (\p1) -- (\p2);
+	\node[neuron](geom) at (5,-3.5) {Load geometry \&\\init simHistory};
 	\draw let \p1=(load.east), \p2=(geom.west) in [->, line width=0.04cm] (\p1) -- (\p2);
 
+	\node[condition](covfile) at (5,-2){Covering\\File?};
+	\draw let \p1=(geom.north), \p2=(covfile.south) in [->, line width=0.04cm] (\p1) -- (\p2);
+	\node[neuron](hit) at (10,-2) {Main process:\\Import hitbuffer\\and broadcast};
+	\draw let \p1=(covfile.east), \p2=(hit.west) in [->, line width=0.04cm] (\p1) -- (\p2)node[midway,above]{false};
+	\node[neuron](hit2) at (5,-0.2) {Main process:\\Initialize hitbuffer from \\covering file and broadcast};
+	\draw let \p1=(covfile.north), \p2=(hit2.south) in [->, line width=0.04cm] (\p1) -- (\p2)node[midway,right]{true};
+	
+
 	\node[module](end)  at (10,-0.2) {End\\Initialization};
-	\draw let \p1=(geom.north), \p2=(end.south) in [->, line width=0.04cm] (\p1) -- (\p2);
+	\draw let \p1=(hit.north), \p2=(end.south) in [->, line width=0.04cm] (\p1) -- (\p2);
+	\draw let \p1=(hit2.east), \p2=(end.west) in [->, line width=0.04cm] (\p1) -- (\p2);
 
 \end{tikzpicture}
 \caption{Overview: Initialize simulation}
@@ -417,7 +426,7 @@ Optional covering file to overwrite hitbuffer. There are two options (that can b
 
 \subsubsection{New class to store Simulation History}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item HistoryList and SimulationHistory class
+\item HistoryList and SimulationHistory class in \codew{SimulationLinux.h} and \codew{SimulationLinux.cpp} file
 \end{itemize}
 \code{template <typename T> class HistoryList \{\\
 	public:\\
@@ -443,7 +452,6 @@ Optional covering file to overwrite hitbuffer. There are two options (that can b
 	\hphantom{\enskip}int currentStep;\\
 \};}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item In \codew{SimulationLinux.h} and \codew{SimulationLinux.cpp} file
 \item Updated after each iteration in \codew{UpdateParticleDensityAndPressure($\cdot$)},\linebreak[4] \codew{UpdateCovering($\cdot$)}, \codew{UpdateErrorMain($\cdot$)} (\codew{UpdateMainProcess.cpp})
 \item Recorded quantities: covering, error (event and covering), particle density and pressure for each facet and  iteration, total hits and desorbed particles for each facet
 \item lastTime: simulated time (accumulated time steps) instead of computation time 
@@ -715,7 +723,7 @@ Optional covering file to overwrite hitbuffer. There are two options (that can b
 	\node[module](preprocess) at (0,-2.9) {Initialization};
 	\draw let \p1=(smpi.south), \p2=(preprocess.north) in [->, line width=0.04cm] (\p1) -- (\p2);
 
-	\node[neuron](bcast) at (0,-4.8) {Main process:\\broadcast\\ simHistory$\rightarrow$coveringList\\ and $currentStep$};
+	\node[neuron](bcast) at (0,-4.8) {Main process:\\broadcast\\ simHistory$\rightarrow$coveringList\\ \& simHistory$\rightarrow$currentStep};
 	\draw let \p1=(preprocess.south), \p2=(bcast.north) in [->, line width=0.04cm] (\p1) -- (\p2);
 
 	\path let \p1=(bcast.east) in node[module](sim1) at (4.5,\y1+1.2cm) {Simulation\\sub process};
@@ -758,10 +766,11 @@ Optional covering file to overwrite hitbuffer. There are two options (that can b
 \item Load geometry into \codew{Simulation sHandle} and check if values are valid using \codew{loadAndCheckSHandle()}
 	\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 		\item[$\bullet$] Load geometry using \codew{LoadSimulation}
+		\item[$\bullet$] Hitbuffer: import using  \codew{importBuff($\cdot$)} or initialize size using  \codew{initBuffSize($\cdot$)}
 		\item[$\bullet$] Check for correct hitbuffer size
 		\item[$\bullet$] Check for zero moments
 		\item[$\bullet$] Check for no two-sided facets with opacity
-		\item[$\bullet$] Check for valid covering file
+		\item[$\bullet$] Check for valid covering file and import covering values
 	\end{itemize}
 \item Iteration until \codew{p$\rightarrow$maxTimeS} or\\ \codew{p$\rightarrow$convergenceTarget} (\codew{p$\rightarrow$convergenceTime},\codew{p$\rightarrow$stopConverged}) is reached: \smallskip
 	\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]

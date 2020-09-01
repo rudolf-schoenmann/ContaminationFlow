@@ -331,17 +331,17 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \hline
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}ProblemDef}\\
 \hline
-\rule{0pt}{3ex} molflowpath& Path of github directory\\
-\rule{0pt}{3ex} resultpath& Path of result folder\\
+\rule{0pt}{3ex} contaminationFlowPath& Path of github directory\\
+\rule{0pt}{3ex} resultPath& Path of result folder\\
 \rule{0pt}{3ex} outFile& Path of file that contains terminal output\\
 \rule{0pt}{3ex} loadbufferPath& Path of loadbuffer file\\
 \rule{0pt}{3ex} hitbufferPath& Path of hitbuffer file\\
-\rule{0pt}{3ex} coveringPath& Path of covering file\\
+\rule{0pt}{3ex} coveringPath \scriptsize$\Rightarrow$doCoveringFile& Path of covering file, hitbuffer not imported if given\\
 \rule{0pt}{3ex} saveResults& 1: save all results, 0: donot save results\\
 \rule{0pt}{3ex} simulationTime, unit& \multirow{2}{*}{Computation time of each iteration in milliseconds}\\
-\enskip$\Rightarrow$simulationTimeMS&\\
+\scriptsize\enskip$\Rightarrow$simulationTimeMS&\\
 \rule{0pt}{3ex} maxTime, maxUnit& \multirow{2}{*}{Maximal total simulated time in seconds}\\
-\enskip$\Rightarrow$maxTimeS&\\
+\scriptsize\enskip$\Rightarrow$maxTimeS&\\
 \rule{0pt}{3ex} iterationNumber& Number of iterations of simulation\\
 \rule{0pt}{3ex} particleDia& Diameter of particles\\
 %\rule{0pt}{3ex}  d& Parameter to calculate desorption rate, see eq.\ \ref{eq:des}\\
@@ -368,7 +368,7 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \rule{0pt}{3ex} createOutput()& Create output directory and file\\
 \rule{0pt}{3ex} readInputfile()& Initialization from input file, checks if parameters are valid\\
 \rule{0pt}{3ex} printInputfile()& Print to terminal\\
-\rule{0pt}{3ex} writeInputfile()& Write to terminal\\
+\rule{0pt}{3ex} writeInputfile()& Write to text file\\
 \rule{0pt}{3ex} setFocusGroup()& Converts focusGroup indices to facet indices\\
 \hline
 \end{tabular}
@@ -460,7 +460,7 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \rule{0pt}{3ex} get\_path() & Get path of executable\\
 \rule{0pt}{3ex} printStream() & Print input string to terminal and file\\
 \rule{0pt}{3ex} tilde\_to\_home(),home\_to\_tilde() & Exchange \textasciitilde\ and home directory\\
-\rule{0pt}{3ex} convert\_to/from\_molflowdir() & Exchange MOLFLOWDIR and \codew{p$\rightarrow$molflowpath}\\
+\rule{0pt}{3ex} convert\_to/from\_contflowdir() & Exchange CONTFLOWDIR and \codew{p$\rightarrow$contaminationFlowPath}\\
 \hline
 \end{tabular}
 \end{center}
