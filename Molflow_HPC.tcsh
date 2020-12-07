@@ -1,4 +1,4 @@
-module load mpi
+#! /bin/tcsh
 
 if (! $?LD_LIBRARY_PATH) then       
   setenv LD_LIBRARY_PATH "$PWD"/include/lib
@@ -9,3 +9,5 @@ else
       setenv LD_LIBRARY_PATH "$PWD"/include/lib\:$LD_LIBRARY_PATH
   endif
 endif
+
+exit 0
