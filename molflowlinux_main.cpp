@@ -27,7 +27,6 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "Simulation.h"
 #include "SimulationLinux.h"
 
-
 //typedef void *HANDLE;
 
 // Global process variables
@@ -72,11 +71,111 @@ bool parametercheck(int argc, char *argv[], ProblemDef *p, int rank) {
 	else if(argc<4 && argc>1){ // Read input file
 		if(checkReadable(argv[1],rank)){
 			bool valid = p->readInputfile(argv[1],rank, argc==3?(int)std::atof(argv[2]):1);
-			if(!checkReadable(p->hitbufferPath,rank)||!checkReadable(p->loadbufferPath,rank)){return false;}
+			if((!p->doCoveringFile&&!checkReadable(p->hitbufferPath,rank))||!checkReadable(p->loadbufferPath,rank)||(p->doCoveringFile&&!checkReadable(p->coveringPath,rank))){return false;}
 			return valid;}
 		}
 	return false;
 	}
+
+bool loadAndCheckSHandle(int rank, Databuff* hitbuffer, Databuff* loadbuffer){
+	bool valid=true;
+
+	// Load geometry from buffer to sHandle
+	if (!LoadSimulation(loadbuffer)) { // Check if geometry in loadbuffer can be loaded
+		if(rank==0){
+			std::ostringstream tmpstream (std::ostringstream::app);
+			tmpstream << "Geometry not loaded." << std::endl;
+			tmpstream << "ContaminationFlowLinux is terminated now." << std::endl;
+			printStream(tmpstream.str());
+		}
+		valid=false;
+	}
+
+	size_t hitsize=sHandle->GetHitsSize();
+	if(p->doCoveringFile){
+		initBuffSize(hitbuffer,hitsize);
+		initbufftozero(hitbuffer);
+	}
+
+	// Check for inconsistent hitbuffer size
+	if(hitsize!=(unsigned int)hitbuffer->size){
+		if(rank==0){
+			std::ostringstream tmpstream (std::ostringstream::app);
+			tmpstream << "Hitbuffer size not correctly calculated." << std::endl;
+			tmpstream << "ContaminationFlowLinux is terminated now." << std::endl;
+			printStream(tmpstream.str());
+		}
+		valid=false;
+	}
+
+	// Check if there are zero moments
+	if(sHandle->moments.size()){
+		if(rank==0){
+			std::ostringstream tmpstream (std::ostringstream::app);
+			tmpstream << "Number of moments "<<sHandle->moments.size() <<" > 0. ContaminationFlowLinux only implemented for 0 moments."<< std::endl;
+			tmpstream << "ContaminationFlowLinux is terminated now." << std::endl;
+			printStream(tmpstream.str());
+		}
+		valid=false;
+	}
+
+	// Check for two sided facet with opacity
+	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+		for (SubprocessFacet& f : sHandle->structures[s].facets) {
+			if(f.sh.is2sided && f.sh.opacity>0.0){
+				if(rank==0){
+					std::ostringstream tmpstream (std::ostringstream::app);
+					tmpstream << "There is a two sided facet with opacity. This might cause undefined behavior." << std::endl;
+					tmpstream << "ContaminationFlowLinux is terminated now." << std::endl;
+					printStream(tmpstream.str());
+				}
+				valid=false;
+			}
+		}
+	}
+
+	//Read coveringFile
+	if(p->doCoveringFile){
+		if(!readCovering(hitbuffer,p->coveringPath,rank)){
+			if(rank==0){
+				std::ostringstream tmpstream (std::ostringstream::app);
+				tmpstream << "Invalid covering file "<<home_to_tilde(p->coveringPath) << std::endl;
+				tmpstream << "ContaminationFlowLinux is terminated now." << std::endl;
+				printStream(tmpstream.str());
+			}
+			valid=false;
+		}
+	}
+	return valid;
+}
+
+void clearAll(Databuff* hitbuffer, Databuff* hitbuffer_sum, Databuff* loadbuffer){
+	//--delete buffers
+	if (hitbuffer->buff != NULL) {
+		delete[] hitbuffer->buff;
+		hitbuffer->buff = NULL;
+	}
+	if (hitbuffer_sum->buff != NULL) {
+		delete[] hitbuffer_sum->buff;
+		hitbuffer_sum->buff = NULL;
+	}
+	if (loadbuffer->buff != NULL) {
+		delete[] loadbuffer->buff;
+		loadbuffer->buff = NULL;
+	}
+	if (simHistory!=NULL){
+		delete simHistory;
+		simHistory=NULL;
+	}
+	if(p!=NULL){
+		delete p;
+		p=NULL;
+	}
+	if(sHandle!=NULL){
+		delete sHandle;
+		sHandle=NULL;
+	}
+}
 
 //-----------------------------------------------------------
 //Main Function
@@ -119,6 +218,7 @@ int main(int argc, char *argv[]) {
 			tmpstream <<"Minimum number of 2 processes needed. Currently "<<world_size <<std::endl;
 			printStream(tmpstream.str());
 		}
+		clearAll(&hitbuffer, &hitbuffer_sum,&loadbuffer);
 		MPI_Finalize();
 		return 0;
 	}
@@ -134,7 +234,7 @@ int main(int argc, char *argv[]) {
 			tmpstream <<"Ending Simulation." <<std::endl;
 			printStream(tmpstream.str());
 		}
-
+		clearAll(&hitbuffer, &hitbuffer_sum,&loadbuffer);
 		MPI_Finalize();
 		return 0;
 	}
@@ -146,9 +246,11 @@ int main(int argc, char *argv[]) {
 
 		//Read in buffer files
 		importBuff(p->loadbufferPath,&loadbuffer);
-		importBuff(p->hitbufferPath,&hitbuffer);
+		if(!p->doCoveringFile){
+			importBuff(p->hitbufferPath,&hitbuffer);
+		}
 
-		std::cout << "Buffers sent. Wait for a few seconds. " << std::endl;
+		std::cout << "Sending buffers. Wait for a few seconds. " << std::endl;
 	}
 
 //---- Send load-buffer to all other processes
@@ -165,40 +267,27 @@ int main(int argc, char *argv[]) {
 	MPI_Barrier(MPI_COMM_WORLD);
 
 //----Send hit-buffer size to all other processes.
-	// Send size of hitbuffer from main process to subprocesses in subprocesses
-	MPI_Bcast(&hitbuffer.size, sizeof(hitbuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
-	MPI_Barrier(MPI_COMM_WORLD);
-	// Allocate memory for hitbuffer
-	if (rank != 0) {
-		hitbuffer.buff = new BYTE[hitbuffer.size];
+	if(!p->doCoveringFile){
+		// Send size of hitbuffer from main process to subprocesses in subprocesses
+		MPI_Bcast(&hitbuffer.size, sizeof(hitbuffer.size), MPI::BYTE, 0, MPI_COMM_WORLD);
+		MPI_Barrier(MPI_COMM_WORLD);
+		// Allocate memory for hitbuffer
+		if (rank != 0) {
+			hitbuffer.buff = new BYTE[hitbuffer.size];
+		}
 	}
 
 //----Create Simulation handle and preprocess hitbuffer
 	if (p->simulationTimeMS != 0) {
 		//Creates sHandle instance for process 0 and all subprocesses (before the first iteration step starts)
 		InitSimulation();
-		// Load geometry from buffer to sHandle
-		if (!LoadSimulation(&loadbuffer)) { // Check if geometry in loadbuffer can be loaded
-			if(rank==0){
-				std::ostringstream tmpstream (std::ostringstream::app);
-				tmpstream << "Geometry not loaded." << std::endl;
-				tmpstream << "ContaminationFlowLinux is terminated now." << std::endl;
-				printStream(tmpstream.str());
-			}
+		// Load geometry from buffer to sHandle and check for invalid values
+		if(!loadAndCheckSHandle(rank,&hitbuffer,&loadbuffer)){
+			MPI_Barrier(MPI_COMM_WORLD);
+			clearAll(&hitbuffer, &hitbuffer_sum,&loadbuffer);
 			MPI_Finalize();
 			return 0;
 		}
-		if(sHandle->moments.size()){ // Check if there are zero moments
-			if(rank==0){
-				std::ostringstream tmpstream (std::ostringstream::app);
-				tmpstream << "Number of moments "<<sHandle->moments.size() <<" > 0. ContaminationFlowLinux only implemented for 0 moments."<< std::endl;
-				tmpstream << "ContaminationFlowLinux is terminated now." << std::endl;
-				printStream(tmpstream.str());
-			}
-			MPI_Finalize();
-			return 0;
-		}
-
 		initCoveringThresh();
 		UpdateSojourn();
 
@@ -212,7 +301,6 @@ int main(int argc, char *argv[]) {
 			// Initialize simHistory for main process from hitbuffer
 			//simHistory contains the relevant results/quantities of the simulation. E.g., covering history, total simulated time, etc.
 			simHistory = new SimulationHistory (&hitbuffer, world_size);
-			//TODO: maybe add possibility of covering.txt file input
 
 			std::cout <<p->focusGroup.second.size() <<" facet(s) in focusGroup"<<std::endl;
 			for(int grpidx:p->focusGroup.second){
@@ -224,6 +312,7 @@ int main(int argc, char *argv[]) {
 			//Initialize simHistory for subprocesses
 			simHistory = new SimulationHistory(world_size);
 		}
+
 		//Send hitbuffer to all subprocesses
 		MPI_Bcast(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, MPI_COMM_WORLD);
 	}
@@ -289,6 +378,7 @@ int main(int argc, char *argv[]) {
 				sHandle->posCovering=true;//assumption that negative covering has been resolved before: implemented through covering threshold in sub processes and smallCovering workaoround
 				checkSmallCovering(rank, &hitbuffer); // Calculate smallCoveringFactor for this iteration
 
+				MPI_Barrier(MPI_COMM_WORLD);
 				//Do the simulation
 				bool eos; std::vector<int> facetNum;
 				std::tie(eos, facetNum) = simulateSub2(&hitbuffer, rank, p->simulationTimeMS);
@@ -313,6 +403,12 @@ int main(int argc, char *argv[]) {
 			else{
 				t0 = GetTick();
 				checkSmallCovering(rank, &hitbuffer_sum); // Calculate smallCoveringFactor for this iteration
+				for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+					for (SubprocessFacet& f : sHandle->structures[s].facets) {
+						calcStartTime(&f,true,true);
+					}
+				}
+				MPI_Barrier(MPI_COMM_WORLD);
 				MPI_Barrier(MPI_COMM_WORLD);
 				t1 = GetTick();
 				computationTime+=t1-t0; // Add calculation time of current iteration
@@ -429,25 +525,13 @@ int main(int argc, char *argv[]) {
 			tmpstream << "Process 0 exporting simHistory" << std::endl <<std::endl;
 			printStream(tmpstream.str());
 
-			simHistory->write(p->resultpath);
+			simHistory->write(p->resultPath);
 			//exportBuff(p->resultbufferPath,&hitbuffer_sum);//export hitbuffer_sum
 		}
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
-
-	//--delete buffers
-	if (hitbuffer.buff != NULL) {
-		delete[] hitbuffer.buff;
-		hitbuffer.buff = NULL;
-	}
-	if (hitbuffer_sum.buff != NULL) {
-		delete[] hitbuffer_sum.buff;
-		hitbuffer_sum.buff = NULL;
-	}
-	if (loadbuffer.buff != NULL) {
-		delete[] loadbuffer.buff;
-		loadbuffer.buff = NULL;
-	}
+	// Clear memory
+	clearAll(&hitbuffer, &hitbuffer_sum,&loadbuffer);
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	if (rank == 0)

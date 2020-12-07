@@ -27,7 +27,8 @@ Open Eclipse via terminal:
 module avail #list should include mpi/openmpi-x86_64
 
 # Load mpi -- to find mpic++
-module load mpi/openmpi-x86_64
+# module load mpi/openmpi-x86_64
+source /path-to-MolflowLinux/Molflow10.tcsh
 
 # Optional: check if loaded correctly
 which mpic++ #e.g., /usr/lib64/openmpi/bin/mpic++
@@ -48,7 +49,8 @@ Alternatively, after the first build, it can be build via terminal:
 
 ```
 # Load mpi
-module load mpi/openmpi-x86_64
+# module load mpi/openmpi-x86_64
+source /path-to-MolflowLinux/Molflow10.tcsh
 
 # Build MolflowLinux executable
 cd /path-to-MolflowLinux/Debug/
@@ -60,7 +62,8 @@ make MolflowLinux
 
 ```
 # Load mpi
-module load mpi/openmpi-x86_64
+# module load mpi/openmpi-x86_64
+source /path-to-MolflowLinux/Molflow10.tcsh
 
 # Run MolflowLinux executable
 mpirun -n N /path-to-MolflowLinux/Debug/MolflowLinux /path-to-an-Inputfile/InputFile.txt save
@@ -82,6 +85,7 @@ Important input file parameters:
 |------------ | -------------| -------------|
 |loadbufferPath|Readable file|Loadbuffer file|
 |hitbufferPath|Readble file | Hitbuffer file|
+|coveringPath|Readble file | Covering file, sets covering per facet. Hitbuffer not imported if given|
 |simulationTime|Double value | "Number" of simulation time (=computation time before targets are reached)|
 |unit|String|"Unit" of simulation time (=computation time before targets are reached)|
 |iterationNumber|Int value|Number of desired iterations|
@@ -102,10 +106,24 @@ Notes:
   * More than zero moments defined in geometry
   * Invalid parameter names in input file
   * Invalid values for certain parameters in input file
+  * Invalid hitbuffer/loadbuffer
+  * Two-sided facet with opacity exists
+  * Invalid covering file
 * Input file
   * One parameter per line
   * Parameter name and value are seperated by a tab (no =)
   * Lines can be commented in input file by adding \# at the start of the line
+* Covering file
+  * Seperate text file
+  * Two options:
+    * Set covering: covering followed by covering values per facet. Example for 7 facet geometry:
+      * covering 0 1312749422390254 1312749422390254 1312749422390254 1312749422390254 1312749422390254 1312749422390254
+    * Set coverage: coverage followed by coverage values per facet. Example for 7 facet geometry:
+      * coverage 0 1 1 1 1 1 1
+* Export from ContaminationFlow Windows
+  * Hitbuffer and Loadbuffer files
+  * Covering file (directly copy from GUI or save to file)
+  * Facet groups for input file (directly copy from GUI or save to file)
 * In case an iteration takes too long (e.g., small residence time -> long time until adsorbtion), the following can be done
   * Decrease *targetError* and/or *targetParticles* in input file (you should probably not go below 0.2/50 though)
   * Decrease *maxTimePerIt* in input file

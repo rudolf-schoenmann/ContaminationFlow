@@ -14,10 +14,10 @@
 \centering
 \begin{tikzpicture}[node distance=2cm, font=\scriptsize]
 %\draw [help lines] (0,0) grid (4,4);
-	\node (p0buffer)[textboxmed, rectangle split, rectangle split parts=2] at (0,9.8)
+	\node (p0buffer)[textboxmed, rectangle split, rectangle split parts=2, text width=5.5cm] at (1,10.8)
 	{
 		\textbf{Main Process 0}
-		\nodepart{second} loadbuffer, hitbuffer
+		\nodepart{second}\begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Input file: sets simulation parameters\item loadbuffer: directly imported \item hitbuffer: directly imported or indirectly by covering file\end{itemize}
 	};
 
 	\node (p0loadbuffer)[textboxmed, rectangle split, rectangle split parts=2] at (0,8)
@@ -26,10 +26,10 @@
 		\nodepart{second} Broadcast loadbuffer
 	};
 
-	\node (p0hitbuffer)[textboxmed, rectangle split, rectangle split parts=2] at (0,5.7)
+	\node (p0hitbuffer)[textboxmed, rectangle split, rectangle split parts=2] at (0,6)
 	{
 		\textbf{Main Process 0}
-		\nodepart{second} Broadcast hitbuffer
+		\nodepart{second} Broadcast covering, currentStep from SimulationHistory
 	};
 
 	\node (p1geo)[textboxmed, rectangle split, rectangle split parts=2] at (5,6.5)
@@ -41,7 +41,7 @@
 	\node (p1upd)[textboxmed, rectangle split, rectangle split parts=2] at (5,4.5)
 	{
 		\textbf{Sub Process 1}
-		\nodepart{second} Update Quantities from hitbuffer
+		\nodepart{second} Update Quantities from SimulationHistory
 	};
 
 	\node (p1sim)[textboxmed, rectangle split, rectangle split parts=2] at (5,2.4)
@@ -72,7 +72,7 @@
 	\node (pNupd)[textboxmed, rectangle split, rectangle split parts=2] at (10.6,4.5)
 	{
 		\textbf{Sub Process 1}
-		\nodepart{second} Update Quantities from hitbuffer
+		\nodepart{second} Update Quantities from SimulationHistory
 	};
 
 	\node (pNsim)[textboxmed, rectangle split, rectangle split parts=2] at (10.6,2.4)
@@ -96,13 +96,13 @@
 	\node (p0upd)[textboxmed, rectangle split, rectangle split parts=2] at (0,-4.7)
 	{
 		\textbf{Main Process 0}
-		\nodepart{second} Update real covering in hitbuffer
+		\nodepart{second} \begin{itemize}[noitemsep,topsep=0pt,leftmargin=*]\item Update real covering in hitbuffer\item Update SimulationHistory\end{itemize}
 	};
 
 	\draw let \p1=(p0buffer.second west) in [->, line width=0.04cm] (\x1-1.5cm,\y1) -- (\p1);
 	\path let \p1=(p0buffer.second west) in node [above] at (\x1-0.75cm,\y1) {Import};
 
-	\draw[->, line width=0.04cm] (p0buffer.south)--(p0loadbuffer.north);
+	\draw[->, line width=0.04cm] ([xshift=-1cm]p0buffer.south)--(p0loadbuffer.north);
 
 	%\draw[->, line width=0.04cm] (1.9,7) -- (11.5,7)--(11.5,6.6);
 	\draw let \p1=(p0loadbuffer.second east), \p2=(pNgeo.north) in [->, line width=0.04cm] (\p1) -- (\x2,\y1)-- (\p2);
@@ -146,7 +146,7 @@
 	\path let \p1=(p0p1hit.second east), \p2=(p1hit.second west) in node [above] at (0.5*\x1+0.5*\x2,\y1) {MPI};
 
 	\draw let \p1=(p0upd.second west) in [<-, line width=0.04cm] (\x1-1.5cm,\y1-0.2cm) -- (\x1,\y1-0.2cm);
-	\path let \p1=(p0upd.second west) in node [below] at (\x1-0.75cm,\y1-0.2cm) {Export};
+	\path let \p1=(p0upd.second west) in node [below, text width=1.5cm] at (\x1-0.75cm,\y1-0.2cm) {Export SimulationHistory};
 
 	%\draw[fill] (0,0.66) circle [radius=0.06];
 	%\draw[fill] (0,0.41) circle [radius=0.06];
@@ -187,9 +187,16 @@
 Call of ContaminationFlow Linux application in the command line:
 \code{
 \$ module load mpi\\
-\$ mpirun -n N\ MolflowLinux inputfile save}
+\$ mpirun -n N --options \ MolflowLinux inputfile save}
 \leavevmode\\[-8pt]
-with the following command line parameters:
+with the following MPI \codew{--options}:
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item  (No option): use processor cores (recommended if possible)
+\item \codew{--use-hwthread-cpus}: use hardware threads instead processor cores (recommended if N $>$ number cores)
+\item \codew{--oversubscribe}: ignore available slots, for any number of MPI processes
+\end{itemize}
+\bigskip
+and command line parameters:
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item \codew{N}: desired number of worker processes; simulation on K=N-1 worker processes
 \item \codew{MolflowLinux}: path to application, e.g.\ \codew{\textasciitilde/MolflowLinux/Debug/MolflowLinux}
@@ -199,34 +206,35 @@ with the following command line parameters:
 \bigskip
 and the input file defining the following parameters:
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item \codew{$loadbufferPath$}: path to loadbuffer file, contains geometry, e.g.\ \codew{\textasciitilde/loadbuffer}
-\item \codew{$hitbufferPath$}: path to hitbuffer file, contains counters, etc., e.g.\ \codew{\textasciitilde/hitbuffer}
+\item \codew{$loadbufferPath$}: Path to loadbuffer file, contains geometry, e.g.\ \codew{\textasciitilde/loadbuffer}
+\item \codew{$hitbufferPath$}: Path to hitbuffer file, contains counters, etc., e.g.\ \codew{\textasciitilde/hitbuffer}
+\item \codew{$coveringPath$}: Path to covering file, contains either covering or coverage per facet, file can be exported from ContaminationFlow Windows, e.g.\ \codew{\textasciitilde/covering.txt}; default: \codew{""}
 %\item resultbufferPath: path to resultbuffer file, where the final hitbuffer is exported to,\\ e.g.\ \codew{\textasciitilde/resultbuffer}
-\item \codew{$simulationTime$}: simulation time per iteration step; default: \codew{10.0}
-\item \codew{$unit$}: simulation time unit; default: \codew{s}
-\item \codew{$maxTime$}: max.\ simulated time; default: \codew{10.0}
-\item \codew{$maxUnit$}: max.\ simulated time unit; default: \codew{y}
-\item \codew{$iterationNumber$}: number of iterations; default: 43200
+\item \codew{$simulationTime$}: Simulation time per iteration step; default: \codew{10.0}
+\item \codew{$unit$}: Simulation time unit; default: \codew{s}
+\item \codew{$maxTime$}: Max.\ simulated time; default: \codew{10.0}
+\item \codew{$maxUnit$}: Max.\ simulated time unit; default: \codew{y}
+\item \codew{$iterationNumber$}: Number of iterations; default: 43200
 %\item \codew{$s_1$}, coefficient used for calculation of sticking coefficient; default:\codew{1}
 %\item \codew{$s_2$}, coefficient used for calculation of sticking coefficient; default:\codew{0.2}
 %\item \codew{$E_{ad}$}, energy used for calculation of sticking coefficient; default:\codew{1\text{E}-21}
 %\item\codew{$d$}: power for base of coverage used for calculation of desorption; default:\codew{1}
-\item \codew{$particleDia$}: diameter of particles; default:\codew{2.76\text{E}-10}
-\item \codew{$E_{de}$}: binding energy of a particle on pure substrate; default:\codew{1.6\text{E}-19}
-\item \codew{$H_{vap}$}: vaporization enthalpy of a particle if multilayer contamination; default:\codew{0.8\text{E}-19}
+\item \codew{$particleDia$}: Diameter of particles; default:\codew{2.76\text{E}-10}
+\item \codew{$E_{de}$}: Binding energy of a particle on pure substrate; default:\codew{1.6\text{E}-19}
+\item \codew{$H_{vap}$}: Vaporization enthalpy of a particle if multilayer contamination; default:\codew{0.8\text{E}-19}
 %\item \codew{$W_{tr}$}: transition width between monolayer and multilayer properties; default:\codew{1}
-\item \codew{$sticking$}: constant sticking coefficient for all facets; default:\codew{0}
+\item \codew{$sticking$}: Constant sticking coefficient for all facets; default:\codew{0}
 %\item \codew{$coveringLimit$}: threshold for zero desoprtion; default:\codew{0}
 \item \codew{$errorMode$}: Type of error monitored, "covering" or "event"; default: \codew{covering}
-\item \codew{$targetPaticles$}: min.\ number of desorbed particles per iteration; default: \codew{1000}
-\item \codew{$targetError$}: avg.\ statistical uncertainty (error) to be achieved for each iteration, calculated as the avg.\ (weighted with the facets area) of the normalized standard deviation of events per facet; default: \codew{0.001}
+\item \codew{$targetPaticles$}: Min.\ number of desorbed particles per iteration; default: \codew{1000}
+\item \codew{$targetError$}: Avg.\ statistical uncertainty (error) to be achieved for each iteration, calculated as the avg.\ (weighted with the facets area) of the normalized standard deviation of events per facet; default: \codew{0.001}
 \item \codew{$hitRatioLimit$}: Ratio (facet/all), e.g., number events or covering change, at which facet is ignored for error calculation; default: \codew{0}
-\item \codew {$t\_min$}: min.\ time for step size; default:\codew{1\text{E}-4}
-\item \codew{$t\_max$}: max.\ time for step size; default:\codew{max}
-\item \codew{$maxTimePerIt$}: max.\ simulation time [s] per iteration; default:\codew{max}
-\item \codew{$coveringMinThresh$}: min.\ covering (through multiplication); default:\codew{1000000}
+\item \codew {$t\_min$}: Min.\ time for step size; default:\codew{1\text{E}-4}
+\item \codew{$t\_max$}: Max.\ time for step size; default:\codew{max}
+\item \codew{$maxTimePerIt$}: Max.\ simulation time [s] per iteration; default:\codew{max}
+\item \codew{$coveringMinThresh$}: Min.\ covering (through multiplication); default:\codew{1000000}
 \item \codew{$histsize$}: Size of history lists; default:\codew{max}
-\item \codew{$vipFacets$}: very important facets: facets with own target error. Alternating sequence of facet numbers and respective target errors separated via blanks; default:\codew{[]}
+\item \codew{$vipFacets$}: Very important facets: facets with own target error. Alternating sequence of facet numbers and respective target errors separated via blanks; default:\codew{[]}
 \item \codew{$outgassingTimeWindow$}: Duration [s] of outgassing impulse; default: \codew{0.0}
 \item \codew{$counterWindowPercent$}: Percentage of step size (posterior) at which velocity counters are increased; default: \codew{0.1}
 \item \codew{$desWindowPercent$}: Percentage of step size (anterior) at which desorption occurs; default: \codew{1.0}
@@ -234,6 +242,15 @@ and the input file defining the following parameters:
 \item \codew{$convergenceTarget$}: Target for avg.\ statistics to indicate convergence; default: \codew{1}
 \item \codew{$stopConverged$}: Stop simulation if avg.\ statistics indicate convergence; default: \codew{1}
 \item \codew{$convergenceTime$}: Min.\ simulated time to stop simulation if converged; default: \codew{0}
+\item \codew{$facetGroups$}:  Indices of facets belonging to a group, groups divided by -; default:\codew{[]}
+\item \codew{$focusGroup$}: Indices of facet groups to be monitored; default:\codew{[]}
+\item \codew{$doFocusGroupOnly$}: Determines of only facetGroup facets are monitored facets; default:\codew{1}
+\end{itemize}
+\bigskip
+Optional covering file to replace hitbuffer. Hitbuffer will not be imported if covering file is given. There are two options (that can both be exported from ContaminationFlow Windows):
+\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item  set covering: \codew{covering} followed by covering values per facet, seperated via blanks
+\item  set coverage: \codew{coverage} followed by coverage values per facet, seperated via blanks
 \end{itemize}
 %\section{General Changes}
 %
@@ -267,6 +284,7 @@ and the input file defining the following parameters:
 	\hphantom{\quad}BYTE *buff;\\
 \} Databuff;}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+\item New function \codew{initBuffSize($\cdot$)} to initialize buffer size
 \item New functions \codew{importBuff($\cdot$)}/\codew{exportBuff($\cdot$)} to import buffer/export Databuff struct
 \item New functions \codew{checkReadable($\cdot$)}/\codew{checkWriteable($\cdot$)} to check if file is readable/writeable
 \end{itemize}
@@ -283,7 +301,7 @@ and the input file defining the following parameters:
 \item Increase precision for variables if required (float128, uint\_128t)
 \item Avoid overflow for integer and underflow for floating point numbers
 \end{itemize}
-%\newpage
+\newpage
 \section{New Quantities}
 \label{sub:quant}
 \subsubsection{New counter \codew{covering}}
@@ -385,14 +403,22 @@ and the input file defining the following parameters:
 	\node[neuron](input) at (0,-2) {Load parameters\\from input file};
 	\draw let \p1=(start.south), \p2=(input.north) in [->, line width=0.04cm] (\p1) -- (\p2);
 
-	\node[neuron](load) at (5,-2) {Main process:\\Import loadbuffer\\and broadcast};
-	\draw let \p1=(input.east), \p2=(load.west) in [->, line width=0.04cm] (\p1) -- (\p2);
-
-	\node[neuron](geom) at (10,-2) {Load geometry \&\\init simHistory};
+	\node[neuron](load) at (0,-3.5) {Main process:\\Import loadbuffer\\and broadcast};
+	\draw let \p1=(input.south), \p2=(load.north) in [->, line width=0.04cm] (\p1) -- (\p2);
+	\node[neuron](geom) at (5,-3.5) {Load geometry \&\\init simHistory};
 	\draw let \p1=(load.east), \p2=(geom.west) in [->, line width=0.04cm] (\p1) -- (\p2);
 
+	\node[condition](covfile) at (5,-2){Covering\\File?};
+	\draw let \p1=(geom.north), \p2=(covfile.south) in [->, line width=0.04cm] (\p1) -- (\p2);
+	\node[neuron](hit) at (10,-2) {Main process:\\Import hitbuffer\\and broadcast};
+	\draw let \p1=(covfile.east), \p2=(hit.west) in [->, line width=0.04cm] (\p1) -- (\p2)node[midway,above]{false};
+	\node[neuron](hit2) at (5,-0.2) {Main process:\\Initialize hitbuffer from \\covering file and broadcast};
+	\draw let \p1=(covfile.north), \p2=(hit2.south) in [->, line width=0.04cm] (\p1) -- (\p2)node[midway,right]{true};
+	
+
 	\node[module](end)  at (10,-0.2) {End\\Initialization};
-	\draw let \p1=(geom.north), \p2=(end.south) in [->, line width=0.04cm] (\p1) -- (\p2);
+	\draw let \p1=(hit.north), \p2=(end.south) in [->, line width=0.04cm] (\p1) -- (\p2);
+	\draw let \p1=(hit2.east), \p2=(end.west) in [->, line width=0.04cm] (\p1) -- (\p2);
 
 \end{tikzpicture}
 \caption{Overview: Initialize simulation}
@@ -400,7 +426,7 @@ and the input file defining the following parameters:
 
 \subsubsection{New class to store Simulation History}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item HistoryList and SimulationHistory class
+\item HistoryList and SimulationHistory class in \codew{SimulationLinux.h} and \codew{SimulationLinux.cpp} file
 \end{itemize}
 \code{template <typename T> class HistoryList \{\\
 	public:\\
@@ -426,7 +452,6 @@ and the input file defining the following parameters:
 	\hphantom{\enskip}int currentStep;\\
 \};}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item In \codew{SimulationLinux.h} and \codew{SimulationLinux.cpp} file
 \item Updated after each iteration in \codew{UpdateParticleDensityAndPressure($\cdot$)},\linebreak[4] \codew{UpdateCovering($\cdot$)}, \codew{UpdateErrorMain($\cdot$)} (\codew{UpdateMainProcess.cpp})
 \item Recorded quantities: covering, error (event and covering), particle density and pressure for each facet and  iteration, total hits and desorbed particles for each facet
 \item lastTime: simulated time (accumulated time steps) instead of computation time 
@@ -698,7 +723,7 @@ and the input file defining the following parameters:
 	\node[module](preprocess) at (0,-2.9) {Initialization};
 	\draw let \p1=(smpi.south), \p2=(preprocess.north) in [->, line width=0.04cm] (\p1) -- (\p2);
 
-	\node[neuron](bcast) at (0,-4.8) {Main process:\\broadcast\\ simHistory$\rightarrow$coveringList\\ and $currentStep$};
+	\node[neuron](bcast) at (0,-4.8) {Main process:\\broadcast\\ simHistory$\rightarrow$coveringList\\ \& simHistory$\rightarrow$currentStep};
 	\draw let \p1=(preprocess.south), \p2=(bcast.north) in [->, line width=0.04cm] (\p1) -- (\p2);
 
 	\path let \p1=(bcast.east) in node[module](sim1) at (4.5,\y1+1.2cm) {Simulation\\sub process};
@@ -737,8 +762,17 @@ and the input file defining the following parameters:
 \subsubsection{General Pipeline}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Initialize MPI, \codew{ProblemDef p} and \codew{SimulationHistory simHistory}
-\item Load geometry into \codew{Simulation sHandle} using \codew{LoadSimulation()}
-\item Iteration until \codew{p$\rightarrow$maxTimeS} or \codew{p$\rightarrow$convergenceTarget} is reached: \smallskip
+\item Check if all simulation parameters are valid
+\item Load geometry into \codew{Simulation sHandle} and check if values are valid using \codew{loadAndCheckSHandle()}
+	\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
+		\item[$\bullet$] Load geometry using \codew{LoadSimulation}
+		\item[$\bullet$] Hitbuffer: import using  \codew{importBuff($\cdot$)} or initialize size using  \codew{initBuffSize($\cdot$)}
+		\item[$\bullet$] Check for correct hitbuffer size
+		\item[$\bullet$] Check for zero moments
+		\item[$\bullet$] Check for no two-sided facets with opacity
+		\item[$\bullet$] Check for valid covering file and import covering values
+	\end{itemize}
+\item Iteration until \codew{p$\rightarrow$maxTimeS} or\\ \codew{p$\rightarrow$convergenceTarget} (\codew{p$\rightarrow$convergenceTime},\codew{p$\rightarrow$stopConverged}) is reached: \smallskip
 	\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 	\item[$\bullet$] Reset hitbuffer counters using \codew{initbufftotero($\cdot$)}
 	\item[$\bullet$] Broadcast \codew{simHistory$\rightarrow$coveringList} using \codew{MPI\_Bcast($\cdot$)}

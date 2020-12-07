@@ -29,8 +29,8 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <iomanip>
 #include <limits>
 #include <numeric>
-//#include <boost/multiprecision/cpp_int.hpp>
-//#include <boost/multiprecision/float128.hpp>
+#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/float128.hpp>
 
 //#include <boost/accumulators/statistics/rolling_variance.hpp>
 //#include <boost/accumulators/statistics/rolling_mean.hpp>
@@ -330,14 +330,15 @@ public:
 
 	bool saveResults;
 
-	std::string resultpath;
-	std::string molflowpath;
+	std::string resultPath;
+	std::string contaminationFlowPath;
 	//std::string resultbufferPath;
 	std::ofstream outFile;
 
 	// These can be given as parameters directly
 	std::string loadbufferPath;
 	std::string hitbufferPath;
+	std::string coveringPath;
 	double simulationTime;
 	std::string unit;
 
@@ -362,7 +363,7 @@ public:
 	double t_min; // [s]
 
 	double t_max; // [s]
-	int maxTimePerIt;
+	int maxTimePerIt; //[s]
 
 	llong coveringMinThresh;
 
@@ -385,6 +386,7 @@ public:
 	//These cannot be given, but are computed from other variables
 	int simulationTimeMS;
 	double maxTimeS;
+	bool doCoveringFile;
 
 private:
 	void createOutput(int save);
@@ -438,6 +440,7 @@ std::tuple<bool, std::vector<int>>  simulateSub2(Databuff *hitbuffer, int rank, 
 double convertunit(double simutime, std::string unit);
 void printStream(std::string string, bool print=true);
 void checkSmallCovering(int rank, Databuff *hitbuffer_sum);
+bool readCovering(Databuff* hitbuffer, std::string coveringFile, int rank);
 
 //ProblemDef
 //SimulationHistory
@@ -471,6 +474,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 //-----------------------------------------------------------
 //SimulationCalc.cpp
 FacetHitBuffer* getFacetHitBuffer(SubprocessFacet *iFacet, Databuff *hitbuffer);
+double calcNmono(SubprocessFacet *iFacet);
 
 llong getnbDesorbed(Databuff *hitbuffer_sum);
 llong getnbDesorbed(SubprocessFacet *iFacet, Databuff *hitbuffer);
@@ -496,7 +500,7 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet);
 double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f);
 double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f);
 
-double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b);
+double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b, bool printWarning=false);
 
 //-----------------------------------------------------------
 //Iteration.cpp

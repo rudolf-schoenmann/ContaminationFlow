@@ -61,6 +61,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 
 	int j_old=0;
 	bool j_print=false;
+	bool printWarning=true;
 
 	// Facets that have reached the covering threshold
 	std::vector<int> facetNum;
@@ -84,6 +85,13 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 				}
 			else{
 				std::tie(eos, realtimestep) = SimulationRun(timestep);      // Run for timestep ms, performs MC steps
+			}
+
+			if(printWarning && sHandle->stepPerSec<1.0){
+				std::ostringstream tmpstream (std::ostringstream::app);
+				tmpstream<< std::endl << "!!! Warning: Subprocess "<<rank <<" simulates less than 1 step per second. !!!" << std::endl<< std::endl;
+				printStream(tmpstream.str());
+				printWarning=false;
 			}
 
 		}
@@ -116,7 +124,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 			std::ostringstream tmpstream (std::ostringstream::app);
 			// Summary
 			tmpstream <<" Subprocess "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Adsorbed particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
-			tmpstream << " Facet" << std::setw(23)<<std::right<< "";
+			tmpstream << " Facet" << std::setw(18)<<std::right<< "";
 			int num;
 			// "Table header"
 			for (size_t k = 0; k < sHandle->sh.nbSuper; k++) {
@@ -197,7 +205,7 @@ void printStream(std::string string, bool print){
 	if(print)
 		std::cout <<string;
 	if(p->saveResults){
-		p->outFile.open(p->resultpath+"/console.txt", std::fstream::app);
+		p->outFile.open(p->resultPath+"/console.txt", std::fstream::app);
 		p->outFile <<string;
 		p->outFile.close();
 	}
@@ -213,27 +221,29 @@ std::string get_path(){
         return std::string( exepath );
 }
 
-//----convert molflow directory
-std::string convert_from_molflowdir(std::string path){
-	std::string molflowdir="molflowdir";
-	if(path.substr(0,molflowdir.length())==molflowdir) path.replace(0,molflowdir.length(),p->molflowpath);
+//----convert ContaminationFlow directory
+std::string convert_from_contflowdir(std::string path){
+	std::string contflowdir="CONTFLOWDIR";
+	if(path.substr(0,contflowdir.length())==contflowdir) path.replace(0,contflowdir.length(),p->contaminationFlowPath);
 	return path;
 }
 
-std::string convert_to_molflowdir(std::string path){
-	std::string molflowdir="molflowdir";
-	if(path.substr(0,p->molflowpath.length())==p->molflowpath) path.replace(0,p->molflowpath.length(),molflowdir);
+std::string convert_to_contflowdir(std::string path){
+	std::string contflowdir="CONTFLOWDIR";
+	if(path.substr(0,p->contaminationFlowPath.length())==p->contaminationFlowPath) path.replace(0,p->contaminationFlowPath.length(),contflowdir);
 	return path;
 }
 
 //----exchange ~ and home directory
 std::string tilde_to_home(std::string path){
+	//path=convert_to_contflowdir(path); //optional: convert ContaminationFlow directory
 	std::string home=getenv("HOME"); //expand ~
 	if(path[0]=='~') path.replace(0,1,home);
 	return path;
 }
 
 std::string home_to_tilde(std::string path){
+	//path=convert_from_contflowdir(path); //optional: convert ContaminationFlow directory
 	std::string home=getenv("HOME"); //expand ~
 	if(path.substr(0,home.length())==home) path.replace(0,home.length(),"~");
 	return path;
@@ -275,11 +285,65 @@ void checkSmallCovering(int rank, Databuff *hitbuffer_sum){
 	simHistory->smallCoveringFactor=smallCoveringFactor;
 }
 
+bool readCovering(Databuff* hitbuffer, std::string coveringFile, int rank){
+	std::ifstream input(coveringFile,std::ifstream::in);
+	std::string inp;
+	std::string mode;
+	input>>mode;
+
+	std::vector<llong>covering{};
+	std::vector<double>coverage{};
+
+	if(mode=="covering"){
+		llong cov;
+		while(input>>cov){
+			covering.push_back(cov);
+		}
+		if(covering.size()!=sHandle->sh.nbFacet)
+			return false;
+	}
+	else if(mode=="coverage"){
+		double cov;
+		while(input>>cov){
+			coverage.push_back(cov);
+			covering.push_back(0);
+		}
+		if(coverage.size()!=sHandle->sh.nbFacet)
+			return false;
+
+		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+			for (SubprocessFacet& f : sHandle->structures[s].facets) {
+				int idx=getFacetIndex(&f);
+				covering[idx] = llong(coverage[idx]*calcNmono(&f));
+			}
+		}
+	}
+	else
+		return false;
+
+	if(rank==0){
+		std::ostringstream tmpstream (std::ostringstream::app);
+		tmpstream << "Covering loaded from "<<home_to_tilde(coveringFile) << std::endl;
+		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+			for (SubprocessFacet& f : sHandle->structures[s].facets) {
+				llong cov=covering[getFacetIndex(&f)];
+				getFacetHitBuffer(&f,hitbuffer)->hit.covering = cov;
+				tmpstream <<"\t"<<double(cov);
+				//f.tmpCounter[0].hit.covering =cov;
+			}
+		}
+		tmpstream<<std::endl;
+		printStream(tmpstream.str());
+	}
+	return true;
+}
+
 //-----------------------------------------------------------
 //----ProblemDef class
 ProblemDef::ProblemDef(){
 	loadbufferPath= "~/Buffer/loadbuffer_alle_RT";
 	hitbufferPath="~/Buffer/hitbuffer_allee-6";
+	coveringPath="";
 	loadbufferPath=tilde_to_home(loadbufferPath);
 	hitbufferPath=tilde_to_home(hitbufferPath);
 
@@ -328,6 +392,8 @@ ProblemDef::ProblemDef(){
 	focusGroup.second = std::vector<int> ();
 	doFocusGroupOnly=true;
 
+	doCoveringFile=false;
+
 }
 
 void ProblemDef::createOutput(int save){
@@ -335,9 +401,9 @@ void ProblemDef::createOutput(int save){
 		std::string path=get_path();
 		//std::cout <<path <<std::endl;
 		char *test=&path[0u];
-		molflowpath=std::string(dirname(dirname(test)));
-		resultpath=molflowpath+"/results/"+std::to_string(time(0));
-		mkdir(resultpath.c_str(),S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+		contaminationFlowPath=std::string(dirname(dirname(test)));
+		resultPath=contaminationFlowPath+"/results/"+std::to_string(time(0));
+		mkdir(resultPath.c_str(),S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
 		saveResults=true;
 	}
@@ -362,7 +428,7 @@ void ProblemDef::readArg(int argc, char *argv[], int rank){
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
 
 	if(saveResults)
-		writeInputfile(resultpath+"/InputFile.txt",rank);
+		writeInputfile(resultPath+"/InputFile.txt",rank);
 
 }
 
@@ -387,6 +453,7 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 
 		if(stringIn == "loadbufferPath") {is >> stringIn; loadbufferPath=stringIn;}
 		else if(stringIn == "hitbufferPath") {is >> stringIn; hitbufferPath=stringIn;}
+		else if(stringIn == "coveringPath") {if(is >> stringIn){coveringPath=stringIn; doCoveringFile=true;}} //First check if value is not empty string ""
 		else if(stringIn == "simulationTime") {is >>doubleIn; simulationTime = doubleIn;}
 		else if(stringIn == "unit"){is >> stringIn; unit=stringIn;}
 
@@ -558,9 +625,10 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 	// Convert ~ to home directory
 	loadbufferPath=tilde_to_home(loadbufferPath);
 	hitbufferPath=tilde_to_home(hitbufferPath);
+	coveringPath=tilde_to_home(coveringPath);
 
 	if(saveResults)
-		writeInputfile(resultpath+"/InputFile.txt",rank);
+		writeInputfile(resultPath+"/InputFile.txt",rank);
 
 	return valid;
 }
@@ -577,9 +645,10 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 
 	if(printConversion) out  <<std::endl<<"Print input arguments"<<std::endl;
 
-	if(printConversion) out  <<"resultPath" <<'\t' <<home_to_tilde(resultpath) <<std::endl;
+	if(printConversion) out  <<"resultPath" <<'\t' <<home_to_tilde(resultPath) <<std::endl;
 	out  <<"loadbufferPath" <<'\t' <<home_to_tilde(loadbufferPath) <<std::endl;
 	out  <<"hitbufferPath" <<'\t' <<home_to_tilde(hitbufferPath) <<std::endl;
+	out  <<"coveringPath" <<'\t' <<home_to_tilde(coveringPath) <<std::endl;
 	//if(printConversion) out  <<"resultbufferPath" <<'\t' <<resultbufferPath <<std::endl;
 	if(printConversion) out <<std::endl;
 
@@ -736,6 +805,8 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 
 	//normalFacets = std::vector<unsigned int>();
 
+	bool twoSidedExist=false;
+
 	double numHit;
 	llong numDes;
 	boost::multiprecision::uint128_t covering;
@@ -751,6 +822,9 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 
 			f.tmpCounter[0].hit.covering=(llong)covering;
 
+			if(f.sh.is2sided && f.sh.opacity>0.0)
+				twoSidedExist=true;
+
 			if(!p->vipFacets.empty()){
 				for(unsigned int i =0; i< p->vipFacets.size(); i++ ){
 					if(int(numFacet)==p->vipFacets[i].first){
@@ -764,6 +838,13 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 			numFacet+=1;
 		}
 	}
+
+	if(twoSidedExist){
+		std::ostringstream tmpstream (std::ostringstream::app);
+		tmpstream << "!!! Warning: There is a two sided facet with opacity. This might cause problems. !!!" << std::endl;
+		printStream(tmpstream.str());
+	}
+
 	coveringList.initList(numFacet);
 	coveringList.appendCurrent(0);
 	coveringList.initStatistics(numFacet);

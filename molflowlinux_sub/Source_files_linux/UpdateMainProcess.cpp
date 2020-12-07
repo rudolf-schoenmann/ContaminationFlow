@@ -106,14 +106,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 	}
 
 	//if targetError not reached: do not update currentstep
-	double total_error;
-	if (p->errorMode == "covering"){
-			total_error = total_error_covering;
-	}
-	else{
-			total_error = total_error_event;
-	}
-	if(checkError(p->targetError, total_error, 1.0, p->errorMode)){simHistory->currentStep += 1;}
+	if(checkError(p->targetError, (p->errorMode=="covering")?total_error_covering:total_error_event, 1.0, p->errorMode)){simHistory->currentStep += 1;}
 
 	tmpstream <<"Krealvirt = " << Krealvirt << std::endl;
 	tmpstream << "Covering difference will be multiplied by Krealvirt: " << Krealvirt << std::endl;
@@ -204,16 +197,17 @@ void UpdateErrorMain(Databuff *hitbuffer_sum){
 }
 
 void UpdateParticleDensityAndPressure(Databuff *hitbuffer_sum){
-	//std::ostringstream tmpstream (std::ostringstream::app);
-	//tmpstream<<std::endl;
+	std::ostringstream tmpstream (std::ostringstream::app);
+	tmpstream<<std::endl;
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			// Calculate particle density and pressure of facet
 			simHistory->particleDensityList.setCurrent(&f, calcParticleDensity(hitbuffer_sum , &f));
 			simHistory->pressureList.setCurrent(&f, calcPressure(hitbuffer_sum , &f));
-			/*
+
 			// Calculate predicted pressure for comparison to real pressure
+			/*
 			double energy=calcCoverage(&f)<1?p->E_de:p->H_vap;
 
 			double tau=h/(kb*f.sh.temperature) * exp(energy/(kb*f.sh.temperature));
@@ -224,10 +218,12 @@ void UpdateParticleDensityAndPressure(Databuff *hitbuffer_sum){
 			tmpstream << "Facet " <<getFacetIndex(&f) <<" Predicted Pressure: " <<std::setw(11)<<std::right <<targetPressure <<"  ,  Real pressure: " <<std::setw(11)<<std::right <<simHistory->pressureList.getCurrent(&f);
 			tmpstream <<"\tfor gass mass "<<sHandle->wp.gasMass <<" [g/mol]  ,  and 1_ort_v: "<<std::setw(11)<<std::right <<sum_1_per_ort_velocity <<"  ,  ort_v: "<<std::setw(11)<<std::right <<sum_v_ort <<"  ,  1_v: "<<std::setw(11)<<std::right <<sum_1_per_velocity<<std::endl;
 			*/
+			tmpstream << "Facet " <<getFacetIndex(&f) <<" pressure: " <<std::setw(11)<<std::right <<simHistory->pressureList.getCurrent(&f)<<std::endl;
+
 		}
 	}
-	//tmpstream<<std::endl;
-	//printStream(tmpstream.str());
+	tmpstream<<std::endl;
+	printStream(tmpstream.str());
 
 	// Update history lists for particle density and pressure
 	simHistory->particleDensityList.appendCurrent(simHistory->lastTime);

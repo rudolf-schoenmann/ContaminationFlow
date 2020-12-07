@@ -26,6 +26,27 @@
 		\nodepart{second} \begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Counters \item etc. \end{itemize}
 	};
 
+	\node (coveringfile)[textboxsmall, rectangle split, rectangle split parts=2] at (5.5,0)
+	{
+		\textbf{Covering File}
+		\nodepart{second} \begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Set covering or coverage per facet \item Replaces hitbuffer if given \end{itemize}
+	};
+
+	\node (inputfile)[textboxsmall, rectangle split, rectangle split parts=2] at (11.5,0)
+	{
+		\textbf{Input File}
+		\nodepart{second} \begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Set simulation paramters \item hitbuffer, loadbuffer, simulation time etc. \end{itemize}
+	};
+
+	\node (facetvalues)[textboxsmall, rectangle split, rectangle split parts=2] at (-.5,0)
+	{
+		\textbf{Simu.\ Parameters}
+		\nodepart{second} \begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Export simulation Parameters \item Copied from GUI or saved to text file\end{itemize}
+		\raggedright Possible parameters:
+		\begin{itemize}[noitemsep,topsep=0pt,leftmargin=*]\item Facet groups \end{itemize}
+	};
+
+
 	\node (Linux)[textbox, rectangle split, rectangle split parts=2] at (11,4)
 	{
 		\textbf{ContaminationFlow\\Linux}
@@ -33,34 +54,23 @@
 			\begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Command line \item Parallel simulation \item Monitor covering, statistical error, particle density, pressure per iteration \item Logarithmic time steps\end{itemize}	
 	};
 
-	%\draw[->, line width=0.04cm] (2.15,3.2) -- (3.85,3.2);
-	%\node [above] at (3,3.2) {export};
-	\draw let \p1=(Windows.east), \p2=(Loadbuffer.second west) in [->, line width=0.04cm] (\x1,\y2) --  (\p2);
-	\path let \p1=(Windows.east), \p2=(Loadbuffer.second west) in node[above] at (0.5*\x1+0.5*\x2,\y2) {Export};
+	\draw let \p1=(Windows.east), \p2=(Loadbuffer.second west) in [->, line width=0.04cm] (\x1,\y2) --  (\p2) node[midway,above]{Export};
 
-	%\draw[->, line width=0.04cm] (7.15,3.2) -- (8.85,3.2);
-	%\node [above] at (8,3.2) {import};
-	\draw let \p1=(Linux.west), \p2=(Loadbuffer.second east) in [<-, line width=0.04cm] (\x1,\y2) --  (\p2);
-	\path let \p1=(Linux.west), \p2=(Loadbuffer.second east) in node[above] at (0.5*\x1+0.5*\x2,\y2) {Import};
+	\draw let \p1=(Linux.west), \p2=(Loadbuffer.second east) in [<-, line width=0.04cm] (\x1,\y2) --  (\p2)node[midway,above]{Import};
 
-	%\draw[->, line width=0.04cm] (2.15,1.7) -- (3.85,1.7);
-	%\node [above] at (3,1.7) {export};
-	%\draw[->, line width=0.04cm] (7.15,1.7) -- (8.85,1.7);
-	%\node [above] at (8,1.7) {import};
-	\draw let \p1=(Windows.east), \p2=(Hitbuffer.second west) in [->, line width=0.04cm] (\x1,\y2+0.1cm) --  ([yshift=0.1cm]\p2);
-	\path let \p1=(Windows.east), \p2=(Hitbuffer.second west) in node[above] at (0.5*\x1+0.5*\x2,\y2+0.1cm) {Export};
-	\draw let \p1=(Linux.west), \p2=(Hitbuffer.second east) in [<-, line width=0.04cm] (\x1,\y2+0.1cm) --  ([yshift=0.1cm]\p2);
-	\path let \p1=(Linux.west), \p2=(Hitbuffer.second east) in node[above] at (0.5*\x1+0.5*\x2,\y2+0.1cm) {Import};
+	\draw let \p1=(Windows.east), \p2=(Hitbuffer.second west) in [->, line width=0.04cm] (\x1,\y2+0.1cm) --  ([yshift=0.1cm]\p2)node[midway,above]{Export};
+	\draw let \p1=(Linux.west), \p2=(Hitbuffer.second east) in [<-, line width=0.04cm] (\x1,\y2+0.1cm) --  ([yshift=0.1cm]\p2)node[midway,above]{Import};
 
-	%\draw[<-, line width=0.04cm] (2.15,1.4) -- (3.85,1.4);
-	%\node [below] at (3,1.4) {import};
-	%\draw[<-, line width=0.04cm] (7.15,1.4) -- (8.85,1.4);
-	%\node [below] at (8,1.4) {export};
-	\draw let \p1=(Windows.east), \p2=(Hitbuffer.second west) in [<-, line width=0.04cm] (\x1,\y2-0.1cm) --  ([yshift=-0.1cm]\p2);
-	\path let \p1=(Windows.east), \p2=(Hitbuffer.second west) in node[below] at (0.5*\x1+0.5*\x2,\y2-0.1cm) {Import};
-	\draw let \p1=(Linux.west), \p2=(Hitbuffer.second east) in [->, line width=0.04cm] (\x1,\y2-0.1cm) --  ([yshift=-0.1cm]\p2);
-	%\path let \p1=(Linux.west), \p2=(Hitbuffer.second east) in node[below] at (0.5*\x1+0.5*\x2,\y2-0.1cm) {Export};
+	\draw let \p1=(Windows.east), \p2=(Hitbuffer.second west) in [<-, line width=0.04cm] (\x1,\y2-0.1cm) --  ([yshift=-0.1cm]\p2)node[midway,below]{Import};
 
+	\draw let \p1=(coveringfile.east), \p2=(Linux.south),\p3=(Linux.west) in [->, line width=0.04cm] (\p1)--(\x3,\y1)node[midway,above]{Import}--(\x2-1.8cm,\y1)--([xshift=-1.8cm]\p2);
+	\draw let \p1=(coveringfile.west), \p2=(Windows.south),\p3=(Windows.east) in [<-, line width=0.04cm] (\p1)--(\x3,\y1)node[midway,above]{Export}--(\x2+1.8cm,\y1)--([xshift=1.8cm]\p2);
+	
+	\draw let \p1=(inputfile.north),\p2=(Linux.south) in  [->, line width=0.04cm] (\p1)--(\x1,\y2)node[midway,right]{Import};
+
+	\draw let \p1=(facetvalues.north),\p2=(Windows.south) in  [<-, line width=0.04cm] (\p1)--(\x1,\y2)node[midway,right]{Export};
+		\draw let \p1=(facetvalues.south),\p2=(inputfile.south) in  [->, line width=0.04cm] (\p1)--([yshift=-0.5cm]\p1)--(\x2,\y1-0.5cm)--(\p2)node[midway,right]{Copy};
+	
 \end{tikzpicture}
 \end{center}
 \vspace{1cm}
@@ -72,5 +82,8 @@ General structure for ContaminationFlow simulation
 \item Loadbuffer contains information of geometry
 \item Hitbuffer contains information such as hit counters, profiles, etc.
 \item Import and export of buffer files for communication between ContaminationFlow Windows and ContaminationFlow Linux
+\item Optional: export/import of covering text file that replaces covering in hitbuffer
+\item Import input file to define simulation parameters
+\item Some input file parameters can be exported/copied from ContaminationFlow Windows
 \item Export of simulationHistory for ContaminationFlow Linux
 \end{itemize}
