@@ -358,6 +358,7 @@ public:
 	std::string errorMode;
 	int targetParticles;
 	double targetError;
+	double noupdateError;
 
 	double hitRatioLimit;
 	double t_min; // [s]

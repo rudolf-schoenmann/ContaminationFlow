@@ -124,32 +124,36 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 			tmpstream << "covering_sum = " << covering_sum  << " = "<< boost::multiprecision::float128(covering_sum) << std::endl;
 			tmpstream << "covering_phys_before = " << covering_phys << " = "<< boost::multiprecision::float128(covering_phys) << std::endl;
 
-			if (covering_sum > covering_phys){
-				boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (rounding + boost::multiprecision::float128(covering_sum - covering_phys)*Krealvirt);
-				covering_phys += covering_delta;
-				tmpstream << "covering rises by " <<covering_delta << " = "<<boost::multiprecision::float128(covering_delta) << std::endl;
+			if(!std::isinf(simHistory->errorList_covering.getCurrent(&f))){
+				if(simHistory->errorList_covering.getCurrent(&f) < p->noupdateError){
+							if (covering_sum > covering_phys){
+								boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (rounding + boost::multiprecision::float128(covering_sum - covering_phys)*Krealvirt);
+								covering_phys += covering_delta;
+								tmpstream << "covering rises by " <<covering_delta << " = "<<boost::multiprecision::float128(covering_delta) << std::endl;
+							}
+							else{
+								boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (rounding + boost::multiprecision::float128(covering_phys - covering_sum)*Krealvirt);
+
+								// Check if covering would get negative
+								if(covering_phys+1==covering_delta){
+									tmpstream<<"!!!-----Correct covering_delta by 1: "<<covering_phys<<" - "<<covering_delta <<" because of rounding-----!!!"<<std::endl;
+									covering_delta=covering_phys;
+								}
+								else if(covering_phys<covering_delta && covering_phys+10>=covering_delta){
+									tmpstream <<"!!!-----Correct covering_delta: "<<covering_phys<<" - "<<covering_delta <<" because of bad statistic-----!!!"<<std::endl;
+									covering_delta=covering_phys;
+								}
+								else if(covering_phys<covering_delta){
+									tmpstream <<"!!!-----Covering gets negative: "<<covering_phys<<" - "<<covering_delta <<". Correct Covering=0-----!!!"<<std::endl;
+									covering_delta=covering_phys;
+								}
+
+								covering_phys -= covering_delta;
+								tmpstream << "covering decreases by "<<covering_delta << " = " << boost::multiprecision::float128(covering_delta) << std::endl;
+							}
+					}
 			}
-			else{
-				boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (rounding + boost::multiprecision::float128(covering_phys - covering_sum)*Krealvirt);
 
-				// Check if covering would get negative
-				if(covering_phys+1==covering_delta){
-					tmpstream<<"!!!-----Correct covering_delta by 1: "<<covering_phys<<" - "<<covering_delta <<" because of rounding-----!!!"<<std::endl;
-					covering_delta=covering_phys;
-				}
-				else if(covering_phys<covering_delta && covering_phys+10>=covering_delta){
-					tmpstream <<"!!!-----Correct covering_delta: "<<covering_phys<<" - "<<covering_delta <<" because of bad statistic-----!!!"<<std::endl;
-					covering_delta=covering_phys;
-				}
-				else if(covering_phys<covering_delta){
-					tmpstream <<"!!!-----Covering gets negative: "<<covering_phys<<" - "<<covering_delta <<". Correct Covering=0-----!!!"<<std::endl;
-					covering_delta=covering_phys;
-				}
-
-				covering_phys -= covering_delta;
-				tmpstream << "covering decreases by "<<covering_delta << " = " << boost::multiprecision::float128(covering_delta) << std::endl;
-
-			}
 			tmpstream << "covering_phys_after = " << covering_phys << " = " << boost::multiprecision::float128(covering_phys) << std::endl;
 			tmpstream << "coveringThreshhold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << " = " << boost::multiprecision::float128(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
 
