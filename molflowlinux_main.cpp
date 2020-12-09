@@ -119,7 +119,7 @@ bool loadAndCheckSHandle(int rank, Databuff* hitbuffer, Databuff* loadbuffer){
 		valid=false;
 	}
 
-	// Check for two sided facet with opacity
+	/*// Check for two sided facet with opacity
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			if(f.sh.is2sided && f.sh.opacity>0.0){
@@ -132,7 +132,7 @@ bool loadAndCheckSHandle(int rank, Databuff* hitbuffer, Databuff* loadbuffer){
 				valid=false;
 			}
 		}
-	}
+	}*/
 
 	//Read coveringFile
 	if(p->doCoveringFile){

@@ -101,9 +101,10 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 			j=int((totalTime-simutime)/1000.0);
 		}
 
+		double printing_intervall= 1000*3600;// printing intervall [in hours: 1000 ms/s * 3600 s/h] for console output
 		j_print=false;
 		for(; j_old<=j;j_old++){
-			if(j_old%(int)(30000/simutime)==0){ // check if 30second interval for printing is within this iteration step
+			if(j_old%(int)(printing_intervall/simutime)==0){ // check if printing intervall is within this iteration step
 				j_print=true;
 				break;
 			}
