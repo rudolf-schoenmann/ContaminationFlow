@@ -344,7 +344,7 @@ class WorkerParams { //Plain old data
 public:
 	HistogramParams globalHistogramParams;
 #ifdef MOLFLOW
-	double latestMoment;
+	double latestMoment; // Importing the loadbuffer the latestMoment should be 1,5E-10s since this is some value for time-independent simulations in Molflow
 	double totalDesorbedMolecules; //Number of molecules desorbed between t=0 and latest_moment
 	double totalOutgassingParticles; //Number of molecules that are outgassing during simHistory->stepSize_outgassing in a iteration, currently assumes constant flow
 	double finalOutgassingRate; //Number of outgassing molecules / second at latest_moment (constant flow)
