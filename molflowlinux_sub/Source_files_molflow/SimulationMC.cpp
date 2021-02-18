@@ -749,7 +749,8 @@ bool StartFromSource() {
 	sHandle->currentParticle.lastHitFacet = src;
 	//sHandle->currentParticle.distanceTraveled = 0.0;  //for mean free path calculations
 	//sHandle->currentParticle.flightTime = sHandle->desorptionStartTime + (sHandle->desorptionStopTime - sHandle->desorptionStartTime)*rnd();
-	sHandle->currentParticle.flightTime = GenerateDesorptionTime(src);
+	//sHandle->currentParticle.flightTime = GenerateDesorptionTime(src);// Old function from Molflow
+	sHandle->currentParticle.flightTime = 0;
 	if (sHandle->wp.useMaxwellDistribution) sHandle->currentParticle.velocity = GenerateRandomVelocity(src->sh.CDFid);
 	else sHandle->currentParticle.velocity = 145.469*sqrt(src->sh.temperature / sHandle->wp.gasMass);  //sqrt(8*R/PI/1000)=145.47
 	sHandle->currentParticle.oriRatio = 1.0;
