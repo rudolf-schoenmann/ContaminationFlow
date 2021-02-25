@@ -1,11 +1,11 @@
-setenv PATH $HOME/mpi/bin\:$HOME/gcc4/bin\:$PATH
+module load mpi
 
 if (! $?LD_LIBRARY_PATH) then       
-  setenv LD_LIBRARY_PATH $HOME/MolflowLinux/include/lib\:$HOME/mpi/lib\:$HOME/gcc4/lib\:$HOME/gcc4/lib64
+  setenv LD_LIBRARY_PATH "$PWD"/include/lib
 else
   if ("$LD_LIBRARY_PATH" == "")  then
-      setenv LD_LIBRARY_PATH $HOME/MolflowLinux/include/lib\:$HOME/mpi/lib\:$HOME/gcc4/lib\:$HOME/gcc4/lib64
+      setenv LD_LIBRARY_PATH "$PWD"/include/lib
   else 
-      setenv LD_LIBRARY_PATH $HOME/MolflowLinux/include/lib\:$HOME/mpi/lib\:$HOME/gcc4/lib\:$HOME/gcc4/lib64\:$LD_LIBRARY_PATH
+      setenv LD_LIBRARY_PATH "$PWD"/include/lib\:$LD_LIBRARY_PATH
   endif
 endif
