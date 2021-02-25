@@ -11,19 +11,19 @@
 	{
 		\textbf{ContaminationFlow Windows}
 		\nodepart{second}
-			\begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item GUI \item Create Geometry \item Set parameters (temperature, outgassing, etc.) \item Set initial covering \item View profiles \end{itemize}
+			\begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Graphical User Interface (GUI) \item Create or import Geometry \item Set parameters (temperature, outgassing, etc.) \item Set initial values for coverage \item View profiles \end{itemize}
 	};
 
 	\node (Loadbuffer)[textboxsmall, rectangle split, rectangle split parts=2] at (5.5,4)
 	{
 		\textbf{Loadbuffer}
-		\nodepart{second} \begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Geometry \end{itemize}
+		\nodepart{second} \begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Geometry \item Parameters  \end{itemize}
 	};
 
 	\path let\p1=(Windows.south) in node (Hitbuffer)[textboxsmall, anchor=south, rectangle split, rectangle split parts=2] at (5.5,\y1)
 	{
 		\textbf{Hitbuffer}
-		\nodepart{second} \begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Counters \item etc. \end{itemize}
+		\nodepart{second} \begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Counters  \end{itemize}
 	};
 
 	\node (coveringfile)[textboxsmall, rectangle split, rectangle split parts=2] at (5.5,0)
@@ -38,7 +38,7 @@
 		\nodepart{second} \begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Set simulation paramters \item hitbuffer, loadbuffer, simulation time etc. \end{itemize}
 	};
 
-	\node (facetvalues)[textboxsmall, rectangle split, rectangle split parts=2] at (-.5,0)
+	\node (facetvalues)[textboxsmall, rectangle split, rectangle split parts=2] at (-.5,-0.5)
 	{
 		\textbf{Simu.\ Parameters}
 		\nodepart{second} \begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Export simulation Parameters \item Copied from GUI or saved to text file\end{itemize}
@@ -51,7 +51,7 @@
 	{
 		\textbf{ContaminationFlow\\Linux}
 		\nodepart{second}
-			\begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Command line \item Parallel simulation \item Monitor covering, statistical error, particle density, pressure per iteration \item Logarithmic time steps\end{itemize}	
+			\begin{itemize}[noitemsep,topsep=0pt,leftmargin=*] \item Command line \item Parallel simulation \item Calculates covering, statistical error, particle density, pressure per iteration \item Logarithmic time steps\end{itemize}	
 	};
 
 	\draw let \p1=(Windows.east), \p2=(Loadbuffer.second west) in [->, line width=0.04cm] (\x1,\y2) --  (\p2) node[midway,above]{Export};
