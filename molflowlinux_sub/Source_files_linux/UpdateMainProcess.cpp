@@ -37,6 +37,7 @@ double getStepSize(){
 	//Dynamical calculation can be done later, if it is regarded as useful.
 
 		if(simHistory->currentStep == 0 && simHistory->stepSize==0.0){
+			/*
 			// Reduce p->iterationNumber until test_time_step reaches t_min
 			double test_time_step;
 			test_time_step = t_min*(exp((log(p->maxTimeS/(t_min))/(double)p->iterationNumber)) - 1);
@@ -44,6 +45,7 @@ double getStepSize(){
 				p->iterationNumber -=1;
 				test_time_step = t_min*(exp((log(p->maxTimeS/(t_min))/(double)p->iterationNumber)) - 1);
 			}
+			*/
 			return t_min;
 		}
 		else{
