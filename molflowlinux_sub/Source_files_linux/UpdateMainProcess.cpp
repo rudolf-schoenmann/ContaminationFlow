@@ -49,8 +49,8 @@ double getStepSize(){
 			return t_min;
 		}
 		else{
-			double t_start = t_min*exp((double)(simHistory->currentStep-1)*(log(p->maxTimeS/(t_min))/(double)p->iterationNumber));
-			double t_stop = t_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/(t_min))/(double)p->iterationNumber));
+			double t_start = t_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/(t_min))/(double)p->iterationNumber));
+			double t_stop = t_min*exp((double)(simHistory->currentStep+1)*(log(p->maxTimeS/(t_min))/(double)p->iterationNumber));
 			/*
 			if(t_stop > p->t_max){
 				return p->t_max - t_start;
