@@ -205,7 +205,7 @@ double convertunit(double simutime, std::string unit){
 void printStream(std::string string, bool print){
 	if(print)
 		std::cout <<string;
-	if(p->saveResults){
+	if(p->saveConsole){
 		p->outFile.open(p->resultPath+"/console.txt", std::fstream::app);
 		p->outFile <<string;
 		p->outFile.close();
@@ -364,6 +364,7 @@ ProblemDef::ProblemDef(){
 	simulationTimeMS = (int) (convertunit(simulationTime, unit) + 0.5);
 
 	saveResults=true;
+	saveConsole=false;
 
 	errorMode="covering";
 	targetParticles=1000;
@@ -487,6 +488,7 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn == "convergenceTarget"){is >>doubleIn; convergenceTarget=doubleIn>0.0?doubleIn:0.0; }
 		else if(stringIn == "convergenceTime"){is >>doubleIn; convergenceTime=doubleIn>0.0?doubleIn:0.0; }
 		else if(stringIn =="stopConverged"){is >> intIn; stopConverged=intIn==0?false:true;}
+		else if(stringIn =="saveConsole"){is >> intIn; saveConsole=intIn==0?false:true;}
 
 		else if(stringIn =="rollingWindowSize"){is >> intIn; rollingWindowSize=intIn>1?intIn:1;}
 

@@ -329,6 +329,7 @@ public:
 	void SetFocusGroup(int facets);
 
 	bool saveResults;
+	bool saveConsole;
 
 	std::string resultPath;
 	std::string contaminationFlowPath;
