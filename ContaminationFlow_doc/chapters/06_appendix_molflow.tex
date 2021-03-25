@@ -204,7 +204,7 @@
 	\begin{split}
 		inf\quad,\text{ if ($counter$) on facet =0}\\
 		\\
-		\Big( \frac{1}{\text{($counter$) on facet}} \cdot \frac{1-\text{($counter$) on facet}}{\text{total ($counter$)}} \Big)^{0.5}\quad,\text{else}
+		 \sqrt{\frac{1}{\text{($counter$) on facet}} \cdot \left(1 - \frac{\text{($counter$) on facet}}{\text{total ($counter$)}}\right)}\quad,\text{else}
 	\end{split}
 	\end{cases}\\\\
 	error\_covering&=\text{error}(\text{adsorbed particles + desorbed particles})\\
