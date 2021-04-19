@@ -484,7 +484,8 @@ int main(int argc, char *argv[]) {
 			MPI_Barrier(MPI_COMM_WORLD);
 			MPI_Bcast(&simHistory->lastTime, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
 			MPI_Bcast(&currentRatio, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
-			if((int)(simHistory->lastTime+0.5) >= p->maxTimeS){ // Maximum simulated time reached
+			//if((int)(simHistory->lastTime+0.5) >= p->maxTimeS){ // Maximum simulated time reached
+			if(simHistory->lastTime >= p->maxTimeS){ // Maximum simulated time reached
 				if(rank==0) {
 					std::ostringstream tmpstream (std::ostringstream::app);
 					tmpstream <<"Maximum simulated time reached: " <<simHistory->lastTime  <<" >= " <<p->maxTimeS <<std::endl;
