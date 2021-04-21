@@ -166,15 +166,32 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 	}
 	else{//coverage > 1
 		boost::multiprecision::float128 tau_ads = tau_0 * boost::multiprecision::exp(enthalpy_vap/static_cast<boost::multiprecision::float128>(kb*temperature));//tau for particles desorbing on the adsorbate
-		if ((coverage - boost::multiprecision::float128(1)) >= (time_step/tau_ads)){//There are more layers (excluding the first monolayer), than desorbing while the iteration time.
-			desorption = time_step/tau_ads;//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
+		if(tau_ads == tau_subst){//special case, where desorption rate is constant until a monolayer is reached.
+			if ((coverage - boost::multiprecision::float128(1)) >= (time_step/tau_ads)){//There are more layers (excluding the first monolayer), than desorbing while the iteration time.
+						desorption = time_step/tau_ads;//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
+			}
+			else{//(coverage - 1) < (time_step/tau_ads): There are less layers (excluding the first monolayer), than desorbing while the iteration time.
+						//time while particles desorbe form multilayer until one single monolayer is reached
+						boost::multiprecision::float128 time_step_ads = tau_ads*(coverage - boost::multiprecision::float128(1));
+						//time while particles desorbe form single monolayer
+						boost::multiprecision::float128 time_step_subst = time_step - time_step_ads;
+						desorption = coverage - boost::multiprecision::float128(1) + (boost::multiprecision::float128(1) - boost::multiprecision::exp(-time_step_subst/tau_subst));//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
+						//Anyway: Here tau_ads == tau_subst! So, it is distinguished to provide a better understanding, what is happening physically
+			}
 		}
-		else{//(coverage - 1) < (time_step/tau_ads): There are less layers (excluding the first monolayer), than desorbing while the iteration time.
-			//time while particles desorbe form multilayer until one single monolayer is reached
-			boost::multiprecision::float128 time_step_ads = tau_ads*(coverage - boost::multiprecision::float128(1));
-			//time while particles desorbe form single monolayer
-			boost::multiprecision::float128 time_step_subst = time_step - time_step_ads;
-			desorption = coverage - boost::multiprecision::float128(1) + (boost::multiprecision::float128(1) - boost::multiprecision::exp(-time_step_subst/tau_subst));//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
+		else{//desorption rate is constant until coverage equals two.
+			boost::multiprecision::float128 a = (-1/tau_ads)+(1/tau_subst);
+			boost::multiprecision::float128 b = (1/tau_ads)-(2/tau_subst);
+			boost::multiprecision::float128 time_step_ads = tau_ads*(coverage - boost::multiprecision::float128(2));
+			boost::multiprecision::float128 time_step_mixed = time_step - time_step_ads;
+			if((2+a/b)*boost::multiprecision::exp(b*time_step_mixed)<1){//case, where still more than one monolayer is left
+				desorption = coverage - boost::multiprecision::float128(2) + boost::multiprecision::float128(2) - (2+a/b)*boost::multiprecision::exp(b*time_step_mixed);
+				}
+			else{//case, where coverage will be smaller than one.
+				time_step_mixed =(-1/b)* boost::multiprecision::log(2+a/b);
+				boost::multiprecision::float128 time_step_subst = time_step - time_step_ads - time_step_mixed;
+				desorption = coverage - boost::multiprecision::float128(1) + (boost::multiprecision::float128(1) - boost::multiprecision::exp(-time_step_subst/tau_subst));
+			}
 		}
 	}
 	return desorption * boost::multiprecision::float128(calcNmono(iFacet));//This returns Delta'covering' in units of [1]. 1 means one particle.
@@ -234,6 +251,63 @@ double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b, bool printWarning
 			t_start= - tau_subst * boost::multiprecision::log(boost::multiprecision::float128(1)-rand_t*(boost::multiprecision::float128(1)-boost::multiprecision::exp(-time_step/tau_subst))) ;
 		}
 		else{//coverage > 1
+				boost::multiprecision::float128 tau_ads = tau_0 * boost::multiprecision::exp(enthalpy_vap/static_cast<boost::multiprecision::float128>(kb*temperature));//tau for particles desorbing on the adsorbate
+				if(tau_ads == tau_subst){//special case, where desorption rate is constant until a monolayer is reached.
+					if ((coverage - boost::multiprecision::float128(1)) >= (time_step/tau_ads)){//There are more layers (excluding the first monolayer), than desorbing while the iteration time.
+								t_start = rand_t * time_step;
+					}
+					else{//(coverage - 1) < (time_step/tau_ads): There are less layers (excluding the first monolayer), than desorbing while the iteration time.
+						if(printWarning){	std::ostringstream tmpstream (std::ostringstream::app);
+											tmpstream << "!!! Warning: Facet "<<getFacetIndex(iFacet) <<" is predicted to reach monolayer this iteration. Coverage = " <<coverage  <<" !!!" << std::endl;
+											printStream(tmpstream.str());
+										}
+						boost::multiprecision::float128 time_step_ads = tau_ads*(coverage - boost::multiprecision::float128(1));
+						boost::multiprecision::float128 time_step_subst = time_step - time_step_ads;
+						if(rand_t<(coverage-boost::multiprecision::float128(1))/(coverage-boost::multiprecision::exp(-time_step_subst/tau_subst))){
+										t_start = rand_t * time_step_ads;
+										}
+						else{
+										t_start=time_step_ads - tau_subst * boost::multiprecision::log(boost::multiprecision::float128(1)-rand_t*(boost::multiprecision::float128(1)-boost::multiprecision::exp(-time_step_subst/tau_subst))) ;
+										}
+					//Anyway: Here tau_ads == tau_subst! So, it is distinguished to provide a better understanding, what is happening physically
+					}
+				}
+				else{//desorption rate is constant until coverage equals two.
+					boost::multiprecision::float128 a = (-1/tau_ads)+(1/tau_subst);
+					boost::multiprecision::float128 b = (1/tau_ads)-(2/tau_subst);
+					boost::multiprecision::float128 time_step_ads = tau_ads*(coverage - boost::multiprecision::float128(2));
+					boost::multiprecision::float128 time_step_mixed = time_step - time_step_ads;
+					if((2+a/b)*boost::multiprecision::exp(b*time_step_mixed)<1){//case, where still more than one monolayer is left
+						//desorption = coverage - boost::multiprecision::float128(2) + boost::multiprecision::float128(2) - (2+a/b)*boost::multiprecision::exp(b*time_step_mixed);
+						if(rand_t<(coverage-boost::multiprecision::float128(2))/(coverage-(2+a/b)*boost::multiprecision::exp(b*time_step_mixed))){
+							t_start = rand_t * time_step_ads;
+						}
+						else{
+							t_start=time_step_ads + (1/b)* boost::multiprecision::log((1/(2+(a/b)))*(boost::multiprecision::float128(2)-rand_t*(boost::multiprecision::float128(2)-(2+(a/b))*boost::multiprecision::exp(b*time_step_mixed))));
+						}
+					}
+					else{//case, where coverage will be smaller than one.
+						if(printWarning){	std::ostringstream tmpstream (std::ostringstream::app);
+											tmpstream << "!!! Warning: Facet "<<getFacetIndex(iFacet) <<" is predicted to reach monolayer this iteration. Coverage = " <<coverage  <<" !!!" << std::endl;
+											printStream(tmpstream.str());
+											}
+						time_step_mixed =(-1/b)* boost::multiprecision::log(2+a/b);
+						boost::multiprecision::float128 time_step_subst = time_step - time_step_ads - time_step_mixed;
+						if(rand_t<(coverage-boost::multiprecision::float128(1))/(coverage-boost::multiprecision::exp(-time_step_subst/tau_subst))){
+							if(rand_t<(coverage-boost::multiprecision::float128(2))/(coverage-(2+a/b)*boost::multiprecision::exp(b*time_step_mixed))){
+								t_start = rand_t * time_step_ads;
+							}
+							else{
+								t_start=time_step_ads + (1/b)* boost::multiprecision::log((1/(2+(a/b)))*(boost::multiprecision::float128(2)-rand_t*(boost::multiprecision::float128(2)-(2+(a/b))*boost::multiprecision::exp(b*time_step_mixed))));
+							}
+						}
+						else{
+							t_start=time_step_ads + time_step_mixed - tau_subst * boost::multiprecision::log(boost::multiprecision::float128(1)-rand_t*(boost::multiprecision::float128(1)-boost::multiprecision::exp(-time_step_subst/tau_subst)));
+						}
+					}
+				}
+			}
+		/*else{//coverage > 1
 			boost::multiprecision::float128 tau_ads = tau_0 * boost::multiprecision::exp(enthalpy_vap/static_cast<boost::multiprecision::float128>(kb*temperature));//tau for particles desorbing on the adsorbate
 			if ((coverage - boost::multiprecision::float128(1)) >= (time_step/tau_ads)){//There are more layers (excluding the first monolayer), than desorbing while the iteration time.
 				t_start = rand_t * time_step;
@@ -254,8 +328,7 @@ double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b, bool printWarning
 				else{
 					t_start=time_step_ads - tau_subst * boost::multiprecision::log(boost::multiprecision::float128(1)-rand_t*(boost::multiprecision::float128(1)-boost::multiprecision::exp(-time_step_subst/tau_subst))) ;
 				}
-			}
-		}
+			}*/
 		//if(t_start.convert_to<double>()>24*3600*7)
 		//	std::cout << t_start.convert_to<double>()<<"\t"<<rand_t<<std::endl;
 		return t_start.convert_to<double>();
