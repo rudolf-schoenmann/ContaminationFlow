@@ -120,7 +120,7 @@ std::tuple<double,double> CalcErrorAll(int it){//calculates the averaged total e
 
 // Check if error reached targets
 bool checkError(double targetError, double currentError, double factor, std::string mode){
-	bool vipCheck = currentError<=targetError;
+	bool vipCheck = currentError<=targetError * factor;
 	if(!p->vipFacets.empty()){
 		HistoryList<double> *listptr;
 		listptr = getErrorList(mode);
