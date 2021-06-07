@@ -23,6 +23,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
  */
 
 #include "SimulationLinux.h"
+#include <math.h>
 //#include "levmar.h"
 extern SimulationHistory* simHistory;
 extern Simulation *sHandle;
@@ -104,18 +105,18 @@ std::tuple<double,double> CalcErrorAll(int it){//calculates the averaged total e
 
 			double error_event_facet=(it==-1)?simHistory->errorList_event.getCurrent(idx):simHistory->errorList_event.historyList.second[idx][it];
 			if(!std::isinf(error_event_facet)){//ignore facet if no hits (=inf error)
-				error_event+=error_event_facet*f.sh.area;
+				error_event+=error_event_facet*pow(f.sh.area,3/2);
 				area_event+=f.sh.area;
 			}
 
 			double error_covering_facet=(it==-1)?simHistory->errorList_covering.getCurrent(idx):simHistory->errorList_covering.historyList.second[idx][it];
 			if(!std::isinf(error_covering_facet)){//ignore facet if no hits (=inf error)
-				error_covering+=error_covering_facet*f.sh.area;
+				error_covering+=error_covering_facet*pow(f.sh.area,3/2);
 				area_covering+=f.sh.area;
 			}
 		}
 	}
-	return std::make_tuple(error_event/area_event, error_covering/area_covering);
+	return std::make_tuple(error_event/(pow(area_event,3/2)), error_covering/(pow(area_covering,3/2)));
 }
 
 // Check if error reached targets
