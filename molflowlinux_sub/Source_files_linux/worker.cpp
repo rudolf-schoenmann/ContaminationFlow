@@ -35,7 +35,6 @@ void CalcTotalOutgassingWorker() {
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-
 			if(f.sh.temperature==0) {continue;} //TODO sHandle->wp.finalOutgassingRate_Pa_m3_sec ?
 
 			if (f.sh.desorbType != DES_NONE) { //there is a kind of desorption
@@ -65,8 +64,9 @@ void CalcTotalOutgassingWorker() {
 						//Here in the CalcTotalOutgassingWorker function there are some modifications necessary, too.
 						//This has to be decided, when it is clear, how the input of outgassing is solved.
 						//Same for the case of an outgassing file!?!
-					}
-					else { //time-dependent outgassing
+						}
+					else {
+						//time-dependent outgassing
 						/*
 						sHandle->wp.totalDesorbedMolecules += sHandle->IDs[f.sh.IDid].back().second / (1.38E-23*f.sh.temperature);
 						size_t lastIndex = sHandle->parameters[f.sh.outgassing_paramId].GetSize() - 1;
