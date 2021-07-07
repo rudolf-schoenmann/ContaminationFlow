@@ -51,7 +51,13 @@ bool UpdateDesorption (){
 		}
 	}
 
-	if((boost::multiprecision::float128(sHandle->wp.totalOutgassingParticles)+totaldes)<boost::multiprecision::pow(boost::multiprecision::float128(10.),boost::multiprecision::float128(-50))){return false;}
+	if((boost::multiprecision::float128(sHandle->wp.totalOutgassingParticles)+totaldes)<boost::multiprecision::pow(boost::multiprecision::float128(10.),boost::multiprecision::float128(-50))){
+		std::ostringstream tmpstream (std::ostringstream::app);
+		tmpstream <<"Total desorption = "<< totaldes <<std::endl;
+		tmpstream <<"Total outgassing = " << boost::multiprecision::float128(sHandle->wp.totalOutgassingParticles)<<std::endl;
+		printStream(tmpstream.str());
+		return false;
+	}
 	return true;
 }
 

@@ -365,11 +365,11 @@ int main(int argc, char *argv[]) {
 				// End simulation for very small desorbed + outgassing particles
 				if(rank==0) {
 					std::ostringstream tmpstream (std::ostringstream::app);
-					tmpstream <<"Desorption smaller than 1E-50. Ending Simulation." <<std::endl;
+					tmpstream <<"Desorption smaller than 1E-50. Ending Simulation (is deactivated)." <<std::endl;
 					tmpstream <<"Computation Time (Simulation only): " <<computationTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computationTime/1000.0) <<std::endl;
 					printStream(tmpstream.str());
 				}
-				break;
+				//break; Do not end the simulation
 			}
 
 
