@@ -147,7 +147,7 @@ void calcSticking(SubprocessFacet *iFacet) {//Calculates sticking coefficient de
 }
 
 boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This returns Delta'covering' in units of [1].
-	std::ostringstream tmpstream (std::ostringstream::app);
+	//std::ostringstream tmpstream (std::ostringstream::app);
 
 	boost::multiprecision::float128 desorption(0.0);
 
@@ -173,9 +173,9 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 						desorption = time_step/tau_ads;//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
 			}
 			else{//(coverage - 1) < (time_step/tau_ads): There are less layers (excluding the first monolayer), than desorbing while the iteration time.
-						//time while particles desorbe form multilayer until one single monolayer is reached
+						//time while particles desorb form multilayer until one single monolayer is reached
 						boost::multiprecision::float128 time_step_ads = tau_ads*(coverage - boost::multiprecision::float128(1));
-						//time while particles desorbe form single monolayer
+						//time while particles desorb form single monolayer
 						boost::multiprecision::float128 time_step_subst = time_step - time_step_ads;
 						desorption = coverage - boost::multiprecision::float128(1) + (boost::multiprecision::float128(1) - boost::multiprecision::exp(-time_step_subst/tau_subst));//This returns Delta'coverage' in units of [1]. 1 means one monolayer.
 						//Anyway: Here tau_ads == tau_subst! So, it is distinguished to provide a better understanding, what is happening physically
@@ -234,7 +234,10 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 	}
 	//tmpstream << "Desorption [layers] of facet "<< getFacetIndex(iFacet) <<" = " << desorption <<std::endl;
 	//tmpstream << "Desorption [particles] of facet "<< getFacetIndex(iFacet) <<" = " << desorption * boost::multiprecision::float128(calcNmono(iFacet)) <<std::endl;
-	printStream(tmpstream.str());
+	//printStream(tmpstream.str());
+	if(desorption <0){
+		desorption = 0;
+	}
 	return desorption * boost::multiprecision::float128(calcNmono(iFacet));//This returns Delta'covering' in units of [1]. 1 means one particle.
 }
 
