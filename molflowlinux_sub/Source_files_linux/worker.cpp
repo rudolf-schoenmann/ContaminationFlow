@@ -26,7 +26,10 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "Simulation.h"
 #include "SimulationLinux.h"
 #include <vector>
+#include "MathTools.h"
+#include "Random.h"
 extern Simulation *sHandle; //delcared in molflowSub.cpp
+extern SimulationHistory* simHistory;
 
 void CalcTotalOutgassingWorker() {
 	// Compute the outgassing of all source facet
@@ -55,25 +58,52 @@ void CalcTotalOutgassingWorker() {
 						sHandle->wp.totalDesorbedMolecules += sHandle->wp.latestMoment * f.sh.outgassing / (kb*f.sh.temperature);
 						sHandle->wp.finalOutgassingRate += f.sh.outgassing / (kb*f.sh.temperature);  //Outgassing molecules/sec
 						sHandle->wp.finalOutgassingRate_Pa_m3_sec += f.sh.outgassing;
-
 						sHandle->wp.totalOutgassingParticles +=f.sh.outgassing * calcOutgassingFactor(&f); // Number of particles outgassing in time stepSize_outgassing
-
-						//As the code is now changed with the new Krealvirt approach, we now have to provide f.sh.outgassing as a number of particles (not anymore as Pa m^3/s).
-						//f.sh.outgassing is then used by the StartFromSource function (and also by the estimateTmin function, which is not used anymore but might be reactivated).
-						//Either we modify f.sh.outgassing in the new parameter input or we modify the StartFromSource function.
-						//Here in the CalcTotalOutgassingWorker function there are some modifications necessary, too.
-						//This has to be decided, when it is clear, how the input of outgassing is solved.
-						//Same for the case of an outgassing file!?!
 						}
 					else {
 						//time-dependent outgassing
-						/*
-						sHandle->wp.totalDesorbedMolecules += sHandle->IDs[f.sh.IDid].back().second / (1.38E-23*f.sh.temperature);
-						size_t lastIndex = sHandle->parameters[f.sh.outgassing_paramId].GetSize() - 1;
-						double finalRate_mbar_l_s = sHandle->parameters[f.sh.outgassing_paramId].GetY(lastIndex);
-						sHandle->wp.finalOutgassingRate += finalRate_mbar_l_s *0.100 / (1.38E-23*f.sh.temperature); //0.1: mbar*l/s->Pa*m3/s
-						sHandle->wp.finalOutgassingRate_Pa_m3_sec += finalRate_mbar_l_s *0.100;
-						*/
+						double time_step = simHistory->stepSize; //length of the current iteration
+						double t_start =simHistory->lastTime; //start of iteration
+						double t_stop =t_start + time_step;	//end of iteration
+						double end_of_outgassing = sHandle->IDs[f.sh.IDid].back().second; //last point of the defined and loaded outgassing table
+						double start_of_outgassing = sHandle->IDs[f.sh.IDid].front().second; //first point of the defined and loaded outgassing table
+						double outgassing_start = 0;//start of outgassing within the iteration step
+						double outgassing_end = 0;//end of outgassing within the iteration step
+						double facet_outgassing = 0;//over time integrated outgassing of facet during the iteration step
+						if(t_start >= end_of_outgassing){//case, when t_start is after the last point in time, where an outgassing is defined
+							continue;
+						}
+						else if(t_start <= end_of_outgassing && t_stop >= end_of_outgassing){//case, when t_start is before and
+									//t_stopp is after the last point in time, where an outgassing is defined
+							if (t_start <= start_of_outgassing){
+								outgassing_start = start_of_outgassing;
+								outgassing_end = end_of_outgassing;
+							}
+							else{
+								outgassing_start = t_start;
+								outgassing_end = end_of_outgassing;
+							}
+						}
+						else{
+						//same as =>else if(t_start <= end_of_outgassing && t_stop <= end_of_outgassing){//case, when t_start is before and
+							//t_stopp is before the last point in time, where an outgassing is defined
+							if (t_start <= start_of_outgassing){
+								if(t_stop <= start_of_outgassing){
+									continue;
+								}
+								else{//t_stop >= start_of_outgassing
+									outgassing_start = start_of_outgassing;
+									outgassing_end = t_stop;
+								}
+							}
+							else{//t_start >= start_of_outgassing
+								outgassing_start = t_start;
+								outgassing_end = t_stop;
+							}
+						}
+						facet_outgassing = InterpolateY(outgassing_end, sHandle->IDs[f.sh.IDid], false, true) - InterpolateY(outgassing_start, sHandle->IDs[f.sh.IDid], false, true);
+						sHandle->wp.totalOutgassingParticles +=facet_outgassing / (kb*f.sh.temperature);
+						sHandle->wp.totalDesorbedMolecules +=facet_outgassing / (kb*f.sh.temperature);
 					}
 				}
 			}
