@@ -706,10 +706,54 @@ bool StartFromSource() {
 					}
 				} //end outgassing file block
 				else { //constant or time-dependent outgassing
-					boost::multiprecision::float128 facetOutgassing =
-						(f.sh.outgassing_paramId >= 0)
-						? boost::multiprecision::float128(sHandle->IDs[f.sh.IDid].back().second / (kb*f.sh.temperature))//This is the Molflow time-dependent mode. We don't use that mode.
-						: (boost::multiprecision::float128(f.sh.outgassing * calcOutgassingFactor(&f))+des);
+					boost::multiprecision::float128 facetOutgassing = 0;
+					if(f.sh.outgassing_paramId >= 0){
+						//time-dependent outgassing
+						double time_step = simHistory->stepSize; //length of the current iteration
+						double t_start =simHistory->lastTime; //start of iteration
+						double t_stop =t_start + time_step;	//end of iteration
+						double end_of_outgassing = sHandle->IDs[f.sh.IDid].back().second; //last point of the defined and loaded outgassing table
+						double start_of_outgassing = sHandle->IDs[f.sh.IDid].front().second; //first point of the defined and loaded outgassing table
+						double outgassing_start = 0;//start of outgassing within the iteration step
+						double outgassing_end = 0;//end of outgassing within the iteration step
+						double facet_outgassing = 0;//over time integrated outgassing of facet during the iteration step
+						if(t_start >= end_of_outgassing){//case, when t_start is after the last point in time, where an outgassing is defined
+							//continue;
+						}
+						else if(t_start <= end_of_outgassing && t_stop >= end_of_outgassing){//case, when t_start is before and
+															//t_stopp is after the last point in time, where an outgassing is defined
+							if (t_start <= start_of_outgassing){
+									outgassing_start = start_of_outgassing;
+									outgassing_end = end_of_outgassing;
+							}
+							else{
+								outgassing_start = t_start;
+								outgassing_end = end_of_outgassing;
+							}
+						}
+						else{
+						//same as =>else if(t_start <= end_of_outgassing && t_stop <= end_of_outgassing){//case, when t_start is before and
+						//t_stopp is before the last point in time, where an outgassing is defined
+							if (t_start <= start_of_outgassing){
+								if(t_stop <= start_of_outgassing){
+									//continue;
+								}
+								else{//t_stop >= start_of_outgassing
+									outgassing_start = start_of_outgassing;
+									outgassing_end = t_stop;
+								}
+							}
+							else{//t_start >= start_of_outgassing
+								outgassing_start = t_start;
+								outgassing_end = t_stop;
+							}
+						}
+						facet_outgassing = InterpolateY(outgassing_end, sHandle->IDs[f.sh.IDid], false, true) - InterpolateY(outgassing_start, sHandle->IDs[f.sh.IDid], false, true);
+						facetOutgassing = boost::multiprecision::float128(facet_outgassing/(kb*f.sh.temperature))+des;
+					}
+					else{
+						facetOutgassing = boost::multiprecision::float128(f.sh.outgassing * calcOutgassingFactor(&f))+des;
+					}
 					found = (srcRnd >= sumA) && (srcRnd < (sumA + facetOutgassing));
 					sumA += facetOutgassing;
 

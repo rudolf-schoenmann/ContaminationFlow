@@ -383,9 +383,57 @@ double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b, bool printWarning
 		return t_start.convert_to<double>();
 	}
 	else{//if outgassing
-		return rnd() * simHistory->stepSize_outgassing;
+		//regular outgassing
+		if (iFacet->sh.outgassing_paramId == -1) { //constant outgassing
+			return rnd() * simHistory->stepSize_outgassing;
+			}
+		else {
+			//time-dependent outgassing
+			double time_step = simHistory->stepSize; //length of the current iteration
+			double t_start =simHistory->lastTime; //start of iteration
+			double t_stop =t_start + time_step;	//end of iteration
+			double end_of_outgassing = sHandle->IDs[iFacet->sh.IDid].back().second; //last point of the defined and loaded outgassing table
+			double start_of_outgassing = sHandle->IDs[iFacet->sh.IDid].front().second; //first point of the defined and loaded outgassing table
+			double outgassing_start = 0;//start of outgassing within the iteration step
+			double outgassing_end = 0;//end of outgassing within the iteration step
+			double facet_outgassing = 0;//over time integrated outgassing of facet during the iteration step
+			double outgassing_before_step = 0;
+			if(t_start >= end_of_outgassing){//case, when t_start is after the last point in time, where an outgassing is defined
+				//This case is not possible
+			}
+			else if(t_start <= end_of_outgassing && t_stop >= end_of_outgassing){//case, when t_start is before and
+				//t_stopp is after the last point in time, where an outgassing is defined
+					if (t_start <= start_of_outgassing){
+						outgassing_start = start_of_outgassing;
+						outgassing_end = end_of_outgassing;
+					}
+					else{
+						outgassing_start = t_start;
+						outgassing_end = end_of_outgassing;
+						}
+					}
+			else{
+				//same as =>else if(t_start <= end_of_outgassing && t_stop <= end_of_outgassing){//case, when t_start is before and
+				//t_stopp is before the last point in time, where an outgassing is defined
+				if (t_start <= start_of_outgassing){
+					if(t_stop <= start_of_outgassing){
+						//This case is not possible
+					}
+					else{//t_stop >= start_of_outgassing
+						outgassing_start = start_of_outgassing;
+						outgassing_end = t_stop;
+					}
+				}
+				else{//t_start >= start_of_outgassing
+					outgassing_start = t_start;
+					outgassing_end = t_stop;
+				}
+			}
+			outgassing_before_step = InterpolateY(outgassing_start, sHandle->IDs[iFacet->sh.IDid], false, true);
+			facet_outgassing = InterpolateY(outgassing_end, sHandle->IDs[iFacet->sh.IDid], false, true) - InterpolateY(outgassing_start, sHandle->IDs[iFacet->sh.IDid], false, true);
+			return InterpolateX(outgassing_before_step + rnd() * facet_outgassing, sHandle->IDs[iFacet->sh.IDid], false, true);
+		}
 	}
-
 }
 
 //----------deprecated functions because hitbuffer not sent to sub processes anymore
