@@ -900,6 +900,8 @@ bool StartFromSource() {
 		}
 
 		if(sHandle->currentParticle.flightTime>simHistory->stepSize && src->sh.opacity!=0){
+			//This case normally should not happen. Only if there is some error in the calculation
+			//of the start time. That should be smaller than the step size per definition.
 			//----desorb----
 			if (src->sh.isMoving && sHandle->wp.motionType) RecordHit(HIT_MOVING);
 			else RecordHit(HIT_DES); //create blue hit point for created particle
@@ -1767,12 +1769,10 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 			f->tmpCounter[m].hit.nbHitEquiv += hitEquiv;
 			f->tmpCounter[m].hit.nbDesorbed += true?desorb:0;
 			f->tmpCounter[m].hit.nbAbsEquiv += static_cast<double>(absorb)*sHandle->currentParticle.oriRatio;
+			f->tmpCounter[m].hit.sum_1_per_ort_velocity += sHandle->currentParticle.oriRatio * sum_1_per_v;
+			f->tmpCounter[m].hit.sum_v_ort += sHandle->currentParticle.oriRatio * sum_v_ort;
+			f->tmpCounter[m].hit.sum_1_per_velocity += (hitEquiv + static_cast<double>(desorb)) / sHandle->currentParticle.velocity;
 
-			if(time >= simHistory->stepSize*(1.0-p->counterWindowPercent) && time <= simHistory->stepSize){//only increase velocity counters if within a timewindow //TODO
-				f->tmpCounter[m].hit.sum_1_per_ort_velocity += sHandle->currentParticle.oriRatio * sum_1_per_v;
-				f->tmpCounter[m].hit.sum_v_ort += sHandle->currentParticle.oriRatio * sum_v_ort;
-				f->tmpCounter[m].hit.sum_1_per_velocity += (hitEquiv + static_cast<double>(desorb)) / sHandle->currentParticle.velocity;
-			}
 			//update covering: increases with every absorb, decreases with every desorb
 			if (absorb>0){ //TODO which one better?
 			//if (time>getStepSize()){
