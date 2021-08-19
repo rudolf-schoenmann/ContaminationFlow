@@ -776,15 +776,16 @@ bool StartFromSource() {
 	bool desorbed_b=true; //determines whether particle created from outgassing or desorption; true desorbed, false outgassed
 	if(src->sh.desorbType != DES_NONE ){ //there is outgassing
 		boost::multiprecision::float128 des=src->sh.desorption;
-		if(f.sh.outgassing_paramId >= 0){//time-dependent outgassing
+		if(src->sh.outgassing_paramId >= 0){//time-dependent outgassing
 						double time_step = simHistory->stepSize; //length of the current iteration
 						double t_start =simHistory->lastTime; //start of iteration
 						double t_stop =t_start + time_step;	//end of iteration
-						double end_of_outgassing = sHandle->IDs[f.sh.IDid].back().second; //last point of the defined and loaded outgassing table
-						double start_of_outgassing = sHandle->IDs[f.sh.IDid].front().second; //first point of the defined and loaded outgassing table
+						double end_of_outgassing = sHandle->IDs[src->sh.IDid].back().second; //last point of the defined and loaded outgassing table
+						double start_of_outgassing = sHandle->IDs[src->sh.IDid].front().second; //first point of the defined and loaded outgassing table
 						double outgassing_start = 0;//start of outgassing within the iteration step
 						double outgassing_end = 0;//end of outgassing within the iteration step
 						double facet_outgassing = 0;//over time integrated outgassing of facet during the iteration step
+						boost::multiprecision::float128 facetOutgassing = 0; // over time integrated outgassing of facet during the iteration step in units of one 1 particle
 						if(t_start >= end_of_outgassing){//case, when t_start is after the last point in time, where an outgassing is defined
 							//continue;
 						}
@@ -816,11 +817,12 @@ bool StartFromSource() {
 								outgassing_end = t_stop;
 							}
 						}
-						facet_outgassing = InterpolateY(outgassing_end, sHandle->IDs[f.sh.IDid], false, true) - InterpolateY(outgassing_start, sHandle->IDs[f.sh.IDid], false, true);
-						facetOutgassing = boost::multiprecision::float128(facet_outgassing/(kb*f.sh.temperature))
+						facet_outgassing = InterpolateY(outgassing_end, sHandle->IDs[src->sh.IDid], false, true) - InterpolateY(outgassing_start, sHandle->IDs[src->sh.IDid], false, true);
+						facetOutgassing = boost::multiprecision::float128(facet_outgassing/(kb*src->sh.temperature));
 						if(boost::multiprecision::float128(rnd())>des/(facetOutgassing+des)){
 							desorbed_b=false;
 						}
+		}
 		else{//constant outgassing
 						if(boost::multiprecision::float128(rnd())>des/(boost::multiprecision::float128(src->sh.outgassing * calcOutgassingFactor(src))+des) ){
 							desorbed_b=false;
