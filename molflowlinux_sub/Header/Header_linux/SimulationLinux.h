@@ -389,6 +389,7 @@ public:
 	int simulationTimeMS;
 	double maxTimeS;
 	bool doCoveringFile;
+	int predictcorrect_order;
 
 private:
 	void createOutput(int save);

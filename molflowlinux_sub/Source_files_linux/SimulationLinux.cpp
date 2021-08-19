@@ -396,6 +396,7 @@ ProblemDef::ProblemDef(){
 	doFocusGroupOnly=true;
 
 	doCoveringFile=false;
+	predictcorrect_order = 0;
 
 }
 
@@ -583,6 +584,7 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 		}
 
 		else if(stringIn =="doFocusGroupOnly"){is >> intIn; doFocusGroupOnly=intIn==0?false:true;}
+		else if(stringIn =="predictcorrect_order"){is >> intIn; predictcorrect_order=intIn<0?0:intIn;}
 
 		else{ // No valid input.
 			if(rank==0){
@@ -720,6 +722,7 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 		}
 		out <<std::endl;
 	}
+	out <<"predictcorrect_order" <<"\t" <<predictcorrect_order<<std::endl;
 	if(printConversion){
 		out  << "Simulation time " << simulationTime << unit << " converted to " << simulationTimeMS << "ms" << std::endl;
 		out  << "Maximum simulated time " << maxTime << maxUnit << " converted to " << maxTimeS << "s" << std::endl<<std::endl;
