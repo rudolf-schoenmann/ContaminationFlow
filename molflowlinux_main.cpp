@@ -332,7 +332,7 @@ int main(int argc, char *argv[]) {
 				tmpstream <<std::endl <<"----------------Starting iteration " <<it <<"----------------"<<std::endl;
 				printStream(tmpstream.str());
 			}
-
+//__Start of PC loop
 			//---- Reset buffers and send coveringList content to all subprocesses
 			// reset hitbuffer_sum (except covering) before sending to sub processes
 			initbufftozero(&hitbuffer);
@@ -508,7 +508,7 @@ int main(int argc, char *argv[]) {
 				if(p->stopConverged && simHistory->lastTime>=p->convergenceTime) // End simulation only if "allowed" and convergenceTime reached
 					break;
 			}
-
+//___End of PC loop
 		} else {
 			std::cout << "Simulation time = 0.0 seconds. Nothing to do." << std::endl;
 			break;
