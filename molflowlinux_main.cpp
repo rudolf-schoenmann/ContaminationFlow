@@ -96,7 +96,7 @@ bool loadAndCheckSHandle(int rank, Databuff* hitbuffer, Databuff* loadbuffer){
 		initBuffSize(hitbuffer,hitsize);
 		initbufftozero(hitbuffer);
 	}
-
+	/*
 	// Check for inconsistent hitbuffer size
 	if(hitsize!=(unsigned int)hitbuffer->size){
 		if(rank==0){
@@ -118,7 +118,7 @@ bool loadAndCheckSHandle(int rank, Databuff* hitbuffer, Databuff* loadbuffer){
 		}
 		valid=false;
 	}
-
+	*/
 	/*// Check for two sided facet with opacity
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
