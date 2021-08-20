@@ -332,7 +332,8 @@ int main(int argc, char *argv[]) {
 				tmpstream <<std::endl <<"----------------Starting iteration " <<it <<"----------------"<<std::endl;
 				printStream(tmpstream.str());
 			}
-//__Start of PC loop
+//__Start of PC loop for PC_step < p->predictcorrect_order + 1
+
 			//---- Reset buffers and send coveringList content to all subprocesses
 			// reset hitbuffer_sum (except covering) before sending to sub processes
 			initbufftozero(&hitbuffer);
@@ -340,10 +341,20 @@ int main(int argc, char *argv[]) {
 				initbufftozero(&hitbuffer_sum);
 			}
 
+			//Hier eine if-Bedingung: if(PC_step ==0){
 			// Send each coveringList entry one at a time
 			for(unsigned int i=0; i<simHistory->numFacet;i++){
 				MPI_Bcast(&simHistory->coveringList.currentList[i], 16, MPI::BYTE,0,MPI_COMM_WORLD);
 			}
+			/*
+			}
+			else{//die correctionList (anstatt currentList) muss noch eingeführt werden und dort hinein auch noch die Werte
+				//reingeschrieben werden => updateHistory() Funktion mit if Abfrage, welcher PC gerade ist.
+			// Send each coveringList entry one at a time
+			for(unsigned int i=0; i<simHistory->numFacet;i++){
+				MPI_Bcast(&simHistory->coveringList.correctionList[i], 16, MPI::BYTE,0,MPI_COMM_WORLD);	
+			}	
+			*/
 
 			// Send currentStep -> used to calculate stepSize
 			MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
@@ -468,7 +479,8 @@ int main(int argc, char *argv[]) {
 				// print current coveringList
 				std::ostringstream tmpstream (std::ostringstream::app);
 				simHistory->coveringList.print(tmpstream,"Accumulative covering after iteration "+std::to_string(it),p->histSize);
-
+				
+		//________if(PC_step == p->predictcorrect_order){
 				// Calculate and print statistics
 				simHistory->coveringList.updateStatistics(p->rollingWindowSize);
 
@@ -476,6 +488,7 @@ int main(int argc, char *argv[]) {
 				//tmpstream <<"Rolling time window statistics over last "+std::to_string(p->rollingWindowSize)+" iterations. Mean ratio std/mean = "+std::to_string(double(simHistory->coveringList.getAverageStatistics(sHandle,true, !p->doFocusGroupOnly,p->focusGroup.second)))+" with target ratio for convergence "+std::to_string(p->convergenceTarget)<<std::endl;
 				simHistory->coveringList.printStatistics(tmpstream, "Rolling time window statistics over last "+std::to_string(p->rollingWindowSize)+" iterations for "+monitoredFacets+" facets. Mean ratio std/mean = "+std::to_string(currentRatio)+" with target ratio for convergence "+std::to_string(p->convergenceTarget));
 				printStream(tmpstream.str());
+		//________}
 			}
 
 			if (rank == 0) {std::cout << "ending iteration " << it <<std::endl;}
