@@ -32,10 +32,12 @@ extern SimulationHistory* simHistory;
 
 // Step size for intervals
 double getStepSize(){
-	double t_min = p->t_min;//set minimal time resolution to 1E-4 seconds.
+	double t_min = p->t_min;
+	double t_max = p->maxTimeS;
 	//Dynamical calculation of min_time is not straight forward, since 'manageTimeStep()' can change it.
 	//Dynamical calculation can be done later, if it is regarded as useful.
-
+	double last_step_size=0;
+	double test_step_size=0;
 		if(simHistory->currentStep == 0 && simHistory->stepSize==0.0){
 			/*
 			// Reduce p->iterationNumber until test_time_step reaches t_min
@@ -49,15 +51,24 @@ double getStepSize(){
 			return t_min;
 		}
 		else{
-			double t_start = t_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/(t_min))/(double)p->iterationNumber));
-			double t_stop = t_min*exp((double)(simHistory->currentStep+1)*(log(p->maxTimeS/(t_min))/(double)p->iterationNumber));
-			/*
-			if(t_stop > p->t_max){
-				return p->t_max - t_start;
+			last_step_size=simHistory->stepSize;//This is the old stepsize, which will be updated here.
+			//exponentially growing points in time (t_i);time step = t_(i+1)- t_i
+			double t_start = t_min*exp((double)simHistory->currentStep*(log(t_max/t_min)/(double)p->iterationNumber));
+			double t_stop = t_min*exp((double)(simHistory->currentStep+1)*(log(t_max/t_min)/(double)p->iterationNumber));
+			test_step_size = t_stop - t_start;
+			if(test_step_size<last_step_size){
+				//cubic growing points in time (t_i);time step = t_(i+1)- t_i
+				t_start = t_min + (t_max - t_min)*pow((simHistory->currentStep/p->iterationNumber),3);
+				t_stop = t_min + (t_max - t_min)*pow((simHistory->currentStep + 1/p->iterationNumber),3);
+				if(test_step_size<last_step_size){
+					//quadratic growing points in time (t_i);time step = t_(i+1)- t_i
+					if(test_step_size<last_step_size){
+						//linear growing points in time (t_i);time step = t_(i+1)- t_i = constant
+					}
+				}
 			}
-			else{
-				return t_stop - t_start;;
-			}*/
+
+
 			return t_stop-t_start<p->t_max?t_stop-t_start:p->t_max;
 		}
 		/*if(simHistory->currentStep==0){
