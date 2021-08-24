@@ -129,11 +129,11 @@ boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum){ // C
 
 	boost::multiprecision::float128 des=calctotalDesorption();
 	CalcTotalOutgassingWorker();
-	std::ostringstream tmpstream (std::ostringstream::app);
+	/*std::ostringstream tmpstream (std::ostringstream::app);
 	tmpstream << "total desorption =  "<< des <<std::endl;
 	tmpstream << "total outgassing =  "<< sHandle->wp.totalOutgassingParticles <<std::endl;
 	tmpstream << "total outgassing/total desorption =  "<< sHandle->wp.totalOutgassingParticles/des <<std::endl;
-	printStream(tmpstream.str());
+	printStream(tmpstream.str());*/
 	return (boost::multiprecision::float128(sHandle->wp.totalOutgassingParticles) +des) / (boost::multiprecision::float128(nbDesorbed)/boost::multiprecision::float128(simHistory->smallCoveringFactor));
 	}
 
