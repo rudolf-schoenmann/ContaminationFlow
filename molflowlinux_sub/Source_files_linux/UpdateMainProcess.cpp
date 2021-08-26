@@ -53,17 +53,27 @@ double getStepSize(){
 		else{
 			last_step_size=simHistory->stepSize;//This is the old stepsize, which will be updated here.
 			//exponentially growing points in time (t_i);time step = t_(i+1)- t_i
-			double t_start = t_min*exp((double)simHistory->currentStep*(log(t_max/t_min)/(double)p->iterationNumber));
-			double t_stop = t_min*exp((double)(simHistory->currentStep+1)*(log(t_max/t_min)/(double)p->iterationNumber));
+			double t_start = t_min*exp((double)(simHistory->currentStep-1)*(log(t_max/t_min)/(double)p->iterationNumber));
+			double t_stop = t_min*exp((double)simHistory->currentStep*(log(t_max/t_min)/(double)p->iterationNumber));
 			test_step_size = t_stop - t_start;
 			if(test_step_size<last_step_size){
 				//cubic growing points in time (t_i);time step = t_(i+1)- t_i
-				t_start = t_min + (t_max - t_min)*pow((simHistory->currentStep/p->iterationNumber),3);
-				t_stop = t_min + (t_max - t_min)*pow((simHistory->currentStep + 1/p->iterationNumber),3);
+				t_start = t_min + (t_max - t_min)*pow(((simHistory->currentStep-1)/p->iterationNumber),3);
+				t_stop = t_min + (t_max - t_min)*pow((simHistory->currentStep/p->iterationNumber),3);
+				test_step_size = t_stop - t_start;
 				if(test_step_size<last_step_size){
 					//quadratic growing points in time (t_i);time step = t_(i+1)- t_i
+					t_start = t_min + (t_max - t_min)*pow(((simHistory->currentStep-1)/p->iterationNumber),2);
+					t_stop = t_min + (t_max - t_min)*pow((simHistory->currentStep/p->iterationNumber),2);
+					test_step_size = t_stop - t_start;
 					if(test_step_size<last_step_size){
 						//linear growing points in time (t_i);time step = t_(i+1)- t_i = constant
+						t_start = t_min + (t_max - t_min)*((simHistory->currentStep-1)/p->iterationNumber);
+						t_stop = t_min + (t_max - t_min)*(simHistory->currentStep/p->iterationNumber);
+						test_step_size = t_stop - t_start;
+						if(test_step_size<last_step_size){
+							return t_min;
+						}
 					}
 				}
 			}
