@@ -175,6 +175,8 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 								tmpstream << "covering decreases by "<<covering_delta << " = " << boost::multiprecision::float128(covering_delta) << std::endl;
 							}
 					}
+				else{tmpstream << "covering is not updated! error_covering = "<<simHistory->errorList_covering.getCurrent(&f) << std::endl;
+				}
 			}
 
 			tmpstream << "covering_phys_after = " << covering_phys << " = " << boost::multiprecision::float128(covering_phys) << std::endl;
