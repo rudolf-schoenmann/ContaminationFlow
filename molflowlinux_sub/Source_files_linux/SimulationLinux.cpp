@@ -46,7 +46,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 		std::ostringstream tmpstream (std::ostringstream::app);
 		tmpstream <<std::endl <<"Currentstep: " << simHistory->currentStep <<". Step size: " <<simHistory->stepSize <<std::endl;
 		tmpstream<<simHistory->lastTime <<" + " <<simHistory->stepSize << " = " <<simHistory->lastTime+simHistory->stepSize << " < " <<p->outgassingTimeWindow <<" ? => stepSize_outgassing = " <<simHistory->stepSize_outgassing <<std::endl;
-		tmpstream <<"Target Particles: " << targetParticles <<". Target Error: " <<targetError <<std::endl <<std::endl;
+		tmpstream <<"Target Particles for each subprocess: " << targetParticles <<". Target Error for each subprocess: " <<targetError <<std::endl <<std::endl;
 		printStream(tmpstream.str());
 
 	}
