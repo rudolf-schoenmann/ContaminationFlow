@@ -38,6 +38,7 @@ double getStepSize(){
 	//Dynamical calculation can be done later, if it is regarded as useful.
 	double last_step_size=0;
 	double test_step_size=0;
+	double iterationNumber = (double)p->iterationNumber - 1;// steps: 0, 1, 2, ..., 'p->iterationNumber - 1' => these are 'p->iterationNumber' steps
 		if(simHistory->currentStep == 0 && simHistory->stepSize==0.0){
 			/*
 			// Reduce p->iterationNumber until test_time_step reaches t_min
@@ -53,23 +54,23 @@ double getStepSize(){
 		else{
 			last_step_size=simHistory->stepSize;//This is the old stepsize, which will be updated here.
 			//exponentially growing points in time (t_i);time step = t_(i+1)- t_i
-			double t_start = t_min*exp((double)(simHistory->currentStep-1)*(log(t_max/t_min)/(double)p->iterationNumber));
-			double t_stop = t_min*exp((double)simHistory->currentStep*(log(t_max/t_min)/(double)p->iterationNumber));
+			double t_start = t_min*exp((double)(simHistory->currentStep-1)*(log(t_max/t_min)/iterationNumber));
+			double t_stop = t_min*exp((double)simHistory->currentStep*(log(t_max/t_min)/iterationNumber));
 			test_step_size = t_stop - t_start;
 			if(test_step_size<last_step_size){
 				//cubic growing points in time (t_i);time step = t_(i+1)- t_i
-				t_start = t_min + (t_max - t_min)*pow(((simHistory->currentStep-1)/p->iterationNumber),3);
-				t_stop = t_min + (t_max - t_min)*pow((simHistory->currentStep/p->iterationNumber),3);
+				t_start = t_min + (t_max - t_min)*pow(((simHistory->currentStep-1)/iterationNumber),3);
+				t_stop = t_min + (t_max - t_min)*pow((simHistory->currentStep/iterationNumber),3);
 				test_step_size = t_stop - t_start;
 				if(test_step_size<last_step_size){
 					//quadratic growing points in time (t_i);time step = t_(i+1)- t_i
-					t_start = t_min + (t_max - t_min)*pow(((simHistory->currentStep-1)/p->iterationNumber),2);
-					t_stop = t_min + (t_max - t_min)*pow((simHistory->currentStep/p->iterationNumber),2);
+					t_start = t_min + (t_max - t_min)*pow(((simHistory->currentStep-1)/iterationNumber),2);
+					t_stop = t_min + (t_max - t_min)*pow((simHistory->currentStep/iterationNumber),2);
 					test_step_size = t_stop - t_start;
 					if(test_step_size<last_step_size){
 						//linear growing points in time (t_i);time step = t_(i+1)- t_i = constant
-						t_start = t_min + (t_max - t_min)*((simHistory->currentStep-1)/p->iterationNumber);
-						t_stop = t_min + (t_max - t_min)*(simHistory->currentStep/p->iterationNumber);
+						t_start = t_min + (t_max - t_min)*((simHistory->currentStep-1)/iterationNumber);
+						t_stop = t_min + (t_max - t_min)*(simHistory->currentStep/iterationNumber);
 						test_step_size = t_stop - t_start;
 						if(test_step_size<last_step_size){
 							return t_min;
