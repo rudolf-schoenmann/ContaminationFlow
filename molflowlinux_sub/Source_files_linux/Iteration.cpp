@@ -84,10 +84,12 @@ void UpdateErrorList(Databuff *hitbuffer_sum){ // hitbuffer_sum==NULL: subproces
 			if(hitbuffer_sum==NULL){ // Sub process: set currentList values
 				simHistory->hitList.setCurrent(&f,nbhits);
 				simHistory->desorbedList.setCurrent(&f,nbdes);
+				simHistory->adsorbedList.setCurrent(&f,nbads);
 			}
 			else{ // Main process: set historyList values
 				simHistory->hitList.setLast(&f,nbhits);
 				simHistory->desorbedList.setLast(&f,nbdes);
+				simHistory->adsorbedList.setLast(&f,nbads);
 			}
 		}
 	}

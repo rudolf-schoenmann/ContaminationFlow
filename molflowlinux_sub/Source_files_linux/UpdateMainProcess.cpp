@@ -198,6 +198,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 	simHistory->errorList_event.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 	simHistory->errorList_covering.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 	simHistory->desorbedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+	simHistory->adsorbedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 	simHistory->particleDensityList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 	simHistory->pressureList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 }

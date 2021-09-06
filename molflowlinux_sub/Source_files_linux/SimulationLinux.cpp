@@ -138,6 +138,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 			// Print currentLists
 			simHistory->hitList.printCurrent(tmpstream, std::to_string(rank)+": hitlist");
 			simHistory->desorbedList.printCurrent(tmpstream, std::to_string(rank)+": desorbedlist");
+			simHistory->adsorbedList.printCurrent(tmpstream, std::to_string(rank)+": adsorbedlist");
 			simHistory->coveringList.printCurrent(tmpstream, std::to_string(rank)+": coveringlist");
 			if(p->errorMode=="event")
 				simHistory->errorList_event.printCurrent(tmpstream, std::to_string(rank)+": errorlist_event");
@@ -788,6 +789,9 @@ SimulationHistory::SimulationHistory(int world_size){
 	desorbedList.initList(numFacet);
 	desorbedList.initCurrent(numFacet);
 
+	adsorbedList.initList(numFacet);
+	adsorbedList.initCurrent(numFacet);
+
 	errorList_event.initList(numFacet);
 	errorList_event.initCurrent(numFacet);
 
@@ -815,16 +819,19 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 
 	double numHit;
 	llong numDes;
+	llong numAds;
 	boost::multiprecision::uint128_t covering;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			covering = boost::multiprecision::uint128_t(getCovering(&f, hitbuffer));
 			numHit=getHits(&f, hitbuffer);
 			numDes=getnbDesorbed(&f, hitbuffer);
+			numAds=getnbAdsorbed(&f, hitbuffer);
 
 			coveringList.currentList.push_back(covering);
 			hitList.currentList.push_back(numHit);
 			desorbedList.currentList.push_back(numDes);
+			adsorbedList.currentList.push_back(numAds);
 
 			f.tmpCounter[0].hit.covering=(llong)covering;
 
@@ -860,6 +867,9 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 
 	desorbedList.initList(numFacet);
 	desorbedList.appendCurrent(0);
+
+	adsorbedList.initList(numFacet);
+	adsorbedList.appendCurrent(0);
 
 	errorList_event.initList(numFacet);
 	errorList_event.initCurrent(numFacet);
@@ -922,6 +932,11 @@ void SimulationHistory::updateHistory(){
 	desorbedList.initList(numFacet);
 	desorbedList.initCurrent(numFacet);
 	desorbedList.appendCurrent(0);
+
+	adsorbedList.reset();
+	adsorbedList.initList(numFacet);
+	adsorbedList.initCurrent(numFacet);
+	adsorbedList.appendCurrent(0);
 
 	errorList_event.reset();
 	errorList_event.initList(numFacet);

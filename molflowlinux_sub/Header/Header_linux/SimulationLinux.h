@@ -402,6 +402,7 @@ public:
 	HistoryList<boost::multiprecision::uint128_t> coveringList;
 	HistoryList<double> hitList;
 	HistoryList<llong> desorbedList;
+	HistoryList<llong> adsorbedList;
 	HistoryList<double> errorList_event;
 	HistoryList<double> errorList_covering;
 	HistoryList<double> particleDensityList;
