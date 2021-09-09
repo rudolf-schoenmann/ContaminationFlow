@@ -38,7 +38,7 @@ void CalcTotalOutgassingWorker() {
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			if(f.sh.temperature==0) {continue;}
+			//if(f.sh.temperature==0) {continue;}
 
 			if (f.sh.desorbType != DES_NONE) { //there is a kind of desorption
 				if (f.sh.useOutgassingFile) { //outgassing file
@@ -75,7 +75,7 @@ void CalcTotalOutgassingWorker() {
 							continue;
 						}
 						else if(t_start <= end_of_outgassing && t_stop >= end_of_outgassing){//case, when t_start is before and
-									//t_stopp is after the last point in time, where an outgassing is defined
+							//t_stopp is after the last point in time, where an outgassing is defined
 							if (t_start <= start_of_outgassing){
 								outgassing_start = start_of_outgassing;
 								outgassing_end = end_of_outgassing;

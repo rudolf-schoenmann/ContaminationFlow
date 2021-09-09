@@ -672,10 +672,6 @@ bool StartFromSource() {
 			if(f.sh.temperature==0) {i++;continue;}
 			boost::multiprecision::float128 des=f.sh.desorption;
 
-			std::ostringstream tmpstream (std::ostringstream::app);
-			tmpstream <<"desorbType of facet " <<getFacetIndex(&f)<< ": "<< f.sh.desorbType <<std::endl;
-			tmpstream <<"outgassing_paramId of facet " <<getFacetIndex(&f)<< ": "<< f.sh.outgassing_paramId <<std::endl;
-			printStream(tmpstream.str());
 			if (f.sh.desorbType != DES_NONE || des>boost::multiprecision::float128(0.0)) { //there is some kind of outgassing
 				if (f.sh.useOutgassingFile) { //Using SynRad-generated outgassing map
 					if (boost::multiprecision::float128(f.sh.totalOutgassing * calcOutgassingFactor(&f)) +des > boost::multiprecision::float128(0.0)) {
@@ -706,6 +702,7 @@ bool StartFromSource() {
 								return false;
 							}*/
 						}
+						found = (srcRnd >= sumA) && (srcRnd < (sumA + (boost::multiprecision::float128(f.sh.totalOutgassing * calcOutgassingFactor(&f))+des)));
 						sumA += (boost::multiprecision::float128(f.sh.totalOutgassing * calcOutgassingFactor(&f))+des);
 					}
 				} //end outgassing file block
@@ -718,24 +715,14 @@ bool StartFromSource() {
 						double t_stop =t_start + time_step;	//end of iteration
 						double end_of_outgassing = sHandle->IDs[f.sh.IDid].back().first; //last point of the defined and loaded outgassing table
 						double start_of_outgassing = sHandle->IDs[f.sh.IDid].front().first; //first point of the defined and loaded outgassing table
-						std::ostringstream tmpstream (std::ostringstream::app);
-						tmpstream <<"outgassing ID of facet " <<getFacetIndex(&f)<< " [time [s]; integrated outgassing [Pa*m³]:" <<std::endl;
-						int number_of_points = sHandle->IDs[f.sh.IDid].size();
-						for(i = 0; i < number_of_points; i += 1){
-							tmpstream << sHandle->IDs[f.sh.IDid].at(i).first <<" "<<sHandle->IDs[f.sh.IDid].at(i).second<<std::endl;
-							}
-						tmpstream <<"outgassing ID of facet = " <<start_of_outgassing << " has " << number_of_points <<" entries." <<std::endl;
-						tmpstream <<"start_of_outgassing = " <<start_of_outgassing <<std::endl;
-						tmpstream <<"end_of_outgassing = " <<end_of_outgassing <<std::endl;
-						printStream(tmpstream.str());
 						double outgassing_start = 0;//start of outgassing within the iteration step
 						double outgassing_end = 0;//end of outgassing within the iteration step
 						double facet_outgassing = 0;//over time integrated outgassing of facet during the iteration step
 						if(t_start >= end_of_outgassing){//case, when t_start is after the last point in time, where an outgassing is defined
-							//continue;
+							facet_outgassing = 0;
 						}
 						else if(t_start <= end_of_outgassing && t_stop >= end_of_outgassing){//case, when t_start is before and
-															//t_stopp is after the last point in time, where an outgassing is defined
+							//t_stopp is after the last point in time, where an outgassing is defined
 							if (t_start <= start_of_outgassing){
 									outgassing_start = start_of_outgassing;
 									outgassing_end = end_of_outgassing;
@@ -744,25 +731,27 @@ bool StartFromSource() {
 								outgassing_start = t_start;
 								outgassing_end = end_of_outgassing;
 							}
+							facet_outgassing = InterpolateY(outgassing_end, sHandle->IDs[f.sh.IDid], false, true) - InterpolateY(outgassing_start, sHandle->IDs[f.sh.IDid], false, true);
 						}
 						else{
 						//same as =>else if(t_start <= end_of_outgassing && t_stop <= end_of_outgassing){//case, when t_start is before and
 						//t_stopp is before the last point in time, where an outgassing is defined
 							if (t_start <= start_of_outgassing){
 								if(t_stop <= start_of_outgassing){
-									//continue;
+									facet_outgassing = 0;
 								}
 								else{//t_stop >= start_of_outgassing
 									outgassing_start = start_of_outgassing;
 									outgassing_end = t_stop;
+									facet_outgassing = InterpolateY(outgassing_end, sHandle->IDs[f.sh.IDid], false, true) - InterpolateY(outgassing_start, sHandle->IDs[f.sh.IDid], false, true);
 								}
 							}
 							else{//t_start >= start_of_outgassing
 								outgassing_start = t_start;
 								outgassing_end = t_stop;
+								facet_outgassing = InterpolateY(outgassing_end, sHandle->IDs[f.sh.IDid], false, true) - InterpolateY(outgassing_start, sHandle->IDs[f.sh.IDid], false, true);
 							}
 						}
-						facet_outgassing = InterpolateY(outgassing_end, sHandle->IDs[f.sh.IDid], false, true) - InterpolateY(outgassing_start, sHandle->IDs[f.sh.IDid], false, true);
 						facetOutgassing = boost::multiprecision::float128(facet_outgassing/(kb*f.sh.temperature))+des;
 					}
 					else{//constant outgassing
@@ -787,6 +776,10 @@ bool StartFromSource() {
 	}
 
 	src = &(sHandle->structures[j].facets[i]);
+	//std::ostringstream tmpstream (std::ostringstream::app);
+	//tmpstream <<"Test particle is starting from super structure " << j << " and facet " << i <<"."  <<std::endl;
+	//tmpstream <<"Test particle is starting from facet " << getFacetIndex(src)<< "."  <<std::endl;
+	//printStream(tmpstream.str());
 
 	bool desorbed_b=true; //determines whether particle created from outgassing or desorption; true desorbed, false outgassed
 	if(src->sh.desorbType != DES_NONE ){ //there is outgassing
@@ -802,7 +795,7 @@ bool StartFromSource() {
 						double facet_outgassing = 0;//over time integrated outgassing of facet during the iteration step
 						boost::multiprecision::float128 facetOutgassing = 0; // over time integrated outgassing of facet during the iteration step in units of one 1 particle
 						if(t_start >= end_of_outgassing){//case, when t_start is after the last point in time, where an outgassing is defined
-							//continue;
+							facet_outgassing =0;
 						}
 						else if(t_start <= end_of_outgassing && t_stop >= end_of_outgassing){//case, when t_start is before and
 															//t_stopp is after the last point in time, where an outgassing is defined
@@ -814,25 +807,27 @@ bool StartFromSource() {
 								outgassing_start = t_start;
 								outgassing_end = end_of_outgassing;
 							}
+							facet_outgassing = InterpolateY(outgassing_end, sHandle->IDs[src->sh.IDid], false, true) - InterpolateY(outgassing_start, sHandle->IDs[src->sh.IDid], false, true);
 						}
 						else{
 						//same as =>else if(t_start <= end_of_outgassing && t_stop <= end_of_outgassing){//case, when t_start is before and
 						//t_stopp is before the last point in time, where an outgassing is defined
 							if (t_start <= start_of_outgassing){
 								if(t_stop <= start_of_outgassing){
-									//continue;
+									facet_outgassing = 0;
 								}
 								else{//t_stop >= start_of_outgassing
 									outgassing_start = start_of_outgassing;
 									outgassing_end = t_stop;
+									facet_outgassing = InterpolateY(outgassing_end, sHandle->IDs[src->sh.IDid], false, true) - InterpolateY(outgassing_start, sHandle->IDs[src->sh.IDid], false, true);
 								}
 							}
 							else{//t_start >= start_of_outgassing
 								outgassing_start = t_start;
 								outgassing_end = t_stop;
+								facet_outgassing = InterpolateY(outgassing_end, sHandle->IDs[src->sh.IDid], false, true) - InterpolateY(outgassing_start, sHandle->IDs[src->sh.IDid], false, true);
 							}
 						}
-						facet_outgassing = InterpolateY(outgassing_end, sHandle->IDs[src->sh.IDid], false, true) - InterpolateY(outgassing_start, sHandle->IDs[src->sh.IDid], false, true);
 						facetOutgassing = boost::multiprecision::float128(facet_outgassing/(kb*src->sh.temperature));
 						if(boost::multiprecision::float128(rnd())>des/(facetOutgassing+des)){
 							desorbed_b=false;
