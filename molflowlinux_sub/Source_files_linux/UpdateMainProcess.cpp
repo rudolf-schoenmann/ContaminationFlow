@@ -175,7 +175,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 								covering_phys -= covering_delta;
 								tmpstream << "covering decreases by "<<covering_delta << " = " << boost::multiprecision::float128(covering_delta) << std::endl;
 							}
-					}
+				}
 				else{tmpstream << "covering is not updated! error_covering = "<<simHistory->errorList_covering.getCurrent(&f) << std::endl;
 				}
 			}
@@ -228,8 +228,8 @@ void UpdateErrorMain(Databuff *hitbuffer_sum){
 }
 
 void UpdateParticleDensityAndPressure(Databuff *hitbuffer_sum){
-	std::ostringstream tmpstream (std::ostringstream::app);
-	tmpstream<<std::endl;
+	//std::ostringstream tmpstream (std::ostringstream::app);
+	//tmpstream<<std::endl;
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
@@ -249,12 +249,12 @@ void UpdateParticleDensityAndPressure(Databuff *hitbuffer_sum){
 			tmpstream << "Facet " <<getFacetIndex(&f) <<" Predicted Pressure: " <<std::setw(11)<<std::right <<targetPressure <<"  ,  Real pressure: " <<std::setw(11)<<std::right <<simHistory->pressureList.getCurrent(&f);
 			tmpstream <<"\tfor gass mass "<<sHandle->wp.gasMass <<" [g/mol]  ,  and 1_ort_v: "<<std::setw(11)<<std::right <<sum_1_per_ort_velocity <<"  ,  ort_v: "<<std::setw(11)<<std::right <<sum_v_ort <<"  ,  1_v: "<<std::setw(11)<<std::right <<sum_1_per_velocity<<std::endl;
 			*/
-			tmpstream << "Facet " <<getFacetIndex(&f) <<" pressure: " <<std::setw(11)<<std::right <<simHistory->pressureList.getCurrent(&f)<<std::endl;
+			//tmpstream << "Facet " <<getFacetIndex(&f) <<" pressure: " <<std::setw(11)<<std::right <<simHistory->pressureList.getCurrent(&f)<<std::endl;
 
 		}
 	}
-	tmpstream<<std::endl;
-	printStream(tmpstream.str());
+	//tmpstream<<std::endl;
+	//printStream(tmpstream.str());
 
 	// Update history lists for particle density and pressure
 	simHistory->particleDensityList.appendCurrent(simHistory->lastTime);
