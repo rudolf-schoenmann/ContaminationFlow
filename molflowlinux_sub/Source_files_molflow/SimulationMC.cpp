@@ -1840,8 +1840,9 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 			//if (time>getStepSize()){
 				//std::cout<< f->tmpCounter[m].hit.covering << std::endl;
 				//double a = f->tmpCounter[m].hit.covering;
-				if(f->tmpCounter[m].hit.covering<std::numeric_limits<llong>::max())
-					{f->tmpCounter[m].hit.covering += 1;}
+				if(f->tmpCounter[m].hit.covering<std::numeric_limits<llong>::max()){
+					f->tmpCounter[m].hit.covering += 1;
+					}
 				//std::cout <<"Absorb from facet " <<getFacetIndex(f) <<std::endl;
 				else{
 					int num = getFacetIndex(f);

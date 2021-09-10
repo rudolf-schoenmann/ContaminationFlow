@@ -342,6 +342,10 @@ int main(int argc, char *argv[]) {
 
 			// Send each coveringList entry one at a time
 			for(unsigned int i=0; i<simHistory->numFacet;i++){
+				//std::ostringstream tmpstream (std::ostringstream::app);
+				//tmpstream  <<"--Seding covering values for iteration" <<it <<"."<<std::endl;
+				//tmpstream  <<"Covering of facet " <<i<<"." <<": " <<simHistory->coveringList.currentList[i]<<"."<<std::endl;
+				//printStream(tmpstream.str());
 				MPI_Bcast(&simHistory->coveringList.currentList[i], 16, MPI::BYTE,0,MPI_COMM_WORLD);
 			}
 
@@ -442,10 +446,10 @@ int main(int argc, char *argv[]) {
 					simHistory->flightTime += old_flightTime;
 					simHistory->nParticles+=old_nParticles;
 
-					if(i==world_size-1){
+					/*if(i==world_size-1){
 						tmpstream <<std::endl << "flightTime " << simHistory->flightTime << std::endl;
 						tmpstream << "nParticles " << simHistory->nParticles << std::endl <<std::endl;
-					}
+					}*/
 					printStream(tmpstream.str());
 				}
 			}

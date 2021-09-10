@@ -197,6 +197,10 @@ void UpdateMCSubHits(Databuff *databuffer, int rank) {
 					facetHitBuffer->hit.sum_v_ort = f.tmpCounter[m].hit.sum_v_ort;
 					facetHitBuffer->hit.sum_1_per_velocity = f.tmpCounter[m].hit.sum_1_per_velocity;
 					facetHitBuffer->hit.covering= f.tmpCounter[m].hit.covering;
+					//std::ostringstream tmpstream (std::ostringstream::app);
+					//tmpstream  <<"covering values in subprocess buffer" <<"."<<std::endl;
+					//tmpstream  <<"Covering of facet " <<getFacetIndex(&f)<<": " <<f.tmpCounter[0].hit.covering <<"."<<std::endl;
+					//printStream(tmpstream.str());
 				}
 
 				if (f.sh.isProfile) {//(MY) save profile
@@ -282,6 +286,15 @@ void UpdateMCSubHits(Databuff *databuffer, int rank) {
 
 					}
 
+			}
+			else{//if not hitted:
+				for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) save hits
+									FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
+									facetHitBuffer->hit.covering= f.tmpCounter[m].hit.covering;
+				}
+				//covering has to be updated anyway, since although f was not hitted,
+				//the old covering value (in the subprocess of iteration i-1) was replaced with the new covering value in the main process (after iteration i-1) and then
+				//sent to all subprocesses for iteration i. In iteration i f is not hitted, but the value has to be written into the buffer.
 			}
 		} // End nbFacet
 	} // End nbSuper

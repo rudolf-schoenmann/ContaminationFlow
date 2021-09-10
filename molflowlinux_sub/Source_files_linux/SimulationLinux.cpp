@@ -916,6 +916,10 @@ void SimulationHistory::updateHistory(){
 			covering = getCovering(&f);
 
 			f.tmpCounter[0].hit.covering=covering.convert_to<llong>();
+			//std::ostringstream tmpstream (std::ostringstream::app);
+			//tmpstream  <<"Received covering values " <<"."<<std::endl;
+			//tmpstream  <<"Covering of facet " <<getFacetIndex(&f)<<":" <<": " <<f.tmpCounter[0].hit.covering <<"."<<std::endl;
+			//printStream(tmpstream.str());
 		}
 	}
 	coveringList.historyList.first.clear();

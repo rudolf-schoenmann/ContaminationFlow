@@ -179,7 +179,9 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 				else{tmpstream << "covering is not updated! error_covering = "<<simHistory->errorList_covering.getCurrent(&f) << std::endl;
 				}
 			}
+			else{tmpstream << "covering is not updated! error_covering = inf" << std::endl;
 
+			}
 			tmpstream << "covering_phys_after = " << covering_phys << " = " << boost::multiprecision::float128(covering_phys) << std::endl;
 			tmpstream << "coveringThreshhold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << " = " << boost::multiprecision::float128(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
 
