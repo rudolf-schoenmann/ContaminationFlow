@@ -158,7 +158,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 							else{
 								boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (rounding + boost::multiprecision::float128(covering_phys - covering_sum)*Krealvirt);
 
-								// Check if covering would get negative
+								// Check, if covering got negative
 								if(covering_phys+1==covering_delta){
 									tmpstream<<"!!!-----Correct covering_delta by 1: "<<covering_phys<<" - "<<covering_delta <<" because of rounding-----!!!"<<std::endl;
 									covering_delta=covering_phys;
