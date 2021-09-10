@@ -3,6 +3,7 @@ Debug/
 Default/
 results/
 include/build
+include/lib
 ContaminationFlow_doc/main.log
 ContaminationFlow_doc/main.aux
 ContaminationFlow_doc/main.out
