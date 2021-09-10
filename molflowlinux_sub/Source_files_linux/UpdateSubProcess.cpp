@@ -197,11 +197,7 @@ void UpdateMCSubHits(Databuff *databuffer, int rank) {
 					facetHitBuffer->hit.sum_v_ort = f.tmpCounter[m].hit.sum_v_ort;
 					facetHitBuffer->hit.sum_1_per_velocity = f.tmpCounter[m].hit.sum_1_per_velocity;
 					facetHitBuffer->hit.covering= f.tmpCounter[m].hit.covering;
-					//std::ostringstream tmpstream (std::ostringstream::app);
-					//tmpstream  <<"covering values in subprocess buffer" <<"."<<std::endl;
-					//tmpstream  <<"Covering of facet " <<getFacetIndex(&f)<<": " <<f.tmpCounter[0].hit.covering <<"."<<std::endl;
-					//printStream(tmpstream.str());
-				}
+					}
 
 				if (f.sh.isProfile) {//(MY) save profile
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {

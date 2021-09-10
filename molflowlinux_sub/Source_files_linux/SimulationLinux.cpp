@@ -914,12 +914,7 @@ void SimulationHistory::updateHistory(){
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			covering = getCovering(&f);
-
 			f.tmpCounter[0].hit.covering=covering.convert_to<llong>();
-			//std::ostringstream tmpstream (std::ostringstream::app);
-			//tmpstream  <<"Received covering values " <<"."<<std::endl;
-			//tmpstream  <<"Covering of facet " <<getFacetIndex(&f)<<":" <<": " <<f.tmpCounter[0].hit.covering <<"."<<std::endl;
-			//printStream(tmpstream.str());
 		}
 	}
 	coveringList.historyList.first.clear();
