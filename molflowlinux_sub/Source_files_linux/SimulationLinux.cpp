@@ -273,7 +273,7 @@ void checkSmallCovering(int rank, Databuff *hitbuffer_sum){
 		smallCoveringFactor=llong(1.0+1.1*double(p->coveringMinThresh)/(double(mincov)));
 		if(rank==0){
 			std::ostringstream tmpstream (std::ostringstream::app);
-			tmpstream <<"Small covering found for rank " << rank << ": multiply covering and threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
+			tmpstream <<"Small covering found! Multiply covering and covering threshold by " <<smallCoveringFactor <<" for mincov "<< mincov <<std::endl;
 			printStream(tmpstream.str());
 		}
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
