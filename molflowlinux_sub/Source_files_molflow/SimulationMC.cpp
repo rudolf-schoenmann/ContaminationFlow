@@ -1829,7 +1829,7 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 			f->tmpCounter[m].hit.nbMCHit += hit;
 			double hitEquiv = static_cast<double>(hit)*sHandle->currentParticle.oriRatio;
 			f->tmpCounter[m].hit.nbHitEquiv += hitEquiv;
-			f->tmpCounter[m].hit.nbDesorbed += true?desorb:0;
+			f->tmpCounter[m].hit.nbDesorbed += desorbed?desorb:0;
 			f->tmpCounter[m].hit.nbAbsEquiv += static_cast<double>(absorb)*sHandle->currentParticle.oriRatio;
 			f->tmpCounter[m].hit.sum_1_per_ort_velocity += sHandle->currentParticle.oriRatio * sum_1_per_v;
 			f->tmpCounter[m].hit.sum_v_ort += sHandle->currentParticle.oriRatio * sum_v_ort;
