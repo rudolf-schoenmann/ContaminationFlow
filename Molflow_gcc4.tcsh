@@ -1,3 +1,5 @@
+#! /bin/tcsh
+
 setenv PATH $HOME/mpi/bin\:$HOME/gcc4/bin\:$PATH
 
 if (! $?LD_LIBRARY_PATH) then       

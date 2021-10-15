@@ -1,3 +1,6 @@
+#! /bin/tcsh
+#SBATCH --job-name=ContaminationFlow
+
 # load gsl library
 if (! $?LD_LIBRARY_PATH) then       
   setenv LD_LIBRARY_PATH /opt/ohpc/pub/libs/gnu7/gsl/2.4/lib
@@ -9,18 +12,15 @@ else
   endif
 endif
 
-
-#allocate compute nodes.
-salloc -N $1
 # The varaible var1 caluclates the number of processes as a function of compute nodes.
 @ var1 = 16 * $1
-echo " Start ContaminationFlow with" $var1 "processes." 
+echo "Launching ContaminationFlow on " $1 " compute nodes with (in total) " $var1 "processes." 
 # call application.
 srun -n $var1 Debug/MolflowLinux $2
 #deallocate compute nodes.
 exit
 
-exit 0
+#exit 0
 
 
 #start simulation with the following command: 

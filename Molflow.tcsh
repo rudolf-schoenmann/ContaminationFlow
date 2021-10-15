@@ -1,3 +1,5 @@
+#! /bin/tcsh
+
 module load mpi
 
 if (! $?LD_LIBRARY_PATH) then       
