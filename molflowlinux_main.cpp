@@ -112,8 +112,7 @@ bool loadAndCheckSHandle(int rank, Databuff* hitbuffer, Databuff* loadbuffer){
 	if(sHandle->moments.size()){
 		if(rank==0){
 			std::ostringstream tmpstream (std::ostringstream::app);
-			tmpstream << "Number of moments "<<sHandle->moments.size() <<" > 0. ContaminationFlowLinux only implemented for 0 moments."<< std::endl;
-			tmpstream << "ContaminationFlowLinux is terminated now." << std::endl;
+			tmpstream << "Loaded and Checked sHandle." << std::endl;
 			printStream(tmpstream.str());
 		}
 		valid=false;
@@ -281,6 +280,7 @@ int main(int argc, char *argv[]) {
 	if (p->simulationTimeMS != 0) {
 		//Creates sHandle instance for process 0 and all subprocesses (before the first iteration step starts)
 		InitSimulation();
+
 		// Load geometry from buffer to sHandle and check for invalid values
 		if(!loadAndCheckSHandle(rank,&hitbuffer,&loadbuffer)){
 			MPI_Barrier(MPI_COMM_WORLD);
