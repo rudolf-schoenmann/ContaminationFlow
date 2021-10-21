@@ -112,7 +112,7 @@ bool loadAndCheckSHandle(int rank, Databuff* hitbuffer, Databuff* loadbuffer){
 	if(sHandle->moments.size()){
 		if(rank==0){
 			std::ostringstream tmpstream (std::ostringstream::app);
-			tmpstream << "Loaded and Checked sHandle." << std::endl;
+			tmpstream << "Number of moments " << sHandle->moments.size()<<" > 0. ContaminationFlow only works with 0 moments." << std::endl;
 			printStream(tmpstream.str());
 		}
 		valid=false;
