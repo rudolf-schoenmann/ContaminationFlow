@@ -90,6 +90,14 @@ bool loadAndCheckSHandle(int rank, Databuff* hitbuffer, Databuff* loadbuffer){
 		}
 		valid=false;
 	}
+	else{
+		p->particleDia = sHandle->wp.gasDiameter;
+		if(rank == 0){
+			std::ostringstream tmpstream (std::ostringstream::app);
+			tmpstream <<"Particle diameter from input file is overwritten by value imported from loadbuffer! particleDia = "<< p->particleDia <<std::endl;
+			printStream(tmpstream.str());
+		}
+	}
 
 	size_t hitsize=sHandle->GetHitsSize();
 	if(p->doCoveringFile){
@@ -225,6 +233,7 @@ int main(int argc, char *argv[]) {
 //---- Initialize ProblemDef that defines relevant simulation parameters for ContaminationFlowLinux
 	p = new ProblemDef();
 	// Check parameters (defined by command line arguments or input file) to be written to ProblemDef p
+
 	if (!parametercheck(argc, argv,p,rank)) {
 		if (rank == 0){
 			std::ostringstream tmpstream (std::ostringstream::app);
