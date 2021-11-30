@@ -700,7 +700,7 @@ std::pair<bool,double> SimulationRun(double time) {
 
 double GetTick() {
 
-	// Number of sec since the application startup
+	// Number of sec since the application startup in the Windows case
 
 #ifdef WIN
 
@@ -719,7 +719,7 @@ double GetTick() {
 	}
 
 #else
-
+	// here the number of milliseconds is returned.
 	if (tickStart < 0)
 		tickStart = time(NULL);
 
