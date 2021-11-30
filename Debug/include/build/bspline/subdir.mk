@@ -1,0 +1,13 @@
+################################################################################
+# Automatically-generated file. Do not edit!
+################################################################################
+
+# Add inputs and outputs from these tool invocations to the build variables 
+O_SRCS += \
+../include/build/bspline/bspline.o \
+../include/build/bspline/greville.o \
+../include/build/bspline/test.o 
+
+
+# Each subdirectory must supply rules for building sources it contributes
+
