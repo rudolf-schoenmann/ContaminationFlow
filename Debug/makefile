@@ -50,7 +50,7 @@ all: MolflowLinux
 MolflowLinux: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	mpic++ -L"/scratch/schoenmann/MolflowLinux/include/lib" -o "MolflowLinux" $(OBJS) $(USER_OBJS) $(LIBS)
+	mpic++ -L"../include/lib" -o "MolflowLinux" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

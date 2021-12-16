@@ -17,7 +17,7 @@ CPP_DEPS += \
 molflowlinux_sub/GLApp/%.o: ../molflowlinux_sub/GLApp/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
-	mpic++ -std=c++0x -std=c++11 -D__GXX_EXPERIMENTAL_CXX0X__ -I"/scratch/schoenmann/MolflowLinux/include/include" -I"/scratch/schoenmann/MolflowLinux" -I"/scratch/schoenmann/MolflowLinux/molflowlinux_sub" -I"/scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_shared_sources" -I"/scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header" -I"/scratch/schoenmann/MolflowLinux/molflowlinux_sub/cereal/external/rapidjson" -I"/scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_linux" -I"/scratch/schoenmann/MolflowLinux/molflowlinux_sub/Header/Header_molflow" -I"/scratch/schoenmann/MolflowLinux/molflowlinux_sub/TruncatedGaussian" -I"/scratch/schoenmann/MolflowLinux/molflowlinux_sub/boost" -I"/scratch/schoenmann/MolflowLinux/molflowlinux_sub/GLApp" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	mpic++ -std=c++0x -std=c++11 -D__GXX_EXPERIMENTAL_CXX0X__ -I"../include/include" -I".." -I"../molflowlinux_sub" -I"../molflowlinux_sub/Header/Header_shared_sources" -I"../molflowlinux_sub/Header" -I"../molflowlinux_sub/cereal/external/rapidjson" -I"../molflowlinux_sub/Header/Header_linux" -I"../molflowlinux_sub/Header/Header_molflow" -I"../molflowlinux_sub/TruncatedGaussian" -I"../molflowlinux_sub/boost" -I"../molflowlinux_sub/GLApp" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
