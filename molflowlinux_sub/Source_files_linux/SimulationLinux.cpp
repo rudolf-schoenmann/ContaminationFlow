@@ -757,6 +757,7 @@ SimulationHistory::SimulationHistory(int world_size){
 	flightTime=0.0;
 	lastTime=0.0;
 	currentStep=0;
+	pcStep=0; // (Berke)
 	stepSize=0.0;
 	stepSize_outgassing=0.0;
 	numSubProcess=world_size-1;
@@ -782,6 +783,7 @@ SimulationHistory::SimulationHistory(int world_size){
 	}
 	coveringList.initList(numFacet);
 	coveringList.initCurrent(numFacet);
+	coveringList.initPredict(numFacet); // (Berke): Only initialize predictList in coveringList
 
 	hitList.initList(numFacet);
 	hitList.initCurrent(numFacet);
@@ -860,6 +862,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 
 	coveringList.initList(numFacet);
 	coveringList.appendCurrent(0);
+	coveringList.initPredict(numFacet); // (Berke)
 	coveringList.initStatistics(numFacet);
 
 	hitList.initList(numFacet);
@@ -888,6 +891,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 	pressureList.appendCurrent(0.0);
 
 	currentStep=0;
+	pcStep=0; // (Berke)
 	stepSize=0.0;
 	stepSize_outgassing=0.0;
 

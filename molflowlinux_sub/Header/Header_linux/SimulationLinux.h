@@ -61,6 +61,7 @@ template <typename T> class HistoryList{
 public:
 	std::pair< std::vector<double>,std::vector<std::vector<T>> > historyList; // pair: list of times, list of facets
 	std::vector<T> currentList; // list of facets
+	std::vector<T> predictList; // (Berke): Predicted per facet covering values at the end of the current time step.
 	std::vector<std::pair<boost::multiprecision::float128,boost::multiprecision::float128>> statisticsList; // list of mean-std pair
 	unsigned int currIt;
 
@@ -68,6 +69,7 @@ public:
 		historyList.first = std::vector<double>();
 		historyList.second = std::vector<std::vector<T>>();
 		currentList=std::vector<T>();
+		predictList=std::vector<T>(); // (Berke)
 		statisticsList=std::vector<std::pair<boost::multiprecision::float128,boost::multiprecision::float128>> ();
 		currIt=0;
 	}
@@ -76,6 +78,7 @@ public:
 		historyList.first.clear();
 		historyList.second.clear();
 		currentList.clear();
+		predictList.clear(); // (Berke)
 		statisticsList.clear();
 		currIt=0;
 	}
@@ -98,6 +101,12 @@ public:
 			currentList.push_back(static_cast<T>(0));
 		}
 		//initStatistics(numFacet);
+	}
+
+	void initPredict(unsigned int numFacet){ //(Berke)
+		for(unsigned int i=0; i<numFacet; i++){
+			predictList.push_back(static_cast<T>(0));
+		}
 	}
 
 	// append lists
@@ -256,6 +265,20 @@ public:
 		tmpstream<<std::endl;
 		outstream<<tmpstream.str();
 	}
+
+	void printPredict(std::ostream& outstream, std::string msg=""){ //(Berke)
+		std::ostringstream tmpstream (std::ostringstream::app);
+
+		tmpstream<<"    " <<std::setw(20)<<std::left<<msg;
+
+		for(uint i=0;i<predictList.size();i++)
+		{
+			tmpstream <<"\t" <<std::setw(12)<<std::right <<boost::multiprecision::float128(predictList[i]);
+		}
+		tmpstream<<std::endl;
+		outstream<<tmpstream.str();
+	}
+
 	// Print statistictsList
 	void printStatistics(std::ostream& outstream, std::string msg= "", int textwidth=45){
 		std::ostringstream tmpstream (std::ostringstream::app);
@@ -295,10 +318,13 @@ public:
 	bool empty(){return historyList.first.empty();}
 
 	void setCurrent(SubprocessFacet *iFacet, T newValue){int covidx = getFacetIndex(iFacet);	currentList[covidx]=newValue;}
+	void setPredict(SubprocessFacet *iFacet, T newValue){int idx = getFacetIndex(iFacet);	predictList[idx]=newValue;} // (Berke)
 	//T getLast(int idx){return historyList.second[idx].back();}
 	T getLast(SubprocessFacet *iFacet){int covidx = getFacetIndex(iFacet);return historyList.second[covidx].back();}
 	T getCurrent(int idx){return currentList[idx];}
 	T getCurrent(SubprocessFacet *iFacet){int covidx = getFacetIndex(iFacet);return currentList[covidx];}
+	T getPredict(int idx){return predictList[idx];} //(Berke)
+	T getPredict(SubprocessFacet *iFacet){int idx = getFacetIndex(iFacet);return predictList[idx];} //(Berke)
 	void setLast(SubprocessFacet *iFacet, T newValue){int covidx = getFacetIndex(iFacet);	historyList.second[covidx].back()=newValue;}
 
 	//---------------------------------------------------
@@ -420,6 +446,7 @@ public:
 
 	double lastTime; // [s]
 	int currentStep;
+	int pcStep; // (Berke) 0: We are in predict step. Greater than 0: We are in m-th corrector step (assuming we will implement more than 1 corrector step in future)
 	double stepSize; // [s]
 	double stepSize_outgassing; //[s]
 
@@ -486,6 +513,7 @@ llong getnbAdsorbed(SubprocessFacet *iFacet, Databuff *hitbuffer);//In the origi
 
 llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
 boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet);
+boost::multiprecision::uint128_t getPredictedCovering(SubprocessFacet *iFacet); // (Berke)
 
 double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer);
 //std::tuple<double, double, double> getVelocities(SubprocessFacet *iFacet, Databuff *hitbuffer_sum);
@@ -496,6 +524,7 @@ boost::multiprecision::float128 calctotalDesorption();
 double calcOutgassingFactor(SubprocessFacet *iFacet);
 
 boost::multiprecision::float128 calcCoverage(SubprocessFacet *iFacet);
+boost::multiprecision::float128 calcPredictedCoverage(SubprocessFacet *iFacet); // (Berke)
 boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum);
 void calcSticking(SubprocessFacet *iFacet);
 

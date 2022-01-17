@@ -62,6 +62,10 @@ boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet){ // return
 	return simHistory->coveringList.getCurrent(iFacet);
 }
 
+boost::multiprecision::uint128_t getPredictedCovering(SubprocessFacet *iFacet){ // (Berke): returns facet's covering from predictList.
+	return simHistory->coveringList.getPredict(iFacet);
+}
+
 double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number of hits from hitbuffer
 	return getFacetHitBuffer(iFacet,hitbuffer)->hit.nbHitEquiv; //TODO nbMCHit or nbHitEquiv?
 }
@@ -100,6 +104,12 @@ boost::multiprecision::float128 calcCoverage(SubprocessFacet *iFacet){ // calcul
 	boost::multiprecision::uint128_t covering = getCovering(iFacet);
 
 	return boost::multiprecision::float128(covering) /boost::multiprecision::float128(calcNmono(iFacet));
+}
+
+boost::multiprecision::float128 calcPredictedCoverage(SubprocessFacet *iFacet){ // (Berke): calculate coverage from predictList
+	boost::multiprecision::uint128_t predictedCovering = getPredictedCovering(iFacet);
+
+	return boost::multiprecision::float128(predictedCovering) /boost::multiprecision::float128(calcNmono(iFacet));
 }
 
 boost::multiprecision::float128 calctotalDesorption(){// calculates the desorbed particles of all facets

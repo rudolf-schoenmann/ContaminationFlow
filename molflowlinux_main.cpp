@@ -310,7 +310,6 @@ int main(int argc, char *argv[]) {
 			// Initialize simHistory for main process from hitbuffer
 			//simHistory contains the relevant results/quantities of the simulation. E.g., covering history, total simulated time, etc.
 			simHistory = new SimulationHistory (&hitbuffer, world_size);
-
 			std::cout <<p->focusGroup.second.size() <<" facet(s) in focusGroup"<<std::endl;
 			for(int grpidx:p->focusGroup.second){
 				std::cout <<"\t"<<grpidx;

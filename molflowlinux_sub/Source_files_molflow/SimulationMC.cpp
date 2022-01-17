@@ -32,7 +32,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <tuple> //std::tie
 
 
-extern Simulation *sHandle; //delcared in molflowSub.cpp
+extern Simulation *sHandle; //declared in molflowSub.cpp
 extern SimulationHistory* simHistory;
 extern ProblemDef* p;
 
@@ -1457,7 +1457,16 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 	if (iFacet->sh.enableSojournTime) {
 		double residence_energy;
 		boost::multiprecision::float128 coverage;
-		coverage = calcCoverage(iFacet);
+
+		/* (Berke) */
+		if (simHistory->pcStep == 0) //We are in prediction step.
+			coverage = calcCoverage(iFacet);
+		else if (simHistory->pcStep == 1 && flightTime <= simHistory->stepSize/2) //We are in correction step but in the first half of the current time step.
+			coverage = calcCoverage(iFacet);
+		else if (simHistory->pcStep == 1 && flightTime > simHistory->stepSize/2) //We are in correction step and in the second half of the current time step.
+			coverage = calcPredictedCoverage(iFacet); //Use coveringList.predictList for coverage calculation
+		/* (Berke) */
+
 		if(coverage >= 1)residence_energy = p->H_vap;
 		else {
 				if(rnd() <= coverage ){
