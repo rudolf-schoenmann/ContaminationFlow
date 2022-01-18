@@ -140,6 +140,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 			simHistory->desorbedList.printCurrent(tmpstream, std::to_string(rank)+": desorbedlist");
 			simHistory->adsorbedList.printCurrent(tmpstream, std::to_string(rank)+": adsorbedlist");
 			simHistory->coveringList.printCurrent(tmpstream, std::to_string(rank)+": coveringlist");
+			simHistory->coveringList.printPredict(tmpstream, std::to_string(rank)+": coveringlist.predictList");
 			if(p->errorMode=="event")
 				simHistory->errorList_event.printCurrent(tmpstream, std::to_string(rank)+": errorlist_event");
 			else if(p->errorMode=="covering")

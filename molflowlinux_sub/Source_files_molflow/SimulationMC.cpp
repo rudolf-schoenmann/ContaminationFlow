@@ -1457,14 +1457,23 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 	if (iFacet->sh.enableSojournTime) {
 		double residence_energy;
 		boost::multiprecision::float128 coverage;
-
+		/*if (simHistory->pcStep == 1) {
+			std::cout << std::endl << "Facet " << getFacetIndex(iFacet) << std::endl;
+			std::cout << "Covering at the beginning: " << boost::multiprecision::float128(getCovering(iFacet)) << std::endl;
+			std::cout << "Covering predicted: " << boost::multiprecision::float128(getCovering(iFacet)) << std::endl;
+		}*/
 		/* (Berke) */
-		if (simHistory->pcStep == 0) //We are in prediction step.
+		if (simHistory->pcStep == 0){ //We are in prediction step.
 			coverage = calcCoverage(iFacet);
-		else if (simHistory->pcStep == 1 && flightTime <= simHistory->stepSize/2) //We are in correction step but in the first half of the current time step.
+		}
+		else if (simHistory->pcStep == 1 && flightTime <= simHistory->stepSize/2) { //We are in correction step but in the first half of the current time step.
 			coverage = calcCoverage(iFacet);
-		else if (simHistory->pcStep == 1 && flightTime > simHistory->stepSize/2) //We are in correction step and in the second half of the current time step.
+			//std::cout << "Particle flight time in the first half." << std::endl;
+		}
+		else if (simHistory->pcStep == 1 && flightTime > simHistory->stepSize/2) {//We are in correction step and in the second half of the current time step.
 			coverage = calcPredictedCoverage(iFacet); //Use coveringList.predictList for coverage calculation
+			//std::cout << "Particle flight time in the second half." << std::endl;
+		}
 		/* (Berke) */
 
 		if(coverage >= 1)residence_energy = p->H_vap;
@@ -1477,8 +1486,13 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 				}
 		}
 		//double A = exp(-iFacet->sh.sojournE / (kb*iFacet->sh.temperature)); // //Don't need that. We decide in each case of residence at random, if the particle will adsorb at substrate or adsorbate.
+
 		double A = exp(-residence_energy / (kb*iFacet->sh.temperature));
 		sHandle->currentParticle.flightTime += -log(rnd()) / (A*iFacet->sh.sojournFreq);
+		/*if (simHistory->pcStep == 1) {
+			std::cout << "Residence energy: " << ((residence_energy==p->H_vap) ? "H_vap" : "E_de") << std::endl;
+			std::cout << "Residence time: " << -log(rnd()) / (A*iFacet->sh.sojournFreq) <<  std::endl << std::endl;
+		}*/
 		if(sHandle->currentParticle.flightTime < std::numeric_limits<double>::infinity()){
 			flightTime=sHandle->currentParticle.flightTime;
 		}
