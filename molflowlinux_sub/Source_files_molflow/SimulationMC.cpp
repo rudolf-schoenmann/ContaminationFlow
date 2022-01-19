@@ -1474,8 +1474,8 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 			coverage = calcPredictedCoverage(iFacet); //Use coveringList.predictList for coverage calculation
 			//std::cout << "Particle flight time in the second half." << std::endl;
 		}
-		/* (Berke) */
-
+		 /*(Berke) */
+		//coverage = calcCoverage(iFacet);
 		if(coverage >= 1)residence_energy = p->H_vap;
 		else {
 				if(rnd() <= coverage ){

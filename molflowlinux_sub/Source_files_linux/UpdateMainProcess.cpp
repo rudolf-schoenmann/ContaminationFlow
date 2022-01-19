@@ -201,8 +201,10 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 			 * Store predicted covering (covering at the end of the predictor step) into predictList.
 			 * Store corrected covering (covering at the end of the corrector step) into currenList
 			 */
-			if (simHistory->pcStep == 0)
+			if (simHistory->pcStep == 0) {
 				simHistory->coveringList.setPredict(&f, covering_phys);
+				//simHistory->coveringList.setPredict(&f, (covering_phys + simHistory->coveringList.getCurrent(&f))/2);
+			}
 			else if (simHistory->pcStep == 1) {
 				simHistory->coveringList.setCurrent(&f, covering_phys);
 			}

@@ -343,6 +343,8 @@ int main(int argc, char *argv[]) {
 						tmpstream <<std::endl <<"----------------Starting predictor step of iteration " <<it <<"----------------"<<std::endl;
 					else if (simHistory->pcStep == 1)
 						tmpstream <<std::endl <<"----------------Starting corrector step "<< simHistory->pcStep << " of iteration " <<it <<"----------------"<<std::endl;
+					simHistory->coveringList.printCurrent(tmpstream, "coveringList.currentList: ");
+					simHistory->coveringList.printPredict(tmpstream, "coveringList.predictList: ");
 					printStream(tmpstream.str());
 				}
 				//---- Reset buffers and send coveringList content to all subprocesses
@@ -350,13 +352,6 @@ int main(int argc, char *argv[]) {
 				initbufftozero(&hitbuffer);
 				if(rank==0){
 					initbufftozero(&hitbuffer_sum);
-				}
-
-				if (rank == 0) {
-					std::ostringstream tmpstream (std::ostringstream::app);
-					simHistory->coveringList.printCurrent(tmpstream, "coveringList.currentList: ");
-					simHistory->coveringList.printPredict(tmpstream, "coveringList.predictList: ");
-					std::cout << tmpstream.str();
 				}
 				// Send each coveringList entry one at a time
 				for(unsigned int i=0; i<simHistory->numFacet;i++){
@@ -369,11 +364,8 @@ int main(int argc, char *argv[]) {
 				// Send currentStep -> used to calculate stepSize
 				MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
 				MPI_Barrier(MPI_COMM_WORLD);
-				if (simHistory->pcStep == 0) { // (Berke)
-					// Set covering threshold (covering -covering/(size-1)). Iteration in subprocess is ended if this threshold is reached
-					setCoveringThreshold(world_size, rank);
-					UpdateSticking(); // Write sticking factor into sHandle for all subprocesses
-				}
+				// Set covering threshold (covering -covering/(size-1)). Iteration in subprocess is ended if this threshold is reached
+				setCoveringThreshold(world_size, rank);
 
 				if(rank!=0){
 					simHistory->updateHistory();// Write the current covering values from the simHistory to the sHandle and calculate stepSize (normal and outgassing).
@@ -387,6 +379,7 @@ int main(int argc, char *argv[]) {
 					 * No need to calculate these values again in corrector step
 					 * as the result will be the same
 					*/
+					UpdateSticking(); // Write sticking factor into sHandle for all subprocesses
 					CalcTotalOutgassingWorker();// Calculate outgassing values for this iteration
 					if(!UpdateDesorption()){// Write desorption into sHandle for all subprocesses
 						// End simulation for very small desorbed + outgassing particles
@@ -513,7 +506,7 @@ int main(int argc, char *argv[]) {
 					}
 				}
 				if (rank == 0 && simHistory->pcStep == 0) {std::cout << "ending predictor step " <<std::endl;} // (Berke)
-				if (rank == 0 && simHistory->pcStep == 1) {std::cout << "ending corrector step " << simHistory->pcStep <<std::endl;} // (Berke)
+				else if (rank == 0 && simHistory->pcStep == 1) {std::cout << "ending corrector step " << simHistory->pcStep <<std::endl;} // (Berke)
 			} //End of predictor-corrector loop
 
 			if (rank == 0) {
