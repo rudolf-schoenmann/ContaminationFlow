@@ -351,6 +351,7 @@ ProblemDef::ProblemDef(){
 	hitbufferPath=tilde_to_home(hitbufferPath);
 
 	iterationNumber = 43200;
+	numCorrectorSteps = 0;
 	particleDia=diameterH2O;
 	E_de=1.6E-19;
 	H_vap=0.8E-19;
@@ -463,6 +464,7 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn == "unit"){is >> stringIn; unit=stringIn;}
 
 		else if(stringIn =="iterationNumber"){is >> intIn; iterationNumber=intIn>0?intIn:0;}
+		else if (stringIn == "numCorrectorSteps") {is >> intIn; numCorrectorSteps=intIn>=0?intIn:0;}
 		else if(stringIn == "maxTime") {is >>doubleIn; maxTime = doubleIn;}
 		else if(stringIn == "maxUnit"){is >> stringIn; maxUnit=stringIn;}
 
@@ -663,6 +665,7 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 	out  <<"unit" <<'\t' <<unit <<std::endl;
 
 	out  <<"iterationNumber" <<'\t' <<iterationNumber<<std::endl;
+	out << "numCorrectorSteps" << "\t" << numCorrectorSteps << std::endl;
 	out  <<"maxTime" <<'\t' <<maxTime <<std::endl;
 	out  <<"maxUnit" <<'\t' <<maxUnit <<std::endl;
 	if(printConversion) out <<std::endl;

@@ -300,7 +300,7 @@ public:
 	// Write historyList to file
 	void write(std::string filename, int histSize = std::numeric_limits<int>::infinity()){
 		std::ostringstream tmpstream (std::ostringstream::app);
-		print(tmpstream,"",histSize,std::vector<T>(),15, false);
+		print(tmpstream,"",histSize,std::vector<T>(),15, true);
 
 		std::ofstream out(filename,std::ofstream::out|std::ios::trunc);
 		out<<tmpstream.str();
@@ -371,6 +371,7 @@ public:
 
 	// These can be given through input file only
 	int iterationNumber; //number of iterations
+	int numCorrectorSteps; // (Berke)
 	double maxTime;
 	std::string maxUnit;
 

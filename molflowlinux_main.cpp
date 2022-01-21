@@ -327,7 +327,6 @@ int main(int argc, char *argv[]) {
 
 //----Simulation
 	int it = 0;
-	int numCorrectorSteps = 1;
 	double currentRatio=0.0;
 	std::string monitoredFacets=(!p->doFocusGroupOnly||p->focusGroup.second.size()==simHistory->numFacet)?"all":"selected";
 	while(true){
@@ -335,16 +334,18 @@ int main(int argc, char *argv[]) {
 		// Start of Simulation
 		MPI_Barrier(MPI_COMM_WORLD);
 		if (p->simulationTimeMS != 0) {
-			for (;simHistory->pcStep <= numCorrectorSteps; simHistory->pcStep += 1) { // (Berke)
+			for (;simHistory->pcStep <= p->numCorrectorSteps; simHistory->pcStep += 1) { // (Berke): predictor-corrector loop
 				MPI_Barrier(MPI_COMM_WORLD); // (Berke)
 				if(rank == 0){
 					std::ostringstream tmpstream (std::ostringstream::app);
-					if (simHistory->pcStep == 0)
+					if (p->numCorrectorSteps == 0)
+						tmpstream <<std::endl <<"----------------Starting iteration " <<it <<"----------------"<<std::endl;
+					else if (simHistory->pcStep == 0)
 						tmpstream <<std::endl <<"----------------Starting predictor step of iteration " <<it <<"----------------"<<std::endl;
-					else if (simHistory->pcStep == 1)
+					else
 						tmpstream <<std::endl <<"----------------Starting corrector step "<< simHistory->pcStep << " of iteration " <<it <<"----------------"<<std::endl;
-					simHistory->coveringList.printCurrent(tmpstream, "coveringList.currentList: ");
-					simHistory->coveringList.printPredict(tmpstream, "coveringList.predictList: ");
+					simHistory->coveringList.printCurrent(tmpstream, "coveringList.currentList: "); // (Berke): Will be removed later on
+					simHistory->coveringList.printPredict(tmpstream, "coveringList.predictList: "); // (Berke): Will be removed later on
 					printStream(tmpstream.str());
 				}
 				//---- Reset buffers and send coveringList content to all subprocesses
@@ -358,7 +359,7 @@ int main(int argc, char *argv[]) {
 					MPI_Bcast(&simHistory->coveringList.currentList[i], 16, MPI::BYTE,0,MPI_COMM_WORLD);
 				}
 				for(unsigned int i=0; i<simHistory->numFacet; i++){
-					// (Berke): We can also only broadcast when pcStep=1 but this doesn't make any difference
+					// (Berke): We can also only broadcast when pcStep>0 but this doesn't make any difference
 					MPI_Bcast(&simHistory->coveringList.predictList[i], 16, MPI::BYTE,0,MPI_COMM_WORLD);
 				}
 				// Send currentStep -> used to calculate stepSize
@@ -415,10 +416,12 @@ int main(int argc, char *argv[]) {
 						}
 					} else {
 						/* Berke */
-						if (simHistory->pcStep == 0)
+						if (p->numCorrectorSteps == 0)
+							tmpstream << "Simulation for process " << rank << " for iteration " << it << " finished."<< std::endl;
+						else if (simHistory->pcStep == 0)
 							tmpstream << "Simulation for process " << rank << " for predictor step of iteration " << it << " finished."<< std::endl;
-						else if (simHistory->pcStep == 1)
-							tmpstream << "Simulation for process " << rank << " for corrector step of iteration " << it << " finished."<< std::endl;
+						else
+							tmpstream << "Simulation for process " << rank << " for corrector step " << simHistory->pcStep << " of iteration " << it << " finished."<< std::endl;
 					}
 					tmpstream <<std::endl;
 					printStream(tmpstream.str());
@@ -477,7 +480,7 @@ int main(int argc, char *argv[]) {
 
 				//----Update History: particle density, pressure, error, covering
 				if (rank == 0) {
-					if (simHistory->pcStep == 1) {
+					if (simHistory->pcStep == p->numCorrectorSteps) {
 						/* (Berke): No need to calculate these values after the predictor step
 						 * becase they will change in corrector step. Also preventing storing wrong values is historyList objects.
 						 */
@@ -487,7 +490,7 @@ int main(int argc, char *argv[]) {
 					UpdateCovering(&hitbuffer_sum); // Calculate real covering after iteration
 
 					UpdateCoveringphys(&hitbuffer_sum, &hitbuffer); // Update real covering in buffers
-					if (simHistory->pcStep == 1) { // (Berke)
+					if (simHistory->pcStep == p->numCorrectorSteps) { // (Berke)
 						// Adapt size of history lists if p->histSize is exceeded
 						if(p->histSize != std::numeric_limits<int>::infinity() && simHistory->coveringList.historyList.first.size() > uint(p->histSize+1)){
 								simHistory->erase(1);
@@ -505,14 +508,14 @@ int main(int argc, char *argv[]) {
 						printStream(tmpstream.str());
 					}
 				}
-				if (rank == 0 && simHistory->pcStep == 0) {std::cout << "ending predictor step " <<std::endl;} // (Berke)
-				else if (rank == 0 && simHistory->pcStep == 1) {std::cout << "ending corrector step " << simHistory->pcStep <<std::endl;} // (Berke)
+				if (rank == 0 && simHistory->pcStep == 0 && !(p->numCorrectorSteps == 0)) {std::cout << "ending predictor step " <<std::endl;} // (Berke)
+				else if (rank == 0 && simHistory->pcStep > 0 && !(p->numCorrectorSteps == 0)) {std::cout << "ending corrector step " << simHistory->pcStep <<std::endl;} // (Berke)
 			} //End of predictor-corrector loop
 
 			if (rank == 0) {
 				std::cout << "ending iteration "  << it <<std::endl;
-				simHistory->coveringList.predictList.clear(); // (Berke):  not neccessary will be removed later
-				simHistory->coveringList.initPredict(simHistory->numFacet); // (Berke):  not neccessary will be removed later
+				simHistory->coveringList.predictList.clear(); // (Berke): Will be removed later on
+				simHistory->coveringList.initPredict(simHistory->numFacet); // (Berke): Will be removed later on
 			}
 			simHistory->pcStep = 0; // (Berke)
 

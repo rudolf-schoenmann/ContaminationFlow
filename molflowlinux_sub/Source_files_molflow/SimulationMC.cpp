@@ -1466,16 +1466,16 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 		if (simHistory->pcStep == 0){ //We are in prediction step.
 			coverage = calcCoverage(iFacet);
 		}
-		else if (simHistory->pcStep == 1 && flightTime <= simHistory->stepSize/2) { //We are in correction step but in the first half of the current time step.
+		else if (simHistory->pcStep > 0 && flightTime <= simHistory->stepSize/2) { //We are in correction step but in the first half of the current time step.
 			coverage = calcCoverage(iFacet);
 			//std::cout << "Particle flight time in the first half." << std::endl;
 		}
-		else if (simHistory->pcStep == 1 && flightTime > simHistory->stepSize/2) {//We are in correction step and in the second half of the current time step.
+		else if (simHistory->pcStep > 0 && flightTime > simHistory->stepSize/2) {//We are in correction step and in the second half of the current time step.
 			coverage = calcPredictedCoverage(iFacet); //Use coveringList.predictList for coverage calculation
 			//std::cout << "Particle flight time in the second half." << std::endl;
 		}
-		 /*(Berke) */
-		//coverage = calcCoverage(iFacet);
+		/* (Berke) */
+
 		if(coverage >= 1)residence_energy = p->H_vap;
 		else {
 				if(rnd() <= coverage ){

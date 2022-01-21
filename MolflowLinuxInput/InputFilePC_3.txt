@@ -3,10 +3,10 @@ hitbufferPath	../MolflowLinuxInput/PC_Hit
 coveringPath	
 simulationTime	1
 unit	s
-iterationNumber	100
-numCorrectorSteps 2
-maxTime	6
-maxUnit	h
+iterationNumber	1000
+numCorrectorSteps 1
+maxTime	2
+maxUnit	year
 sticking	0
 particleDia	2.76e-10
 E_de	16e-20
@@ -16,8 +16,8 @@ targetError	1
 noupdateError	1
 targetParticles	10000
 hitRatioLimit	0
-t_min	60
-t_max	60
+t_min	1e-6
+t_max   21600
 maxTimePerIt	2147483647
 coveringMinThresh	10000
 histSize	2147483647

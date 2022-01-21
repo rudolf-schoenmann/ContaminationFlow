@@ -4,8 +4,9 @@ coveringPath
 simulationTime	1
 unit	s
 iterationNumber	100
-maxTime	1
-maxUnit	month
+numCorrectorSteps 1
+maxTime	2
+maxUnit	years
 sticking	0
 particleDia	2.76e-10
 E_de	16e-20

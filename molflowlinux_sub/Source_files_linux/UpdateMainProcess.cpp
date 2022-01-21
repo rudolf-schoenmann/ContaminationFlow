@@ -115,35 +115,37 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 	boost::multiprecision::float128 Krealvirt = GetMoleculesPerTP(hitbuffer_sum);
 	boost::multiprecision::uint128_t covering_phys;
 	boost::multiprecision::uint128_t covering_sum;//covering as it is summed up of all subprocesses. In case, it is multiplied by smallCoveringFactor
-
-	// Calculate total error of this iteration
-	double total_error_event=0.0;
-	double total_error_covering=0.0;
-	std::tie(total_error_event,total_error_covering)=CalcErrorAll();
-
-	std::string monitoredFacets=(!p->doFocusGroupOnly||p->focusGroup.second.size()==simHistory->numFacet)?"all":"selected";
-
-	// Print total error and error per facet of this iteration
 	std::ostringstream tmpstream (std::ostringstream::app);
-	tmpstream <<"Target Error (only "+p->errorMode+" monitored) "<<p->targetError <<std::endl <<std::endl;
-	tmpstream <<"Total Error (event) averaged over "+monitoredFacets+" facets "<<total_error_event <<std::endl;
-	simHistory->errorList_event.printCurrent(tmpstream);
-	tmpstream << std::endl<<"Total Error (covering) averaged over "+monitoredFacets+" facets "<<total_error_covering<<std::endl;
-	simHistory->errorList_covering.printCurrent(tmpstream);
 
-	HistoryList<double> *listptr;
-	listptr = getErrorList(p->errorMode);
-	if(!p->vipFacets.empty()){
-		tmpstream <<"Vip Facets:"<<std::endl;
-		for(unsigned int i = 0; i < p->vipFacets.size(); i++){
-			tmpstream <<"\t"<<p->vipFacets[i].first <<"\t" << listptr->getCurrent(p->vipFacets[i].first)<<std::endl;
+	if (simHistory->pcStep == p->numCorrectorSteps) {
+		// Calculate total error of this iteration
+		double total_error_event=0.0;
+		double total_error_covering=0.0;
+		std::tie(total_error_event,total_error_covering)=CalcErrorAll();
+
+		std::string monitoredFacets=(!p->doFocusGroupOnly||p->focusGroup.second.size()==simHistory->numFacet)?"all":"selected";
+
+		// Print total error and error per facet of this iteration
+		tmpstream <<"Target Error (only "+p->errorMode+" monitored) "<<p->targetError <<std::endl <<std::endl;
+		tmpstream <<"Total Error (event) averaged over "+monitoredFacets+" facets "<<total_error_event <<std::endl;
+		simHistory->errorList_event.printCurrent(tmpstream);
+		tmpstream << std::endl<<"Total Error (covering) averaged over "+monitoredFacets+" facets "<<total_error_covering<<std::endl;
+		simHistory->errorList_covering.printCurrent(tmpstream);
+
+		HistoryList<double> *listptr;
+		listptr = getErrorList(p->errorMode);
+		if(!p->vipFacets.empty()){
+			tmpstream <<"Vip Facets:"<<std::endl;
+			for(unsigned int i = 0; i < p->vipFacets.size(); i++){
+				tmpstream <<"\t"<<p->vipFacets[i].first <<"\t" << listptr->getCurrent(p->vipFacets[i].first)<<std::endl;
+			}
+			tmpstream <<std::endl;
 		}
-		tmpstream <<std::endl;
-	}
 
-	//if targetError not reached: do not update currentstep
-	if(checkError(p->targetError, (p->errorMode=="covering")?total_error_covering:total_error_event, 1.0, p->errorMode) && simHistory->pcStep==1){simHistory->currentStep += 1;}//deactivated for testing reaons
-	//simHistory->currentStep += 1;// for testing reasons
+		//if targetError not reached: do not update currentstep
+		if(checkError(p->targetError, (p->errorMode=="covering")?total_error_covering:total_error_event, 1.0, p->errorMode)){simHistory->currentStep += 1;}//deactivated for testing reaons
+		//simHistory->currentStep += 1;// for testing reasons
+	}
 	tmpstream <<"Krealvirt = " << Krealvirt << std::endl;
 	tmpstream << "Covering difference will be multiplied by Krealvirt: " << Krealvirt << std::endl;
 	printStream(tmpstream.str());
@@ -201,11 +203,11 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 			 * Store predicted covering (covering at the end of the predictor step) into predictList.
 			 * Store corrected covering (covering at the end of the corrector step) into currenList
 			 */
-			if (simHistory->pcStep == 0) {
+			if (simHistory->pcStep < p->numCorrectorSteps) {
 				simHistory->coveringList.setPredict(&f, covering_phys);
 				//simHistory->coveringList.setPredict(&f, (covering_phys + simHistory->coveringList.getCurrent(&f))/2);
 			}
-			else if (simHistory->pcStep == 1) {
+			else if (simHistory->pcStep == p->numCorrectorSteps){
 				simHistory->coveringList.setCurrent(&f, covering_phys);
 			}
 
@@ -213,7 +215,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 		}
 	}
 	// Save covering to simHistory
-	if (simHistory->pcStep == 1) { // (Berke)
+	if (simHistory->pcStep == p->numCorrectorSteps) { // (Berke)
 		double time_step = simHistory->stepSize;
 		simHistory->coveringList.appendCurrent(simHistory->lastTime+time_step);
 		simHistory->lastTime+=time_step;
