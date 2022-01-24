@@ -1,10 +1,10 @@
 loadbufferPath	../MolflowLinuxInput/PC_Load
 hitbufferPath	../MolflowLinuxInput/PC_Hit
-coveringPath	
+coveringPath	../MolflowLinuxInput/PC_Coverage.txt
 simulationTime	1
 unit	s
-iterationNumber	1000
-numCorrectorSteps 1
+iterationNumber	100
+usePCMethod 1
 maxTime	2
 maxUnit	year
 sticking	0
@@ -17,7 +17,6 @@ noupdateError	1
 targetParticles	10000
 hitRatioLimit	0
 t_min	1e-6
-t_max   21600
 maxTimePerIt	2147483647
 coveringMinThresh	10000
 histSize	2147483647

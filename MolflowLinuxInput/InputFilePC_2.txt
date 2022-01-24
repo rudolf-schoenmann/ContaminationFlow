@@ -1,10 +1,10 @@
 loadbufferPath	../MolflowLinuxInput/PC_Load
 hitbufferPath	../MolflowLinuxInput/PC_Hit
-coveringPath	
+coveringPath	../MolflowLinuxInput/PC_Coverage.txt
 simulationTime	1
 unit	s
 iterationNumber	100
-numCorrectorSteps 2
+usePCMethod 1
 maxTime	6
 maxUnit	h
 sticking	0

@@ -117,7 +117,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 	boost::multiprecision::uint128_t covering_sum;//covering as it is summed up of all subprocesses. In case, it is multiplied by smallCoveringFactor
 	std::ostringstream tmpstream (std::ostringstream::app);
 
-	if (simHistory->pcStep == p->numCorrectorSteps) {
+	if (simHistory->pcStep == (p->usePCMethod?1:0)) {
 		// Calculate total error of this iteration
 		double total_error_event=0.0;
 		double total_error_covering=0.0;
@@ -203,19 +203,30 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 			 * Store predicted covering (covering at the end of the predictor step) into predictList.
 			 * Store corrected covering (covering at the end of the corrector step) into currenList
 			 */
-			if (simHistory->pcStep < p->numCorrectorSteps) {
-				simHistory->coveringList.setPredict(&f, covering_phys);
-				//simHistory->coveringList.setPredict(&f, (covering_phys + simHistory->coveringList.getCurrent(&f))/2);
+			if (p->usePCMethod) {
+				if (simHistory->pcStep == 0) {
+					//simHistory->coveringList.setPredict(&f, covering_phys);
+					//std::cout << "Writing new covering value directly into predictList" << std::endl;
+
+					simHistory->coveringList.setPredict(&f, (covering_phys + simHistory->coveringList.getCurrent(&f))/2);
+					std::cout << "Writing new covering value after averaging into predictList" << std::endl;
+
+				}
+				else if (simHistory->pcStep == 1){
+					simHistory->coveringList.setCurrent(&f, covering_phys);
+
+				}
 			}
-			else if (simHistory->pcStep == p->numCorrectorSteps){
-				simHistory->coveringList.setCurrent(&f, covering_phys);
+			else {
+				simHistory->coveringList.setCurrent(&f, (covering_phys));
+
 			}
 
 			printStream(tmpstream.str());
 		}
 	}
 	// Save covering to simHistory
-	if (simHistory->pcStep == p->numCorrectorSteps) { // (Berke)
+	if (simHistory->pcStep == (p->usePCMethod?1:0)) { // (Berke)
 		double time_step = simHistory->stepSize;
 		simHistory->coveringList.appendCurrent(simHistory->lastTime+time_step);
 		simHistory->lastTime+=time_step;

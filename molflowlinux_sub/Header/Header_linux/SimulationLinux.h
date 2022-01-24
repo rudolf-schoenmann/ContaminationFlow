@@ -371,7 +371,7 @@ public:
 
 	// These can be given through input file only
 	int iterationNumber; //number of iterations
-	int numCorrectorSteps; // (Berke)
+	bool usePCMethod; // (Berke)
 	double maxTime;
 	std::string maxUnit;
 
@@ -447,7 +447,7 @@ public:
 
 	double lastTime; // [s]
 	int currentStep;
-	int pcStep; // (Berke) 0: We are in predict step. Greater than 0: We are in m-th corrector step (assuming we will implement more than 1 corrector step in future)
+	int pcStep; // (Berke) 0: We are in predict step. 1: We are in corrector step
 	double stepSize; // [s]
 	double stepSize_outgassing; //[s]
 

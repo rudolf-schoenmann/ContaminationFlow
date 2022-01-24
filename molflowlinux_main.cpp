@@ -334,16 +334,16 @@ int main(int argc, char *argv[]) {
 		// Start of Simulation
 		MPI_Barrier(MPI_COMM_WORLD);
 		if (p->simulationTimeMS != 0) {
-			for (;simHistory->pcStep <= p->numCorrectorSteps; simHistory->pcStep += 1) { // (Berke): predictor-corrector loop
+			for (;simHistory->pcStep <= (p->usePCMethod?1:0); simHistory->pcStep += 1) { // (Berke): predictor-corrector loop
 				MPI_Barrier(MPI_COMM_WORLD); // (Berke)
 				if(rank == 0){
 					std::ostringstream tmpstream (std::ostringstream::app);
-					if (p->numCorrectorSteps == 0)
+					if (!p->usePCMethod)
 						tmpstream <<std::endl <<"----------------Starting iteration " <<it <<"----------------"<<std::endl;
 					else if (simHistory->pcStep == 0)
 						tmpstream <<std::endl <<"----------------Starting predictor step of iteration " <<it <<"----------------"<<std::endl;
 					else
-						tmpstream <<std::endl <<"----------------Starting corrector step "<< simHistory->pcStep << " of iteration " <<it <<"----------------"<<std::endl;
+						tmpstream <<std::endl <<"----------------Starting corrector step of iteration " <<it <<"----------------"<<std::endl;
 					simHistory->coveringList.printCurrent(tmpstream, "coveringList.currentList: "); // (Berke): Will be removed later on
 					simHistory->coveringList.printPredict(tmpstream, "coveringList.predictList: "); // (Berke): Will be removed later on
 					printStream(tmpstream.str());
@@ -358,8 +358,8 @@ int main(int argc, char *argv[]) {
 				for(unsigned int i=0; i<simHistory->numFacet;i++){
 					MPI_Bcast(&simHistory->coveringList.currentList[i], 16, MPI::BYTE,0,MPI_COMM_WORLD);
 				}
-				for(unsigned int i=0; i<simHistory->numFacet; i++){
-					// (Berke): We can also only broadcast when pcStep>0 but this doesn't make any difference
+				for(unsigned int i=0; i<simHistory->numFacet && p->usePCMethod; i++){
+					// (Berke): We can also only broadcast when pcStep==1 but this doesn't make any difference
 					MPI_Bcast(&simHistory->coveringList.predictList[i], 16, MPI::BYTE,0,MPI_COMM_WORLD);
 				}
 				// Send currentStep -> used to calculate stepSize
@@ -416,7 +416,7 @@ int main(int argc, char *argv[]) {
 						}
 					} else {
 						/* Berke */
-						if (p->numCorrectorSteps == 0)
+						if (!p->usePCMethod)
 							tmpstream << "Simulation for process " << rank << " for iteration " << it << " finished."<< std::endl;
 						else if (simHistory->pcStep == 0)
 							tmpstream << "Simulation for process " << rank << " for predictor step of iteration " << it << " finished."<< std::endl;
@@ -480,7 +480,7 @@ int main(int argc, char *argv[]) {
 
 				//----Update History: particle density, pressure, error, covering
 				if (rank == 0) {
-					if (simHistory->pcStep == p->numCorrectorSteps) {
+					if (simHistory->pcStep == (p->usePCMethod?1:0)) {
 						/* (Berke): No need to calculate these values after the predictor step
 						 * becase they will change in corrector step. Also preventing storing wrong values is historyList objects.
 						 */
@@ -490,7 +490,7 @@ int main(int argc, char *argv[]) {
 					UpdateCovering(&hitbuffer_sum); // Calculate real covering after iteration
 
 					UpdateCoveringphys(&hitbuffer_sum, &hitbuffer); // Update real covering in buffers
-					if (simHistory->pcStep == p->numCorrectorSteps) { // (Berke)
+					if (simHistory->pcStep == (p->usePCMethod?1:0)) { // (Berke)
 						// Adapt size of history lists if p->histSize is exceeded
 						if(p->histSize != std::numeric_limits<int>::infinity() && simHistory->coveringList.historyList.first.size() > uint(p->histSize+1)){
 								simHistory->erase(1);
@@ -508,8 +508,8 @@ int main(int argc, char *argv[]) {
 						printStream(tmpstream.str());
 					}
 				}
-				if (rank == 0 && simHistory->pcStep == 0 && !(p->numCorrectorSteps == 0)) {std::cout << "ending predictor step " <<std::endl;} // (Berke)
-				else if (rank == 0 && simHistory->pcStep > 0 && !(p->numCorrectorSteps == 0)) {std::cout << "ending corrector step " << simHistory->pcStep <<std::endl;} // (Berke)
+				if (rank == 0 && simHistory->pcStep == 0 && p->usePCMethod) {std::cout << "ending predictor step " <<std::endl;} // (Berke)
+				else if (rank == 0 && simHistory->pcStep == 1 && p->usePCMethod) {std::cout << "ending corrector step " <<std::endl;} // (Berke)
 			} //End of predictor-corrector loop
 
 			if (rank == 0) {

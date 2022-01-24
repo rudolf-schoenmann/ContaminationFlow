@@ -1463,14 +1463,14 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 			std::cout << "Covering predicted: " << boost::multiprecision::float128(getCovering(iFacet)) << std::endl;
 		}*/
 		/* (Berke) */
-		if (simHistory->pcStep == 0){ //We are in prediction step.
+		if (simHistory->pcStep == 0){ //We are in prediction step or PC method is not used
 			coverage = calcCoverage(iFacet);
 		}
-		else if (simHistory->pcStep > 0 && flightTime <= simHistory->stepSize/2) { //We are in correction step but in the first half of the current time step.
+		else if (simHistory->pcStep == 1 && flightTime <= simHistory->stepSize/2) { //We are in correction step but in the first half of the current time step
 			coverage = calcCoverage(iFacet);
 			//std::cout << "Particle flight time in the first half." << std::endl;
 		}
-		else if (simHistory->pcStep > 0 && flightTime > simHistory->stepSize/2) {//We are in correction step and in the second half of the current time step.
+		else if (simHistory->pcStep == 1 && flightTime > simHistory->stepSize/2) {//We are in correction step and in the second half of the current time step
 			coverage = calcPredictedCoverage(iFacet); //Use coveringList.predictList for coverage calculation
 			//std::cout << "Particle flight time in the second half." << std::endl;
 		}
