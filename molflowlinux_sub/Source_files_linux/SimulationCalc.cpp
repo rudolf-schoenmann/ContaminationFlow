@@ -107,9 +107,7 @@ boost::multiprecision::float128 calcCoverage(SubprocessFacet *iFacet){ // calcul
 }
 
 boost::multiprecision::float128 calcPredictedCoverage(SubprocessFacet *iFacet){ // (Berke): calculate coverage from predictList
-	boost::multiprecision::uint128_t predictedCovering = getPredictedCovering(iFacet);
-
-	return boost::multiprecision::float128(predictedCovering) /boost::multiprecision::float128(calcNmono(iFacet));
+	return boost::multiprecision::float128(getPredictedCovering(iFacet))/boost::multiprecision::float128(calcNmono(iFacet));
 }
 
 boost::multiprecision::float128 calctotalDesorption(){// calculates the desorbed particles of all facets

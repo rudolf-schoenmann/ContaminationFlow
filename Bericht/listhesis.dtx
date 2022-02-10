@@ -1,0 +1,476 @@
+% \iffalse meta-comment
+%
+% Copyright (C) 2017 by Michael Vonbun <michael.vonbun@tum.de>
+% ------------------------------------------------------------
+% 
+% This file may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.2
+% of this license or (at your option) any later version.
+% The latest version of this license is in:
+%
+%    http://www.latex-project.org/lppl.txt
+%
+% and version 1.2 or later is part of all distributions of LaTeX 
+% version 1999/12/01 or later.
+%
+% \fi
+%
+% \iffalse
+%<*driver>
+\ProvidesFile{listhesis.dtx}
+%</driver>
+%<class>\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+%<class>\ProvidesClass{listhesis}
+%<*class>
+    [2017/07/21 v1.0 lis thesis]
+%</class>
+%
+%<*driver>
+\documentclass{ltxdoc}
+\usepackage{xkvview}
+\EnableCrossrefs
+\CodelineIndex
+\RecordChanges
+\begin{document}
+  \DocInput{listhesis.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% \CheckSum{327}
+%
+% \CharacterTable
+%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%   Digits        \0\1\2\3\4\5\6\7\8\9
+%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%   Dollar        \$     Percent       \%     Ampersand     \&
+%   Acute accent  \'     Left paren    \(     Right paren   \)
+%   Asterisk      \*     Plus          \+     Comma         \,
+%   Minus         \-     Point         \.     Solidus       \/
+%   Colon         \:     Semicolon     \;     Less than     \<
+%   Equals        \=     Greater than  \>     Question mark \?
+%   Commercial at \@     Left bracket  \[     Backslash     \\
+%   Right bracket \]     Circumflex    \^     Underscore    \_
+%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%   Right brace   \}     Tilde         \~}
+%
+%
+% \changes{v1.0}{2017/07/21}{Initial version}
+%
+% \GetFileInfo{listhesis.dtx}
+%
+% \DoNotIndex{\newcommand,\newenvironment}
+% 
+%
+% \title{The \textsf{listhesis} class\thanks{This document corresponds
+% to \textsf{listhesis}~\fileversion, dated \filedate.}}
+% \author{Michael Vonbun \\ \texttt{michael.vonbun@tum.de}}
+%
+% \maketitle
+%
+% \section{Introduction}
+%
+% Use the \textsf{listhesis} class to typeset your thesis.
+%
+% \section{Dependencies}
+%
+% As of \textsf{listhesis}~\fileversion, the class depends on the KOMA
+% script classes and the packages
+% \begin{itemize}
+%   \item \textsf{inputenc}
+%   \item \textsf{babel}
+%   \item \textsf{xkeyval}
+%   \item \textsf{tikz}
+%   \item \textsf{xcolor}
+%   \item \textsf{graphicx}
+%   \item \textsf{hyperref}
+% \end{itemize}
+% 
+% \section{Usage}
+% Best use the provided |thesis.tex| skeleton file to start writing your
+% thesis.  Consider using |latexmk| with option |-pdf| to compile your
+% document.
+% 
+% \subsection{Macros Provided}
+% \noindent
+% \DescribeMacro{\setup} 
+% |\setup|\marg{key=value}
+% Main class interface.
+%  
+%
+% \StopEventually{\PrintChanges\PrintIndex}
+%
+% \section{Implementation}
+%
+% We derive everything from the KOMA script.  We pass all options to the
+% KOMA script class and execute some default options.  The default
+% classes are |scrartcl|, |scrreprt|, and |scrbook|.
+%    \begin{macrocode}
+\DeclareOption{dvipsnames}{\PassOptionsToPackage{\CurrentOption}{xcolor}}%
+\DeclareOption*{\PassOptionsToClass{\CurrentOption}{scrreprt}}%
+\ProcessOptions\relax
+\LoadClass[a4paper,12pt,twoside,
+bibliography=totoc,
+listof=totoc,
+listof=entryprefix,
+toc=sectionentrywithdots,
+abstract=true]{scrreprt}%
+%    \end{macrocode}
+% 
+% 
+%    \begin{macrocode}
+\RequirePackage[utf8]{inputenc}%
+\RequirePackage[ngerman,english]{babel}%
+\RequirePackage[left=2.5cm,right=3.5cm,top=2.5cm,bottom=2.5cm,includeheadfoot]{geometry}%
+\RequirePackage{xkeyval}%
+\RequirePackage{tikz}%
+\RequirePackage{xcolor}%
+\RequirePackage{graphicx}%
+\RequirePackage[hidelinks,bookmarksnumbered]{hyperref}%
+\definecolor{tumblue}{cmyk}{1,0.43,0,0}%
+\pagestyle{headings}%
+\setkomafont{pageheadfoot}{\sffamily\normalcolor\small}
+%    \end{macrocode}
+% 
+% \subsection{Interface}
+% 
+% \subsubsection{Language}
+% Add supported languages. For a reference on customizing KOMA script in
+% this respect, see Chapter "12.4. Definition sprachabhängiger
+% Bezeichner" in the KOMA script doumentation (scrguide).
+%
+% 
+% \paragraph{Switch between languages}
+% 
+% Process the currently active language option at the beginning of the
+% document by setting the babel language.
+%    \begin{macrocode}
+\AtBeginDocument{%
+  \iflis@thesis@en
+    \selectlanguage{english}%
+  \else
+    \selectlanguage{ngerman}%
+    \fi
+  \hypersetup{%
+      bookmarks    = true,         % show bookmarks bar?
+      pdftoolbar   = true,         % show Acrobat’s toolbar?
+      pdfmenubar   = true,         % show Acrobat’s menu?
+      pdffitwindow = false,        % window fit to page when opened
+      pdfstartview = {FitH},       % fits the width of the page to the window
+      pdftitle     = {\@title},    % title
+      pdfauthor    = {\@author},   % author
+      pdfsubject   = {\lis@thesis@type@val}, % subject of the document
+      pdfcreator   = {\@author},   % creator of the document
+      pdfnewwindow = true,         % links in new window
+  }
+}%
+%    \end{macrocode}
+% 
+% Define boolean language keys.
+%    \begin{macrocode}
+\define@boolkey[lis]{thesis}{en}[true]{}%
+\define@boolkey[lis]{thesis}{de}[true]{%
+  \iflis@thesis@de
+    \lis@thesis@enfalse%
+  \else
+    \lis@thesis@entrue%
+  \fi}%
+%    \end{macrocode}
+% 
+% Define long language options.
+%    \begin{macrocode}
+\define@choicekey*[lis]{thesis}{language}[\val\nr]{english,german}[english]{%
+  \ifcase\nr\relax
+    \lis@thesis@entrue%
+  \or
+    \lis@thesis@enfalse%
+  \fi}%
+%    \end{macrocode}
+% 
+% 
+% 
+% Set default language.
+%    \begin{macrocode}
+\setkeys[lis]{thesis}{en}%
+%    \end{macrocode}
+%
+% 
+% \subsubsection{Thesis Type}
+%
+% \paragraph{Thesis type definitions}
+% Add thesis types to your liking by defining a thesis type macro here.
+% The name after the |@type@| should be the option of the user
+% interface.
+%    \begin{macrocode}
+\def\lis@thesis@type@master{\iflis@thesis@en Master~thesis\else Masterarbeit\fi}%
+\def\lis@thesis@type@bachelor{\iflis@thesis@en Bachelor~thesis\else Bachelorarbeit\fi}%
+\def\lis@thesis@type@research{\iflis@thesis@en Research~practice\else Forschungspraxis\fi}%
+\def\lis@thesis@type@internship{\iflis@thesis@en Internship\else Praktikum\fi}%
+\def\lis@thesis@type@diplom{\iflis@thesis@en Diplom~thesis \else Diplomarbeit\fi}%
+%    \end{macrocode}
+% 
+% Conditionally set the value of the thesis type (this is used for the
+% titlepage) using an ordinary key.  NOTE: choicekeys seem not to work
+% well (at least not in the preambel), so we use an ordinary key here.
+% Relaying |\setup| after the preambel is also not a good idea, as some
+% document properties are set already.
+%    \begin{macrocode}
+\define@key[lis]{thesis}{type}[master]{%
+  \def\lis@thesis@type@val{\csname lis@thesis@type@#1\endcsname}%
+}%
+%    \end{macrocode}
+% 
+% Set default type.
+%    \begin{macrocode}
+\setkeys[lis]{thesis}{type}%
+%    \end{macrocode}
+% 
+% \subsubsection{Thesis Options}
+% 
+% \begin{macro}{\setup}
+% Main thesis setup macro.
+%    \begin{macrocode}
+\newcommand{\setup}[2][]{\ClassWarningNoLine{listhesis}{Entering setup}\setkeys[lis]{thesis}{#2}}%
+%    \end{macrocode}
+% \end{macro}
+%
+% 
+% \subsubsection{Supervisors}
+% 
+% Setup the keys to store cover page supervisor information.
+%    \begin{macrocode}
+\define@cmdkey[lis]{thesis}{supervisor}{}%
+\define@cmdkey[lis]{thesis}{advisor}{}%
+\define@boolkey[lis]{thesis}{isexternal}{}%
+\define@cmdkey[lis]{thesis}{company}{\lis@thesis@isexternaltrue}%
+\define@cmdkey[lis]{thesis}{externalAdvisor}{\lis@thesis@isexternaltrue}%
+%    \end{macrocode}
+% 
+% Set defaults to display in the skeleton file here.
+%    \begin{macrocode}
+\def\cmdlis@thesis@supervisor{Supervising Professor}%
+\def\cmdlis@thesis@advisor{Advising PhD. Student}%
+\def\cmdlis@thesis@externalAdvisor{Your Company Advisor}%
+\def\cmdlis@thesis@company{Company the thesis was done}%
+%    \end{macrocode}
+% 
+% Set supervisor tokens.
+%    \begin{macrocode}
+\def\lis@thesis@authorText{\iflis@thesis@en\relax Author\else Autor\fi:}%
+\def\lis@thesis@supervisorText{\iflis@thesis@en Supervisor\else Pr\"ufer\fi:}%
+\def\lis@thesis@advisorText{\iflis@thesis@en Advisor\else Betreuer\fi:}%
+\def\lis@thesis@companyText{\iflis@thesis@en Carried~out~at\else Durchgef\"uhrt~bei\fi:}%
+\def\lis@thesis@externalAdvisorText{\iflis@thesis@en External~advisor\else Externer~Betreuer\fi:}%
+\def\lis@thesis@submissionDateText{\iflis@thesis@en Submission~date\else Datum~der~Abgabe\fi:}%
+%    \end{macrocode}
+% 
+% 
+% 
+% \subsubsection{Titlepage}
+% 
+% Additional setup.
+%    \begin{macrocode}
+\define@cmdkey[lis]{thesis}{author}{\author{\cmdlis@thesis@author}}%
+\define@cmdkey[lis]{thesis}{title}{\title{\cmdlis@thesis@title}}%
+\define@cmdkey[lis]{thesis}{city}[\lis@thesis@default@city]{}%
+\define@cmdkey[lis]{thesis}{date}[\@date]{}%
+\setkeys[lis]{thesis}{city,date}%
+%    \end{macrocode}
+% 
+% Set defaults here.
+%    \begin{macrocode}
+\def\lis@thesis@default@city{\iflis@thesis@en Munich\else M\"unchen\fi}%
+\def\lis@thesis@chair{\iflis@thesis@en
+    Chair~of~Integrated~Systems%
+  \else
+    Lehrstuhl~f\"ur~Integrierte~Systeme%
+  \fi}%
+\def\lis@thesis@department{\iflis@thesis@en
+    Department~of~Electrical~and~Computer~Engineering%
+  \else
+    Fakult\"at~f\"ur~Elektrotechnik~und~Informationstechnik%
+  \fi}%
+\def\lis@thesis@tum{\iflis@thesis@en
+    Technical~University~of~Munich%
+  \else
+    Technische~Universit\"at~M\"unchen%
+  \fi}%
+%    \end{macrocode}
+% 
+% 
+% \begin{macro}{\maketitle}
+% Typeset the titlepage.
+% 
+% Renew maketitle. Start using an empty page.
+%    \begin{macrocode}
+\renewcommand{\maketitle}[2]{%
+\begin{titlepage}
+  \thispagestyle{empty}
+  \def\lis@thesis@title@leftMargin{25mm}%
+  \def\lis@thesis@title@rightMargin{25mm}%
+  \def\lis@thesis@title@topMargin{25mm}%  
+%    \end{macrocode}
+% 
+% For the title, use Helvetica as sans-serif font.
+%    \begin{macrocode}
+  \renewcommand{\sfdefault}{phv}%
+  \sffamily
+%    \end{macrocode}
+% 
+% We use TikZ/PGF to accomplish absolute text positioning. As for
+% drawings and plots we will include PGF nevertheless, it reduces the
+% number of packets loaded (so no |textpos| package here).
+% 
+% Dimensions we use here are:\\
+% A4: 210 x 297 mm\\
+% Logo: 740 x 390 px => 1.89743589x x 1x
+%    \begin{macrocode}
+\begin{tikzpicture}[remember picture, overlay]
+%    \end{macrocode}
+% 
+% Draw help lines. Use only for development.
+%    \begin{macrocode}
+% \draw[thick] (current page.north west) ++(0,-10mm) -- ++(210mm,0);
+% \draw[thick] (current page.north west) ++(0,-20mm) -- ++(210mm,0);
+% \draw[thick] (current page.north east) ++(-10mm, 0) -- ++(0,-297mm);
+% \draw[thick] (current page.north west) ++(+10mm, 0) -- ++(0,-297mm);
+%    \end{macrocode}
+% 
+% Set the logo.
+%    \begin{macrocode}
+  \path (current page.north east) ++(-\lis@thesis@title@rightMargin -0.5*740/390*10mm, -\lis@thesis@title@topMargin)
+    node {\includegraphics[height=10mm]{TUM_Logo_blau_rgb_p.png}};
+%    \end{macrocode}
+% 
+% Header text.
+%    \begin{macrocode}
+  \path (current page.north west) ++(\lis@thesis@title@leftMargin, -\lis@thesis@title@topMargin)
+    node[right,yshift=0.5mm, xshift=-1.5mm,color=tumblue] {%
+      \parbox{100mm}{%
+        \scriptsize
+        \lis@thesis@chair\\
+        \lis@thesis@department\\
+        \lis@thesis@tum}};
+%    \end{macrocode}
+% 
+% Thesis title and type. We use a golden section to set the height:
+% 297 => 113 : 184
+%    \begin{macrocode}
+  \path (current page.north) ++(0,-113mm)
+    node {%
+      \parbox{160mm}{%
+        {\Large\bfseries\@title}\\[5ex]
+        {\bfseries\lis@thesis@type@val}}};
+%    \end{macrocode}
+% 
+% Advisors. We use a golden section to set the height again:
+% 184 => 70 : 114
+%
+% The first column is:
+%    \begin{macrocode}
+  \path (current page.north west) ++(\lis@thesis@title@leftMargin,-113mm-70mm)
+    node[right] {%
+      \parbox{160mm}{%
+        \lis@thesis@authorText\\[2ex]
+        \iflis@thesis@isexternal
+          \lis@thesis@companyText\\
+          \lis@thesis@externalAdvisorText\\
+        \fi
+        \lis@thesis@advisorText\\
+        \lis@thesis@supervisorText\\[2ex]
+        \lis@thesis@submissionDateText
+      }
+    };
+%    \end{macrocode}
+%
+% The second column is (if we wanted to use golden section: 210 => 80 : 130):
+%    \begin{macrocode}
+  \path (current page.north west) ++(\lis@thesis@title@leftMargin +40mm,-113mm-70mm)
+    node[right] {%
+      \parbox{150mm}{%
+        \@author\\[2ex]
+        \iflis@thesis@isexternal
+          \cmdlis@thesis@company\\
+          \cmdlis@thesis@externalAdvisor\\
+        \fi
+        \cmdlis@thesis@advisor\\
+        \cmdlis@thesis@supervisor\\[2ex]
+        \cmdlis@thesis@date
+      }};
+  \end{tikzpicture}
+%    \end{macrocode}
+%
+% Return to standard sans-serif font.
+%    \begin{macrocode}
+\renewcommand{\sfdefault}{pcr}%
+\end{titlepage}}%
+%    \end{macrocode}
+% \end{macro}
+% 
+%
+% \subsubsection{Confirmation}
+% This is the confirmation that has to be signed by the student.  Input
+% it at the end of the thesis.
+% \begin{macro}{\confirmation}
+%    \begin{macrocode}
+\newcommand{\confirmation}{%
+\cleardoublepage
+\thispagestyle{empty}
+{\normalcolor
+{\noindent\bfseries\sffamily\large\iflis@thesis@en Confirmation\else Erkl\"arung\fi}\\[5ex]
+\iflis@thesis@en
+  Herewith I, \@author, confirm that I independently prepared this work.  No further references
+  or auxiliary means except those declared in this document have been used.%
+\else
+  Hiermit erkl\"are ich, \@author, dass ich die vorliegende Arbeit
+  selbstst\"andig und ohne Benutzung anderer als der angegebenen
+  Hilfsmittel angefertigt habe.  Alle aus fremden (einschlie\ss{}lich
+  elektronischer) Quellen direkt oder indirekt \"ubernommenen Gedanken
+  habe ich in dieser Ausarbeitung als solche kenntlich gemacht.%
+  \fi\\[5ex]
+\cmdlis@thesis@city, \cmdlis@thesis@date\\[5ex]
+\parbox{100mm}{\dotfill}\\
+\@author}}
+%    \end{macrocode}
+% \end{macro}
+%
+% 
+% \subsubsection{Abstract}
+% Abstract interface. For German thesis, also provide an english
+% abstract here.
+% \begin{macro}{\abstract}
+%    \begin{macrocode}
+\renewcommand{\abstract}[2][]{%
+  \iflis@thesis@en
+    \def\lis@thesis@abstract@en{#2}%
+    \def\lis@thesis@abstract@de{#1}%
+  \else
+    \def\lis@thesis@abstract@en{#1}%
+    \def\lis@thesis@abstract@de{#2}%
+  \fi}%
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \begin{macro}{\makeabstract}
+%    \begin{macrocode}
+\newcommand{\makeabstract}{%
+  \newpage\cleardoublepage
+  \addchap*{Abstract}%
+  \iflis@thesis@en
+    \lis@thesis@abstract@en%
+  \else
+    \lis@thesis@abstract@de%
+    \vskip 12ex%
+    \ifx\lis@thesis@abstract@en\empty
+      \ClassError{listhesis}{German thesis needs an English
+        abstract. Use optional argument of abstract command}{}
+    \else \noindent\lis@thesis@abstract@en\fi
+    \fi}%
+%    \end{macrocode}
+% \end{macro}
+% 
+% 
+% \Finale
+\endinput

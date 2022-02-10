@@ -963,7 +963,8 @@ void SimulationHistory::updateHistory(){
 	pressureList.initCurrent(numFacet);
 	pressureList.appendCurrent(0.0);
 
-	updateStepSize();
+	if (simHistory->pcStep == 0)
+		updateStepSize();
 	//lastTime=0.0;
 }
 

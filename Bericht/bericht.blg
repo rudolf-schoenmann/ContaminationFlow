@@ -1,0 +1,58 @@
+This is BibTeX, Version 0.99d
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: bericht.aux
+Reallocating 'name_of_file' (item size: 1) to 9 items.
+The style file: unsrturl.bst
+Reallocating 'name_of_file' (item size: 1) to 8 items.
+Reallocating 'glb_str_end' (item size: 4) to 20 items.
+Reallocating 'glb_str_ptr' (item size: 4) to 20 items.
+Reallocating 'global_strs' (item size: 1) to 4000000 items.
+Reallocating 'singl_function' (item size: 4) to 100 items.
+Reallocating 'singl_function' (item size: 4) to 100 items.
+Database file #1: bericht.bib
+Warning--entry type for "martonady" isn't style-file defined
+--line 1 of file bericht.bib
+Warning--empty journal in umweltsatellit
+Warning--empty author and editor in butcher
+You've used 11 entries,
+            2555 wiz_defined-function locations,
+            649 strings with 7087 characters,
+and the built_in function-call counts, 3933 in all, are:
+= -- 382
+> -- 121
+< -- 3
++ -- 40
+- -- 29
+* -- 227
+:= -- 499
+add.period$ -- 38
+call.type$ -- 11
+change.case$ -- 9
+chr.to.int$ -- 0
+cite$ -- 13
+duplicate$ -- 117
+empty$ -- 453
+format.name$ -- 29
+if$ -- 1123
+int.to.chr$ -- 0
+int.to.str$ -- 11
+missing$ -- 9
+newline$ -- 63
+num.names$ -- 9
+pop$ -- 95
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 313
+stack$ -- 0
+substring$ -- 133
+swap$ -- 39
+text.length$ -- 3
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 2
+while$ -- 17
+width$ -- 13
+write$ -- 131
+(There were 3 warnings)

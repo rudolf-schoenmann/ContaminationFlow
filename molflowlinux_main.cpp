@@ -358,8 +358,8 @@ int main(int argc, char *argv[]) {
 				for(unsigned int i=0; i<simHistory->numFacet;i++){
 					MPI_Bcast(&simHistory->coveringList.currentList[i], 16, MPI::BYTE,0,MPI_COMM_WORLD);
 				}
-				for(unsigned int i=0; i<simHistory->numFacet && p->usePCMethod; i++){
-					// (Berke): We can also only broadcast when pcStep==1 but this doesn't make any difference
+				for(unsigned int i=0; i<simHistory->numFacet; i++){
+					// (Berke): We can also only broadcast when pcStep>0 but this doesn't make any difference
 					MPI_Bcast(&simHistory->coveringList.predictList[i], 16, MPI::BYTE,0,MPI_COMM_WORLD);
 				}
 				// Send currentStep -> used to calculate stepSize
@@ -372,14 +372,15 @@ int main(int argc, char *argv[]) {
 					simHistory->updateHistory();// Write the current covering values from the simHistory to the sHandle and calculate stepSize (normal and outgassing).
 				}
 				else{
-					simHistory->updateStepSize(); // Calculate stepSize (normal and outgassing) for this iteration
+					if (simHistory->pcStep == 0)
+						simHistory->updateStepSize(); // Calculate stepSize (normal and outgassing) for this iteration
 				}
 
 				if (simHistory->pcStep == 0) {
 					/* (Berke):
 					 * No need to calculate these values again in corrector step
 					 * as the result will be the same
-					*/
+					 */
 					UpdateSticking(); // Write sticking factor into sHandle for all subprocesses
 					CalcTotalOutgassingWorker();// Calculate outgassing values for this iteration
 					if(!UpdateDesorption()){// Write desorption into sHandle for all subprocesses
@@ -508,8 +509,8 @@ int main(int argc, char *argv[]) {
 						printStream(tmpstream.str());
 					}
 				}
-				if (rank == 0 && simHistory->pcStep == 0 && p->usePCMethod) {std::cout << "ending predictor step " <<std::endl;} // (Berke)
-				else if (rank == 0 && simHistory->pcStep == 1 && p->usePCMethod) {std::cout << "ending corrector step " <<std::endl;} // (Berke)
+				if (rank == 0 && simHistory->pcStep == 0 && p->usePCMethod) {std::cout << "ending prediction step " <<std::endl;} // (Berke)
+				else if (rank == 0 && simHistory->pcStep == 1 && p->usePCMethod) {std::cout << "ending correction step " <<std::endl;} // (Berke)
 			} //End of predictor-corrector loop
 
 			if (rank == 0) {

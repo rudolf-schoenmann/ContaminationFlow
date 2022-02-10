@@ -89,6 +89,7 @@ Important input file parameters:
 |simulationTime|Double value | "Number" of simulation time (=computation time before targets are reached)|
 |unit|String|"Unit" of simulation time (=computation time before targets are reached)|
 |iterationNumber|Int value|Number of desired iterations|
+|usePCMethod|Bool value|Whether to use predictor-corrector method in simulation|
 |maxTime| Double value| "Number" of maximum simulated time (=total time in simulated system)|
 |maxUnit| String|"unit" of maximum simulated time (=total time in simulated system)|
 |errorMode|String: covering,event| Desired error that is tracked|

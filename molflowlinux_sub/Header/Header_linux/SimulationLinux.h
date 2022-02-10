@@ -447,7 +447,7 @@ public:
 
 	double lastTime; // [s]
 	int currentStep;
-	int pcStep; // (Berke) 0: We are in predict step. 1: We are in corrector step
+	int pcStep; // (Berke) 0: We are in predict step. Greater than 0: We are in m-th corrector step (assuming we will implement more than 1 corrector step in future)
 	double stepSize; // [s]
 	double stepSize_outgassing; //[s]
 

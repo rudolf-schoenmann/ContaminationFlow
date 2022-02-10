@@ -185,7 +185,6 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 									tmpstream <<"!!!-----Covering gets negative: "<<covering_phys<<" - "<<covering_delta <<". Correct Covering=0-----!!!"<<std::endl;
 									covering_delta=covering_phys;
 								}
-
 								covering_phys -= covering_delta;
 								tmpstream << "covering decreases by (covering_delta (real)) "<<covering_delta << " = " << boost::multiprecision::float128(covering_delta) << std::endl;
 							}
@@ -198,28 +197,29 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 			}
 			tmpstream << "covering_phys_after (real) = " << covering_phys << " = " << boost::multiprecision::float128(covering_phys) << std::endl;
 			tmpstream << "coveringThreshold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << " = " << boost::multiprecision::float128(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
-
 			/* (Berke):
 			 * Store predicted covering (covering at the end of the predictor step) into predictList.
 			 * Store corrected covering (covering at the end of the corrector step) into currenList
 			 */
 			if (p->usePCMethod) {
+				/* Predicotr-Corrector-Method v1 
 				if (simHistory->pcStep == 0) {
-					//simHistory->coveringList.setPredict(&f, covering_phys);
-					//std::cout << "Writing new covering value directly into predictList" << std::endl;
-
-					simHistory->coveringList.setPredict(&f, (covering_phys + simHistory->coveringList.getCurrent(&f))/2);
-					std::cout << "Writing new covering value after averaging into predictList" << std::endl;
-
-				}
-				else if (simHistory->pcStep == 1){
+					boost::multiprecision::uint128_t currentVal(simHistory->coveringList.getCurrent(&f));
+					simHistory->coveringList.setPredict(&f, (covering_phys + currentVal)/2);
+				} else if (simHistory->pcStep == 1) {
 					simHistory->coveringList.setCurrent(&f, covering_phys);
+				} */
 
+				/* Predictor-Corrector-Method v2 */
+				if (simHistory->pcStep == 0) {
+					simHistory->coveringList.setPredict(&f, covering_phys);
+				} else if (simHistory->pcStep == 1) {
+					boost::multiprecision::uint128_t predictVal(simHistory->coveringList.getPredict(&f));
+					simHistory->coveringList.setCurrent(&f, (covering_phys + predictVal)/2);
 				}
-			}
-			else {
+				/**/
+			} else {
 				simHistory->coveringList.setCurrent(&f, (covering_phys));
-
 			}
 
 			printStream(tmpstream.str());
