@@ -1,22 +1,20 @@
-This is BibTeX, Version 0.99d
+This is BibTeX, Version 0.99d (TeX Live 2020/Debian)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: bericht.aux
-Reallocating 'name_of_file' (item size: 1) to 9 items.
 The style file: unsrturl.bst
-Reallocating 'name_of_file' (item size: 1) to 8 items.
-Reallocating 'glb_str_end' (item size: 4) to 20 items.
-Reallocating 'glb_str_ptr' (item size: 4) to 20 items.
-Reallocating 'global_strs' (item size: 1) to 4000000 items.
-Reallocating 'singl_function' (item size: 4) to 100 items.
-Reallocating 'singl_function' (item size: 4) to 100 items.
+Reallocated glb_str_ptr (elt_size=4) to 20 items from 10.
+Reallocated global_strs (elt_size=200001) to 20 items from 10.
+Reallocated glb_str_end (elt_size=4) to 20 items from 10.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
 Database file #1: bericht.bib
-Warning--entry type for "martonady" isn't style-file defined
+Warning--entry type for "marton" isn't style-file defined
 --line 1 of file bericht.bib
-Warning--empty journal in umweltsatellit
+Warning--empty journal in zhang
 Warning--empty author and editor in butcher
 You've used 11 entries,
             2555 wiz_defined-function locations,
-            649 strings with 7087 characters,
+            648 strings with 7067 characters,
 and the built_in function-call counts, 3933 in all, are:
 = -- 382
 > -- 121

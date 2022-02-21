@@ -5,12 +5,12 @@ Arvid Hammar.
 \newblock {\em Optics For Earth Observation Instruments}.
 \newblock Chalmers University of Technology, 2019.
 
-\bibitem{umweltsatellit}
+\bibitem{zhang}
 Yun Zhang and Norman Kerle.
 \newblock Satellite remote sensing for near-real time data collection.
 \newblock pages 75--102, 01 2008.
 
-\bibitem{Jiao}
+\bibitem{jiao}
 Zilong Jiao, Lixiang Jiang, Jipeng Sun, Jianguo Huang, and Yunfei Zhu.
 \newblock Outgassing environment of spacecraft: An overview.
 \newblock {\em {IOP} Conference Series: Materials Science and Engineering},
@@ -29,7 +29,7 @@ Bernhard Schlappi, Kathrin Altwegg, Hans Balsiger, Myrtha Hassig, A.~Jackel,
 \newblock URL: \url{https://hal.archives-ouvertes.fr/hal-00511719}, \href
   {https://doi.org/10.1029/2010JA015734} {\path{doi:10.1029/2010JA015734}}.
 
-\bibitem{molflow1}
+\bibitem{molflow}
 Roberto Kersevan and J.-L Pons.
 \newblock Introduction to molflow+: New graphical processing unit-based monte
   carlo code for simulating molecular flows and for calculating angular
@@ -44,7 +44,7 @@ Predictive simulation of contamination effects on satellites.
 \newblock URL:
   \url{https://www.ei.tum.de/tep/forschung/forschungsprojekte/satellite-contamination/}.
 
-\bibitem{martonady}
+\bibitem{marton}
 Marton Ady.
 \newblock {Monte Carlo simulations of ultra high vacuum and synchrotron
   radiation for particle accelerators}, May 2016.
@@ -61,7 +61,7 @@ Gurkan Sin and Antonio Espuña.
   {https://doi.org/10.3389/fenrg.2020.00068}
   {\path{doi:10.3389/fenrg.2020.00068}}.
 
-\bibitem{steelwater}
+\bibitem{grinham}
 Rebecca Grinham and Andrew Chew.
 \newblock A review of outgassing and methods for its reduction.
 \newblock {\em Applied Science and Convergence Technology}, 26:95--109, 09

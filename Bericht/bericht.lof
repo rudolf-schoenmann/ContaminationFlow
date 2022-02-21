@@ -1,15 +1,14 @@
-\babel@toc {english}{}\relax 
-\babel@toc {ngerman}{}\relax 
+\babel@toc {english}{}
+\babel@toc {ngerman}{}
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \contentsline {figure}{\numberline {2.1}{\ignorespaces Kontaminationsmodell}}{8}{figure.2.1}%
 \contentsline {figure}{\numberline {2.2}{\ignorespaces Simulation eines Testteilchens in einem Subprozess}}{9}{figure.2.2}%
 \addvspace {10\p@ }
 \contentsline {figure}{\numberline {3.1}{\ignorespaces Oszillation bei größeren Schrittweiten}}{12}{figure.3.1}%
-\contentsline {figure}{\numberline {3.2}{\ignorespaces Vergleich vom Eulerverfahren und Heunverfahren}}{12}{figure.3.2}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Vergleich vom expliziten Eulerverfahren und Heunverfahren}}{13}{figure.3.2}%
 \contentsline {figure}{\numberline {3.3}{\ignorespaces Erweiterung von PerformBounce() mit P.K. Verfahren}}{17}{figure.3.3}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces Erweiterung von UpdateCovering() mit P.K. Verfahren v1}}{17}{figure.3.4}%
-\contentsline {figure}{\numberline {3.5}{\ignorespaces Erweiterung von UpdateCovering() mit P.K. Verfahren v2}}{17}{figure.3.5}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Erweiterung von UpdateCovering() mit P.K. Verfahren}}{17}{figure.3.4}%
 \addvspace {10\p@ }
 \contentsline {figure}{\numberline {4.1}{\ignorespaces Die simulierte Geometrie und ihre Anfangsbedeckungsgrade}}{19}{figure.4.1}%
 \contentsline {figure}{\numberline {4.2}{\ignorespaces Simulationsergebnisse für $\theta _0 = 2.0$}}{22}{figure.4.2}%

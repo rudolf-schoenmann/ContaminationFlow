@@ -351,7 +351,7 @@ ProblemDef::ProblemDef(){
 	hitbufferPath=tilde_to_home(hitbufferPath);
 
 	iterationNumber = 43200;
-	usePCMethod = false;
+	usePCMethod = 0;
 	particleDia=diameterH2O;
 	E_de=1.6E-19;
 	H_vap=0.8E-19;
@@ -464,7 +464,7 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn == "unit"){is >> stringIn; unit=stringIn;}
 
 		else if(stringIn =="iterationNumber"){is >> intIn; iterationNumber=intIn>0?intIn:0;}
-		else if (stringIn == "usePCMethod") {is >> intIn; usePCMethod=intIn==0?false:true;}
+		else if (stringIn == "usePCMethod") {is >> intIn; intIn=(intIn<0||intIn>1)?2:intIn; usePCMethod=intIn;}
 		else if(stringIn == "maxTime") {is >>doubleIn; maxTime = doubleIn;}
 		else if(stringIn == "maxUnit"){is >> stringIn; maxUnit=stringIn;}
 
@@ -665,7 +665,7 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 	out  <<"unit" <<'\t' <<unit <<std::endl;
 
 	out  <<"iterationNumber" <<'\t' <<iterationNumber<<std::endl;
-	out << "usePCMethod" << "\t" << (usePCMethod?1:0) << std::endl;
+	out << "usePCMethod" << "\t" << usePCMethod << std::endl;
 	out  <<"maxTime" <<'\t' <<maxTime <<std::endl;
 	out  <<"maxUnit" <<'\t' <<maxUnit <<std::endl;
 	if(printConversion) out <<std::endl;
@@ -761,7 +761,7 @@ SimulationHistory::SimulationHistory(int world_size){
 	flightTime=0.0;
 	lastTime=0.0;
 	currentStep=0;
-	pcStep=0; // (Berke)
+	pcStep=0;
 	stepSize=0.0;
 	stepSize_outgassing=0.0;
 	numSubProcess=world_size-1;
@@ -787,7 +787,7 @@ SimulationHistory::SimulationHistory(int world_size){
 	}
 	coveringList.initList(numFacet);
 	coveringList.initCurrent(numFacet);
-	coveringList.initPredict(numFacet); // (Berke): Only initialize predictList in coveringList
+	coveringList.initPredict(numFacet); // Initialize predictList only in coveringList
 
 	hitList.initList(numFacet);
 	hitList.initCurrent(numFacet);
@@ -866,7 +866,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 
 	coveringList.initList(numFacet);
 	coveringList.appendCurrent(0);
-	coveringList.initPredict(numFacet); // (Berke)
+	coveringList.initPredict(numFacet);
 	coveringList.initStatistics(numFacet);
 
 	hitList.initList(numFacet);
@@ -895,7 +895,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 	pressureList.appendCurrent(0.0);
 
 	currentStep=0;
-	pcStep=0; // (Berke)
+	pcStep=0;
 	stepSize=0.0;
 	stepSize_outgassing=0.0;
 

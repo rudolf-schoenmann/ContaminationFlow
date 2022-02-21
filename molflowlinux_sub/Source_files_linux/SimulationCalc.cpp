@@ -62,7 +62,7 @@ boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet){ // return
 	return simHistory->coveringList.getCurrent(iFacet);
 }
 
-boost::multiprecision::uint128_t getPredictedCovering(SubprocessFacet *iFacet){ // (Berke): returns facet's covering from predictList.
+boost::multiprecision::uint128_t getPredictedCovering(SubprocessFacet *iFacet){ // returns facet's covering from predictList.
 	return simHistory->coveringList.getPredict(iFacet);
 }
 
@@ -106,7 +106,7 @@ boost::multiprecision::float128 calcCoverage(SubprocessFacet *iFacet){ // calcul
 	return boost::multiprecision::float128(covering) /boost::multiprecision::float128(calcNmono(iFacet));
 }
 
-boost::multiprecision::float128 calcPredictedCoverage(SubprocessFacet *iFacet){ // (Berke): calculate coverage from predictList
+boost::multiprecision::float128 calcPredictedCoverage(SubprocessFacet *iFacet){ //Calculates coverage from predictList
 	return boost::multiprecision::float128(getPredictedCovering(iFacet))/boost::multiprecision::float128(calcNmono(iFacet));
 }
 

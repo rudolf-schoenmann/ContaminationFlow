@@ -1,12 +1,12 @@
 loadbufferPath	../MolflowLinuxInput/PC_Load
 hitbufferPath	../MolflowLinuxInput/PC_Hit
-coveringPath	../MolflowLinuxInput/PC_Coverage.txt
+#coveringPath	../MolflowLinuxInput/PC_Coverage.txt
 simulationTime	1
 unit	s
-iterationNumber	1000
-usePCMethod 1
-maxTime	2
-maxUnit	year
+iterationNumber	100
+usePCMethod 2
+maxTime	6
+maxUnit	month
 sticking	0
 particleDia	2.76e-10
 E_de	16e-20

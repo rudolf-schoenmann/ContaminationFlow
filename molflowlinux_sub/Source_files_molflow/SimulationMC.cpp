@@ -1457,33 +1457,50 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 	if (iFacet->sh.enableSojournTime) {
 		double residence_energy;
 		boost::multiprecision::float128 coverage;
-		/*if (simHistory->pcStep == 1) {
-			std::cout << std::endl << "Facet " << getFacetIndex(iFacet) << std::endl;
-			std::cout << "Covering at the beginning: " << boost::multiprecision::float128(getCovering(iFacet)) << std::endl;
-			std::cout << "Covering predicted: " << boost::multiprecision::float128(getCovering(iFacet)) << std::endl;
-		}*/
-		/* (Berke) */
-		if (simHistory->pcStep == 0){ //We are in prediction step or PC method is not used
-			coverage = calcCoverage(iFacet);
-		}
-		else if (simHistory->pcStep == 1 && flightTime <= simHistory->stepSize/2) { //We are in correction step but in the first half of the current time step
-			coverage = calcCoverage(iFacet);
-			//std::cout << "Particle flight time in the first half." << std::endl;
-		}
-		else if (simHistory->pcStep == 1 && flightTime > simHistory->stepSize/2) {//We are in correction step and in the second half of the current time step
-			coverage = calcPredictedCoverage(iFacet); //Use coveringList.predictList for coverage calculation
-			//std::cout << "Particle flight time in the second half." << std::endl;
-		}
-		/* (Berke) */
 
-		if(coverage >= 1)residence_energy = p->H_vap;
+		if (simHistory->pcStep == 0) { //Predictor step or using previous method
+			coverage = calcCoverage(iFacet);
+		}
+		else if (simHistory->pcStep == 1) { //Corrector step
+			boost::multiprecision::float128 currCoverage(calcCoverage(iFacet));
+			boost::multiprecision::float128 predCoverage(calcPredictedCoverage(iFacet));
+			boost::multiprecision::float128 t(0.0);
+
+			t = simHistory->stepSize/2; //old Method
+			
+			/* new Method */
+			/*if (currCoverage < 1 && predCoverage < 1) { 
+				boost::multiprecision::float128 tau_0(static_cast<boost::multiprecision::float128>(h/(kb*iFacet->sh.temperature)));
+				boost::multiprecision::float128 tau_subst(static_cast<boost::multiprecision::float128>(tau_0*exp(p->E_de/(kb*iFacet->sh.temperature))));
+				t = -tau_subst*log(static_cast<boost::multiprecision::float128>(0.5)*(currCoverage + predCoverage));
+			}
+			else if (currCoverage >= 1 && predCoverage >= 1) {
+				t = 1*simHistory->stepSize;
+			}
+			else if (currCoverage < 1 && predCoverage >= 1) {
+				t = ((1 - currCoverage)/(predCoverage - currCoverage))*simHistory->stepSize;
+			}
+			else if (currCoverage >= 1 && predCoverage < 1) {
+				t = ((currCoverage - 1)/(currCoverage - predCoverage))*simHistory->stepSize;
+			}*/
+
+			if (flightTime <= t) {
+				coverage = currCoverage;
+			}
+			else if (flightTime > t) {
+				coverage = predCoverage;
+			}
+		}
+
+		if(coverage >= 1)
+			residence_energy = p->H_vap;
 		else {
-				if(rnd() <= coverage ){
-					residence_energy = 	p->H_vap;
-				}
-				else{
-					residence_energy = 	p->E_de;
-				}
+			if(rnd() <= coverage){
+				residence_energy = 	p->H_vap;
+			}
+			else{
+				residence_energy = 	p->E_de;
+			}
 		}
 		//double A = exp(-iFacet->sh.sojournE / (kb*iFacet->sh.temperature)); // //Don't need that. We decide in each case of residence at random, if the particle will adsorb at substrate or adsorbate.
 
