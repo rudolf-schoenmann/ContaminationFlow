@@ -1,6 +1,6 @@
 loadbufferPath	../MolflowLinuxInput/PC_Load
 hitbufferPath	../MolflowLinuxInput/PC_Hit
-#coveringPath	../MolflowLinuxInput/PC_Coverage.txt
+coveringPath	../MolflowLinuxInput/PC_Coverage.txt
 simulationTime	1
 unit	s
 iterationNumber	100

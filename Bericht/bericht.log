@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/Debian) (preloaded format=pdflatex 2022.2.20)  21 FEB 2022 15:05
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/Debian) (preloaded format=pdflatex 2022.2.20)  22 FEB 2022 17:36
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1113,7 +1113,7 @@ Package epstopdf Info: Source file: <./include/figure_2.0/old/CovFacet0.eps>
 (epstopdf)                    date: 2022-02-20 13:35:55
 (epstopdf)                    size: 138194 bytes
 (epstopdf)             Output file: <./include/figure_2.0/old/CovFacet0-eps-converted-to.pdf>
-(epstopdf)                    date: 2022-02-20 15:35:11
+(epstopdf)                    date: 2022-02-22 10:55:06
 (epstopdf)                    size: 48317 bytes
 (epstopdf)             Command: <repstopdf --outfile=./include/figure_2.0/old/CovFacet0-eps-converted-to.pdf ./include/figure_2.0/old/CovFacet0.eps>
 (epstopdf)             \includegraphics on input line 414.
@@ -1127,7 +1127,7 @@ Package epstopdf Info: Source file: <./include/figure_2.0/old/CovFacetError0.eps
 (epstopdf)                    date: 2022-02-20 13:35:55
 (epstopdf)                    size: 103669 bytes
 (epstopdf)             Output file: <./include/figure_2.0/old/CovFacetError0-eps-converted-to.pdf>
-(epstopdf)                    date: 2022-02-20 15:35:12
+(epstopdf)                    date: 2022-02-22 10:55:06
 (epstopdf)                    size: 43507 bytes
 (epstopdf)             Command: <repstopdf --outfile=./include/figure_2.0/old/CovFacetError0-eps-converted-to.pdf ./include/figure_2.0/old/CovFacetError0.eps>
 (epstopdf)             \includegraphics on input line 415.
@@ -1494,13 +1494,13 @@ Package rerunfilecheck Info: File `bericht.out' has not changed.
 Here is how much of TeX's memory you used:
  28427 strings out of 481126
  571729 string characters out of 5911897
- 1237388 words of memory out of 5000000
+ 1238388 words of memory out of 5000000
  44701 multiletter control sequences out of 15000+600000
  421212 words of font info for 74 fonts, out of 8000000 for 9000
  59 hyphenation exceptions out of 8191
  128i,12n,130p,10691b,1638s stack positions out of 5000i,500n,10000p,200000b,80000s
  </home/berke/.texlive2020/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1000.600pk> </home/berke/.texlive2020/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1200.600pk>{/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmssbx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb>
-Output written on /home/berke/Documents/IP/Github/Ingenieurpraxis/Bericht/bericht.pdf (29 pages, 1208161 bytes).
+Output written on /home/berke/Documents/IP/Github/Ingenieurpraxis/Bericht/bericht.pdf (29 pages, 1208183 bytes).
 PDF statistics:
  566 PDF objects out of 1000 (max. 8388607)
  485 compressed objects within 5 object streams
