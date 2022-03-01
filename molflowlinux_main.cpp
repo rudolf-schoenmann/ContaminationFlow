@@ -8,7 +8,7 @@ Forked from: Molflow (CERN) (https://cern.ch/molflow)
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
+(at your option) any later version.B
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -305,8 +305,8 @@ int main(int argc, char *argv[]) {
 			//The hitbuffers of all subprocesses will be added up and written in the hitbuffer_sum
 			hitbuffer_sum.buff = new BYTE[hitbuffer.size];
 			memcpy(hitbuffer_sum.buff,hitbuffer.buff,hitbuffer.size);
-			hitbuffer_sum.size =hitbuffer.size;
-
+			hitbuffer_sum.size = hitbuffer.size;
+			
 			// Initialize simHistory for main process from hitbuffer
 			//simHistory contains the relevant results/quantities of the simulation. E.g., covering history, total simulated time, etc.
 			simHistory = new SimulationHistory (&hitbuffer, world_size);
@@ -334,8 +334,8 @@ int main(int argc, char *argv[]) {
 		// Start of Simulation
 		MPI_Barrier(MPI_COMM_WORLD);
 		if (p->simulationTimeMS != 0) {
-			for (;simHistory->pcStep <= (p->usePCMethod?1:0); simHistory->pcStep += 1) { // (Berke): predictor-corrector loop
-				MPI_Barrier(MPI_COMM_WORLD); // (Berke)
+			for (;simHistory->pcStep <= (p->usePCMethod?1:0); simHistory->pcStep += 1) { // Predictor-corrector loop
+				MPI_Barrier(MPI_COMM_WORLD);
 				if(rank == 0){
 					std::ostringstream tmpstream (std::ostringstream::app);
 					if (!p->usePCMethod)
@@ -354,14 +354,10 @@ int main(int argc, char *argv[]) {
 				if(rank==0){
 					initbufftozero(&hitbuffer_sum);
 				}
-				// Send each coveringList entry one at a time
-				for(unsigned int i=0; i<simHistory->numFacet;i++){
-					MPI_Bcast(&simHistory->coveringList.currentList[i], 16, MPI::BYTE,0,MPI_COMM_WORLD);
-				}
-				for(unsigned int i=0; i<simHistory->numFacet; i++){
-					// (Berke): We can also only broadcast when pcStep>0 but this doesn't make any difference
-					MPI_Bcast(&simHistory->coveringList.predictList[i], 16, MPI::BYTE,0,MPI_COMM_WORLD);
-				}
+				// Send coveringList to subprocesses
+				MPI_Bcast(&(simHistory->coveringList.currentList.front()), simHistory->coveringList.currentList.size()*16, MPI::BYTE,0,MPI_COMM_WORLD);
+				// Send predictList to subprocess
+				MPI_Bcast(&(simHistory->coveringList.predictList.front()), simHistory->coveringList.predictList.size()*16, MPI::BYTE,0,MPI_COMM_WORLD);
 				// Send currentStep -> used to calculate stepSize
 				MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
 				MPI_Barrier(MPI_COMM_WORLD);
@@ -377,10 +373,7 @@ int main(int argc, char *argv[]) {
 				}
 
 				if (simHistory->pcStep == 0) {
-					/* (Berke):
-					 * No need to calculate these values again in corrector step
-					 * as the result will be the same
-					 */
+					// Not calculating these values again in corrector step
 					UpdateSticking(); // Write sticking factor into sHandle for all subprocesses
 					CalcTotalOutgassingWorker();// Calculate outgassing values for this iteration
 					if(!UpdateDesorption()){// Write desorption into sHandle for all subprocesses
@@ -416,7 +409,6 @@ int main(int argc, char *argv[]) {
 							}
 						}
 					} else {
-						/* Berke */
 						if (!p->usePCMethod)
 							tmpstream << "Simulation for process " << rank << " for iteration " << it << " finished."<< std::endl;
 						else if (simHistory->pcStep == 0)
@@ -478,20 +470,15 @@ int main(int argc, char *argv[]) {
 
 				MPI_Barrier(MPI_COMM_WORLD);
 
-
 				//----Update History: particle density, pressure, error, covering
 				if (rank == 0) {
 					if (simHistory->pcStep == (p->usePCMethod?1:0)) {
-						/* (Berke): No need to calculate these values after the predictor step
-						 * becase they will change in corrector step. Also preventing storing wrong values is historyList objects.
-						 */
 						UpdateParticleDensityAndPressure(&hitbuffer_sum); // !! If order changes, adapt "time" entry in pressure/density lists !!
 						UpdateErrorMain(&hitbuffer_sum); // !! If order changes, adapt "time" entry in errorLists !!
 					}
 					UpdateCovering(&hitbuffer_sum); // Calculate real covering after iteration
-
 					UpdateCoveringphys(&hitbuffer_sum, &hitbuffer); // Update real covering in buffers
-					if (simHistory->pcStep == (p->usePCMethod?1:0)) { // (Berke)
+					if (simHistory->pcStep == (p->usePCMethod?1:0)) {
 						// Adapt size of history lists if p->histSize is exceeded
 						if(p->histSize != std::numeric_limits<int>::infinity() && simHistory->coveringList.historyList.first.size() > uint(p->histSize+1)){
 								simHistory->erase(1);
@@ -509,8 +496,8 @@ int main(int argc, char *argv[]) {
 						printStream(tmpstream.str());
 					}
 				}
-				if (rank == 0 && simHistory->pcStep == 0 && p->usePCMethod) {std::cout << "ending prediction step " <<std::endl;} // (Berke)
-				else if (rank == 0 && simHistory->pcStep == 1 && p->usePCMethod) {std::cout << "ending correction step " <<std::endl;} // (Berke)
+				if (rank == 0 && simHistory->pcStep == 0 && p->usePCMethod) {std::cout << "ending prediction step " <<std::endl;}
+				else if (rank == 0 && simHistory->pcStep == 1 && p->usePCMethod) {std::cout << "ending correction step " <<std::endl;} 
 			} //End of predictor-corrector loop
 
 			if (rank == 0) {
@@ -518,7 +505,7 @@ int main(int argc, char *argv[]) {
 				simHistory->coveringList.predictList.clear(); // (Berke): Will be removed later on
 				simHistory->coveringList.initPredict(simHistory->numFacet); // (Berke): Will be removed later on
 			}
-			simHistory->pcStep = 0; // (Berke)
+			simHistory->pcStep = 0;
 
 			// Check if simulation has ended
 			MPI_Barrier(MPI_COMM_WORLD);
@@ -548,7 +535,7 @@ int main(int argc, char *argv[]) {
 				if(p->stopConverged && simHistory->lastTime>=p->convergenceTime) // End simulation only if "allowed" and convergenceTime reached
 					break;
 			}
-			MPI_Barrier(MPI_COMM_WORLD); // (Berke)
+			MPI_Barrier(MPI_COMM_WORLD); // 
 		} else {
 			std::cout << "Simulation time = 0.0 seconds. Nothing to do." << std::endl;
 			break;
