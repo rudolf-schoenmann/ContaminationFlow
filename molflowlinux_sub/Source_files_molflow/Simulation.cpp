@@ -44,6 +44,7 @@ Simulation::Simulation()
 	hasVolatile = false;
 
 	memset(&tmpGlobalResult, 0, sizeof(GlobalHitBuffer));
+	tmpGlobalResult.globalHits.covering = boost::multiprecision::uint128_t(0);
 
 	sh.nbSuper = 0;
 }

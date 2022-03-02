@@ -555,6 +555,7 @@ void ResetTmpCounters() {
 	//SetState(NULL, "Resetting local cache...", false, true); //(MY) segmentation error otherwise
 
 	memset(&sHandle->tmpGlobalResult, 0, sizeof(GlobalHitBuffer));
+	sHandle->tmpGlobalResult.globalHits.covering = boost::multiprecision::uint128_t(0);
 	
 	//Reset global histograms
 	for (auto& h : sHandle->tmpGlobalHistograms) {
