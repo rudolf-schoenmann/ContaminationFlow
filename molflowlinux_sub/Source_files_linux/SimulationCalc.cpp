@@ -55,7 +55,9 @@ FacetHitBuffer* getFacetHitBuffer(SubprocessFacet *iFacet, Databuff *hitbuffer){
 }
 
 boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns covering from hitbuffer
-	return getFacetHitBuffer(iFacet,hitbuffer)->covering;
+	boost::multiprecision::uint128_t cov = getFacetHitBuffer(iFacet,hitbuffer)->covering;
+	cov = (cov.backend().size() == 0) ? boost::multiprecision::uint128_t(0) : cov;
+	return cov;
 }
 
 boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet){ // returns covering from simHistory
