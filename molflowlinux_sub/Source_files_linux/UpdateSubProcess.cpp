@@ -358,7 +358,8 @@ void initbufftozero(Databuff *databuffer){
 	gHits->globalHits.nbHitEquiv = 0.0;
 	gHits->globalHits.nbAbsEquiv = 0.0;
 	gHits->globalHits.nbDesorbed = 0;
-	//gHits->globalHits.covering=0;
+	if (gHits->globalHits.covering.backend().size() == 0) //Not necessary but used as a precaution
+		gHits->globalHits.covering = boost::multiprecision::uint128_t(0);
 	gHits->distTraveled_total = 0.0;
 	gHits->distTraveledTotal_fullHitsOnly = 0.0;
 
@@ -437,6 +438,9 @@ void initbufftozero(Databuff *databuffer){
 					facetHitBuffer->sum_1_per_ort_velocity = 0.0;
 					facetHitBuffer->sum_v_ort = 0.0;
 					facetHitBuffer->sum_1_per_velocity = 0.0;
+					//Not necessary but used as a precaution
+					if (facetHitBuffer->covering.backend().size() == 0)
+						facetHitBuffer->covering = boost::multiprecision::uint128_t(0);
 				}
 
 				if (f.sh.isProfile) {//(MY) removed +

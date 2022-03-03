@@ -56,7 +56,7 @@ FacetHitBuffer* getFacetHitBuffer(SubprocessFacet *iFacet, Databuff *hitbuffer){
 
 boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns covering from hitbuffer
 	boost::multiprecision::uint128_t cov = getFacetHitBuffer(iFacet,hitbuffer)->covering;
-	cov = (cov.backend().size() == 0) ? boost::multiprecision::uint128_t(0) : cov;
+	cov = (cov.backend().size() == 0) ? boost::multiprecision::uint128_t(0) : cov; //Not necessary but used as precaution
 	return cov;
 }
 
