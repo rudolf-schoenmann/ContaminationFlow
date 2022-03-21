@@ -788,8 +788,8 @@ bool StartFromSource() {
 						double time_step = simHistory->stepSize; //length of the current iteration
 						double t_start =simHistory->lastTime; //start of iteration
 						double t_stop =t_start + time_step;	//end of iteration
-						double end_of_outgassing = sHandle->IDs[src->sh.IDid].back().second; //last point of the defined and loaded outgassing table
-						double start_of_outgassing = sHandle->IDs[src->sh.IDid].front().second; //first point of the defined and loaded outgassing table
+						double end_of_outgassing = sHandle->IDs[src->sh.IDid].back().first; //last point of the defined and loaded outgassing table
+						double start_of_outgassing = sHandle->IDs[src->sh.IDid].front().first; //first point of the defined and loaded outgassing table
 						double outgassing_start = 0;//start of outgassing within the iteration step
 						double outgassing_end = 0;//end of outgassing within the iteration step
 						double facet_outgassing = 0;//over time integrated outgassing of facet during the iteration step
