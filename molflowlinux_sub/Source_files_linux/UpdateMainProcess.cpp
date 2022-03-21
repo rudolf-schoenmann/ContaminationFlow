@@ -115,35 +115,37 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 	boost::multiprecision::float128 Krealvirt = GetMoleculesPerTP(hitbuffer_sum);
 	boost::multiprecision::uint128_t covering_phys;
 	boost::multiprecision::uint128_t covering_sum;//covering as it is summed up of all subprocesses. In case, it is multiplied by smallCoveringFactor
-
-	// Calculate total error of this iteration
-	double total_error_event=0.0;
-	double total_error_covering=0.0;
-	std::tie(total_error_event,total_error_covering)=CalcErrorAll();
-
-	std::string monitoredFacets=(!p->doFocusGroupOnly||p->focusGroup.second.size()==simHistory->numFacet)?"all":"selected";
-
-	// Print total error and error per facet of this iteration
 	std::ostringstream tmpstream (std::ostringstream::app);
-	tmpstream <<"Target Error (only "+p->errorMode+" monitored) "<<p->targetError <<std::endl <<std::endl;
-	tmpstream <<"Total Error (event) averaged over "+monitoredFacets+" facets "<<total_error_event <<std::endl;
-	simHistory->errorList_event.printCurrent(tmpstream);
-	tmpstream << std::endl<<"Total Error (covering) averaged over "+monitoredFacets+" facets "<<total_error_covering<<std::endl;
-	simHistory->errorList_covering.printCurrent(tmpstream);
 
-	HistoryList<double> *listptr;
-	listptr = getErrorList(p->errorMode);
-	if(!p->vipFacets.empty()){
-		tmpstream <<"Vip Facets:"<<std::endl;
-		for(unsigned int i = 0; i < p->vipFacets.size(); i++){
-			tmpstream <<"\t"<<p->vipFacets[i].first <<"\t" << listptr->getCurrent(p->vipFacets[i].first)<<std::endl;
+	if (simHistory->pcStep == (p->usePCMethod?1:0)) {
+		// Calculate total error of this iteration
+		double total_error_event=0.0;
+		double total_error_covering=0.0;
+		std::tie(total_error_event,total_error_covering)=CalcErrorAll();
+
+		std::string monitoredFacets=(!p->doFocusGroupOnly||p->focusGroup.second.size()==simHistory->numFacet)?"all":"selected";
+
+		// Print total error and error per facet of this iteration
+		tmpstream <<"Target Error (only "+p->errorMode+" monitored) "<<p->targetError <<std::endl <<std::endl;
+		tmpstream <<"Total Error (event) averaged over "+monitoredFacets+" facets "<<total_error_event <<std::endl;
+		simHistory->errorList_event.printCurrent(tmpstream);
+		tmpstream << std::endl<<"Total Error (covering) averaged over "+monitoredFacets+" facets "<<total_error_covering<<std::endl;
+		simHistory->errorList_covering.printCurrent(tmpstream);
+
+		HistoryList<double> *listptr;
+		listptr = getErrorList(p->errorMode);
+		if(!p->vipFacets.empty()){
+			tmpstream <<"Vip Facets:"<<std::endl;
+			for(unsigned int i = 0; i < p->vipFacets.size(); i++){
+				tmpstream <<"\t"<<p->vipFacets[i].first <<"\t" << listptr->getCurrent(p->vipFacets[i].first)<<std::endl;
+			}
+			tmpstream <<std::endl;
 		}
-		tmpstream <<std::endl;
-	}
 
-	//if targetError not reached: do not update currentstep
-	//if(checkError(p->targetError, (p->errorMode=="covering")?total_error_covering:total_error_event, 1.0, p->errorMode)){simHistory->currentStep += 1;}//deactivated for testing reaons
-	simHistory->currentStep += 1;// for testing reasons
+		//if targetError not reached: do not update currentstep
+		if(checkError(p->targetError, (p->errorMode=="covering")?total_error_covering:total_error_event, 1.0, p->errorMode)){simHistory->currentStep += 1;}//deactivated for testing reaons
+		//simHistory->currentStep += 1;// for testing reasons
+	}
 	tmpstream <<"Krealvirt = " << Krealvirt << std::endl;
 	tmpstream << "Covering difference will be multiplied by Krealvirt: " << Krealvirt << std::endl;
 	printStream(tmpstream.str());
@@ -157,7 +159,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 			covering_sum = static_cast < boost::multiprecision::uint128_t >(static_cast < boost::multiprecision::float128 >(getCovering(&f, hitbuffer_sum))/static_cast < boost::multiprecision::float128 >(simHistory->smallCoveringFactor));
 
 			tmpstream <<std::endl << "Facet " << getFacetIndex(&f)<< std::endl;
-			tmpstream << "covering_sum = " << covering_sum  << " = "<< boost::multiprecision::float128(covering_sum) << std::endl;
+			tmpstream << "covering_sum  = " << covering_sum  << " = "<< boost::multiprecision::float128(covering_sum) << std::endl;
 			tmpstream << "covering_phys_before = " << covering_phys << " = "<< boost::multiprecision::float128(covering_phys) << std::endl;
 
 			if(!std::isinf(simHistory->errorList_covering.getCurrent(&f))){
@@ -183,7 +185,6 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 									tmpstream <<"!!!-----Covering gets negative: "<<covering_phys<<" - "<<covering_delta <<". Correct Covering=0-----!!!"<<std::endl;
 									covering_delta=covering_phys;
 								}
-
 								covering_phys -= covering_delta;
 								tmpstream << "covering decreases by "<<covering_delta << " = " << boost::multiprecision::float128(covering_delta) << std::endl;
 							}
@@ -197,24 +198,47 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 			tmpstream << "covering_phys_after = " << covering_phys << " = " << boost::multiprecision::float128(covering_phys) << std::endl;
 			tmpstream << "coveringThreshold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << " = " << boost::multiprecision::float128(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
 
-			simHistory->coveringList.setCurrent(&f, covering_phys);
+			if (p->usePCMethod == 0) {
+				simHistory->coveringList.setCurrent(&f, covering_phys);
+			}
+			else if (p->usePCMethod == 1) {
+				//Predictor-Corrector-Method v1
+				if (simHistory->pcStep == 0) {
+					boost::multiprecision::uint128_t currentVal(simHistory->coveringList.getCurrent(&f));
+					simHistory->coveringList.setPredict(&f, (covering_phys+currentVal)/2);
+				} 
+				else if (simHistory->pcStep == 1) {
+					simHistory->coveringList.setCurrent(&f, covering_phys);
+				}
+			} 
+			else { //usePCMethod == 2
+				// Predictor-Corrector-Method v2
+				if (simHistory->pcStep == 0) {
+					simHistory->coveringList.setPredict(&f, covering_phys);
+				} 
+				else if (simHistory->pcStep == 1) {
+					boost::multiprecision::uint128_t predictVal(simHistory->coveringList.getPredict(&f));
+					simHistory->coveringList.setCurrent(&f, (covering_phys + predictVal)/2);
+				}
+			} 
 
 			printStream(tmpstream.str());
 		}
 	}
 	// Save covering to simHistory
-	double time_step = simHistory->stepSize;
-	simHistory->coveringList.appendCurrent(simHistory->lastTime+time_step);
-	simHistory->lastTime+=time_step;
-
-	// Update other history lists with correct time entry
-	simHistory->hitList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-	simHistory->errorList_event.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-	simHistory->errorList_covering.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-	simHistory->desorbedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-	simHistory->adsorbedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-	simHistory->particleDensityList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-	simHistory->pressureList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+	if (simHistory->pcStep == (p->usePCMethod?1:0)) {
+		double time_step = simHistory->stepSize;
+		simHistory->coveringList.appendCurrent(simHistory->lastTime+time_step);
+		simHistory->lastTime+=time_step;
+		// Update other history lists with correct time entry
+		simHistory->hitList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+		simHistory->errorList_event.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+		simHistory->errorList_covering.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+		simHistory->desorbedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+		simHistory->adsorbedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+		simHistory->particleDensityList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+		simHistory->pressureList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+	}
 }
 
 // Copy covering to hitbuffers
@@ -223,8 +247,8 @@ void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			covering_phys = simHistory->coveringList.getLast(&f);
-			getFacetHitBuffer(&f,hitbuffer)->hit.covering=covering_phys.convert_to<llong>();
-			getFacetHitBuffer(&f,hitbuffer_sum)->hit.covering=covering_phys.convert_to<llong>();
+			getFacetHitBuffer(&f,hitbuffer)->covering=covering_phys;
+			getFacetHitBuffer(&f,hitbuffer_sum)->covering=covering_phys;
 		}
 	}
 
@@ -234,7 +258,6 @@ void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
 
 void UpdateErrorMain(Databuff *hitbuffer_sum){
 	UpdateErrorList(hitbuffer_sum);
-
 	simHistory->errorList_event.appendCurrent(simHistory->lastTime);
 	simHistory->errorList_covering.appendCurrent(simHistory->lastTime);
 	//simHistory->hitList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
@@ -273,6 +296,7 @@ void UpdateParticleDensityAndPressure(Databuff *hitbuffer_sum){
 	// Update history lists for particle density and pressure
 	simHistory->particleDensityList.appendCurrent(simHistory->lastTime);
 	simHistory->pressureList.appendCurrent(simHistory->lastTime);
+
 }
 
 std::tuple<std::vector<double>,std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  CalcPerIteration(){
@@ -292,7 +316,7 @@ std::tuple<std::vector<double>,std::vector<double>,std::vector<boost::multipreci
 		double total_error_covering=0.0;
 		std::tie(total_error_event,total_error_covering)=CalcErrorAll(it);
 
-		boost::multiprecision::uint128_t covering=0;
+		boost::multiprecision::uint128_t covering=boost::multiprecision::uint128_t(0);
 		for (unsigned int idx=0; idx<simHistory->numFacet; idx++) {
 			covering+=simHistory->coveringList.historyList.second[idx][it];
 		}
@@ -330,10 +354,10 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 	subHits=(GlobalHitBuffer *)subbuff;
 
 	// Global hits and leaks: adding local hits to shared memory
-	sHandle->tmpGlobalResult.globalHits.hit.nbMCHit= gHits->globalHits.hit.nbMCHit += subHits->globalHits.hit.nbMCHit;
-	sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv=gHits->globalHits.hit.nbHitEquiv += subHits->globalHits.hit.nbHitEquiv;
-	sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv=gHits->globalHits.hit.nbAbsEquiv += subHits->globalHits.hit.nbAbsEquiv;
-	sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed=gHits->globalHits.hit.nbDesorbed += subHits->globalHits.hit.nbDesorbed;
+	sHandle->tmpGlobalResult.globalHits.nbMCHit= gHits->globalHits.nbMCHit += subHits->globalHits.nbMCHit;
+	sHandle->tmpGlobalResult.globalHits.nbHitEquiv=gHits->globalHits.nbHitEquiv += subHits->globalHits.nbHitEquiv;
+	sHandle->tmpGlobalResult.globalHits.nbAbsEquiv=gHits->globalHits.nbAbsEquiv += subHits->globalHits.nbAbsEquiv;
+	sHandle->tmpGlobalResult.globalHits.nbDesorbed=gHits->globalHits.nbDesorbed += subHits->globalHits.nbDesorbed;
 	sHandle->tmpGlobalResult.distTraveled_total=gHits->distTraveled_total += subHits->distTraveled_total;
 	sHandle->tmpGlobalResult.distTraveledTotal_fullHitsOnly=gHits->distTraveledTotal_fullHitsOnly += subHits->distTraveledTotal_fullHitsOnly;
 
@@ -413,31 +437,29 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) { // Add hits
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 					FacetHitBuffer *facetHitSub = (FacetHitBuffer *)(subbuff + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
-					llong covering_phys= simHistory->smallCoveringFactor * history->coveringList.getLast(&f).convert_to<llong>();
-					llong covering_sum = facetHitSub->hit.covering;
+					boost::multiprecision::uint128_t covering_phys= simHistory->smallCoveringFactor * history->coveringList.getLast(&f);
+					boost::multiprecision::uint128_t covering_sum = facetHitSub->covering;
+					f.tmpCounter[m].nbAbsEquiv = facetHitBuffer->nbAbsEquiv += facetHitSub->nbAbsEquiv;
+					f.tmpCounter[m].nbDesorbed = facetHitBuffer->nbDesorbed += facetHitSub->nbDesorbed;
+					f.tmpCounter[m].nbMCHit = facetHitBuffer->nbMCHit += facetHitSub->nbMCHit;
+					f.tmpCounter[m].nbHitEquiv = facetHitBuffer->nbHitEquiv += facetHitSub->nbHitEquiv;;
+					f.tmpCounter[m].sum_1_per_ort_velocity = facetHitBuffer->sum_1_per_ort_velocity += facetHitSub->sum_1_per_ort_velocity;
+					f.tmpCounter[m].sum_v_ort = facetHitBuffer->sum_v_ort += facetHitSub->sum_v_ort;
+					f.tmpCounter[m].sum_1_per_velocity = facetHitBuffer->sum_1_per_velocity += facetHitSub->sum_1_per_velocity;
+					//facetHitBuffer->covering += facetHitSub->covering; //We do that in another way.
 
-					f.tmpCounter[m].hit.nbAbsEquiv = facetHitBuffer->hit.nbAbsEquiv += facetHitSub->hit.nbAbsEquiv;
-					f.tmpCounter[m].hit.nbDesorbed = facetHitBuffer->hit.nbDesorbed += facetHitSub->hit.nbDesorbed;
-					f.tmpCounter[m].hit.nbMCHit = facetHitBuffer->hit.nbMCHit += facetHitSub->hit.nbMCHit;
-					f.tmpCounter[m].hit.nbHitEquiv = facetHitBuffer->hit.nbHitEquiv += facetHitSub->hit.nbHitEquiv;;
-					f.tmpCounter[m].hit.sum_1_per_ort_velocity = facetHitBuffer->hit.sum_1_per_ort_velocity += facetHitSub->hit.sum_1_per_ort_velocity;
-					f.tmpCounter[m].hit.sum_v_ort = facetHitBuffer->hit.sum_v_ort += facetHitSub->hit.sum_v_ort;
-					f.tmpCounter[m].hit.sum_1_per_velocity = facetHitBuffer->hit.sum_1_per_velocity += facetHitSub->hit.sum_1_per_velocity;
-					//facetHitBuffer->hit.covering += facetHitSub->hit.covering; //We do that in another way.
-
-					if (facetHitSub->hit.covering > covering_phys){
-					facetHitBuffer->hit.covering += (covering_sum - covering_phys);
+					if (facetHitSub->covering > covering_phys){
+						facetHitBuffer->covering += (covering_sum - covering_phys);
 					}
 					else{
-						if(facetHitBuffer->hit.covering > (covering_phys - covering_sum)){
-							facetHitBuffer->hit.covering -= (covering_phys- covering_sum);
+						if(facetHitBuffer->covering > (covering_phys - covering_sum)){
+							facetHitBuffer->covering -= (covering_phys- covering_sum);
 							}
 						else{
-							facetHitBuffer->hit.covering = 0;//Counter cannot be negative! Maybe we could interrupt the iteration here?
+							facetHitBuffer->covering = 0;//Counter cannot be negative! Maybe we could interrupt the iteration here?
 						}
 					}
-					f.tmpCounter[m].hit.covering = facetHitBuffer->hit.covering;
-
+					f.tmpCounter[m].covering = facetHitBuffer->covering;
 				}
 
 				if (f.sh.isProfile) { //(MY) Add profiles
@@ -454,7 +476,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 						TextureCell *shTexture = (TextureCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
 						TextureCell *shTextureSub = (TextureCell *)(subbuff + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
-						//double dCoef = gHits->globalHits.hit.nbDesorbed * 1E4 * sHandle->wp.gasMass / 1000 / 6E23 * MAGIC_CORRECTION_FACTOR;  //1E4 is conversion from m2 to cm2
+						//double dCoef = gHits->globalHits.nbDesorbed * 1E4 * sHandle->wp.gasMass / 1000 / 6E23 * MAGIC_CORRECTION_FACTOR;  //1E4 is conversion from m2 to cm2
 						double timeCorrection = m == 0 ? sHandle->wp.finalOutgassingRate : (sHandle->wp.totalDesorbedMolecules) / sHandle->wp.timeWindowSize;
 						//Timecorrection is required to compare constant flow texture values with moment values (for autoscaling)
 

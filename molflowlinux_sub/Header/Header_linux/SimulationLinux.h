@@ -61,6 +61,7 @@ template <typename T> class HistoryList{
 public:
 	std::pair< std::vector<double>,std::vector<std::vector<T>> > historyList; // pair: list of times, list of facets
 	std::vector<T> currentList; // list of facets
+	std::vector<T> predictList; // Predicted per facet covering values at the end of the current time step.
 	std::vector<std::pair<boost::multiprecision::float128,boost::multiprecision::float128>> statisticsList; // list of mean-std pair
 	unsigned int currIt;
 
@@ -68,6 +69,7 @@ public:
 		historyList.first = std::vector<double>();
 		historyList.second = std::vector<std::vector<T>>();
 		currentList=std::vector<T>();
+		predictList=std::vector<T>(); // list containing facet values at the end of the predictor step
 		statisticsList=std::vector<std::pair<boost::multiprecision::float128,boost::multiprecision::float128>> ();
 		currIt=0;
 	}
@@ -76,6 +78,7 @@ public:
 		historyList.first.clear();
 		historyList.second.clear();
 		currentList.clear();
+		predictList.clear();
 		statisticsList.clear();
 		currIt=0;
 	}
@@ -98,6 +101,12 @@ public:
 			currentList.push_back(static_cast<T>(0));
 		}
 		//initStatistics(numFacet);
+	}
+
+	void initPredict(unsigned int numFacet){
+		for(unsigned int i=0; i<numFacet; i++){
+			predictList.push_back(static_cast<T>(0));
+		}
 	}
 
 	// append lists
@@ -256,6 +265,20 @@ public:
 		tmpstream<<std::endl;
 		outstream<<tmpstream.str();
 	}
+
+	void printPredict(std::ostream& outstream, std::string msg=""){
+		std::ostringstream tmpstream (std::ostringstream::app);
+
+		tmpstream<<"    " <<std::setw(20)<<std::left<<msg;
+
+		for(uint i=0;i<predictList.size();i++)
+		{
+			tmpstream <<"\t" <<std::setw(12)<<std::right <<boost::multiprecision::float128(predictList[i]);
+		}
+		tmpstream<<std::endl;
+		outstream<<tmpstream.str();
+	}
+
 	// Print statistictsList
 	void printStatistics(std::ostream& outstream, std::string msg= "", int textwidth=45){
 		std::ostringstream tmpstream (std::ostringstream::app);
@@ -277,7 +300,7 @@ public:
 	// Write historyList to file
 	void write(std::string filename, int histSize = std::numeric_limits<int>::infinity()){
 		std::ostringstream tmpstream (std::ostringstream::app);
-		print(tmpstream,"",histSize,std::vector<T>(),15, false);
+		print(tmpstream,"",histSize,std::vector<T>(),15, true);
 
 		std::ofstream out(filename,std::ofstream::out|std::ios::trunc);
 		out<<tmpstream.str();
@@ -295,10 +318,13 @@ public:
 	bool empty(){return historyList.first.empty();}
 
 	void setCurrent(SubprocessFacet *iFacet, T newValue){int covidx = getFacetIndex(iFacet);	currentList[covidx]=newValue;}
+	void setPredict(SubprocessFacet *iFacet, T newValue){int idx = getFacetIndex(iFacet);	predictList[idx]=newValue;}
 	//T getLast(int idx){return historyList.second[idx].back();}
 	T getLast(SubprocessFacet *iFacet){int covidx = getFacetIndex(iFacet);return historyList.second[covidx].back();}
 	T getCurrent(int idx){return currentList[idx];}
 	T getCurrent(SubprocessFacet *iFacet){int covidx = getFacetIndex(iFacet);return currentList[covidx];}
+	T getPredict(int idx){return predictList[idx];}
+	T getPredict(SubprocessFacet *iFacet){int idx = getFacetIndex(iFacet);return predictList[idx];}
 	void setLast(SubprocessFacet *iFacet, T newValue){int covidx = getFacetIndex(iFacet);	historyList.second[covidx].back()=newValue;}
 
 	//---------------------------------------------------
@@ -345,6 +371,7 @@ public:
 
 	// These can be given through input file only
 	int iterationNumber; //number of iterations
+	int usePCMethod; // 0: Do not use PC-Method, 1: Use PC-Method v1, 2: Use PC-Method v2
 	double maxTime;
 	std::string maxUnit;
 
@@ -420,6 +447,7 @@ public:
 
 	double lastTime; // [s]
 	int currentStep;
+	int pcStep; // 0: In predictor step. 1: In corrector step
 	double stepSize; // [s]
 	double stepSize_outgassing; //[s]
 
@@ -484,8 +512,9 @@ llong getnbDesorbed(SubprocessFacet *iFacet, Databuff *hitbuffer);
 llong getnbAdsorbed(SubprocessFacet *iFacet, Databuff *hitbuffer);//In the original Molflow, particles were absorbed not adsorbed. In ContaminationFlow we regard all old code parts
 // which are called 'Absorb' actually as an 'Adsorb'. But we did not rename them.
 
-llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
+boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
 boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet);
+boost::multiprecision::uint128_t getPredictedCovering(SubprocessFacet *iFacet);
 
 double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer);
 //std::tuple<double, double, double> getVelocities(SubprocessFacet *iFacet, Databuff *hitbuffer_sum);
@@ -496,6 +525,7 @@ boost::multiprecision::float128 calctotalDesorption();
 double calcOutgassingFactor(SubprocessFacet *iFacet);
 
 boost::multiprecision::float128 calcCoverage(SubprocessFacet *iFacet);
+boost::multiprecision::float128 calcPredictedCoverage(SubprocessFacet *iFacet);
 boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum);
 void calcSticking(SubprocessFacet *iFacet);
 

@@ -1,0 +1,88 @@
+\begin{thebibliography}{10}
+
+\bibitem{hammar}
+Arvid Hammar.
+\newblock {\em Optics For Earth Observation Instruments}.
+\newblock Chalmers University of Technology, 2019.
+
+\bibitem{zhang}
+Yun Zhang and Norman Kerle.
+\newblock Satellite remote sensing for near-real time data collection.
+\newblock pages 75--102, 01 2008.
+
+\bibitem{jiao}
+Zilong Jiao, Lixiang Jiang, Jipeng Sun, Jianguo Huang, and Yunfei Zhu.
+\newblock Outgassing environment of spacecraft: An overview.
+\newblock {\em {IOP} Conference Series: Materials Science and Engineering},
+  611(1):012071, oct 2019.
+\newblock \href {https://doi.org/10.1088/1757-899x/611/1/012071}
+  {\path{doi:10.1088/1757-899x/611/1/012071}}.
+
+\bibitem{schlappi}
+Bernhard Schlappi, Kathrin Altwegg, Hans Balsiger, Myrtha Hassig, A.~Jackel,
+  P.~Wurz, B.~Fiethe, Martin Rubin, S.~A. Fuselier, Jean-Jacques Berthelier,
+  J.~De~Keyser, H.~Reme, and U.~Mall.
+\newblock {Influence of spacecraft outgassing on the exploration of tenuous
+  atmospheres with in situ mass spectrometry}.
+\newblock {\em {Journal of Geophysical Research Space Physics}}, 115:A12313,
+  2010.
+\newblock URL: \url{https://hal.archives-ouvertes.fr/hal-00511719}, \href
+  {https://doi.org/10.1029/2010JA015734} {\path{doi:10.1029/2010JA015734}}.
+
+\bibitem{molflow}
+Roberto Kersevan and J.-L Pons.
+\newblock Introduction to molflow+: New graphical processing unit-based monte
+  carlo code for simulating molecular flows and for calculating angular
+  coefficients in the compute unified device architecture environment.
+\newblock {\em Journal of Vacuum Science \& Technology A: Vacuum, Surfaces, and
+  Films}, 27:1017 -- 1023, 08 2009.
+\newblock \href {https://doi.org/10.1116/1.3153280}
+  {\path{doi:10.1116/1.3153280}}.
+
+\bibitem{contaminaton}
+Predictive simulation of contamination effects on satellites.
+\newblock URL:
+  \url{https://www.ei.tum.de/tep/forschung/forschungsprojekte/satellite-contamination/}.
+
+\bibitem{marton}
+Marton Ady.
+\newblock {Monte Carlo simulations of ultra high vacuum and synchrotron
+  radiation for particle accelerators}, May 2016.
+\newblock Presented 03 May 2016.
+\newblock URL: \url{https://cds.cern.ch/record/2157666}.
+
+\bibitem{fenrg}
+Gurkan Sin and Antonio Espuña.
+\newblock Editorial: Applications of monte carlo method in chemical,
+  biochemical and environmental engineering.
+\newblock {\em Frontiers in Energy Research}, 8, 2020.
+\newblock URL:
+  \url{https://www.frontiersin.org/article/10.3389/fenrg.2020.00068}, \href
+  {https://doi.org/10.3389/fenrg.2020.00068}
+  {\path{doi:10.3389/fenrg.2020.00068}}.
+
+\bibitem{grinham}
+Rebecca Grinham and Andrew Chew.
+\newblock A review of outgassing and methods for its reduction.
+\newblock {\em Applied Science and Convergence Technology}, 26:95--109, 09
+  2017.
+\newblock \href {https://doi.org/10.5757/ASCT.2017.26.5.95}
+  {\path{doi:10.5757/ASCT.2017.26.5.95}}.
+
+\bibitem{ulbrich}
+Michael Ulbrich.
+\newblock Numerische {Mathematik} {EI} [{MA9410}], May 2020.
+\newblock URL: \url{https://www.moodle.tum.de/}.
+
+\bibitem{butcher}
+{\em Numerical Differential Equation Methods}, chapter~2, pages 55--142.
+\newblock John Wiley \& Sons, Ltd, 2016.
+\newblock URL:
+  \url{https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119121534.ch2},
+  \href
+  {http://arxiv.org/abs/https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119121534.ch2}
+  {\path{arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119121534.ch2}},
+  \href {https://doi.org/https://doi.org/10.1002/9781119121534.ch2}
+  {\path{doi:https://doi.org/10.1002/9781119121534.ch2}}.
+
+\end{thebibliography}

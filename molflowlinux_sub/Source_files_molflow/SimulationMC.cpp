@@ -32,7 +32,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <tuple> //std::tie
 
 
-extern Simulation *sHandle; //delcared in molflowSub.cpp
+extern Simulation *sHandle; //declared in molflowSub.cpp
 extern SimulationHistory* simHistory;
 extern ProblemDef* p;
 
@@ -153,10 +153,10 @@ void UpdateMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	gHits = (GlobalHitBuffer *)buffer;
 
 	// Global hits and leaks: adding local hits to shared memory
-	gHits->globalHits.hit.nbMCHit += sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;
-	gHits->globalHits.hit.nbHitEquiv += sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv;
-	gHits->globalHits.hit.nbAbsEquiv += sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv;
-	gHits->globalHits.hit.nbDesorbed += sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed;
+	gHits->globalHits.nbMCHit += sHandle->tmpGlobalResult.globalHits.nbMCHit;
+	gHits->globalHits.nbHitEquiv += sHandle->tmpGlobalResult.globalHits.nbHitEquiv;
+	gHits->globalHits.nbAbsEquiv += sHandle->tmpGlobalResult.globalHits.nbAbsEquiv;
+	gHits->globalHits.nbDesorbed += sHandle->tmpGlobalResult.globalHits.nbDesorbed;
 	gHits->distTraveled_total += sHandle->tmpGlobalResult.distTraveled_total;
 	gHits->distTraveledTotal_fullHitsOnly += sHandle->tmpGlobalResult.distTraveledTotal_fullHitsOnly;
 
@@ -222,13 +222,13 @@ void UpdateMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
-					facetHitBuffer->hit.nbAbsEquiv += f.tmpCounter[m].hit.nbAbsEquiv;
-					facetHitBuffer->hit.nbDesorbed += f.tmpCounter[m].hit.nbDesorbed;
-					facetHitBuffer->hit.nbMCHit += f.tmpCounter[m].hit.nbMCHit;
-					facetHitBuffer->hit.nbHitEquiv += f.tmpCounter[m].hit.nbHitEquiv;
-					facetHitBuffer->hit.sum_1_per_ort_velocity += f.tmpCounter[m].hit.sum_1_per_ort_velocity;
-					facetHitBuffer->hit.sum_v_ort += f.tmpCounter[m].hit.sum_v_ort;
-					facetHitBuffer->hit.sum_1_per_velocity += f.tmpCounter[m].hit.sum_1_per_velocity;
+					facetHitBuffer->nbAbsEquiv += f.tmpCounter[m].nbAbsEquiv;
+					facetHitBuffer->nbDesorbed += f.tmpCounter[m].nbDesorbed;
+					facetHitBuffer->nbMCHit += f.tmpCounter[m].nbMCHit;
+					facetHitBuffer->nbHitEquiv += f.tmpCounter[m].nbHitEquiv;
+					facetHitBuffer->sum_1_per_ort_velocity += f.tmpCounter[m].sum_1_per_ort_velocity;
+					facetHitBuffer->sum_v_ort += f.tmpCounter[m].sum_v_ort;
+					facetHitBuffer->sum_1_per_velocity += f.tmpCounter[m].sum_1_per_velocity;
 				}
 
 				if (f.sh.isProfile) {
@@ -243,7 +243,7 @@ void UpdateMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 				if (f.sh.isTextured) {
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 						TextureCell *shTexture = (TextureCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
-						//double dCoef = gHits->globalHits.hit.nbDesorbed * 1E4 * sHandle->wp.gasMass / 1000 / 6E23 * MAGIC_CORRECTION_FACTOR;  //1E4 is conversion from m2 to cm2
+						//double dCoef = gHits->globalHits.nbDesorbed * 1E4 * sHandle->wp.gasMass / 1000 / 6E23 * MAGIC_CORRECTION_FACTOR;  //1E4 is conversion from m2 to cm2
 						double timeCorrection = m == 0 ? sHandle->wp.finalOutgassingRate : (sHandle->wp.totalDesorbedMolecules) / sHandle->wp.timeWindowSize;
 						//Timecorrection is required to compare constant flow texture values with moment values (for autoscaling)
 
@@ -473,21 +473,21 @@ void PerformTeleport(SubprocessFacet *iFacet) {
 	sHandle->currentParticle.lastHitFacet = destination;
 
 	//Count hits on teleport facets
-	/*iFacet->sh.tmpCounter.hit.nbAbsEquiv++;
-	destination->sh.tmpCounter.hit.nbDesorbed++;*/
+	/*iFacet->sh.tmpCounter.nbAbsEquiv++;
+	destination->sh.tmpCounter.nbDesorbed++;*/
 
 	//otherwise orthvelocity zero
 	double ortVelocity = sHandle->currentParticle.velocity*abs(Dot(sHandle->currentParticle.direction, iFacet->sh.N));
 	//double ortVelocity = sHandle->currentParticle.velocity*abs(Dot(sHandle->currentParticle.direction, iFacet->sh.N));
 
 	//We count a teleport as a local hit, but not as a global one since that would affect the MFP calculation
-	/*iFacet->sh.tmpCounter.hit.nbMCHit++;
-	iFacet->sh.tmpCounter.hit.sum_1_per_ort_velocity += 2.0 / ortVelocity;
-	iFacet->sh.tmpCounter.hit.sum_v_ort += 2.0*(sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity;*/
+	/*iFacet->sh.tmpCounter.nbMCHit++;
+	iFacet->sh.tmpCounter.sum_1_per_ort_velocity += 2.0 / ortVelocity;
+	iFacet->sh.tmpCounter.sum_v_ort += 2.0*(sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity;*/
 	IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 1, 0, 0, 2.0 / ortVelocity, 2.0*(sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity);
 	iFacet->hitted = true;
-	/*destination->sh.tmpCounter.hit.sum_1_per_ort_velocity += 2.0 / sHandle->currentParticle.velocity;
-	destination->sh.tmpCounter.hit.sum_v_ort += sHandle->currentParticle.velocity*abs(DOT3(
+	/*destination->sh.tmpCounter.sum_1_per_ort_velocity += 2.0 / sHandle->currentParticle.velocity;
+	destination->sh.tmpCounter.sum_v_ort += sHandle->currentParticle.velocity*abs(DOT3(
 	sHandle->currentParticle.direction.x, sHandle->currentParticle.direction.y, sHandle->currentParticle.direction.z,
 	destination->sh.N.x, destination->sh.N.y, destination->sh.N.z));*/
 }
@@ -644,7 +644,7 @@ bool StartFromSource() {
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				if(f.sh.temperature==0) {continue;}
-				if(f.tmpCounter[0].hit.covering<100 && f.sh.opacity!=0){
+				if(f.tmpCounter[0].covering<100 && f.sh.opacity!=0){
 					test=true; break;
 				}
 
@@ -847,9 +847,9 @@ bool StartFromSource() {
 	//size_t nbMoments = sHandle->moments.size();
 	//for (size_t m = 0; m <= nbMoments; m++) {
 	//	if (m == 0 || abs((double)sHandle->currentParticle.flightTime - (double)sHandle->moments[m - 1]) < sHandle->wp.timeWindowSize / 2.0) {
-	//		if(src->tmpCounter[m].hit.covering<=sHandle->coveringThreshold[getFacetIndex(src)]) {std::cout <<"Covering "<<src->tmpCounter[m].hit.covering <<" gets smaller than " <<sHandle->coveringThreshold[getFacetIndex(src)] <<std::endl; sHandle->posCovering=false; return false; }//end this simulation
+	//		if(src->tmpCounter[m].covering<=sHandle->coveringThreshold[getFacetIndex(src)]) {std::cout <<"Covering "<<src->tmpCounter[m].covering <<" gets smaller than " <<sHandle->coveringThreshold[getFacetIndex(src)] <<std::endl; sHandle->posCovering=false; return false; }//end this simulation
 	//	}
-	//	else {std::cout <<"Covering "<<src->tmpCounter[m].hit.covering <<std::endl; }
+	//	else {std::cout <<"Covering "<<src->tmpCounter[m].covering <<std::endl; }
 	//}
 
 	sHandle->currentParticle.lastHitFacet = src;
@@ -970,13 +970,13 @@ bool StartFromSource() {
 
 			src->hitted = true;
 			sHandle->totalDesorbed++;
-			sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed++;
+			sHandle->tmpGlobalResult.globalHits.nbDesorbed++;
 
 
 			//----absorb----
-			//sHandle->tmpGlobalResult.globalHits.hit.nbMCHit++; //global
-			//sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv += sHandle->currentParticle.oriRatio;
-			sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv += sHandle->currentParticle.oriRatio;
+			//sHandle->tmpGlobalResult.globalHits.nbMCHit++; //global
+			//sHandle->tmpGlobalResult.globalHits.nbHitEquiv += sHandle->currentParticle.oriRatio;
+			sHandle->tmpGlobalResult.globalHits.nbAbsEquiv += sHandle->currentParticle.oriRatio;
 			simHistory->flightTime+=flightTime;
 			simHistory->nParticles+=1;
 			RecordHistograms(src);
@@ -1127,7 +1127,7 @@ bool StartFromSource() {
 
 	src->hitted = true;
 	sHandle->totalDesorbed++;
-	sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed++;
+	sHandle->tmpGlobalResult.globalHits.nbDesorbed++;
 	//sHandle->nbPHit = 0;
 
 	if (src->sh.isMoving) {
@@ -1137,9 +1137,9 @@ bool StartFromSource() {
 	//otherwise orthvelocity 0
 	double ortVelocity = sHandle->currentParticle.velocity*(Dot(sHandle->currentParticle.direction, src->sh.N));
 
-	/*src->sh.tmpCounter.hit.nbDesorbed++;
-	src->sh.tmpCounter.hit.sum_1_per_ort_velocity += 2.0 / ortVelocity; //was 2.0 / ortV
-	src->sh.tmpCounter.hit.sum_v_ort += (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity;*/
+	/*src->sh.tmpCounter.nbDesorbed++;
+	src->sh.tmpCounter.sum_1_per_ort_velocity += 2.0 / ortVelocity; //was 2.0 / ortV
+	src->sh.tmpCounter.sum_v_ort += (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity;*/
 	IncreaseFacetCounter(src, sHandle->currentParticle.flightTime, 0, 1, 0, 2.0 / ortVelocity, (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity, desorbed_b);
 	//Desorption doesn't contribute to angular profiles, nor to angle maps
 	ProfileFacet(src, sHandle->currentParticle.flightTime, false, 2.0, 1.0); //was 2.0, 1.0
@@ -1374,8 +1374,8 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 
 	bool revert = false;
 
-	sHandle->tmpGlobalResult.globalHits.hit.nbMCHit++; //global
-	sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv += sHandle->currentParticle.oriRatio;
+	sHandle->tmpGlobalResult.globalHits.nbMCHit++; //global
+	sHandle->tmpGlobalResult.globalHits.nbHitEquiv += sHandle->currentParticle.oriRatio;
 
 	// Handle super structure link facet. Can be 
 	if (iFacet->sh.superDest) {
@@ -1427,12 +1427,12 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 	double ortVelocity = sHandle->currentParticle.velocity*abs(Dot(sHandle->currentParticle.direction, iFacet->sh.N));
 	//double ortVelocity = sHandle->currentParticle.velocity*abs(Dot(sHandle->currentParticle.direction, iFacet->sh.N));
 
-	/*iFacet->sh.tmpCounter.hit.nbMCHit++; //hit facet
-	iFacet->sh.tmpCounter.hit.sum_1_per_ort_velocity += 1.0 / ortVelocity;
-	iFacet->sh.tmpCounter.hit.sum_v_ort += (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity;*/
+	/*iFacet->sh.tmpCounter.nbMCHit++; //hit facet
+	iFacet->sh.tmpCounter.sum_1_per_ort_velocity += 1.0 / ortVelocity;
+	iFacet->sh.tmpCounter.sum_v_ort += (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity;*/
 
 	if((sHandle->currentParticle.flightTime>simHistory->stepSize&&iFacet->sh.opacity!=0) || iFacet->sh.temperature==0){ //no bounce if 0K
-		sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv += sHandle->currentParticle.oriRatio;
+		sHandle->tmpGlobalResult.globalHits.nbAbsEquiv += sHandle->currentParticle.oriRatio;
 		simHistory->flightTime+=sHandle->currentParticle.flightTime;
 		simHistory->nParticles+=1;
 
@@ -1457,25 +1457,64 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 	if (iFacet->sh.enableSojournTime) {
 		double residence_energy;
 		boost::multiprecision::float128 coverage;
-		coverage = calcCoverage(iFacet);
-		if(coverage >= 1)residence_energy = p->H_vap;
+
+		if (simHistory->pcStep == 0) {
+			coverage = calcCoverage(iFacet);
+		}
+		else if (simHistory->pcStep == 1) {
+			boost::multiprecision::float128 currCoverage(calcCoverage(iFacet));
+			boost::multiprecision::float128 predCoverage(calcPredictedCoverage(iFacet));
+			boost::multiprecision::float128 t(0.0);
+
+			t = simHistory->stepSize/2;
+			
+			/*if (currCoverage < 1 && predCoverage < 1) {
+				boost::multiprecision::float128 tau_0(static_cast<boost::multiprecision::float128>(h/(kb*iFacet->sh.temperature)));
+				boost::multiprecision::float128 tau_subst(static_cast<boost::multiprecision::float128>(tau_0*exp(p->E_de/(kb*iFacet->sh.temperature))));
+				t = -tau_subst*log(static_cast<boost::multiprecision::float128>(0.5)*(currCoverage + predCoverage));
+			}
+			else if (currCoverage >= 1 && predCoverage >= 1) {
+				t = 1*simHistory->stepSize;
+			}
+			else if (currCoverage < 1 && predCoverage >= 1) {
+				t = ((1 - currCoverage)/(predCoverage - currCoverage))*simHistory->stepSize;
+			}
+			else if (currCoverage >= 1 && predCoverage < 1) {
+				t = ((currCoverage - 1)/(currCoverage - predCoverage))*simHistory->stepSize;
+			}*/
+
+			if (flightTime <= t) {
+				coverage = currCoverage;
+			}
+			else if (flightTime > t) {
+				coverage = predCoverage;
+			}
+		}
+
+		if(coverage >= 1)
+			residence_energy = p->H_vap;
 		else {
-				if(rnd() <= coverage ){
-					residence_energy = 	p->H_vap;
-				}
-				else{
-					residence_energy = 	p->E_de;
-				}
+			if(rnd() <= coverage){
+				residence_energy = 	p->H_vap;
+			}
+			else{
+				residence_energy = 	p->E_de;
+			}
 		}
 		//double A = exp(-iFacet->sh.sojournE / (kb*iFacet->sh.temperature)); // //Don't need that. We decide in each case of residence at random, if the particle will adsorb at substrate or adsorbate.
+
 		double A = exp(-residence_energy / (kb*iFacet->sh.temperature));
 		sHandle->currentParticle.flightTime += -log(rnd()) / (A*iFacet->sh.sojournFreq);
+		/*if (simHistory->pcStep == 1) {
+			std::cout << "Residence energy: " << ((residence_energy==p->H_vap) ? "H_vap" : "E_de") << std::endl;
+			std::cout << "Residence time: " << -log(rnd()) / (A*iFacet->sh.sojournFreq) <<  std::endl << std::endl;
+		}*/
 		if(sHandle->currentParticle.flightTime < std::numeric_limits<double>::infinity()){
 			flightTime=sHandle->currentParticle.flightTime;
 		}
 	}
 	if(sHandle->currentParticle.flightTime>simHistory->stepSize && iFacet->sh.opacity!=0){ //TODO maybe other parts from recordAbsorb()?
-		sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv += sHandle->currentParticle.oriRatio;
+		sHandle->tmpGlobalResult.globalHits.nbAbsEquiv += sHandle->currentParticle.oriRatio;
 		simHistory->flightTime+=flightTime;
 		simHistory->nParticles+=1;
 
@@ -1545,8 +1584,8 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 	ortVelocity = sHandle->currentParticle.velocity*abs(Dot(sHandle->currentParticle.direction, iFacet->sh.N));
 	//ortVelocity = sHandle->currentParticle.velocity*abs(Dot(sHandle->currentParticle.direction, iFacet->sh.N));
 
-	/*iFacet->sh.tmpCounter.hit.sum_1_per_ort_velocity += 1.0 / ortVelocity;
-	iFacet->sh.tmpCounter.hit.sum_v_ort += (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity;*/
+	/*iFacet->sh.tmpCounter.sum_1_per_ort_velocity += 1.0 / ortVelocity;
+	iFacet->sh.tmpCounter.sum_v_ort += (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity;*/
 	IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 0, 0, 0, 1.0 / ortVelocity, (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity);
 	if (/*iFacet->texture &&*/ iFacet->sh.countRefl) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, false, 1.0, 1.0); //count again for outward velocity
 	ProfileFacet(iFacet, sHandle->currentParticle.flightTime, false, 1.0, 1.0);
@@ -1564,9 +1603,9 @@ void PerformTransparentPass(SubprocessFacet *iFacet) { //disabled, caused findin
 	/*double directionFactor = abs(DOT3(
 		sHandle->currentParticle.direction.x, sHandle->currentParticle.direction.y, sHandle->currentParticle.direction.z,
 		iFacet->sh.N.x, iFacet->sh.N.y, iFacet->sh.N.z));
-	iFacet->sh.tmpCounter.hit.nbMCHit++;
-	iFacet->sh.tmpCounter.hit.sum_1_per_ort_velocity += 2.0 / (sHandle->currentParticle.velocity*directionFactor);
-	iFacet->sh.tmpCounter.hit.sum_v_ort += 2.0*(sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*sHandle->currentParticle.velocity*directionFactor;
+	iFacet->sh.tmpCounter.nbMCHit++;
+	iFacet->sh.tmpCounter.sum_1_per_ort_velocity += 2.0 / (sHandle->currentParticle.velocity*directionFactor);
+	iFacet->sh.tmpCounter.sum_v_ort += 2.0*(sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*sHandle->currentParticle.velocity*directionFactor;
 	iFacet->hitted = true;
 	if (iFacet->texture && iFacet->sh.countTrans) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime + iFacet->colDist / 100.0 / sHandle->currentParticle.velocity,
 		true, 2.0, 2.0);
@@ -1578,9 +1617,9 @@ void PerformTransparentPass(SubprocessFacet *iFacet) { //disabled, caused findin
 }
 
 void RecordAbsorb(SubprocessFacet *iFacet) {
-	sHandle->tmpGlobalResult.globalHits.hit.nbMCHit++; //global	
-	sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv += sHandle->currentParticle.oriRatio;
-	sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv += sHandle->currentParticle.oriRatio;
+	sHandle->tmpGlobalResult.globalHits.nbMCHit++; //global	
+	sHandle->tmpGlobalResult.globalHits.nbHitEquiv += sHandle->currentParticle.oriRatio;
+	sHandle->tmpGlobalResult.globalHits.nbAbsEquiv += sHandle->currentParticle.oriRatio;
 
 	RecordHistograms(iFacet);
 
@@ -1826,42 +1865,42 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 	size_t nbMoments = sHandle->moments.size();
 	for (size_t m = 0; m <= nbMoments; m++) {
 		if (m == 0 || abs((double)time - (double)sHandle->moments[m - 1]) < sHandle->wp.timeWindowSize / 2.0) {
-			f->tmpCounter[m].hit.nbMCHit += hit;
+			f->tmpCounter[m].nbMCHit += hit;
 			double hitEquiv = static_cast<double>(hit)*sHandle->currentParticle.oriRatio;
-			f->tmpCounter[m].hit.nbHitEquiv += hitEquiv;
-			f->tmpCounter[m].hit.nbDesorbed += desorbed?desorb:0;
-			f->tmpCounter[m].hit.nbAbsEquiv += static_cast<double>(absorb)*sHandle->currentParticle.oriRatio;
+			f->tmpCounter[m].nbHitEquiv += hitEquiv;
+			f->tmpCounter[m].nbDesorbed += desorbed?desorb:0;
+			f->tmpCounter[m].nbAbsEquiv += static_cast<double>(absorb)*sHandle->currentParticle.oriRatio;
 			if(time >= simHistory->stepSize*(1.0-p->counterWindowPercent) && time <= simHistory->stepSize){//only increase velocity counters if with a timewindow
-				f->tmpCounter[m].hit.sum_1_per_ort_velocity += sHandle->currentParticle.oriRatio * sum_1_per_v;
-				f->tmpCounter[m].hit.sum_v_ort += sHandle->currentParticle.oriRatio * sum_v_ort;
-				f->tmpCounter[m].hit.sum_1_per_velocity += (hitEquiv + static_cast<double>(desorb)) / sHandle->currentParticle.velocity;
+				f->tmpCounter[m].sum_1_per_ort_velocity += sHandle->currentParticle.oriRatio * sum_1_per_v;
+				f->tmpCounter[m].sum_v_ort += sHandle->currentParticle.oriRatio * sum_v_ort;
+				f->tmpCounter[m].sum_1_per_velocity += (hitEquiv + static_cast<double>(desorb)) / sHandle->currentParticle.velocity;
 			}
 			//update covering: increases with every absorb, decreases with every desorb
 			if (absorb>0){ //TODO which one better?
 			//if (time>getStepSize()){
-				//std::cout<< f->tmpCounter[m].hit.covering << std::endl;
-				//double a = f->tmpCounter[m].hit.covering;
-				if(f->tmpCounter[m].hit.covering<std::numeric_limits<llong>::max()){
-					f->tmpCounter[m].hit.covering += 1;
+				//std::cout<< f->tmpCounter[m].covering << std::endl;
+				//double a = f->tmpCounter[m].covering;
+				if(f->tmpCounter[m].covering<std::numeric_limits<boost::multiprecision::uint128_t>::max()){
+					f->tmpCounter[m].covering += 1;
 					}
 				//std::cout <<"Absorb from facet " <<getFacetIndex(f) <<std::endl;
 				else{
 					int num = getFacetIndex(f);
-					llong cv = f->tmpCounter[m].hit.covering;
+					boost::multiprecision::uint128_t cv = f->tmpCounter[m].covering;
 					std::ostringstream tmpstream (std::ostringstream::app);
-					tmpstream << "Facet: "  << num << " covering = " << cv <<"; max value = " << std::numeric_limits<llong>::max() << std::endl;
+					tmpstream << "Facet: "  << num << " covering = " << cv <<"; max value = " << std::numeric_limits<boost::multiprecision::uint128_t>::max() << std::endl;
 					printStream(tmpstream.str());
 					sHandle->posCovering=false;
 				}
 			}
 			if (desorbed){
-				if(f->tmpCounter[m].hit.covering>sHandle->coveringThreshold[getFacetIndex(f)]){
-					f->tmpCounter[m].hit.covering -= 1;
+				if(f->tmpCounter[m].covering>sHandle->coveringThreshold[getFacetIndex(f)]){
+					f->tmpCounter[m].covering -= 1;
 					//std::cout <<"Desorption from facet " <<getFacetIndex(f) <<std::endl;
 					}
 				else{
 					int num = getFacetIndex(f);
-					llong cv = f->tmpCounter[m].hit.covering;
+					boost::multiprecision::uint128_t cv = f->tmpCounter[m].covering;
 					llong cvth = sHandle->coveringThreshold[num];
 					std::ostringstream tmpstream (std::ostringstream::app);
 					tmpstream << "Facet: "  << num << " covering = " << cv <<"; sHandle->coveringThreshold = " << cvth << std::endl;

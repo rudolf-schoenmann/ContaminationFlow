@@ -8,7 +8,7 @@ Forked from: Molflow (CERN) (https://cern.ch/molflow)
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
+(at your option) any later version.B
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -305,12 +305,11 @@ int main(int argc, char *argv[]) {
 			//The hitbuffers of all subprocesses will be added up and written in the hitbuffer_sum
 			hitbuffer_sum.buff = new BYTE[hitbuffer.size];
 			memcpy(hitbuffer_sum.buff,hitbuffer.buff,hitbuffer.size);
-			hitbuffer_sum.size =hitbuffer.size;
-
+			hitbuffer_sum.size = hitbuffer.size;
+			
 			// Initialize simHistory for main process from hitbuffer
 			//simHistory contains the relevant results/quantities of the simulation. E.g., covering history, total simulated time, etc.
 			simHistory = new SimulationHistory (&hitbuffer, world_size);
-
 			std::cout <<p->focusGroup.second.size() <<" facet(s) in focusGroup"<<std::endl;
 			for(int grpidx:p->focusGroup.second){
 				std::cout <<"\t"<<grpidx;
@@ -333,161 +332,180 @@ int main(int argc, char *argv[]) {
 	while(true){
 		it++;
 		// Start of Simulation
+		MPI_Barrier(MPI_COMM_WORLD);
 		if (p->simulationTimeMS != 0) {
-			MPI_Barrier(MPI_COMM_WORLD);
-
-			if(rank == 0){
-				std::ostringstream tmpstream (std::ostringstream::app);
-				tmpstream <<std::endl <<"----------------Starting iteration " <<it <<"----------------"<<std::endl;
-				printStream(tmpstream.str());
-			}
-
-			//---- Reset buffers and send coveringList content to all subprocesses
-			// reset hitbuffer_sum (except covering) before sending to sub processes
-			initbufftozero(&hitbuffer);
-			if(rank==0){
-				initbufftozero(&hitbuffer_sum);
-			}
-
-			// Send each coveringList entry one at a time
-			for(unsigned int i=0; i<simHistory->numFacet;i++){
-				MPI_Bcast(&simHistory->coveringList.currentList[i], 16, MPI::BYTE,0,MPI_COMM_WORLD);
-			}
-
-			// Send currentStep -> used to calculate stepSize
-			MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
-			MPI_Barrier(MPI_COMM_WORLD);
-
-			// Set covering threshold (covering -covering/(size-1)). Iteration in subprocess is ended if this threshold is reached
-			setCoveringThreshold(world_size, rank);
-
-			UpdateSticking(); // Write sticking factor into sHandle for all subprocesses
-			if(rank!=0){
-				simHistory->updateHistory();// Write the current covering values from the simHistory to the sHandle and calculate stepSize (normal and outgassing).
-			}
-			else{
-				simHistory->updateStepSize(); // Calculate stepSize (normal and outgassing) for this iteration
-			}
-
-			CalcTotalOutgassingWorker();// Calculate outgassing values for this iteration
-			if(!UpdateDesorption()){// Write desorption into sHandle for all subprocesses
-				// End simulation for very small desorbed + outgassing particles
-				if(rank==0) {
+			for (;simHistory->pcStep <= (p->usePCMethod?1:0); simHistory->pcStep += 1) { // Predictor-corrector loop
+				MPI_Barrier(MPI_COMM_WORLD);
+				if(rank == 0){
 					std::ostringstream tmpstream (std::ostringstream::app);
-					tmpstream <<"Desorption smaller than 1E-50. Ending Simulation (is deactivated)." <<std::endl;
-					tmpstream <<"Computation Time (Simulation only): " <<computationTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computationTime/1000.0) <<std::endl;
+					if (!p->usePCMethod)
+						tmpstream <<std::endl <<"----------------Starting iteration " <<it <<"----------------"<<std::endl;
+					else if (simHistory->pcStep == 0)
+						tmpstream <<std::endl <<"----------------Starting predictor step of iteration " <<it <<"----------------"<<std::endl;
+					else
+						tmpstream <<std::endl <<"----------------Starting corrector step of iteration " <<it <<"----------------"<<std::endl;
+					simHistory->coveringList.printCurrent(tmpstream, "coveringList.currentList: "); // (Berke): Will be removed later on
+					simHistory->coveringList.printPredict(tmpstream, "coveringList.predictList: "); // (Berke): Will be removed later on
 					printStream(tmpstream.str());
 				}
-				//break; Do not end the simulation
-			}
-
-
-			//----Simulation on subprocesses
-			if (rank != 0) {
-				sHandle->posCovering=true;//assumption that negative covering has been resolved before: implemented through covering threshold in sub processes and smallCovering workaoround
-				checkSmallCovering(rank, &hitbuffer); // Calculate smallCoveringFactor for this iteration
-
+				//---- Reset buffers and send coveringList content to all subprocesses
+				// reset hitbuffer_sum (except covering) before sending to sub processes
+				initbufftozero(&hitbuffer);
+				if(rank==0){
+					initbufftozero(&hitbuffer_sum);
+				}
+				// Send coveringList to subprocesses
+				MPI_Bcast(&(simHistory->coveringList.currentList.front()), simHistory->coveringList.currentList.size()*16, MPI::BYTE,0,MPI_COMM_WORLD);
+				// Send predictList to subprocess
+				MPI_Bcast(&(simHistory->coveringList.predictList.front()), simHistory->coveringList.predictList.size()*16, MPI::BYTE,0,MPI_COMM_WORLD);
+				// Send currentStep -> used to calculate stepSize
+				MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
 				MPI_Barrier(MPI_COMM_WORLD);
-				//Do the simulation
-				bool eos; std::vector<int> facetNum;
-				std::tie(eos, facetNum) = simulateSub2(&hitbuffer, rank, p->simulationTimeMS);
+				// Set covering threshold (covering -covering/(size-1)). Iteration in subprocess is ended if this threshold is reached
+				setCoveringThreshold(world_size, rank);
 
-				std::ostringstream tmpstream (std::ostringstream::app);
-				if (eos) {
-					tmpstream << "Iteration ended early for process "<<rank <<"."<<std::endl;
-					if(sHandle->posCovering)
-						{tmpstream << "Maximum desorption reached for process "<<rank << "."<< std::endl;}
-					else{
-						for (uint facets=0; facets < facetNum.size(); facets++){
-							tmpstream <<"Facet " <<facetNum[facets] <<" reached threshold " <<sHandle->coveringThreshold[facetNum[facets]] <<" for process " <<rank <<"."<<std::endl;
+				if(rank!=0){
+					simHistory->updateHistory();// Write the current covering values from the simHistory to the sHandle and calculate stepSize (normal and outgassing).
+				}
+				else{
+					if (simHistory->pcStep == 0)
+						simHistory->updateStepSize(); // Calculate stepSize (normal and outgassing) for this iteration
+				}
+
+				if (simHistory->pcStep == 0) {
+					// Not calculating these values again in corrector step
+					UpdateSticking(); // Write sticking factor into sHandle for all subprocesses
+					CalcTotalOutgassingWorker();// Calculate outgassing values for this iteration
+					if(!UpdateDesorption()){// Write desorption into sHandle for all subprocesses
+						// End simulation for very small desorbed + outgassing particles
+						if(rank==0) {
+							std::ostringstream tmpstream (std::ostringstream::app);
+							tmpstream <<"Desorption smaller than 1E-50. Ending Simulation (is deactivated)." <<std::endl;
+							tmpstream <<"Computation Time (Simulation only): " <<computationTime/1000.0<<"s = "<<simHistory->coveringList.convertTime(computationTime/1000.0) <<std::endl;
+							printStream(tmpstream.str());
+						}
+						//break; Do not end the simulation
+					}
+				}
+
+				//----Simulation on subprocesses
+				if (rank != 0) {
+					sHandle->posCovering=true;//assumption that negative covering has been resolved before: implemented through covering threshold in sub processes and smallCovering workaoround
+					checkSmallCovering(rank, &hitbuffer); // Calculate smallCoveringFactor for this iteration
+
+					MPI_Barrier(MPI_COMM_WORLD);
+					//Do the simulation
+					bool eos; std::vector<int> facetNum;
+					std::tie(eos, facetNum) = simulateSub2(&hitbuffer, rank, p->simulationTimeMS); //coveringList, hitBuffer covering aynı değerde
+
+					std::ostringstream tmpstream (std::ostringstream::app);
+					if (eos) {
+						tmpstream << "Iteration ended early for process "<<rank <<"."<<std::endl;
+						if(sHandle->posCovering)
+							{tmpstream << "Maximum desorption reached for process "<<rank << "."<< std::endl;}
+						else{
+							for (uint facets=0; facets < facetNum.size(); facets++){
+								tmpstream <<"Facet " <<facetNum[facets] <<" reached threshold " <<sHandle->coveringThreshold[facetNum[facets]] <<" for process " <<rank <<"."<<std::endl;
+							}
+						}
+					} else {
+						if (!p->usePCMethod)
+							tmpstream << "Simulation for process " << rank << " for iteration " << it << " finished."<< std::endl;
+						else if (simHistory->pcStep == 0)
+							tmpstream << "Simulation for process " << rank << " for predictor step of iteration " << it << " finished."<< std::endl;
+						else
+							tmpstream << "Simulation for process " << rank << " for corrector step " << simHistory->pcStep << " of iteration " << it << " finished."<< std::endl;
+					}
+					tmpstream <<std::endl;
+					printStream(tmpstream.str());
+					MPI_Barrier(MPI_COMM_WORLD);
+				}
+				else{
+					t0 = GetTick();
+					checkSmallCovering(rank, &hitbuffer_sum); // Calculate smallCoveringFactor for this iteration
+					for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
+						for (SubprocessFacet& f : sHandle->structures[s].facets) {
+							calcStartTime(&f,true,true);
 						}
 					}
-				} else {
-					tmpstream << "Simulation for process " << rank << " for iteration " << it << " finished."<< std::endl;
+					MPI_Barrier(MPI_COMM_WORLD);
+					MPI_Barrier(MPI_COMM_WORLD);
+					t1 = GetTick();
+					computationTime+=t1-t0; // Add calculation time of current iteration
+
 				}
-				tmpstream <<std::endl;
-				printStream(tmpstream.str());
-				MPI_Barrier(MPI_COMM_WORLD);
-			}
-			else{
-				t0 = GetTick();
-				checkSmallCovering(rank, &hitbuffer_sum); // Calculate smallCoveringFactor for this iteration
-				for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
-					for (SubprocessFacet& f : sHandle->structures[s].facets) {
-						calcStartTime(&f,true,true);
+
+				//----iteratively add hitbuffer from subprocesses to main buffer
+				for (int i = 1; i < world_size; i++) {
+					MPI_Barrier(MPI_COMM_WORLD);
+					if (rank == i) {
+						//Process i sends hitbuffer to main process 0
+						MPI_Send(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, 0,MPI_COMM_WORLD);
+
+						//Process i send flightTIme and number of particles to main process 0
+						MPI_Send(&simHistory->flightTime, 1, MPI::DOUBLE, 0, 0,MPI_COMM_WORLD);
+						MPI_Send(&simHistory->nParticles, 1, MPI::INT, 0, 0,MPI_COMM_WORLD);
+
+					} else if (rank == 0) {
+						//Main process 0 receives hitbuffer from Process i
+						MPI_Recv(hitbuffer.buff, hitbuffer.size, MPI::BYTE, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+						UpdateMCMainHits(&hitbuffer_sum, &hitbuffer, simHistory ,0);
+						std::ostringstream tmpstream (std::ostringstream::app);
+						tmpstream << "Updated hitbuffer with process " << i <<std::endl;
+
+						// Calculate flightTime and nParticles over all subprocesses -> These values are currently not used
+						double old_flightTime=simHistory->flightTime;
+						int old_nParticles = simHistory->nParticles; //These values are reset in UpdateCoveringPhys()
+						MPI_Recv(&simHistory->flightTime, 1, MPI::DOUBLE, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+						MPI_Recv(&simHistory->nParticles, 1, MPI::INT, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+						simHistory->flightTime += old_flightTime;
+						simHistory->nParticles+=old_nParticles;
+						/*if(i==world_size-1){
+							tmpstream <<std::endl << "flightTime " << simHistory->flightTime << std::endl;
+							tmpstream << "nParticles " << simHistory->nParticles << std::endl <<std::endl;
+						}*/
+						printStream(tmpstream.str());
 					}
 				}
+
 				MPI_Barrier(MPI_COMM_WORLD);
-				MPI_Barrier(MPI_COMM_WORLD);
-				t1 = GetTick();
-				computationTime+=t1-t0; // Add calculation time of current iteration
 
-			}
+				//----Update History: particle density, pressure, error, covering
+				if (rank == 0) {
+					if (simHistory->pcStep == (p->usePCMethod?1:0)) {
+						UpdateParticleDensityAndPressure(&hitbuffer_sum); // !! If order changes, adapt "time" entry in pressure/density lists !!
+						UpdateErrorMain(&hitbuffer_sum); // !! If order changes, adapt "time" entry in errorLists !!
+					}
+					UpdateCovering(&hitbuffer_sum); // Calculate real covering after iteration
+					UpdateCoveringphys(&hitbuffer_sum, &hitbuffer); // Update real covering in buffers
+					if (simHistory->pcStep == (p->usePCMethod?1:0)) {
+						// Adapt size of history lists if p->histSize is exceeded
+						if(p->histSize != std::numeric_limits<int>::infinity() && simHistory->coveringList.historyList.first.size() > uint(p->histSize+1)){
+								simHistory->erase(1);
+						}
+						// print current coveringList
+						std::ostringstream tmpstream (std::ostringstream::app);
+						simHistory->coveringList.print(tmpstream,"Accumulative covering after iteration "+std::to_string(it),p->histSize);
 
-			//----iteratively add hitbuffer from subprocesses to main buffer
-			for (int i = 1; i < world_size; i++) {
-				MPI_Barrier(MPI_COMM_WORLD);
-				if (rank == i) {
-					//Process i sends hitbuffer to main process 0
-					MPI_Send(hitbuffer.buff, hitbuffer.size, MPI::BYTE, 0, 0,MPI_COMM_WORLD);
+						// Calculate and print statistics
+						simHistory->coveringList.updateStatistics(p->rollingWindowSize);
 
-					//Process i send flightTIme and number of particles to main process 0
-					MPI_Send(&simHistory->flightTime, 1, MPI::DOUBLE, 0, 0,MPI_COMM_WORLD);
-					MPI_Send(&simHistory->nParticles, 1, MPI::INT, 0, 0,MPI_COMM_WORLD);
-
-				} else if (rank == 0) {
-					//Main process 0 receives hitbuffer from Process i
-					MPI_Recv(hitbuffer.buff, hitbuffer.size, MPI::BYTE, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-					UpdateMCMainHits(&hitbuffer_sum, &hitbuffer, simHistory ,0);
-					std::ostringstream tmpstream (std::ostringstream::app);
-					tmpstream << "Updated hitbuffer with process " << i <<std::endl;
-
-					// Calculate flightTime and nParticles over all subprocesses -> These values are currently not used
-					double old_flightTime=simHistory->flightTime;
-					int old_nParticles = simHistory->nParticles; //These values are reset in UpdateCoveringPhys()
-					MPI_Recv(&simHistory->flightTime, 1, MPI::DOUBLE, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-					MPI_Recv(&simHistory->nParticles, 1, MPI::INT, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-					simHistory->flightTime += old_flightTime;
-					simHistory->nParticles+=old_nParticles;
-
-					/*if(i==world_size-1){
-						tmpstream <<std::endl << "flightTime " << simHistory->flightTime << std::endl;
-						tmpstream << "nParticles " << simHistory->nParticles << std::endl <<std::endl;
-					}*/
-					printStream(tmpstream.str());
+						currentRatio=double(simHistory->coveringList.getAverageStatistics(sHandle,true, p->doFocusGroupOnly,p->focusGroup.second));
+						//tmpstream <<"Rolling time window statistics over last "+std::to_string(p->rollingWindowSize)+" iterations. Mean ratio std/mean = "+std::to_string(double(simHistory->coveringList.getAverageStatistics(sHandle,true, !p->doFocusGroupOnly,p->focusGroup.second)))+" with target ratio for convergence "+std::to_string(p->convergenceTarget)<<std::endl;
+						simHistory->coveringList.printStatistics(tmpstream, "Rolling time window statistics over last "+std::to_string(p->rollingWindowSize)+" iterations for "+monitoredFacets+" facets. Mean ratio std/mean = "+std::to_string(currentRatio)+" with target ratio for convergence "+std::to_string(p->convergenceTarget));
+						printStream(tmpstream.str());
+					}
 				}
-			}
+				if (rank == 0 && simHistory->pcStep == 0 && p->usePCMethod) {std::cout << "ending prediction step " <<std::endl;}
+				else if (rank == 0 && simHistory->pcStep == 1 && p->usePCMethod) {std::cout << "ending correction step " <<std::endl;} 
+			} //End of predictor-corrector loop
 
-			MPI_Barrier(MPI_COMM_WORLD);
-
-
-			//----Update History: particle density, pressure, error, covering
 			if (rank == 0) {
-				UpdateParticleDensityAndPressure(&hitbuffer_sum); // !! If order changes, adapt "time" entry in pressure/density lists !!
-				UpdateErrorMain(&hitbuffer_sum); // !! If order changes, adapt "time" entry in errorLists !!
-				UpdateCovering(&hitbuffer_sum); // Calculate real covering after iteration
-
-				UpdateCoveringphys(&hitbuffer_sum, &hitbuffer); // Update real covering in buffers
-
-				// Adapt size of history lists if p->histSize is exceeded
-				if(p->histSize != std::numeric_limits<int>::infinity() && simHistory->coveringList.historyList.first.size() > uint(p->histSize+1)){
-						simHistory->erase(1);
-				}
-				// print current coveringList
-				std::ostringstream tmpstream (std::ostringstream::app);
-				simHistory->coveringList.print(tmpstream,"Accumulative covering after iteration "+std::to_string(it),p->histSize);
-
-				// Calculate and print statistics
-				simHistory->coveringList.updateStatistics(p->rollingWindowSize);
-
-				currentRatio=double(simHistory->coveringList.getAverageStatistics(sHandle,true, p->doFocusGroupOnly,p->focusGroup.second));
-				//tmpstream <<"Rolling time window statistics over last "+std::to_string(p->rollingWindowSize)+" iterations. Mean ratio std/mean = "+std::to_string(double(simHistory->coveringList.getAverageStatistics(sHandle,true, !p->doFocusGroupOnly,p->focusGroup.second)))+" with target ratio for convergence "+std::to_string(p->convergenceTarget)<<std::endl;
-				simHistory->coveringList.printStatistics(tmpstream, "Rolling time window statistics over last "+std::to_string(p->rollingWindowSize)+" iterations for "+monitoredFacets+" facets. Mean ratio std/mean = "+std::to_string(currentRatio)+" with target ratio for convergence "+std::to_string(p->convergenceTarget));
-				printStream(tmpstream.str());
+				std::cout << "ending iteration "  << it <<std::endl;
+				simHistory->coveringList.predictList.clear(); // (Berke): Will be removed later on
+				simHistory->coveringList.initPredict(simHistory->numFacet); // (Berke): Will be removed later on
 			}
-
-			if (rank == 0) {std::cout << "ending iteration " << it <<std::endl;}
+			simHistory->pcStep = 0;
 
 			// Check if simulation has ended
 			MPI_Barrier(MPI_COMM_WORLD);
@@ -517,7 +535,7 @@ int main(int argc, char *argv[]) {
 				if(p->stopConverged && simHistory->lastTime>=p->convergenceTime) // End simulation only if "allowed" and convergenceTime reached
 					break;
 			}
-
+			MPI_Barrier(MPI_COMM_WORLD); // 
 		} else {
 			std::cout << "Simulation time = 0.0 seconds. Nothing to do." << std::endl;
 			break;

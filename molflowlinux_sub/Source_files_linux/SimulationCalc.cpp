@@ -54,30 +54,36 @@ FacetHitBuffer* getFacetHitBuffer(SubprocessFacet *iFacet, Databuff *hitbuffer){
 	return (FacetHitBuffer *)(hitbuffer->buff + iFacet->sh.hitOffset);
 }
 
-llong getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns covering from hitbuffer
-	return getFacetHitBuffer(iFacet,hitbuffer)->hit.covering;
+boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns covering from hitbuffer
+	boost::multiprecision::uint128_t cov = getFacetHitBuffer(iFacet,hitbuffer)->covering;
+	cov = (cov.backend().size() == 0) ? boost::multiprecision::uint128_t(0) : cov; //Not necessary but used as precaution
+	return cov;
 }
 
 boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet){ // returns covering from simHistory
 	return simHistory->coveringList.getCurrent(iFacet);
 }
 
+boost::multiprecision::uint128_t getPredictedCovering(SubprocessFacet *iFacet){ // returns facet's covering from predictList.
+	return simHistory->coveringList.getPredict(iFacet);
+}
+
 double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number of hits from hitbuffer
-	return getFacetHitBuffer(iFacet,hitbuffer)->hit.nbHitEquiv; //TODO nbMCHit or nbHitEquiv?
+	return getFacetHitBuffer(iFacet,hitbuffer)->nbHitEquiv; //TODO nbMCHit or nbHitEquiv?
 }
 
 llong getnbDesorbed(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number of desorbed testparticles from hitbuffer
-	return getFacetHitBuffer(iFacet,hitbuffer)->hit.nbDesorbed;
+	return getFacetHitBuffer(iFacet,hitbuffer)->nbDesorbed;
 }
 llong getnbAdsorbed(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number of adsorbed testparticles from hitbuffer
-	return getFacetHitBuffer(iFacet,hitbuffer)->hit.nbAbsEquiv;
+	return getFacetHitBuffer(iFacet,hitbuffer)->nbAbsEquiv;
 }
 
 llong getnbDesorbed(Databuff *hitbuffer_sum){
 	GlobalHitBuffer *gHits;
 	gHits = (GlobalHitBuffer *)hitbuffer_sum->buff;
 
-	return gHits->globalHits.hit.nbDesorbed;
+	return gHits->globalHits.nbDesorbed;
 }
 /*
 std::tuple<double, double, double> getVelocities(SubprocessFacet *iFacet, Databuff *hitbuffer_sum){
@@ -85,7 +91,7 @@ std::tuple<double, double, double> getVelocities(SubprocessFacet *iFacet, Databu
 	buffer = hitbuffer_sum->buff;
 	FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + iFacet->sh.hitOffset);
 
-	return {std::make_tuple(facetHitBuffer->hit.sum_1_per_ort_velocity,facetHitBuffer->hit.sum_v_ort, facetHitBuffer->hit.sum_1_per_velocity)};
+	return {std::make_tuple(facetHitBuffer->sum_1_per_ort_velocity,facetHitBuffer->sum_v_ort, facetHitBuffer->sum_1_per_velocity)};
 }*/
 
 //-----------------------------------------------------------
@@ -100,6 +106,10 @@ boost::multiprecision::float128 calcCoverage(SubprocessFacet *iFacet){ // calcul
 	boost::multiprecision::uint128_t covering = getCovering(iFacet);
 
 	return boost::multiprecision::float128(covering) /boost::multiprecision::float128(calcNmono(iFacet));
+}
+
+boost::multiprecision::float128 calcPredictedCoverage(SubprocessFacet *iFacet){ //Calculates coverage from predictList
+	return boost::multiprecision::float128(getPredictedCovering(iFacet))/boost::multiprecision::float128(calcNmono(iFacet));
 }
 
 boost::multiprecision::float128 calctotalDesorption(){// calculates the desorbed particles of all facets
@@ -140,7 +150,7 @@ boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum){ // C
 
 void calcSticking(SubprocessFacet *iFacet) {//Calculates sticking coefficient dependent on covering.
 
-	llong covering=getCovering(iFacet).convert_to<llong>();
+	boost::multiprecision::uint128_t covering=getCovering(iFacet);
 	// sticking constant, zero if no covering
 	if (covering>0){
 		iFacet->sh.sticking = p->sticking;}
@@ -247,7 +257,7 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 
 double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f){
 
-	if(f->tmpCounter[0].hit.sum_1_per_ort_velocity==std::numeric_limits<double>::infinity()){
+	if(f->tmpCounter[0].sum_1_per_ort_velocity==std::numeric_limits<double>::infinity()){
 		return 0.0;
 		}
 	else{
@@ -257,23 +267,23 @@ double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f){
 		//However, in case of desorption or sticking, the real density is not twice the "seen" density, but a bit less, therefore this reduction factor
 		//If only desorption, or only absorption, the correction factor is 0.5, if no des/abs, it's 1.0, and in between, see below
 		double densityCorrection=1.0;
-		if (f->tmpCounter[0].hit.nbMCHit > 0 || f->tmpCounter[0].hit.nbDesorbed > 0) {
-			if (f->tmpCounter[0].hit.nbAbsEquiv > 0.0 || f->tmpCounter[0].hit.nbDesorbed > 0) {//otherwise save calculation time
-				densityCorrection-= (f->tmpCounter[0].hit.nbAbsEquiv + (double)f->tmpCounter[0].hit.nbDesorbed) / (f->tmpCounter[0].hit.nbHitEquiv + (double)f->tmpCounter[0].hit.nbDesorbed) / 2.0;
+		if (f->tmpCounter[0].nbMCHit > 0 || f->tmpCounter[0].nbDesorbed > 0) {
+			if (f->tmpCounter[0].nbAbsEquiv > 0.0 || f->tmpCounter[0].nbDesorbed > 0) {//otherwise save calculation time
+				densityCorrection-= (f->tmpCounter[0].nbAbsEquiv + (double)f->tmpCounter[0].nbDesorbed) / (f->tmpCounter[0].nbHitEquiv + (double)f->tmpCounter[0].nbDesorbed) / 2.0;
 			}
 		}
 
 
 		double scaleY = 1.0 / (f->getArea() * 1E-4); //1E4 is conversion from m2 to cm2
 		double scaleTime=1.0/(p->counterWindowPercent * simHistory->stepSize);
-		return scaleTime * scaleY * densityCorrection * GetMoleculesPerTP(hitbuffer_sum).convert_to<double>() * f->tmpCounter[0].hit.sum_1_per_ort_velocity;
+		return scaleTime * scaleY * densityCorrection * GetMoleculesPerTP(hitbuffer_sum).convert_to<double>() * f->tmpCounter[0].sum_1_per_ort_velocity;
 	}
 }
 
 double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f){//calculates Pressure of facet. Output value's unit is mbar.
 	double scaleY = 1.0 / (f->getArea()  * 1E-4)* sHandle->wp.gasMass / 1000 / 6E23 * 0.0100; //0.01: Pa->mbar;  //1E4 is conversion from m2 to cm2, 0.01: Pa->mbar
 	double scaleTime=1.0/(p->counterWindowPercent * simHistory->stepSize);
-	return scaleTime * scaleY * GetMoleculesPerTP(hitbuffer_sum).convert_to<double>() * f->tmpCounter[0].hit.sum_v_ort ;
+	return scaleTime * scaleY * GetMoleculesPerTP(hitbuffer_sum).convert_to<double>() * f->tmpCounter[0].sum_v_ort ;
 }
 
 double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b, bool printWarning){

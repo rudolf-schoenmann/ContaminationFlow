@@ -6,10 +6,10 @@
 \subsubsection*{Constants}
 \begin{equation}
 	\begin{split}
-	%carbondiameter&=2 \cdot 76\,pm\\
-	k_b&=1.38\,10^{-23}\\
-	h&=6.626\,10^{-34}\\
-	N_A&=6\,10^{23}\\
+	%carbondiameter&=2 \cdot76\,pm\\
+	k_b&=1.381\times10^{-23}\,JK^{-1}\\
+	h&=6.626\times10^{-34}\,Js\\
+	N_A&=6.022\times10^{23}\,mol^{-1}\\
 	\end{split}
 \end{equation}
 
@@ -78,7 +78,7 @@
 %	\end{split}
 %\end{equation}
 
-\subsubsection*{sticking factor $sticking$}
+\subsubsection*{Sticking factor $sticking$}
 \begin{equation}
 	\label{eq:sticking}
 	sticking=
@@ -107,7 +107,7 @@
 \begin{equation}
 	\label{eq:sojourntime}
 	\begin{split}
-		A&=\exp\big( - E/(k_b T)\big),\ \tau_0 = \frac{k_b \, T}{h}\\
+		A&=\exp\big( - E/(k_b T)\big),\ \tau_0 = \frac{h}{k_b \, T}\\
 		\tau &= \frac{-\text{ln}(rnd) \cdot \tau_0}{A}
 	\end{split}
 \end{equation}
@@ -148,9 +148,9 @@
 	\begin{cases}
 		\begin{split}
 		0&,  \text{\quad if}\ \theta = 0 \ \text{or}\ T=0\\
-		\theta \cdot \big(1-\exp(-t_{step}/\tau)\big)&, \text{\quad else if}\ \theta \leq 1\\
+		\theta \cdot \big(1-\exp(-t_{step}/\tau_{subst})\big)&, \text{\quad else if}\ \theta \leq 1\\
 		t_{step}/\tau_{ads}&, \text{\quad else if}\ \theta -1 \geq t_{step}/\tau_{ads}\\
-		\theta - 1 + \big(1-\exp(-(t_{step}-t_{ads}/\tau))\big)&, \text{\quad else if}\ \theta -1 < t_{step}/\tau_{ads}\\
+		\theta - 1 + \big(1-\exp(-(t_{step}-t_{ads}/\tau_{subst}))\big)&, \text{\quad else if}\ \theta -1 < t_{step}/\tau_{ads}\\
 		\end{split}
 	\end{cases}
 	\end{split}
@@ -267,11 +267,13 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \hline
 \rule{0pt}{3ex} historyList& list containing history respective facet values\\
 \rule{0pt}{3ex} currentList& list containing facet values at current step\\
+\rule{0pt}{3ex} predictList& list containing facet values for predictor-corrector method\\
 \rule{0pt}{3ex} statisticsList& list containing facet statistics over last iterations\\
 \rule{0pt}{3ex} currIt& current iteration number\\
 \hline
 \rule{0pt}{3ex} reset()& Reset lists\\
 \rule{0pt}{3ex} initCurrent()& Initialize size of currentList\\
+\rule{0pt}{3ex} initPredict()& Initialize size of predictList\\
 \rule{0pt}{3ex} initStatistics()& Initialize size of statisticsList\\
 \rule{0pt}{3ex} initList()& Initialize size of historyList\\
 \rule{0pt}{3ex} appendCurrent()& Append currentList to historyList\\
@@ -281,12 +283,15 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \rule{0pt}{3ex} convertTime()& Convert time for better clarity\\
 \rule{0pt}{3ex} print()& Print historyList to terminal, optinal message\\
 \rule{0pt}{3ex} printCurrent()& Print currentList as table to terminal, optional message\\
+\rule{0pt}{3ex} printPredict()& Print predictList as table to terminal, optional message\\
 \rule{0pt}{3ex} printStatistics()& Print statisticsList as table to terminal, optional message\\
 \rule{0pt}{3ex} write()& Write historyList to file\\
 \rule{0pt}{3ex} erase()& delete desired point in historyList\\
 \rule{0pt}{3ex} empty()& Check if historyList is empty\\
 \rule{0pt}{3ex} setCurrent()& Set value of desired facet in currentList\\
 \rule{0pt}{3ex} getCurrent()& Get value of desired facet in currentList\\
+\rule{0pt}{3ex} setPredict()& Set value of desired facet in predictList\\
+\rule{0pt}{3ex} getPredict()& Get value of desired facet in predictList\\
 \rule{0pt}{3ex} setLast()& Set value of desired facet from historyList\\
 \rule{0pt}{3ex} getLast()& Get value of desired facet from historyList\\
 \hline
@@ -304,21 +309,22 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \rule{0pt}{3ex} errorList\_covering& of class HistoryList, stores error history for covering\\
 \rule{0pt}{3ex} hitList& of class HistoryList, stores hits for each facet\\
 \rule{0pt}{3ex} desorbedList& of class HistoryList, stores desorbed particles for each facet\\
+\rule{0pt}{3ex} adsorbedList& of class HistoryList, stores adsorbed particles for each facet\\
 \rule{0pt}{3ex} particleDensityList& of class HistoryList, stores particle density for each facet\\
 \rule{0pt}{3ex} pressureList& of class HistoryList, stores pressure for each facet\\
-\rule{0pt}{3ex} numFacet& number of Facets\\
+\rule{0pt}{3ex} numFacet& number of facets\\
 \rule{0pt}{3ex} numSubProcess& number of sub processes used for simulation\\
 \rule{0pt}{3ex} flightTime& Simulated flight time for iteration\\
 \rule{0pt}{3ex} nParticles& Simulated particles for iteration\\
 \rule{0pt}{3ex} lastTime& Total simulated time = last time in historyList\\
 \rule{0pt}{3ex} currentStep& step of logarithmic time step calculation in \codew{getStepSize()}\\
+\rule{0pt}{3ex} pcStep& current step of predictor-corrector method\\
 \rule{0pt}{3ex} stepSize& current step size\\
 \rule{0pt}{3ex} stepSize\_outgassing& current step size of outgassing impulse\\
 \rule{0pt}{3ex} smallCoveringFactor& Factor used to multiply covering to reach a minimal value\\
 \hline
 \rule{0pt}{3ex} updateHistory()& Reset and update\\
 \rule{0pt}{3ex} updateStepSize()& Calculate stepSize and stepSize\_outgassing\\
-\rule{0pt}{3ex} appendList()& Update coveringList\\
 \rule{0pt}{3ex} erase()& Erase desired point in history\\
 \rule{0pt}{3ex} print()& Print to terminal\\
 \rule{0pt}{3ex} write()& Write to file\\
@@ -337,24 +343,25 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \rule{0pt}{3ex} loadbufferPath& Path of loadbuffer file\\
 \rule{0pt}{3ex} hitbufferPath& Path of hitbuffer file\\
 \rule{0pt}{3ex} coveringPath \scriptsize$\Rightarrow$doCoveringFile& Path of covering file, hitbuffer not imported if given\\
-\rule{0pt}{3ex} saveResults& 1: save all results, 0: donot save results\\
+\rule{0pt}{3ex} saveResults& 1: save all results, 0: do not save results\\
 \rule{0pt}{3ex} simulationTime, unit& \multirow{2}{*}{Computation time of each iteration in milliseconds}\\
 \scriptsize\enskip$\Rightarrow$simulationTimeMS&\\
-\rule{0pt}{3ex} maxTime, maxUnit& \multirow{2}{*}{Maximal total simulated time in seconds}\\
-\scriptsize\enskip$\Rightarrow$maxTimeS&\\
+\rule{0pt}{3ex} maxTime, maxUnit \scriptsize$\Rightarrow$maxTimeS& Maximal total simulated time in seconds
+\\
 \rule{0pt}{3ex} iterationNumber& Number of iterations of simulation\\
+\rule{0pt}{3ex} usePCMethod& 0: do not use-, 1 or 2: use predictor-corrector-method v1 or v2\\
 \rule{0pt}{3ex} particleDia& Diameter of particles\\
 %\rule{0pt}{3ex}  d& Parameter to calculate desorption rate, see eq.\ \ref{eq:des}\\
 \rule{0pt}{3ex}  E\_de, H\_vap& Parameters to calculate binding energy, see eq.\ \ref{eq:energy}\\ %W\_tr
 \rule{0pt}{3ex}  sticking&  Sticking factor for all facets\\
 %\rule{0pt}{3ex}  coveringLimit&  Covering limit for zero desorption \\
 \rule{0pt}{3ex}  targetParticles/-Error&  Target values for each iteration\\
-\rule{0pt}{3ex}  hitRatioLimit&  threshold of hitratio (facet/total) at which hits are ignored\\
+\rule{0pt}{3ex}  hitRatioLimit&  Threshold of hit ratio (facet/total) at which hits are ignored\\
 \rule{0pt}{3ex}  coveringMinThresh&  Minimum covering, multiplication to this if covering low\\
 \rule{0pt}{3ex}  t\_min, t\_max&  Minimum/ Maximum step size\\
 \rule{0pt}{3ex}  maxTimePerIt&  Maximun simulation time [s] per iteration\\
 \rule{0pt}{3ex}  histSize&  Size of historyList objects (most recent values in memory)\\
-\rule{0pt}{3ex}  vipFacets&  alterning: vip facet and target error, e.g.\ 1 0.001 3 0.002\\
+\rule{0pt}{3ex}  vipFacets&  Alterning: vip facet and target error, e.g.\ 1 0.001 3 0.002\\
 \rule{0pt}{3ex}  outgassingTimeWindow&  Duration of outgassing impulse\\
 \rule{0pt}{3ex}  counterWindowPercent&  [\%] of step size (posterior) at which velocity counters are increased\\
 \rule{0pt}{3ex}  desWindowPercent&  [\%] of step size (anterior) for desorption\\
@@ -363,13 +370,13 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \rule{0pt}{3ex}  stopConverged&  1: stop simulation at convergence, 0: continue simulation\\
 \rule{0pt}{3ex}  facetGroups&  Indices of facets belonging to a group, groups divided by - \\
 \rule{0pt}{3ex}  focusGroup& Indices of facet groups to be monitored\\
-\rule{0pt}{3ex} doFocusGroupOnly& 1: only monitor focus group, 0: minitor all facets\\
+\rule{0pt}{3ex} doFocusGroupOnly& 1: only monitor focus group, 0: monitor all facets\\
 \hline
 \rule{0pt}{3ex} createOutput()& Create output directory and file\\
 \rule{0pt}{3ex} readInputfile()& Initialization from input file, checks if parameters are valid\\
 \rule{0pt}{3ex} printInputfile()& Print to terminal\\
 \rule{0pt}{3ex} writeInputfile()& Write to text file\\
-\rule{0pt}{3ex} setFocusGroup()& Converts focusGroup indices to facet indices\\
+\rule{0pt}{3ex} SetFocusGroup()& Converts focusGroup indices to facet indices\\
 \hline
 \end{tabular}
 \end{center}
@@ -404,9 +411,9 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \rule{0pt}{3ex} setCoveringThreshold()& Sets covering threshold for each facet\\
 \rule{0pt}{3ex} updateStepSize()& Calculates step sizes for desorption and outgassing\\
 \rule{0pt}{3ex} CalcTotalOutgassingWorker()& Calculates total outgassing for iteration\\
-\rule{0pt}{3ex} UpdateDesorption()& Sets desorption for each facet, ends simulation if 0\\
+\rule{0pt}{3ex} UpdateDesorption()& Sets desorption for each facet\\
 \rule{0pt}{3ex} checkSmallCovering()& multiplies covering to reach threshold if necessary\\
-\rule{0pt}{3ex} simulateSub()& Simulation on sub processes\\
+\rule{0pt}{3ex} simulateSub2()& Simulation on sub processes\\
 \rule{0pt}{3ex} MPI\_Send(), MPI\_Recv()& Send sub hitbuffer to main process\\
 \rule{0pt}{3ex} UpdateMCMainHits()& Add simulation results to main hitbuffer\\
 %\rule{0pt}{3ex} UndoSmallCovering()& Divide covering if it was multiplied before\\
@@ -433,7 +440,7 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \begin{center}
 \begin{tabular}{|l|l|}
 \hline
-\multicolumn{2}{|c|}{\rule{0pt}{3ex}simulateSub()}\\
+\multicolumn{2}{|c|}{\rule{0pt}{3ex}simulateSub2()}\\
 \hline
 \rule{0pt}{3ex}\codew{simHistory->updateHistory()}& Update SimulationHistory object from \codew{sHandle}\\
 \rule{0pt}{3ex}\multirow{2}{*}{ smallCoveringFactor}& If covering is small: multiplied by smallCoveringFactor to be\\ & able to have statistics without overflow of covering variable\\
@@ -449,7 +456,7 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \hline
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}Small covering}\\
 \hline
-\rule{0pt}{3ex} CheckSmallCovering()& Find smallCoveringFactor to reach \codew{p$\rightarrow$coveringMinThresh}\\
+\rule{0pt}{3ex} checkSmallCovering()& Find smallCoveringFactor to reach \codew{p$\rightarrow$coveringMinThresh}\\
 \rule{0pt}{3ex} Undo multiplication& In \codew{UpdateCovering()}\\
 \hline
 \multicolumn{2}{l}{}\\
@@ -526,7 +533,7 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \rule{0pt}{3ex} calcCoverage()& see eq.\ \ref{eq:cov} \\
 %\rule{0pt}{3ex} calcStep()& see eq.\ \ref{eq:stepfct} \\
 %\rule{0pt}{3ex} calcEnergy()& see eq.\ \ref{eq:energy} \\
-\rule{0pt}{3ex} calcStickingnew()& see eq.\ \ref{eq:sticking} \\
+\rule{0pt}{3ex} calcSticking()& see eq.\ \ref{eq:sticking} \\
 \rule{0pt}{3ex} calcDesorption()& see eq.\ \ref{eq:des} \\
 \rule{0pt}{3ex} GetMoleculesPerTP()& see eq.\ \ref{eq:krealvirt} \\
 \rule{0pt}{3ex} calctotalDesorption& Calculate desorption for \codew{startFromSource()} \\

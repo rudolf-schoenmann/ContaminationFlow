@@ -116,7 +116,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 		// Update covering values in currentList
 		for (size_t k = 0; k < sHandle->sh.nbSuper; k++) {
 			for (SubprocessFacet& f : sHandle->structures[k].facets) {
-				simHistory->coveringList.setCurrent(&f, (boost::multiprecision::uint128_t)f.tmpCounter[0].hit.covering);
+				simHistory->coveringList.setCurrent(&f, f.tmpCounter[0].covering);
 			}
 		}
 
@@ -140,6 +140,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 			simHistory->desorbedList.printCurrent(tmpstream, std::to_string(rank)+": desorbedlist");
 			simHistory->adsorbedList.printCurrent(tmpstream, std::to_string(rank)+": adsorbedlist");
 			simHistory->coveringList.printCurrent(tmpstream, std::to_string(rank)+": coveringlist");
+			simHistory->coveringList.printPredict(tmpstream, std::to_string(rank)+": coveringlist.predictList");
 			if(p->errorMode=="event")
 				simHistory->errorList_event.printCurrent(tmpstream, std::to_string(rank)+": errorlist_event");
 			else if(p->errorMode=="covering")
@@ -157,7 +158,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 			if(f.sh.desorption==0) continue;
 			num=getFacetIndex(&f);
 
-			if(f.tmpCounter[0].hit.covering<=sHandle->coveringThreshold[num]) {facetNum.push_back(num);}
+			if(f.tmpCounter[0].covering<=sHandle->coveringThreshold[num]) {facetNum.push_back(num);}
 		}
 	}
 
@@ -262,7 +263,7 @@ void checkSmallCovering(int rank, Databuff *hitbuffer_sum){
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			covering = getCovering(&f);
 
-			if(llong(covering)<p->coveringMinThresh && f.sh.desorption>0.0 && covering >0){
+			if(llong(covering)<p->coveringMinThresh && f.sh.desorption>0.0 && covering>0){
 				smallCovering=true;
 				if(covering<mincov){mincov=covering;}
 			}
@@ -278,8 +279,8 @@ void checkSmallCovering(int rank, Databuff *hitbuffer_sum){
 		}
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				getFacetHitBuffer(&f,hitbuffer_sum)->hit.covering *=smallCoveringFactor;
-				f.tmpCounter[0].hit.covering *=smallCoveringFactor;
+				getFacetHitBuffer(&f,hitbuffer_sum)->covering *=smallCoveringFactor;
+				f.tmpCounter[0].covering *=smallCoveringFactor;
 				sHandle->coveringThreshold[getFacetIndex(&f)] *= smallCoveringFactor;
 			}
 		}
@@ -293,11 +294,11 @@ bool readCovering(Databuff* hitbuffer, std::string coveringFile, int rank){
 	std::string mode;
 	input>>mode;
 
-	std::vector<llong>covering{};
+	std::vector<boost::multiprecision::uint128_t>covering{};
 	std::vector<double>coverage{};
 
 	if(mode=="covering"){
-		llong cov;
+		boost::multiprecision::uint128_t cov;
 		while(input>>cov){
 			covering.push_back(cov);
 		}
@@ -316,7 +317,7 @@ bool readCovering(Databuff* hitbuffer, std::string coveringFile, int rank){
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				int idx=getFacetIndex(&f);
-				covering[idx] = llong(coverage[idx]*calcNmono(&f));
+				covering[idx] = boost::multiprecision::uint128_t(coverage[idx]*calcNmono(&f));
 			}
 		}
 	}
@@ -328,10 +329,10 @@ bool readCovering(Databuff* hitbuffer, std::string coveringFile, int rank){
 		tmpstream << "Covering loaded from "<<home_to_tilde(coveringFile) << std::endl;
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				llong cov=covering[getFacetIndex(&f)];
-				getFacetHitBuffer(&f,hitbuffer)->hit.covering = cov;
+				boost::multiprecision::uint128_t cov=covering[getFacetIndex(&f)];
+				getFacetHitBuffer(&f,hitbuffer)->covering = cov;
 				tmpstream <<"\t"<<double(cov);
-				//f.tmpCounter[0].hit.covering =cov;
+				//f.tmpCounter[0].covering =cov;
 			}
 		}
 		tmpstream<<std::endl;
@@ -350,6 +351,7 @@ ProblemDef::ProblemDef(){
 	hitbufferPath=tilde_to_home(hitbufferPath);
 
 	iterationNumber = 43200;
+	usePCMethod = 0;
 	particleDia=diameterH2O;
 	E_de=1.6E-19;
 	H_vap=0.8E-19;
@@ -462,6 +464,7 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn == "unit"){is >> stringIn; unit=stringIn;}
 
 		else if(stringIn =="iterationNumber"){is >> intIn; iterationNumber=intIn>0?intIn:0;}
+		else if (stringIn == "usePCMethod") {is >> intIn; intIn=(intIn<0||intIn>1)?2:intIn; usePCMethod=intIn;}
 		else if(stringIn == "maxTime") {is >>doubleIn; maxTime = doubleIn;}
 		else if(stringIn == "maxUnit"){is >> stringIn; maxUnit=stringIn;}
 
@@ -662,6 +665,7 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 	out  <<"unit" <<'\t' <<unit <<std::endl;
 
 	out  <<"iterationNumber" <<'\t' <<iterationNumber<<std::endl;
+	out << "usePCMethod" << "\t" << usePCMethod << std::endl;
 	out  <<"maxTime" <<'\t' <<maxTime <<std::endl;
 	out  <<"maxUnit" <<'\t' <<maxUnit <<std::endl;
 	if(printConversion) out <<std::endl;
@@ -757,6 +761,7 @@ SimulationHistory::SimulationHistory(int world_size){
 	flightTime=0.0;
 	lastTime=0.0;
 	currentStep=0;
+	pcStep=0;
 	stepSize=0.0;
 	stepSize_outgassing=0.0;
 	numSubProcess=world_size-1;
@@ -782,6 +787,7 @@ SimulationHistory::SimulationHistory(int world_size){
 	}
 	coveringList.initList(numFacet);
 	coveringList.initCurrent(numFacet);
+	coveringList.initPredict(numFacet); // Initialize predictList only in coveringList
 
 	hitList.initList(numFacet);
 	hitList.initCurrent(numFacet);
@@ -823,7 +829,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 	boost::multiprecision::uint128_t covering;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			covering = boost::multiprecision::uint128_t(getCovering(&f, hitbuffer));
+			covering = getCovering(&f, hitbuffer);
 			numHit=getHits(&f, hitbuffer);
 			numDes=getnbDesorbed(&f, hitbuffer);
 			numAds=getnbAdsorbed(&f, hitbuffer);
@@ -833,7 +839,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 			desorbedList.currentList.push_back(numDes);
 			adsorbedList.currentList.push_back(numAds);
 
-			f.tmpCounter[0].hit.covering=(llong)covering;
+			f.tmpCounter[0].covering=covering;
 
 			if(f.sh.is2sided && f.sh.opacity>0.0)
 				twoSidedExist=true;
@@ -860,6 +866,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 
 	coveringList.initList(numFacet);
 	coveringList.appendCurrent(0);
+	coveringList.initPredict(numFacet);
 	coveringList.initStatistics(numFacet);
 
 	hitList.initList(numFacet);
@@ -888,6 +895,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 	pressureList.appendCurrent(0.0);
 
 	currentStep=0;
+	pcStep=0;
 	stepSize=0.0;
 	stepSize_outgassing=0.0;
 
@@ -914,7 +922,7 @@ void SimulationHistory::updateHistory(){
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			covering = getCovering(&f);
-			f.tmpCounter[0].hit.covering=covering.convert_to<llong>();
+			f.tmpCounter[0].covering=covering;
 		}
 	}
 	coveringList.historyList.first.clear();
@@ -955,7 +963,8 @@ void SimulationHistory::updateHistory(){
 	pressureList.initCurrent(numFacet);
 	pressureList.appendCurrent(0.0);
 
-	updateStepSize();
+	if (simHistory->pcStep == 0)
+		updateStepSize();
 	//lastTime=0.0;
 }
 
@@ -1095,7 +1104,7 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 
 			num=getFacetIndex(&f);
 
-			if(f.tmpCounter[0].hit.covering<=sHandle->coveringThreshold[num])
+			if(f.tmpCounter[0].covering<=sHandle->coveringThreshold[num])
 				{facetNum.push_back(num);}
 		}
 	}
@@ -1136,7 +1145,7 @@ std::tuple<bool, llong > SimulationHistory::updateHistory(Databuff *hitbuffer){
 			hitList.setCurrent(&f, numHit);
 			desorbedList.setCurrent(&f, numDes);
 
-			f.tmpCounter[0].hit.covering=covering.convert_to<llong>();
+			f.tmpCounter[0].covering=covering.convert_to<llong>();
 
 			if(llong(covering)<p->coveringMinThresh && f.sh.desorption>0.0 && covering >0){
 				smallCovering=true;
@@ -1173,7 +1182,7 @@ std::tuple<bool, llong > SimulationHistory::updateHistory(Databuff *hitbuffer){
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				if(f.sh.desorption==0) continue;
-				f.tmpCounter[0].hit.covering*=smallCoveringFactor;
+				f.tmpCounter[0].covering*=smallCoveringFactor;
 				sHandle->coveringThreshold[getFacetIndex(&f)]*=smallCoveringFactor;
 			}
 		}
@@ -1192,7 +1201,7 @@ void UndoSmallCovering(Databuff *hitbuffer_sum){
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
-				facetHitSum->hit.covering/=simHistory->smallCoveringFactor;
+				facetHitSum->covering/=simHistory->smallCoveringFactor;
 				simHistory->coveringList.setLast(&f, simHistory->coveringList.getLast(&f)/boost::multiprecision::uint128_t(simHistory->smallCoveringFactor));
 			}
 	}
