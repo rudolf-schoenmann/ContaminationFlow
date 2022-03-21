@@ -116,7 +116,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 		// Update covering values in currentList
 		for (size_t k = 0; k < sHandle->sh.nbSuper; k++) {
 			for (SubprocessFacet& f : sHandle->structures[k].facets) {
-				simHistory->coveringList.setCurrent(&f, (boost::multiprecision::uint128_t)f.tmpCounter[0].hit.covering);
+				simHistory->coveringList.setCurrent(&f, f.tmpCounter[0].covering);
 			}
 		}
 
@@ -158,7 +158,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 			if(f.sh.desorption==0) continue;
 			num=getFacetIndex(&f);
 
-			if(f.tmpCounter[0].hit.covering<=sHandle->coveringThreshold[num]) {facetNum.push_back(num);}
+			if(f.tmpCounter[0].covering<=sHandle->coveringThreshold[num]) {facetNum.push_back(num);}
 		}
 	}
 
@@ -263,7 +263,7 @@ void checkSmallCovering(int rank, Databuff *hitbuffer_sum){
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			covering = getCovering(&f);
 
-			if(llong(covering)<p->coveringMinThresh && f.sh.desorption>0.0 && covering >0){
+			if(llong(covering)<p->coveringMinThresh && f.sh.desorption>0.0 && covering>0){
 				smallCovering=true;
 				if(covering<mincov){mincov=covering;}
 			}
@@ -279,8 +279,8 @@ void checkSmallCovering(int rank, Databuff *hitbuffer_sum){
 		}
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				getFacetHitBuffer(&f,hitbuffer_sum)->hit.covering *=smallCoveringFactor;
-				f.tmpCounter[0].hit.covering *=smallCoveringFactor;
+				getFacetHitBuffer(&f,hitbuffer_sum)->covering *=smallCoveringFactor;
+				f.tmpCounter[0].covering *=smallCoveringFactor;
 				sHandle->coveringThreshold[getFacetIndex(&f)] *= smallCoveringFactor;
 			}
 		}
@@ -294,11 +294,11 @@ bool readCovering(Databuff* hitbuffer, std::string coveringFile, int rank){
 	std::string mode;
 	input>>mode;
 
-	std::vector<llong>covering{};
+	std::vector<boost::multiprecision::uint128_t>covering{};
 	std::vector<double>coverage{};
 
 	if(mode=="covering"){
-		llong cov;
+		boost::multiprecision::uint128_t cov;
 		while(input>>cov){
 			covering.push_back(cov);
 		}
@@ -317,7 +317,7 @@ bool readCovering(Databuff* hitbuffer, std::string coveringFile, int rank){
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				int idx=getFacetIndex(&f);
-				covering[idx] = llong(coverage[idx]*calcNmono(&f));
+				covering[idx] = boost::multiprecision::uint128_t(coverage[idx]*calcNmono(&f));
 			}
 		}
 	}
@@ -329,10 +329,10 @@ bool readCovering(Databuff* hitbuffer, std::string coveringFile, int rank){
 		tmpstream << "Covering loaded from "<<home_to_tilde(coveringFile) << std::endl;
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				llong cov=covering[getFacetIndex(&f)];
-				getFacetHitBuffer(&f,hitbuffer)->hit.covering = cov;
+				boost::multiprecision::uint128_t cov=covering[getFacetIndex(&f)];
+				getFacetHitBuffer(&f,hitbuffer)->covering = cov;
 				tmpstream <<"\t"<<double(cov);
-				//f.tmpCounter[0].hit.covering =cov;
+				//f.tmpCounter[0].covering =cov;
 			}
 		}
 		tmpstream<<std::endl;
@@ -829,7 +829,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 	boost::multiprecision::uint128_t covering;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
-			covering = boost::multiprecision::uint128_t(getCovering(&f, hitbuffer));
+			covering = getCovering(&f, hitbuffer);
 			numHit=getHits(&f, hitbuffer);
 			numDes=getnbDesorbed(&f, hitbuffer);
 			numAds=getnbAdsorbed(&f, hitbuffer);
@@ -839,7 +839,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 			desorbedList.currentList.push_back(numDes);
 			adsorbedList.currentList.push_back(numAds);
 
-			f.tmpCounter[0].hit.covering=(llong)covering;
+			f.tmpCounter[0].covering=covering;
 
 			if(f.sh.is2sided && f.sh.opacity>0.0)
 				twoSidedExist=true;
@@ -922,7 +922,7 @@ void SimulationHistory::updateHistory(){
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			covering = getCovering(&f);
-			f.tmpCounter[0].hit.covering=covering.convert_to<llong>();
+			f.tmpCounter[0].covering=covering;
 		}
 	}
 	coveringList.historyList.first.clear();
@@ -1104,7 +1104,7 @@ std::tuple<bool, std::vector<int> > simulateSub(Databuff *hitbuffer, int rank, i
 
 			num=getFacetIndex(&f);
 
-			if(f.tmpCounter[0].hit.covering<=sHandle->coveringThreshold[num])
+			if(f.tmpCounter[0].covering<=sHandle->coveringThreshold[num])
 				{facetNum.push_back(num);}
 		}
 	}
@@ -1145,7 +1145,7 @@ std::tuple<bool, llong > SimulationHistory::updateHistory(Databuff *hitbuffer){
 			hitList.setCurrent(&f, numHit);
 			desorbedList.setCurrent(&f, numDes);
 
-			f.tmpCounter[0].hit.covering=covering.convert_to<llong>();
+			f.tmpCounter[0].covering=covering.convert_to<llong>();
 
 			if(llong(covering)<p->coveringMinThresh && f.sh.desorption>0.0 && covering >0){
 				smallCovering=true;
@@ -1182,7 +1182,7 @@ std::tuple<bool, llong > SimulationHistory::updateHistory(Databuff *hitbuffer){
 		for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
 				if(f.sh.desorption==0) continue;
-				f.tmpCounter[0].hit.covering*=smallCoveringFactor;
+				f.tmpCounter[0].covering*=smallCoveringFactor;
 				sHandle->coveringThreshold[getFacetIndex(&f)]*=smallCoveringFactor;
 			}
 		}
@@ -1201,7 +1201,7 @@ void UndoSmallCovering(Databuff *hitbuffer_sum){
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				FacetHitBuffer *facetHitSum = (FacetHitBuffer *)(buffer_sum + f.sh.hitOffset);
-				facetHitSum->hit.covering/=simHistory->smallCoveringFactor;
+				facetHitSum->covering/=simHistory->smallCoveringFactor;
 				simHistory->coveringList.setLast(&f, simHistory->coveringList.getLast(&f)/boost::multiprecision::uint128_t(simHistory->smallCoveringFactor));
 			}
 	}

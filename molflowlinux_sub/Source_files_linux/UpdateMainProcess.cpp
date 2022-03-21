@@ -247,8 +247,8 @@ void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			covering_phys = simHistory->coveringList.getLast(&f);
-			getFacetHitBuffer(&f,hitbuffer)->hit.covering=covering_phys.convert_to<llong>();
-			getFacetHitBuffer(&f,hitbuffer_sum)->hit.covering=covering_phys.convert_to<llong>();
+			getFacetHitBuffer(&f,hitbuffer)->covering=covering_phys;
+			getFacetHitBuffer(&f,hitbuffer_sum)->covering=covering_phys;
 		}
 	}
 
@@ -316,7 +316,7 @@ std::tuple<std::vector<double>,std::vector<double>,std::vector<boost::multipreci
 		double total_error_covering=0.0;
 		std::tie(total_error_event,total_error_covering)=CalcErrorAll(it);
 
-		boost::multiprecision::uint128_t covering=0;
+		boost::multiprecision::uint128_t covering=boost::multiprecision::uint128_t(0);
 		for (unsigned int idx=0; idx<simHistory->numFacet; idx++) {
 			covering+=simHistory->coveringList.historyList.second[idx][it];
 		}
@@ -354,10 +354,10 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 	subHits=(GlobalHitBuffer *)subbuff;
 
 	// Global hits and leaks: adding local hits to shared memory
-	sHandle->tmpGlobalResult.globalHits.hit.nbMCHit= gHits->globalHits.hit.nbMCHit += subHits->globalHits.hit.nbMCHit;
-	sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv=gHits->globalHits.hit.nbHitEquiv += subHits->globalHits.hit.nbHitEquiv;
-	sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv=gHits->globalHits.hit.nbAbsEquiv += subHits->globalHits.hit.nbAbsEquiv;
-	sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed=gHits->globalHits.hit.nbDesorbed += subHits->globalHits.hit.nbDesorbed;
+	sHandle->tmpGlobalResult.globalHits.nbMCHit= gHits->globalHits.nbMCHit += subHits->globalHits.nbMCHit;
+	sHandle->tmpGlobalResult.globalHits.nbHitEquiv=gHits->globalHits.nbHitEquiv += subHits->globalHits.nbHitEquiv;
+	sHandle->tmpGlobalResult.globalHits.nbAbsEquiv=gHits->globalHits.nbAbsEquiv += subHits->globalHits.nbAbsEquiv;
+	sHandle->tmpGlobalResult.globalHits.nbDesorbed=gHits->globalHits.nbDesorbed += subHits->globalHits.nbDesorbed;
 	sHandle->tmpGlobalResult.distTraveled_total=gHits->distTraveled_total += subHits->distTraveled_total;
 	sHandle->tmpGlobalResult.distTraveledTotal_fullHitsOnly=gHits->distTraveledTotal_fullHitsOnly += subHits->distTraveledTotal_fullHitsOnly;
 
@@ -437,31 +437,29 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) { // Add hits
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 					FacetHitBuffer *facetHitSub = (FacetHitBuffer *)(subbuff + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
-					llong covering_phys= simHistory->smallCoveringFactor * history->coveringList.getLast(&f).convert_to<llong>();
-					llong covering_sum = facetHitSub->hit.covering;
+					boost::multiprecision::uint128_t covering_phys= simHistory->smallCoveringFactor * history->coveringList.getLast(&f);
+					boost::multiprecision::uint128_t covering_sum = facetHitSub->covering;
+					f.tmpCounter[m].nbAbsEquiv = facetHitBuffer->nbAbsEquiv += facetHitSub->nbAbsEquiv;
+					f.tmpCounter[m].nbDesorbed = facetHitBuffer->nbDesorbed += facetHitSub->nbDesorbed;
+					f.tmpCounter[m].nbMCHit = facetHitBuffer->nbMCHit += facetHitSub->nbMCHit;
+					f.tmpCounter[m].nbHitEquiv = facetHitBuffer->nbHitEquiv += facetHitSub->nbHitEquiv;;
+					f.tmpCounter[m].sum_1_per_ort_velocity = facetHitBuffer->sum_1_per_ort_velocity += facetHitSub->sum_1_per_ort_velocity;
+					f.tmpCounter[m].sum_v_ort = facetHitBuffer->sum_v_ort += facetHitSub->sum_v_ort;
+					f.tmpCounter[m].sum_1_per_velocity = facetHitBuffer->sum_1_per_velocity += facetHitSub->sum_1_per_velocity;
+					//facetHitBuffer->covering += facetHitSub->covering; //We do that in another way.
 
-					f.tmpCounter[m].hit.nbAbsEquiv = facetHitBuffer->hit.nbAbsEquiv += facetHitSub->hit.nbAbsEquiv;
-					f.tmpCounter[m].hit.nbDesorbed = facetHitBuffer->hit.nbDesorbed += facetHitSub->hit.nbDesorbed;
-					f.tmpCounter[m].hit.nbMCHit = facetHitBuffer->hit.nbMCHit += facetHitSub->hit.nbMCHit;
-					f.tmpCounter[m].hit.nbHitEquiv = facetHitBuffer->hit.nbHitEquiv += facetHitSub->hit.nbHitEquiv;;
-					f.tmpCounter[m].hit.sum_1_per_ort_velocity = facetHitBuffer->hit.sum_1_per_ort_velocity += facetHitSub->hit.sum_1_per_ort_velocity;
-					f.tmpCounter[m].hit.sum_v_ort = facetHitBuffer->hit.sum_v_ort += facetHitSub->hit.sum_v_ort;
-					f.tmpCounter[m].hit.sum_1_per_velocity = facetHitBuffer->hit.sum_1_per_velocity += facetHitSub->hit.sum_1_per_velocity;
-					//facetHitBuffer->hit.covering += facetHitSub->hit.covering; //We do that in another way.
-
-					if (facetHitSub->hit.covering > covering_phys){
-					facetHitBuffer->hit.covering += (covering_sum - covering_phys);
+					if (facetHitSub->covering > covering_phys){
+						facetHitBuffer->covering += (covering_sum - covering_phys);
 					}
 					else{
-						if(facetHitBuffer->hit.covering > (covering_phys - covering_sum)){
-							facetHitBuffer->hit.covering -= (covering_phys- covering_sum);
+						if(facetHitBuffer->covering > (covering_phys - covering_sum)){
+							facetHitBuffer->covering -= (covering_phys- covering_sum);
 							}
 						else{
-							facetHitBuffer->hit.covering = 0;//Counter cannot be negative! Maybe we could interrupt the iteration here?
+							facetHitBuffer->covering = 0;//Counter cannot be negative! Maybe we could interrupt the iteration here?
 						}
 					}
-					f.tmpCounter[m].hit.covering = facetHitBuffer->hit.covering;
-
+					f.tmpCounter[m].covering = facetHitBuffer->covering;
 				}
 
 				if (f.sh.isProfile) { //(MY) Add profiles
@@ -478,7 +476,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 						TextureCell *shTexture = (TextureCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
 						TextureCell *shTextureSub = (TextureCell *)(subbuff + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
-						//double dCoef = gHits->globalHits.hit.nbDesorbed * 1E4 * sHandle->wp.gasMass / 1000 / 6E23 * MAGIC_CORRECTION_FACTOR;  //1E4 is conversion from m2 to cm2
+						//double dCoef = gHits->globalHits.nbDesorbed * 1E4 * sHandle->wp.gasMass / 1000 / 6E23 * MAGIC_CORRECTION_FACTOR;  //1E4 is conversion from m2 to cm2
 						double timeCorrection = m == 0 ? sHandle->wp.finalOutgassingRate : (sHandle->wp.totalDesorbedMolecules) / sHandle->wp.timeWindowSize;
 						//Timecorrection is required to compare constant flow texture values with moment values (for autoscaling)
 

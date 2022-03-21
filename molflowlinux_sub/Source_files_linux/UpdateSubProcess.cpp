@@ -118,11 +118,11 @@ void UpdateMCSubHits(Databuff *databuffer, int rank) {
 	size_t nbMoments=(size_t)sHandle->moments.size();
 
 	// Global hits and leaks: save local hits to shared memory
-	gHits->globalHits.hit.nbMCHit = sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;
-	gHits->globalHits.hit.nbHitEquiv = sHandle->tmpGlobalResult.globalHits.hit.nbHitEquiv;
-	gHits->globalHits.hit.nbAbsEquiv = sHandle->tmpGlobalResult.globalHits.hit.nbAbsEquiv;
-	gHits->globalHits.hit.nbDesorbed = sHandle->tmpGlobalResult.globalHits.hit.nbDesorbed;
-	//gHits->globalHits.hit.covering=0;
+	gHits->globalHits.nbMCHit = sHandle->tmpGlobalResult.globalHits.nbMCHit;
+	gHits->globalHits.nbHitEquiv = sHandle->tmpGlobalResult.globalHits.nbHitEquiv;
+	gHits->globalHits.nbAbsEquiv = sHandle->tmpGlobalResult.globalHits.nbAbsEquiv;
+	gHits->globalHits.nbDesorbed = sHandle->tmpGlobalResult.globalHits.nbDesorbed;
+	//gHits->globalHits.covering=0;
 	gHits->distTraveled_total = sHandle->tmpGlobalResult.distTraveled_total;
 	gHits->distTraveledTotal_fullHitsOnly = sHandle->tmpGlobalResult.distTraveledTotal_fullHitsOnly;
 
@@ -188,16 +188,15 @@ void UpdateMCSubHits(Databuff *databuffer, int rank) {
 
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) save hits
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
-
-					facetHitBuffer->hit.nbAbsEquiv = f.tmpCounter[m].hit.nbAbsEquiv;
-					facetHitBuffer->hit.nbDesorbed = f.tmpCounter[m].hit.nbDesorbed;
-					facetHitBuffer->hit.nbMCHit = f.tmpCounter[m].hit.nbMCHit;
-					facetHitBuffer->hit.nbHitEquiv = f.tmpCounter[m].hit.nbHitEquiv;
-					facetHitBuffer->hit.sum_1_per_ort_velocity = f.tmpCounter[m].hit.sum_1_per_ort_velocity;
-					facetHitBuffer->hit.sum_v_ort = f.tmpCounter[m].hit.sum_v_ort;
-					facetHitBuffer->hit.sum_1_per_velocity = f.tmpCounter[m].hit.sum_1_per_velocity;
-					facetHitBuffer->hit.covering= f.tmpCounter[m].hit.covering;
-					}
+					facetHitBuffer->nbAbsEquiv = f.tmpCounter[m].nbAbsEquiv;
+					facetHitBuffer->nbDesorbed = f.tmpCounter[m].nbDesorbed;
+					facetHitBuffer->nbMCHit = f.tmpCounter[m].nbMCHit;
+					facetHitBuffer->nbHitEquiv = f.tmpCounter[m].nbHitEquiv;
+					facetHitBuffer->sum_1_per_ort_velocity = f.tmpCounter[m].sum_1_per_ort_velocity;
+					facetHitBuffer->sum_v_ort = f.tmpCounter[m].sum_v_ort;
+					facetHitBuffer->sum_1_per_velocity = f.tmpCounter[m].sum_1_per_velocity;
+					facetHitBuffer->covering = f.tmpCounter[m].covering;
+				}
 
 				if (f.sh.isProfile) {//(MY) save profile
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
@@ -211,7 +210,7 @@ void UpdateMCSubHits(Databuff *databuffer, int rank) {
 				if (f.sh.isTextured) {//(MY) save texture
 					for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 						TextureCell *shTexture = (TextureCell *)(buffer + (f.sh.hitOffset + facetHitsSize + f.profileSize*(1 + nbMoments) + m * f.textureSize));
-						//double dCoef = gHits->globalHits.hit.nbDesorbed * 1E4 * sHandle->wp.gasMass / 1000 / 6E23 * MAGIC_CORRECTION_FACTOR;  //1E4 is conversion from m2 to cm2
+						//double dCoef = gHits->globalHits.nbDesorbed * 1E4 * sHandle->wp.gasMass / 1000 / 6E23 * MAGIC_CORRECTION_FACTOR;  //1E4 is conversion from m2 to cm2
 						//double timeCorrection = m == 0 ? sHandle->wp.finalOutgassingRate : (sHandle->wp.totalDesorbedMolecules) / sHandle->wp.timeWindowSize;
 						//Timecorrection is required to compare constant flow texture values with moment values (for autoscaling)
 
@@ -286,7 +285,7 @@ void UpdateMCSubHits(Databuff *databuffer, int rank) {
 			else{//if not hitted:
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) save hits
 									FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
-									facetHitBuffer->hit.covering= f.tmpCounter[m].hit.covering;
+									facetHitBuffer->covering= f.tmpCounter[m].covering;
 				}
 				//covering has to be updated anyway, since although f was not hitted,
 				//the old covering value (in the subprocess of iteration i-1) was replaced with the new covering value in the main process (after iteration i-1) and then
@@ -322,22 +321,22 @@ void initcounterstozero(Databuff *databuffer){
 	size_t nbMoments=(size_t)sHandle->moments.size();
 	//size_t facetHitsSize = (1 + nbMoments) * sizeof(FacetHitBuffer);
 
-	gHits->globalHits.hit.nbMCHit = 0;
-	gHits->globalHits.hit.nbHitEquiv = 0.0;
-	gHits->globalHits.hit.nbAbsEquiv = 0.0;
-	gHits->globalHits.hit.nbDesorbed = 0;
+	gHits->globalHits.nbMCHit = 0;
+	gHits->globalHits.nbHitEquiv = 0.0;
+	gHits->globalHits.nbAbsEquiv = 0.0;
+	gHits->globalHits.nbDesorbed = 0;
 
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			for (unsigned int m = 0; m < (1 + nbMoments); m++) {
 				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
-				facetHitBuffer->hit.nbAbsEquiv = 0.0;
-				facetHitBuffer->hit.nbDesorbed = 0;
-				facetHitBuffer->hit.nbMCHit = 0;
-				facetHitBuffer->hit.nbHitEquiv = 0.0;
-				facetHitBuffer->hit.sum_1_per_ort_velocity = 0.0;
-				facetHitBuffer->hit.sum_v_ort = 0.0;
-				facetHitBuffer->hit.sum_1_per_velocity = 0.0;
+				facetHitBuffer->nbAbsEquiv = 0.0;
+				facetHitBuffer->nbDesorbed = 0;
+				facetHitBuffer->nbMCHit = 0;
+				facetHitBuffer->nbHitEquiv = 0.0;
+				facetHitBuffer->sum_1_per_ort_velocity = 0.0;
+				facetHitBuffer->sum_v_ort = 0.0;
+				facetHitBuffer->sum_1_per_velocity = 0.0;
 
 			}
 		}
@@ -355,11 +354,12 @@ void initbufftozero(Databuff *databuffer){
 	gHits = (GlobalHitBuffer *)buffer;
 
 	// Global hits and leaks: save local hits to shared memory
-	gHits->globalHits.hit.nbMCHit = 0;
-	gHits->globalHits.hit.nbHitEquiv = 0.0;
-	gHits->globalHits.hit.nbAbsEquiv = 0.0;
-	gHits->globalHits.hit.nbDesorbed = 0;
-	//gHits->globalHits.hit.covering=0;
+	gHits->globalHits.nbMCHit = 0;
+	gHits->globalHits.nbHitEquiv = 0.0;
+	gHits->globalHits.nbAbsEquiv = 0.0;
+	gHits->globalHits.nbDesorbed = 0;
+	if (gHits->globalHits.covering.backend().size() == 0) //Not necessary but used as a precaution
+		gHits->globalHits.covering = boost::multiprecision::uint128_t(0);
 	gHits->distTraveled_total = 0.0;
 	gHits->distTraveledTotal_fullHitsOnly = 0.0;
 
@@ -431,13 +431,16 @@ void initbufftozero(Databuff *databuffer){
 
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) {//(MY) removed +
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
-					facetHitBuffer->hit.nbAbsEquiv = 0.0;
-					facetHitBuffer->hit.nbDesorbed = 0;
-					facetHitBuffer->hit.nbMCHit = 0;
-					facetHitBuffer->hit.nbHitEquiv = 0.0;
-					facetHitBuffer->hit.sum_1_per_ort_velocity = 0.0;
-					facetHitBuffer->hit.sum_v_ort = 0.0;
-					facetHitBuffer->hit.sum_1_per_velocity = 0.0;
+					facetHitBuffer->nbAbsEquiv = 0.0;
+					facetHitBuffer->nbDesorbed = 0;
+					facetHitBuffer->nbMCHit = 0;
+					facetHitBuffer->nbHitEquiv = 0.0;
+					facetHitBuffer->sum_1_per_ort_velocity = 0.0;
+					facetHitBuffer->sum_v_ort = 0.0;
+					facetHitBuffer->sum_1_per_velocity = 0.0;
+					//Not necessary but used as a precaution
+					if (facetHitBuffer->covering.backend().size() == 0)
+						facetHitBuffer->covering = boost::multiprecision::uint128_t(0);
 				}
 
 				if (f.sh.isProfile) {//(MY) removed +

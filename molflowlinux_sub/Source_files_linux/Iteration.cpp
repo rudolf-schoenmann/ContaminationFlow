@@ -33,7 +33,7 @@ extern ProblemDef *p;
 //Update Error lists
 std::tuple<double,double,double> getErrorVariables(SubprocessFacet* f, Databuff *hitbuffer_sum){
 	if(hitbuffer_sum==NULL){
-		return std::make_tuple(f->tmpCounter[0].hit.nbHitEquiv, (double)f->tmpCounter[0].hit.nbDesorbed, f->tmpCounter[0].hit.nbAbsEquiv);
+		return std::make_tuple(f->tmpCounter[0].nbHitEquiv, (double)f->tmpCounter[0].nbDesorbed, f->tmpCounter[0].nbAbsEquiv);
 	}
 	else{
 		return std::make_tuple(getHits(f,hitbuffer_sum),(double)getnbDesorbed(f, hitbuffer_sum),getnbAdsorbed(f,hitbuffer_sum));
@@ -193,12 +193,12 @@ double estimateTmin(Databuff *hitbuffer){ //not ready yet => finish //TODO
 	double tmin_particles_out = 0;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 			for (SubprocessFacet& f : sHandle->structures[s].facets) {
-				llong covering = getFacetHitBuffer(&f,hitbuffer)->hit.covering;
+				boost::multiprecision::uint128_t covering = getFacetHitBuffer(&f,hitbuffer)->covering;
 				double v_avg_therm = 3*pow((3.14159265359/8),0.5)* pow((8.314472* f.sh.temperature/(sHandle->wp.gasMass*0.001)),0.5); //0.001 to convert MolarMass form g to kg
 				sum_v_avg += v_avg_therm * (f.sh.outgassing + f.sh.desorption.convert_to<double>());
 				normalization_factor_v += f.sh.outgassing + f.sh.desorption.convert_to<double>();
 				if ((f.sh.outgassing + f.sh.desorption.convert_to<double>()) > 0){ //avoid division by 0
-					double ttemp= (double)(covering/((f.sh.outgassing + f.sh.desorption.convert_to<double>())/ (kb*f.sh.temperature)));
+					double ttemp= (double)((double) covering/((f.sh.outgassing + f.sh.desorption.convert_to<double>())/ (kb*f.sh.temperature)));
 					if (!tmin_particles_out){
 						tmin_particles_out = (ttemp);
 					}
@@ -210,8 +210,8 @@ double estimateTmin(Databuff *hitbuffer){ //not ready yet => finish //TODO
 	//if (normalization_factor_v == 0) std::cout << "divide by zero!" << std::endl;
 	double v_avg = sum_v_avg/normalization_factor_v;
 	std::cout << "v_avg = sum_v_avg/normalization_factor_v = " << sum_v_avg << "/" << normalization_factor_v << std::endl;
-	double av_path_length = sHandle->tmpGlobalResult.distTraveled_total*0.01/sHandle->tmpGlobalResult.globalHits.hit.nbMCHit;// The 0.01 is because the distance should be saved in cm. ToDo: Check up, if that's right.
-	std::cout <<  "av_path_length = sHandle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.hit.nbMCHit = " << sHandle->tmpGlobalResult.distTraveled_total << "/" << sHandle->tmpGlobalResult.globalHits.hit.nbMCHit << std::endl;
+	double av_path_length = sHandle->tmpGlobalResult.distTraveled_total*0.01/sHandle->tmpGlobalResult.globalHits.nbMCHit;// The 0.01 is because the distance should be saved in cm. ToDo: Check up, if that's right.
+	std::cout <<  "av_path_length = sHandle->tmpGlobalResult.distTraveled_total/sHandle->tmpGlobalResult.globalHits.nbMCHit = " << sHandle->tmpGlobalResult.distTraveled_total << "/" << sHandle->tmpGlobalResult.globalHits.nbMCHit << std::endl;
 	std::cout << "tmin = av_path_length /v_avg = " << av_path_length << " / " << v_avg << std::endl;
 	tmin = av_path_length /v_avg;
 
@@ -250,11 +250,11 @@ void setCoveringThreshold(Databuff *hitbuffer, int size, int rank){
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
 				if(rank==1)
-					{cov_sim=facetHitBuffer->hit.covering/num_sim + facetHitBuffer->hit.covering%num_sim;}
+					{cov_sim=facetHitBuffer->covering/num_sim + facetHitBuffer->covering%num_sim;}
 				else
-					{cov_sim=facetHitBuffer->hit.covering/num_sim;}
+					{cov_sim=facetHitBuffer->covering/num_sim;}
 
-				sHandle->coveringThreshold[getFacetIndex(&f)]=facetHitBuffer->hit.covering-cov_sim;
+				sHandle->coveringThreshold[getFacetIndex(&f)]=facetHitBuffer->covering-cov_sim;
 			}
 	}
 }
@@ -270,9 +270,9 @@ void allocateCovering(Databuff *hitbuffer, int size, int rank){
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
 				if(rank==1)
-					{facetHitBuffer->hit.covering=facetHitBuffer->hit.covering/temp + facetHitBuffer->hit.covering%temp;}
+					{facetHitBuffer->covering=facetHitBuffer->covering/temp + facetHitBuffer->covering%temp;}
 				else
-					{facetHitBuffer->hit.covering=facetHitBuffer->hit.covering/temp;}
+					{facetHitBuffer->covering=facetHitBuffer->covering/temp;}
 			}
 	}
 }

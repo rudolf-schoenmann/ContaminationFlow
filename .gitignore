@@ -1,7 +1,6 @@
 .settings/
 .vscode/
 Default/
-results/
 include/build
 include/lib
 ContaminationFlow_doc/main.log
