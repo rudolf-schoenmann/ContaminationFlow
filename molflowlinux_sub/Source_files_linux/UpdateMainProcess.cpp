@@ -204,8 +204,9 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 			else if (p->usePCMethod == 1) {
 				//Predictor-Corrector-Method v1
 				if (simHistory->pcStep == 0) {
-					boost::multiprecision::uint128_t currentVal(simHistory->coveringList.getCurrent(&f));
-					simHistory->coveringList.setPredict(&f, (covering_phys+currentVal)/2);
+					//boost::multiprecision::uint128_t currentVal(simHistory->coveringList.getCurrent(&f));
+					//simHistory->coveringList.setPredict(&f, (covering_phys+currentVal)/2);
+					simHistory->coveringList.setPredict(&f, covering_phys);
 				} 
 				else if (simHistory->pcStep == 1) {
 					simHistory->coveringList.setCurrent(&f, covering_phys);
