@@ -215,7 +215,7 @@ and the input file defining the following parameters:
 \item \codew{$maxTime$}: Max.\ simulated time; default: \codew{10.0}
 \item \codew{$maxUnit$}: Max.\ simulated time unit; default: \codew{y}
 \item \codew{$iterationNumber$}: Number of iterations; default: \codew{43200}
-\item \codew{$usePCMethod$}: Use predictor-corrector method or not; default: \codew{0}
+\item \codew{$usePCMethod$}: Use predictor-corrector method "1", "2" or simulate without predictor-corrector mehtod; default: \codew{0}
 %\item \codew{$s_1$}, coefficient used for calculation of sticking coefficient; default:\codew{1}
 %\item \codew{$s_2$}, coefficient used for calculation of sticking coefficient; default:\codew{0.2}
 %\item \codew{$E_{ad}$}, energy used for calculation of sticking coefficient; default:\codew{1\text{E}-21}
@@ -689,7 +689,7 @@ Optional covering file to replace hitbuffer. Hitbuffer will not be imported if c
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item{Analogous to Heun's method for solving ordinary differential equations numerically}
 \item{In the prediction step, the iteration for the current time step is executed and the resulting covering values are saved in \codew{simHistory$\rightarrow$coveringList.predictList}}
-\item{In the correction step, the iteration for the current time step is repeated. In \codew{PerformBounce($\cdot$)} (\codew{SimulationMC.cpp}), reading the covering values from \codew{currentList} if\\\codew{sHandle$\rightarrow$currentParticle.flightTime <= 1/2*simHistory$\rightarrow$stepSize}, otherwise reading them from \codew{predictList}}
+\item{In the correction step, the iteration for the current time step is repeated. In \codew{PerformBounce($\cdot$)} (\codew{SimulationMC.cpp}), the covering values from \codew{currentList} if\\\codew{sHandle$\rightarrow$currentParticle.flightTime <= 1/2*simHistory$\rightarrow$stepSize} will be read, otherwise covering values from \codew{predictList} will be read.}
 \item{At the end of the correction step, the main process is updated as usual and continuing with the next iteration}
 \item{Used only, if \codew{p->usePCMethod} is set to anything other than \codew{0} explicitly via the input file}
 \item{If \codew{usePCMethod} is set to \codew{0}:  not using the p.c. method; \codew{1}:  using the first approach for the p.c. method; \codew{2}:  using the second approach for the p.c. method}

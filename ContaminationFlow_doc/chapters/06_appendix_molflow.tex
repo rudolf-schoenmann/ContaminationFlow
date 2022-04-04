@@ -22,7 +22,7 @@
 	\end{split}
 \end{equation}
 
-\subsubsection*{Number of carbon equivalent particles of one monolayer}
+\subsubsection*{Number of particles of one monolayer}
 \begin{equation}
 	\label{eq:nmono}
 	N_{mono}=\frac{\text{Area of Facet [m$^2$]}}{\text{ProblemDef::particleDia$^2$ [m$^2$]}}
@@ -77,6 +77,7 @@
 %		Energy&= E
 %	\end{split}
 %\end{equation}
+\begin{comment}
 
 \subsubsection*{Sticking factor $sticking$}
 \begin{equation}
@@ -90,6 +91,7 @@
 	\end{cases}
 \end{equation}
 
+\end{comment}
 \subsubsection*{Binding energy $E$}
 \begin{equation}
 	\label{eq:energy}
@@ -111,23 +113,7 @@
 		\tau &= \frac{-\text{ln}(rnd) \cdot \tau_0}{A}
 	\end{split}
 \end{equation}
-%
-%\subsubsection*{Desorption rate $des$}
-%\begin{equation}
-%	\label{eq:des}
-%	\begin{split}
-%	\tau&=\frac{h}{k_b T}\\
-%	d&= step(\theta, 1,  0, 1, W_{tr})\\
-%	&\\
-%	des&=
-%	\begin{cases}
-%		\begin{split}
-%		\frac{1}{\tau}\ \theta^d\ \exp\Big({-\frac{E}{k_b T}}\Big)\cdot \frac{N_{mono}}{\Delta N_{surf}}\cdot k_b T&, \text{\quad if}\ \theta^* > \text{0}\\
-%		0&,  \text{\quad otherwise}
-%		\end{split}
-%	\end{cases}
-%	\end{split}
-%\end{equation}
+\begin{comment}
 \subsubsection*{Step size $t_{step}$}
 \begin{equation}
 	\label{eq:tstep}
@@ -137,12 +123,15 @@
 	t_{step}&=\text{min}\big(t_{currentStep+1}-t_{currentStep}, \text{ProblemDef::t\_max}\big)\\
 	\end{split}
 \end{equation}
-
+\end{comment}
 \subsubsection*{Desorption $des$}
 \begin{equation}
 	\label{eq:des}
-	\begin{split}
-	\tau_0&=\frac{h}{k_b T},\ \tau_{subst} =\tau_0 \cdot \exp\Big(\frac{E_{de}}{k_b T}\Big),\ \tau_{ads}=\tau_0 \cdot \exp\Big(\frac{H_{vap}}{k_b T}\Big),\ t_{ads}=\tau_{ads} \cdot (\theta -1)\\
+	\tau_0=\frac{h}{k_b T},\ \tau_{subst} =\tau_0 \cdot \exp\Big(\frac{E_{de}}{k_b T}\Big),\ \tau_{ads}=\tau_0 \cdot \exp\Big(\frac{H_{vap}}{k_b T}\Big)
+	%\begin{split}
+	%\tau_0&=\frac{h}{k_b T},\ \tau_{subst} =\tau_0 \cdot \exp\Big(\frac{E_{de}}{k_b T}\Big),\ \tau_{ads}=\tau_0 \cdot \exp\Big(\frac{H_{vap}}{k_b T}\Big)%,\ t_{ads}=\tau_{ads} \cdot (\theta -1)
+	\\
+	\begin{comment}
 	&\\
 	des&=
 	\begin{cases}
@@ -153,8 +142,9 @@
 		\theta - 1 + \big(1-\exp(-(t_{step}-t_{ads}/\tau_{subst}))\big)&, \text{\quad else if}\ \theta -1 < t_{step}/\tau_{ads}\\
 		\end{split}
 	\end{cases}
-	\end{split}
-\end{equation}
+	\end{comment}	
+	%\end{split}
+	\end{equation}
 
 \subsubsection*{Outgassing $out$}
 \begin{equation}
@@ -171,7 +161,7 @@
 \subsubsection*{Pressure [mbar]}
 \begin{equation}
 	\label{eq:pressure}
-	density=\frac{\text{sum over orthogonal velocity}}{\text{Area of Facet [m$^2$]} \cdot t_{step}} \cdot \frac{\text{carbon equivalent gas mass}}{1000/N_A} \cdot 0.01 \cdot K_{\text{real}/\text{virtual}}
+	density=\frac{\text{sum over orthogonal velocity}}{\text{Area of Facet [m$^2$]} \cdot t_{step}} \cdot \frac{\text{gas mass}}{1000/N_A} \cdot 0.01 \cdot K_{\text{real}/\text{virtual}}
 \end{equation}
 
 \subsubsection*{Small covering factor}
@@ -349,7 +339,7 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \rule{0pt}{3ex} maxTime, maxUnit \scriptsize$\Rightarrow$maxTimeS& Maximal total simulated time in seconds
 \\
 \rule{0pt}{3ex} iterationNumber& Number of iterations of simulation\\
-\rule{0pt}{3ex} usePCMethod& 0: do not use-, 1 or 2: use predictor-corrector-method v1 or v2\\
+\rule{0pt}{3ex} usePCMethod& 0: do not use predictor-corrector-method, 1 or 2: use predictor-corrector-method v1 or v2\\
 \rule{0pt}{3ex} particleDia& Diameter of particles\\
 %\rule{0pt}{3ex}  d& Parameter to calculate desorption rate, see eq.\ \ref{eq:des}\\
 \rule{0pt}{3ex}  E\_de, H\_vap& Parameters to calculate binding energy, see eq.\ \ref{eq:energy}\\ %W\_tr
@@ -533,7 +523,7 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \rule{0pt}{3ex} calcCoverage()& see eq.\ \ref{eq:cov} \\
 %\rule{0pt}{3ex} calcStep()& see eq.\ \ref{eq:stepfct} \\
 %\rule{0pt}{3ex} calcEnergy()& see eq.\ \ref{eq:energy} \\
-\rule{0pt}{3ex} calcSticking()& see eq.\ \ref{eq:sticking} \\
+%\rule{0pt}{3ex} calcSticking()& see eq.\ \ref{eq:sticking} \\
 \rule{0pt}{3ex} calcDesorption()& see eq.\ \ref{eq:des} \\
 \rule{0pt}{3ex} GetMoleculesPerTP()& see eq.\ \ref{eq:krealvirt} \\
 \rule{0pt}{3ex} calctotalDesorption& Calculate desorption for \codew{startFromSource()} \\
