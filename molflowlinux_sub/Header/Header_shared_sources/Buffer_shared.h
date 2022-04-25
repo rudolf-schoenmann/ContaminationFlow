@@ -519,8 +519,10 @@ struct alignas(16) FacetHitBuffer {
 
 	// Counts
 	boost::multiprecision::uint128_t covering; //new counter for covering
-	llong nbDesorbed;          // Number of desorbed molecules
 	llong nbOutgassed;          // Number of outgassed molecules
+	//even without nbOutgassed the size of FacetHitBuffer was 80 Bytes not 72 Bytes. => I do not understand.
+	//Reason is maybe due to the combination of alignas(16) and the serialization
+	llong nbDesorbed;          // Number of desorbed molecules
 	llong nbMCHit;               // Number of hits
 	double nbHitEquiv;			//Equivalent number of hits, used for low-flux impingement rate and density calculation
 	double nbAbsEquiv;          // Equivalent number of absorbed molecules
@@ -534,8 +536,8 @@ struct alignas(16) FacetHitBuffer {
 	{
 		archive(
 			CEREAL_NVP(covering),
-			CEREAL_NVP(nbDesorbed),
 			CEREAL_NVP(nbOutgassed),
+			CEREAL_NVP(nbDesorbed),
 			CEREAL_NVP(nbMCHit),
 			CEREAL_NVP(nbHitEquiv),
 			CEREAL_NVP(nbAbsEquiv),
