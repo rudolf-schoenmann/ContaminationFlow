@@ -267,9 +267,9 @@ double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f){
 		//However, in case of desorption or sticking, the real density is not twice the "seen" density, but a bit less, therefore this reduction factor
 		//If only desorption, or only absorption, the correction factor is 0.5, if no des/abs, it's 1.0, and in between, see below
 		double densityCorrection=1.0;
-		if (f->tmpCounter[0].nbMCHit > 0 || f->tmpCounter[0].nbDesorbed > 0) {
-			if (f->tmpCounter[0].nbAbsEquiv > 0.0 || f->tmpCounter[0].nbDesorbed > 0) {//otherwise save calculation time
-				densityCorrection-= (f->tmpCounter[0].nbAbsEquiv + (double)f->tmpCounter[0].nbDesorbed) / (f->tmpCounter[0].nbHitEquiv + (double)f->tmpCounter[0].nbDesorbed) / 2.0;
+		if (f->tmpCounter[0].nbMCHit > 0 || f->tmpCounter[0].nbDesorbed > 0 || f->tmpCounter[0].nbOutgassed > 0) {
+			if (f->tmpCounter[0].nbAbsEquiv > 0.0 || f->tmpCounter[0].nbDesorbed > 0 || f->tmpCounter[0].nbOutgassed > 0) {//otherwise save calculation time
+				densityCorrection-= (f->tmpCounter[0].nbAbsEquiv + (double)f->tmpCounter[0].nbDesorbed  + (double)f->tmpCounter[0].nbOutgassed) / (f->tmpCounter[0].nbHitEquiv + (double)f->tmpCounter[0].nbDesorbed+ (double)f->tmpCounter[0].nbOutgassed) / 2.0;
 			}
 		}
 

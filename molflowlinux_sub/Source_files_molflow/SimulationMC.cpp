@@ -1869,6 +1869,9 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 			double hitEquiv = static_cast<double>(hit)*sHandle->currentParticle.oriRatio;
 			f->tmpCounter[m].nbHitEquiv += hitEquiv;
 			f->tmpCounter[m].nbDesorbed += desorbed?desorb:0;
+			if(desorb > 0 && !desorbed){
+				f->tmpCounter[m].nbOutgassed += desorb;
+			}
 			f->tmpCounter[m].nbAbsEquiv += static_cast<double>(absorb)*sHandle->currentParticle.oriRatio;
 			if(time >= simHistory->stepSize*(1.0-p->counterWindowPercent) && time <= simHistory->stepSize){//only increase velocity counters if with a timewindow
 				f->tmpCounter[m].sum_1_per_ort_velocity += sHandle->currentParticle.oriRatio * sum_1_per_v;
