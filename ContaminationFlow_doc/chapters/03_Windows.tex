@@ -4,10 +4,11 @@
 \chapter{ContaminationFlow Windows}\label{chapter:Windows}
 
 \begin{itemize}[noitemsep,topsep=0pt]
-\item Expansion of original Molflow for contamination
+\item Extention of original Molflow for contamination problems
 \item Create Geometry and set parameters such as initial coverage and temperature
-\item Import and export of buffer files
-\item Export of facet groups and covering file
+%\item Import and export of buffer files
+\item Export of buffer files
+\item Export of facet groups %and covering file
 \end{itemize}
 %\smallskip
 
@@ -18,18 +19,18 @@
 
 \subsubsection{New GUI elements}
 \begin{itemize}[noitemsep,topsep=0pt]
-\item "Particles out" renamed to Contamination level
+\item "Particles out" %renamed to Contamination level
 \begin{itemize}[noitemsep,topsep=0pt]
 \item Text field for covering
 \item Text field for coverage
 \end{itemize}
-\item New facet properties
-\begin{itemize}[noitemsep,topsep=0pt]
-\item Effective surface factor
-\item Facet depth and facet volume
-\item Diffusion coefficient
-\item Concentration and gas mass
-\end{itemize}
+%\item New facet properties
+%\begin{itemize}[noitemsep,topsep=0pt]
+%\item Effective surface factor
+%\item Facet depth and facet volume
+%\item Diffusion coefficient
+%\item Concentration and gas mass
+%\end{itemize}
 %\item Text field for new sticking coefficient
 %\item Window for CoveringHistory (reworked to SimulationHistory in ContaminationFlow Linux)
 %\item PressureEvolution window expanded
@@ -40,7 +41,7 @@
 %	\end{itemize}
 \item New menu options
 \begin{itemize}[noitemsep,topsep=0pt]
-\item File: Export buffer, Import buffer, Export Cov.
+\item File: Export buffer, Export Cov.% Import buffer, Export Cov.
 \item Selection: Export Selections
 \end{itemize}
 \end{itemize}
@@ -78,6 +79,7 @@
 \item Added covering to GUI, can be defined through textfield
 \item Covering increased at adsorb
 \end{itemize}
+\begin{comment}
 
 \subsubsection{New facet property \codew{effetiveSurfaceFactor}}
 \begin{itemize}[noitemsep,topsep=0pt]
@@ -108,6 +110,8 @@
 \item \codew{calcSticking()} and \codew{calcFlow()} in \codew{Molflow.cpp} file not used anymore
 \item Flow not needed for iterative Algorithm
 \end{itemize}
+
+\end{comment}
 
 %\section{Iterative algorithm}
 %\subsubsection{New class to store covering for all facets at any time} 
