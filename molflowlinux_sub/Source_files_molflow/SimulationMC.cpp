@@ -1466,7 +1466,9 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 		return false;
 	}
 	//--------------------------------------Sojourn time begin----------------------------------------------
+	IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 0, 0, 0, 2.0 / ortVelocity, (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity);
 	double flightTime=sHandle->currentParticle.flightTime;
+
 	if (iFacet->sh.enableSojournTime) {
 		double residence_energy;
 		boost::multiprecision::float128 coverage;
@@ -1526,7 +1528,7 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 			flightTime=sHandle->currentParticle.flightTime;
 		}
 	}
-	if(sHandle->currentParticle.flightTime>simHistory->stepSize && iFacet->sh.opacity!=0){ //TODO maybe other parts from recordAbsorb()?
+	if((isinf(sHandle->currentParticle.flightTime)||sHandle->currentParticle.flightTime>simHistory->stepSize) && iFacet->sh.opacity!=0){ //TODO maybe other parts from recordAbsorb()?
 		sHandle->tmpGlobalResult.globalHits.nbAbsEquiv += sHandle->currentParticle.oriRatio;
 		simHistory->flightTime+=flightTime;
 		simHistory->nParticles+=1;
@@ -1535,7 +1537,7 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 
 		RecordHit(HIT_ABS);
 
-		IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 1, 0, 1, 2.0 / ortVelocity, (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity);
+		IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 1, 0, 1, 0, 0);
 		LogHit(iFacet);
 		ProfileFacet(iFacet, sHandle->currentParticle.flightTime, true, 1.0, 0.0); //was 2.0, 1.0
 		if (/*iFacet->texture &&*/ iFacet->sh.countAbs) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, true, 1.0, 0.0); //was 2.0, 1.0
@@ -1549,7 +1551,7 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 	}
 	//----------------------------------------Sojourn time end----------------------------------------------
 	//changes order for correct registration hit vs absorb
-	IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 1, 0, 0, 1.0 / ortVelocity, (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity);
+	IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 1, 0, 0, 0, 0);
 	sHandle->currentParticle.nbBounces++;
 	if (/*iFacet->texture &&*/ iFacet->sh.countRefl) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, true, 1.0, 1.0);
 	if (/*iFacet->direction &&*/ iFacet->sh.countDirection) RecordDirectionVector(iFacet, sHandle->currentParticle.flightTime);
@@ -1875,6 +1877,7 @@ void TreatMovingFacet() {
 }
 
 void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t desorb, size_t absorb, double sum_1_per_v, double sum_v_ort, bool desorbed) {
+	//std::cout << "Facet: " << getFacetIndex(f)<< " time = " << time << std::endl;
 	size_t nbMoments = sHandle->moments.size();
 	for (size_t m = 0; m <= nbMoments; m++) {
 		if (m == 0 || abs((double)time - (double)sHandle->moments[m - 1]) < sHandle->wp.timeWindowSize / 2.0) {
@@ -1890,7 +1893,9 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 				f->tmpCounter[m].sum_1_per_ort_velocity += sHandle->currentParticle.oriRatio * sum_1_per_v;
 				f->tmpCounter[m].sum_v_ort += sHandle->currentParticle.oriRatio * sum_v_ort;
 				f->tmpCounter[m].sum_1_per_velocity += (hitEquiv + static_cast<double>(desorb)) / sHandle->currentParticle.velocity;
+				//std::cout << "particle on time on facet" << getFacetIndex(f)<<std::endl;
 			}
+			//else{std::cout << "particle to late on facet"<< getFacetIndex(f)<<std::endl;}
 			//update covering: increases with every absorb, decreases with every desorb
 			if (absorb>0){ //TODO which one better?
 			//if (time>getStepSize()){

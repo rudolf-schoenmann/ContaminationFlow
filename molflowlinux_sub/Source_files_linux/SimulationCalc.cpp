@@ -294,6 +294,7 @@ double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f){
 double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f){//calculates Pressure of facet. Output value's unit is mbar.
 	double scaleY = 1.0 / (f->getArea()  * 1E-4)* sHandle->wp.gasMass / 1000 / 6E23 * 0.0100; //0.01: Pa->mbar;  //1E4 is conversion from m2 to cm2, 0.01: Pa->mbar
 	double scaleTime=1.0/(p->counterWindowPercent * simHistory->stepSize);
+	std::cout << "f->tmpCounter[0].sum_v_ort of Facet " << f->tmpCounter[0].sum_v_ort <<std::endl;
 	return scaleTime * scaleY * GetMoleculesPerTP(hitbuffer_sum).convert_to<double>() * f->tmpCounter[0].sum_v_ort ;
 }
 
