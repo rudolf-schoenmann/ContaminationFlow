@@ -429,6 +429,7 @@ public:
 	HistoryList<boost::multiprecision::uint128_t> coveringList;
 	HistoryList<double> hitList;
 	HistoryList<llong> desorbedList;
+	HistoryList<llong> outgassedList;
 	HistoryList<llong> adsorbedList;
 	HistoryList<double> errorList_event;
 	HistoryList<double> errorList_covering;
@@ -509,6 +510,7 @@ double calcNmono(SubprocessFacet *iFacet);
 
 llong getnbDesorbed(Databuff *hitbuffer_sum);
 llong getnbDesorbed(SubprocessFacet *iFacet, Databuff *hitbuffer);
+llong getnbOutgassed(SubprocessFacet *iFacet, Databuff *hitbuffer);
 llong getnbAdsorbed(SubprocessFacet *iFacet, Databuff *hitbuffer);//In the original Molflow, particles were absorbed not adsorbed. In ContaminationFlow we regard all old code parts
 // which are called 'Absorb' actually as an 'Adsorb'. But we did not rename them.
 

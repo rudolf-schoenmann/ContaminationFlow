@@ -31,35 +31,35 @@ extern ProblemDef *p;
 
 
 //Update Error lists
-std::tuple<double,double,double> getErrorVariables(SubprocessFacet* f, Databuff *hitbuffer_sum){
+std::tuple<double,double,double,double> getErrorVariables(SubprocessFacet* f, Databuff *hitbuffer_sum){
 	if(hitbuffer_sum==NULL){
-		return std::make_tuple(f->tmpCounter[0].nbHitEquiv, (double)f->tmpCounter[0].nbDesorbed, f->tmpCounter[0].nbAbsEquiv);
+		return std::make_tuple(f->tmpCounter[0].nbHitEquiv, (double)f->tmpCounter[0].nbDesorbed, (double)f->tmpCounter[0].nbOutgassed, f->tmpCounter[0].nbAbsEquiv);
 	}
 	else{
-		return std::make_tuple(getHits(f,hitbuffer_sum),(double)getnbDesorbed(f, hitbuffer_sum),getnbAdsorbed(f,hitbuffer_sum));
+		return std::make_tuple(getHits(f,hitbuffer_sum),(double)getnbDesorbed(f, hitbuffer_sum),(double)getnbOutgassed(f, hitbuffer_sum),getnbAdsorbed(f,hitbuffer_sum));
 	}
 }
 
 void UpdateErrorList(Databuff *hitbuffer_sum){ // hitbuffer_sum==NULL: subprocess error, else: main error
 	double num_hit_it=0;
 	double num_des_ad_it=0;
-	double nbhits=0.0; double nbdes=0.0; double nbads=0.0;
+	double nbhits=0.0; double nbdes=0.0; double nbout=0.0;double nbads=0.0;
 
 	double factor=hitbuffer_sum==NULL?pow(simHistory->numSubProcess,0.5):1.0; // To be consistent with the ignored facets for calculating the error after summation over all subprocesses, here the hitRationLimit must be reduced with the correction factor due to multiple subprocesses.
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) { //save current num total hits in currentList, add difference current-old to num_hit_it
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			std::tie(nbhits,nbdes,nbads)=getErrorVariables(&f, hitbuffer_sum);
-			num_hit_it+=f.sh.opacity * (nbhits + nbdes);
-			num_des_ad_it+=f.sh.opacity * (nbads+ nbdes);
+			std::tie(nbhits,nbdes,nbout,nbads)=getErrorVariables(&f, hitbuffer_sum);
+			num_hit_it+=f.sh.opacity * (nbhits + nbdes + nbout);
+			num_des_ad_it+=f.sh.opacity * (nbads + nbdes);
 		}
 	}
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			std::tie(nbhits,nbdes,nbads)=getErrorVariables(&f, hitbuffer_sum);
-			double num_hit_f=f.sh.opacity * (nbhits + nbdes);
-			double num_des_ad_f=f.sh.opacity * (nbads+ nbdes);
+			std::tie(nbhits,nbdes,nbout,nbads)=getErrorVariables(&f, hitbuffer_sum);
+			double num_hit_f=f.sh.opacity * (nbhits + nbdes + nbout);
+			double num_des_ad_f=f.sh.opacity * (nbads + nbdes);
 
 			//neglect events/covering change if very small compared to total hits
 			if(num_hit_f/num_hit_it<(p->hitRatioLimit)/factor){
@@ -84,11 +84,13 @@ void UpdateErrorList(Databuff *hitbuffer_sum){ // hitbuffer_sum==NULL: subproces
 			if(hitbuffer_sum==NULL){ // Sub process: set currentList values
 				simHistory->hitList.setCurrent(&f,nbhits);
 				simHistory->desorbedList.setCurrent(&f,nbdes);
+				simHistory->outgassedList.setCurrent(&f,nbout);
 				simHistory->adsorbedList.setCurrent(&f,nbads);
 			}
 			else{ // Main process: set historyList values
 				simHistory->hitList.setLast(&f,nbhits);
 				simHistory->desorbedList.setLast(&f,nbdes);
+				simHistory->outgassedList.setLast(&f,nbout);
 				simHistory->adsorbedList.setLast(&f,nbads);
 			}
 		}

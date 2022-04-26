@@ -795,6 +795,9 @@ SimulationHistory::SimulationHistory(int world_size){
 	desorbedList.initList(numFacet);
 	desorbedList.initCurrent(numFacet);
 
+	outgassedList.initList(numFacet);
+	outgassedList.initCurrent(numFacet);
+
 	adsorbedList.initList(numFacet);
 	adsorbedList.initCurrent(numFacet);
 
@@ -825,6 +828,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 
 	double numHit;
 	llong numDes;
+	llong numOut;
 	llong numAds;
 	boost::multiprecision::uint128_t covering;
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
@@ -832,11 +836,13 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 			covering = getCovering(&f, hitbuffer);
 			numHit=getHits(&f, hitbuffer);
 			numDes=getnbDesorbed(&f, hitbuffer);
+			numOut=getnbOutgassed(&f, hitbuffer);
 			numAds=getnbAdsorbed(&f, hitbuffer);
 
 			coveringList.currentList.push_back(covering);
 			hitList.currentList.push_back(numHit);
 			desorbedList.currentList.push_back(numDes);
+			outgassedList.currentList.push_back(numOut);
 			adsorbedList.currentList.push_back(numAds);
 
 			f.tmpCounter[0].covering=covering;
@@ -874,6 +880,9 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 
 	desorbedList.initList(numFacet);
 	desorbedList.appendCurrent(0);
+
+	outgassedList.initList(numFacet);
+	outgassedList.appendCurrent(0);
 
 	adsorbedList.initList(numFacet);
 	adsorbedList.appendCurrent(0);
@@ -939,6 +948,11 @@ void SimulationHistory::updateHistory(){
 	desorbedList.initList(numFacet);
 	desorbedList.initCurrent(numFacet);
 	desorbedList.appendCurrent(0);
+
+	outgassedList.reset();
+	outgassedList.initList(numFacet);
+	outgassedList.initCurrent(numFacet);
+	outgassedList.appendCurrent(0);
 
 	adsorbedList.reset();
 	adsorbedList.initList(numFacet);

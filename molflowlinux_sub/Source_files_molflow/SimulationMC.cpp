@@ -970,7 +970,8 @@ bool StartFromSource() {
 
 			src->hitted = true;
 			sHandle->totalDesorbed++;
-			sHandle->tmpGlobalResult.globalHits.nbDesorbed++;
+			sHandle->tmpGlobalResult.globalHits.nbDesorbed++; //in the global hits counter we do not distinguish between "desorbed" and "outgassed"!
+			//we could! Then we would have to adapt also the "K_realvirt" in other words the "GetMoleculesPerTP" function"!
 
 
 			//----absorb----
@@ -1127,7 +1128,8 @@ bool StartFromSource() {
 
 	src->hitted = true;
 	sHandle->totalDesorbed++;
-	sHandle->tmpGlobalResult.globalHits.nbDesorbed++;
+	sHandle->tmpGlobalResult.globalHits.nbDesorbed++;//in the global hits counter we do not distinguish between "desorbed" and "outgassed"!
+	//we could! Then we would have to adapt also the "K_realvirt" in other words the "GetMoleculesPerTP" function"!
 	//sHandle->nbPHit = 0;
 
 	if (src->sh.isMoving) {

@@ -122,6 +122,7 @@ void UpdateMCSubHits(Databuff *databuffer, int rank) {
 	gHits->globalHits.nbHitEquiv = sHandle->tmpGlobalResult.globalHits.nbHitEquiv;
 	gHits->globalHits.nbAbsEquiv = sHandle->tmpGlobalResult.globalHits.nbAbsEquiv;
 	gHits->globalHits.nbDesorbed = sHandle->tmpGlobalResult.globalHits.nbDesorbed;
+	gHits->globalHits.nbOutgassed = sHandle->tmpGlobalResult.globalHits.nbOutgassed;
 	//gHits->globalHits.covering=0;
 	gHits->distTraveled_total = sHandle->tmpGlobalResult.distTraveled_total;
 	gHits->distTraveledTotal_fullHitsOnly = sHandle->tmpGlobalResult.distTraveledTotal_fullHitsOnly;
@@ -190,6 +191,7 @@ void UpdateMCSubHits(Databuff *databuffer, int rank) {
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 					facetHitBuffer->nbAbsEquiv = f.tmpCounter[m].nbAbsEquiv;
 					facetHitBuffer->nbDesorbed = f.tmpCounter[m].nbDesorbed;
+					facetHitBuffer->nbOutgassed = f.tmpCounter[m].nbOutgassed;
 					facetHitBuffer->nbMCHit = f.tmpCounter[m].nbMCHit;
 					facetHitBuffer->nbHitEquiv = f.tmpCounter[m].nbHitEquiv;
 					facetHitBuffer->sum_1_per_ort_velocity = f.tmpCounter[m].sum_1_per_ort_velocity;
@@ -358,6 +360,7 @@ void initbufftozero(Databuff *databuffer){
 	gHits->globalHits.nbHitEquiv = 0.0;
 	gHits->globalHits.nbAbsEquiv = 0.0;
 	gHits->globalHits.nbDesorbed = 0;
+	gHits->globalHits.nbOutgassed = 0;
 	if (gHits->globalHits.covering.backend().size() == 0) //Not necessary but used as a precaution
 		gHits->globalHits.covering = boost::multiprecision::uint128_t(0);
 	gHits->distTraveled_total = 0.0;
@@ -433,6 +436,7 @@ void initbufftozero(Databuff *databuffer){
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 					facetHitBuffer->nbAbsEquiv = 0.0;
 					facetHitBuffer->nbDesorbed = 0;
+					facetHitBuffer->nbOutgassed = 0;
 					facetHitBuffer->nbMCHit = 0;
 					facetHitBuffer->nbHitEquiv = 0.0;
 					facetHitBuffer->sum_1_per_ort_velocity = 0.0;

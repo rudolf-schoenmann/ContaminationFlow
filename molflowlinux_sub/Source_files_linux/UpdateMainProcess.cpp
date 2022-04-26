@@ -236,6 +236,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 		simHistory->errorList_event.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 		simHistory->errorList_covering.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 		simHistory->desorbedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+		simHistory->outgassedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 		simHistory->adsorbedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 		simHistory->particleDensityList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 		simHistory->pressureList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
@@ -359,6 +360,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 	sHandle->tmpGlobalResult.globalHits.nbHitEquiv=gHits->globalHits.nbHitEquiv += subHits->globalHits.nbHitEquiv;
 	sHandle->tmpGlobalResult.globalHits.nbAbsEquiv=gHits->globalHits.nbAbsEquiv += subHits->globalHits.nbAbsEquiv;
 	sHandle->tmpGlobalResult.globalHits.nbDesorbed=gHits->globalHits.nbDesorbed += subHits->globalHits.nbDesorbed;
+	sHandle->tmpGlobalResult.globalHits.nbOutgassed=gHits->globalHits.nbOutgassed += subHits->globalHits.nbOutgassed;
 	sHandle->tmpGlobalResult.distTraveled_total=gHits->distTraveled_total += subHits->distTraveled_total;
 	sHandle->tmpGlobalResult.distTraveledTotal_fullHitsOnly=gHits->distTraveledTotal_fullHitsOnly += subHits->distTraveledTotal_fullHitsOnly;
 
@@ -442,6 +444,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 					boost::multiprecision::uint128_t covering_sum = facetHitSub->covering;
 					f.tmpCounter[m].nbAbsEquiv = facetHitBuffer->nbAbsEquiv += facetHitSub->nbAbsEquiv;
 					f.tmpCounter[m].nbDesorbed = facetHitBuffer->nbDesorbed += facetHitSub->nbDesorbed;
+					f.tmpCounter[m].nbOutgassed = facetHitBuffer->nbOutgassed += facetHitSub->nbOutgassed;
 					f.tmpCounter[m].nbMCHit = facetHitBuffer->nbMCHit += facetHitSub->nbMCHit;
 					f.tmpCounter[m].nbHitEquiv = facetHitBuffer->nbHitEquiv += facetHitSub->nbHitEquiv;;
 					f.tmpCounter[m].sum_1_per_ort_velocity = facetHitBuffer->sum_1_per_ort_velocity += facetHitSub->sum_1_per_ort_velocity;

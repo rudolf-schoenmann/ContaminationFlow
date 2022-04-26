@@ -75,6 +75,9 @@ double getHits(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number 
 llong getnbDesorbed(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number of desorbed testparticles from hitbuffer
 	return getFacetHitBuffer(iFacet,hitbuffer)->nbDesorbed;
 }
+llong getnbOutgassed(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number of outgassed testparticles from hitbuffer
+	return getFacetHitBuffer(iFacet,hitbuffer)->nbOutgassed;
+}
 llong getnbAdsorbed(SubprocessFacet *iFacet, Databuff *hitbuffer){ // returns number of adsorbed testparticles from hitbuffer
 	return getFacetHitBuffer(iFacet,hitbuffer)->nbAbsEquiv;
 }
