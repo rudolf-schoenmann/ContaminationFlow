@@ -1877,7 +1877,6 @@ void TreatMovingFacet() {
 }
 
 void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t desorb, size_t absorb, double sum_1_per_v, double sum_v_ort, bool desorbed) {
-	//std::cout << "Facet: " << getFacetIndex(f)<< " time = " << time << std::endl;
 	size_t nbMoments = sHandle->moments.size();
 	for (size_t m = 0; m <= nbMoments; m++) {
 		if (m == 0 || abs((double)time - (double)sHandle->moments[m - 1]) < sHandle->wp.timeWindowSize / 2.0) {
@@ -1893,8 +1892,7 @@ void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t de
 				f->tmpCounter[m].sum_1_per_ort_velocity += sHandle->currentParticle.oriRatio * sum_1_per_v;
 				f->tmpCounter[m].sum_v_ort += sHandle->currentParticle.oriRatio * sum_v_ort;
 				f->tmpCounter[m].sum_1_per_velocity += (hitEquiv + static_cast<double>(desorb)) / sHandle->currentParticle.velocity;
-				//std::cout << "particle on time on facet" << getFacetIndex(f)<<std::endl;
-			}
+							}
 			//else{std::cout << "particle to late on facet"<< getFacetIndex(f)<<std::endl;}
 			//update covering: increases with every absorb, decreases with every desorb
 			if (absorb>0){ //TODO which one better?
