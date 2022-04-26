@@ -559,6 +559,7 @@ void ResetTmpCounters() {
 	sHandle->tmpGlobalResult.globalHits.nbHitEquiv = 0.0;
 	sHandle->tmpGlobalResult.globalHits.nbAbsEquiv = 0.0;
 	sHandle->tmpGlobalResult.globalHits.nbDesorbed = 0;
+	sHandle->tmpGlobalResult.globalHits.nbOutgassed = 0;
 	sHandle->tmpGlobalResult.globalHits.sum_1_per_ort_velocity = 0;
 	sHandle->tmpGlobalResult.globalHits.sum_1_per_velocity = 0;
 	sHandle->tmpGlobalResult.globalHits.sum_v_ort = 0;

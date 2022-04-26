@@ -157,6 +157,7 @@ void UpdateMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 	gHits->globalHits.nbHitEquiv += sHandle->tmpGlobalResult.globalHits.nbHitEquiv;
 	gHits->globalHits.nbAbsEquiv += sHandle->tmpGlobalResult.globalHits.nbAbsEquiv;
 	gHits->globalHits.nbDesorbed += sHandle->tmpGlobalResult.globalHits.nbDesorbed;
+	gHits->globalHits.nbOutgassed += sHandle->tmpGlobalResult.globalHits.nbOutgassed;
 	gHits->distTraveled_total += sHandle->tmpGlobalResult.distTraveled_total;
 	gHits->distTraveledTotal_fullHitsOnly += sHandle->tmpGlobalResult.distTraveledTotal_fullHitsOnly;
 
@@ -224,6 +225,7 @@ void UpdateMCHits(Databuff *databuffer, int rank, size_t nbMoments) {
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 					facetHitBuffer->nbAbsEquiv += f.tmpCounter[m].nbAbsEquiv;
 					facetHitBuffer->nbDesorbed += f.tmpCounter[m].nbDesorbed;
+					facetHitBuffer->nbOutgassed += f.tmpCounter[m].nbOutgassed;
 					facetHitBuffer->nbMCHit += f.tmpCounter[m].nbMCHit;
 					facetHitBuffer->nbHitEquiv += f.tmpCounter[m].nbHitEquiv;
 					facetHitBuffer->sum_1_per_ort_velocity += f.tmpCounter[m].sum_1_per_ort_velocity;
@@ -970,7 +972,12 @@ bool StartFromSource() {
 
 			src->hitted = true;
 			sHandle->totalDesorbed++;
-			sHandle->tmpGlobalResult.globalHits.nbDesorbed++; //in the global hits counter we do not distinguish between "desorbed" and "outgassed"!
+			if(desorbed_b){
+				sHandle->tmpGlobalResult.globalHits.nbDesorbed++;
+			}
+			else{
+				sHandle->tmpGlobalResult.globalHits.nbOutgassed++;
+			}
 			//we could! Then we would have to adapt also the "K_realvirt" in other words the "GetMoleculesPerTP" function"!
 
 
@@ -1128,8 +1135,12 @@ bool StartFromSource() {
 
 	src->hitted = true;
 	sHandle->totalDesorbed++;
-	sHandle->tmpGlobalResult.globalHits.nbDesorbed++;//in the global hits counter we do not distinguish between "desorbed" and "outgassed"!
-	//we could! Then we would have to adapt also the "K_realvirt" in other words the "GetMoleculesPerTP" function"!
+	if(desorbed_b){
+		sHandle->tmpGlobalResult.globalHits.nbDesorbed++;
+		}
+	else{
+		sHandle->tmpGlobalResult.globalHits.nbOutgassed++;
+	}
 	//sHandle->nbPHit = 0;
 
 	if (src->sh.isMoving) {

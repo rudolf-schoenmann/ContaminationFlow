@@ -88,6 +88,13 @@ llong getnbDesorbed(Databuff *hitbuffer_sum){
 
 	return gHits->globalHits.nbDesorbed;
 }
+
+llong getnbOutgassed(Databuff *hitbuffer_sum){
+	GlobalHitBuffer *gHits;
+	gHits = (GlobalHitBuffer *)hitbuffer_sum->buff;
+
+	return gHits->globalHits.nbOutgassed;
+}
 /*
 std::tuple<double, double, double> getVelocities(SubprocessFacet *iFacet, Databuff *hitbuffer_sum){
 	BYTE *buffer;
@@ -138,7 +145,8 @@ boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum){ // C
 //Returns how many physical molecules one test particle represents
 
 	llong nbDesorbed = getnbDesorbed(hitbuffer_sum);
-	if (nbDesorbed == 0) return 0; //avoid division by 0
+	llong nbOutgassed = getnbOutgassed(hitbuffer_sum);
+	if (nbDesorbed == 0 && nbOutgassed == 0) return 0; //avoid division by 0
 
 	boost::multiprecision::float128 des=calctotalDesorption();
 	CalcTotalOutgassingWorker();
@@ -147,7 +155,7 @@ boost::multiprecision::float128 GetMoleculesPerTP(Databuff *hitbuffer_sum){ // C
 	tmpstream << "total outgassing =  "<< sHandle->wp.totalOutgassingParticles <<std::endl;
 	tmpstream << "total outgassing/total desorption =  "<< sHandle->wp.totalOutgassingParticles/des <<std::endl;
 	printStream(tmpstream.str());*/
-	return (boost::multiprecision::float128(sHandle->wp.totalOutgassingParticles) +des) / (boost::multiprecision::float128(nbDesorbed)/boost::multiprecision::float128(simHistory->smallCoveringFactor));
+	return (boost::multiprecision::float128(sHandle->wp.totalOutgassingParticles) +des) / (boost::multiprecision::float128(nbDesorbed+nbOutgassed)/boost::multiprecision::float128(simHistory->smallCoveringFactor));
 	}
 
 
