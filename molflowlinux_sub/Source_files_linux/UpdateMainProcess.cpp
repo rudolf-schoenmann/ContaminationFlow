@@ -57,41 +57,17 @@ double getStepSize(){
 			double t_start = t_min*exp((double)(simHistory->currentStep-1)*(log(t_max/t_min)/iterationNumber));
 			double t_stop = t_min*exp((double)simHistory->currentStep*(log(t_max/t_min)/iterationNumber));
 			test_step_size = t_stop - t_start;
-			if(test_step_size<last_step_size){
-				//5th order polynomial growing points in time (t_i);time step = t_(i+1)- t_i
-				t_start = t_min + (t_max - t_min)*pow(((simHistory->currentStep-1)/iterationNumber),5);
-				t_stop = t_min + (t_max - t_min)*pow((simHistory->currentStep/iterationNumber),5);
-				test_step_size = t_stop - t_start;
+			for(int i = 10; i > 0; i--){
 				if(test_step_size<last_step_size){
-					//4th order polynomial growing points in time (t_i);time step = t_(i+1)- t_i
-					t_start = t_min + (t_max - t_min)*pow(((simHistory->currentStep-1)/iterationNumber),4);
-					t_stop = t_min + (t_max - t_min)*pow((simHistory->currentStep/iterationNumber),4);
+					//ith order polynomial growing points in time (t_i);time step = t_(i+1)- t_i
+					t_start = t_min + (t_max - t_min)*pow(((simHistory->currentStep-1)/iterationNumber),i);
+					t_stop = t_min + (t_max - t_min)*pow((simHistory->currentStep/iterationNumber),i);
 					test_step_size = t_stop - t_start;
-					if(test_step_size<last_step_size){
-						//cubic growing points in time (t_i);time step = t_(i+1)- t_i
-						t_start = t_min + (t_max - t_min)*pow(((simHistory->currentStep-1)/iterationNumber),3);
-						t_stop = t_min + (t_max - t_min)*pow((simHistory->currentStep/iterationNumber),3);
-						test_step_size = t_stop - t_start;
-						if(test_step_size<last_step_size){
-							//quadratic growing points in time (t_i);time step = t_(i+1)- t_i
-							t_start = t_min + (t_max - t_min)*pow(((simHistory->currentStep-1)/iterationNumber),2);
-							t_stop = t_min + (t_max - t_min)*pow((simHistory->currentStep/iterationNumber),2);
-							test_step_size = t_stop - t_start;
-							if(test_step_size<last_step_size){
-								//linear growing points in time (t_i);time step = t_(i+1)- t_i = constant
-								t_start = t_min + (t_max - t_min)*((simHistory->currentStep-1)/iterationNumber);
-								t_stop = t_min + (t_max - t_min)*(simHistory->currentStep/iterationNumber);
-								test_step_size = t_stop - t_start;
-								if(test_step_size<last_step_size){
-									return t_min;
-								}
-							}
-						}
-					}
+				}
+				if(i == 1 && test_step_size<last_step_size){
+					return t_min;
 				}
 			}
-
-
 			return t_stop-t_start<p->t_max?t_stop-t_start:p->t_max;
 		}
 		/*if(simHistory->currentStep==0){
