@@ -57,11 +57,11 @@ double getStepSize(){
 			double t_start = t_min*exp((double)(simHistory->currentStep-1)*(log(t_max/t_min)/iterationNumber));
 			double t_stop = t_min*exp((double)simHistory->currentStep*(log(t_max/t_min)/iterationNumber));
 			test_step_size = t_stop - t_start;
-			for(int i = 10; i > 0; i--){
+			for(int i = 40; i > 0; i--){
 				if(test_step_size<last_step_size){
 					//ith order polynomial growing points in time (t_i);time step = t_(i+1)- t_i
-					t_start = t_min + (t_max - t_min)*pow(((simHistory->currentStep-1)/iterationNumber),i);
-					t_stop = t_min + (t_max - t_min)*pow((simHistory->currentStep/iterationNumber),i);
+					t_start = t_min + (t_max - t_min)*pow(((simHistory->currentStep-1)/iterationNumber),i*0.25);
+					t_stop = t_min + (t_max - t_min)*pow((simHistory->currentStep/iterationNumber),i*0.25);
 					test_step_size = t_stop - t_start;
 				}
 				if(i == 1 && test_step_size<last_step_size){
