@@ -132,37 +132,39 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 			std::ostringstream tmpstream (std::ostringstream::app);
 
 			covering_phys = simHistory->coveringList.getLast(&f);
-			covering_sum = static_cast < boost::multiprecision::uint128_t >(static_cast < boost::multiprecision::float128 >(getCovering(&f, hitbuffer_sum))/static_cast < boost::multiprecision::float128 >(simHistory->smallCoveringFactor));
+			covering_sum = getCovering(&f, hitbuffer_sum);
 
 			tmpstream <<std::endl << "Facet " << getFacetIndex(&f)<< std::endl;
-			tmpstream << "covering_sum  = " << covering_sum  << " = "<< boost::multiprecision::float128(covering_sum) << std::endl;
+			tmpstream << "covering_sum  = " << covering_sum/static_cast < boost::multiprecision::float128 >(simHistory->smallCoveringFactor)  << std::endl;
 			tmpstream << "covering_phys_before = " << covering_phys << " = "<< boost::multiprecision::float128(covering_phys) << std::endl;
 
+			covering_phys = static_cast < boost::multiprecision::uint128_t >(covering_phys*simHistory->smallCoveringFactor);//scale up covering_phys; covering_sum (in all buffers) is already scaled up before the iteration!
 			if(!std::isinf(simHistory->errorList_covering.getCurrent(&f))){
 				if(simHistory->errorList_covering.getCurrent(&f) < p->noupdateError){
 							if (covering_sum > covering_phys){
-								boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (rounding + boost::multiprecision::float128(covering_sum - covering_phys)*Krealvirt);
-								covering_phys += covering_delta;
-								tmpstream << "covering rises by " <<covering_delta << " = "<<boost::multiprecision::float128(covering_delta) << std::endl;
+								boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (rounding +(boost::multiprecision::float128(covering_sum - covering_phys)/simHistory->smallCoveringFactor)*Krealvirt);
+								covering_phys = static_cast < boost::multiprecision::uint128_t >(covering_phys/simHistory->smallCoveringFactor)+ covering_delta;//scale down covering_phys here; covering_delta already scaled down!
+								tmpstream << "covering rises by " <<covering_delta/simHistory->smallCoveringFactor << " = "<<boost::multiprecision::float128(covering_delta) << std::endl;
 							}
 							else{
-								boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (rounding + boost::multiprecision::float128(covering_phys - covering_sum)*Krealvirt);
-
+								boost::multiprecision::uint128_t covering_delta = static_cast < boost::multiprecision::uint128_t > (rounding + (boost::multiprecision::float128(covering_phys - covering_sum)/simHistory->smallCoveringFactor)*Krealvirt);
+								covering_phys = static_cast < boost::multiprecision::uint128_t >(covering_phys/simHistory->smallCoveringFactor);//scale down covering_phys here; covering_delta already scaled down!
 								// Check, if covering got negative
+
 								if(covering_phys+1==covering_delta){
 									tmpstream<<"!!!-----Correct covering_delta by 1: "<<covering_phys<<" - "<<covering_delta <<" because of rounding-----!!!"<<std::endl;
 									covering_delta=covering_phys;
 								}
 								else if(covering_phys<covering_delta && covering_phys+10>=covering_delta){
-									tmpstream <<"!!!-----Correct covering_delta: "<<covering_phys<<" - "<<covering_delta <<" because of bad statistic-----!!!"<<std::endl;
+									tmpstream <<"!!!-----Correct covering_delta: "<<covering_phys<<" - "<<covering_delta <<" because of bad statistics-----!!!"<<std::endl;
 									covering_delta=covering_phys;
 								}
 								else if(covering_phys<covering_delta){
-									tmpstream <<"!!!-----Covering gets negative: "<<covering_phys<<" - "<<covering_delta <<". Correct Covering=0-----!!!"<<std::endl;
+									tmpstream <<"!!!-----Covering gets negative: "<<covering_phys<<" - "<<covering_delta <<". Correct: Covering=0-----!!!"<<std::endl;
 									covering_delta=covering_phys;
 								}
 								covering_phys -= covering_delta;
-								tmpstream << "covering decreases by "<<covering_delta << " = " << boost::multiprecision::float128(covering_delta) << std::endl;
+								tmpstream << "covering decreases by "<<covering_delta/simHistory->smallCoveringFactor << " = " << boost::multiprecision::float128(covering_delta) << std::endl;
 							}
 				}
 				else{tmpstream << "covering is not updated! error_covering = "<<simHistory->errorList_covering.getCurrent(&f) << std::endl;
