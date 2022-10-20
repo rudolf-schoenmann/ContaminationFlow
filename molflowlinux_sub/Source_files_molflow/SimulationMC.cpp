@@ -934,74 +934,55 @@ bool StartFromSource() {
 		}
 
 	}
-	//--------------------------------------Sojourn time begin----------------------------------------------
-		double flightTime=sHandle->currentParticle.flightTime;
-		if (src->sh.enableSojournTime) {
-			/*
-			double residence_energy;
-			boost::multiprecision::float128 coverage;
-			coverage = calcCoverage(src);
-			if(coverage >= 1)residence_energy = p->H_vap;
-			else {
-				if(rnd() <= coverage ){
-					residence_energy = 	p->H_vap
-				}
-				else{
-					residence_energy = 	p->E_de;
-				}
-			}
-			//double A = exp(-src->sh.sojournE / (kb*src->sh.temperature)); // //Don't need that. We decide in each case of residence at random, if the particle will adsorb at substrate or adsorbate.
-			double A = exp(-residence_energy / (kb*src->sh.temperature));
-			*/
-			//sHandle->currentParticle.flightTime += -log(rnd()) / (A*src->sh.sojournFreq);//Unsolved issue, whether we need a residence before a new particle starts...
+	// Choose a starting time
+	double flightTime=sHandle->currentParticle.flightTime;
+	sHandle->currentParticle.flightTime+=calcStartTime(src,desorbed_b);
+	if(sHandle->currentParticle.flightTime < std::numeric_limits<double>::infinity()){
+			flightTime=sHandle->currentParticle.flightTime;
+	}
 
-			//New mode: desorption decreases over time
-			sHandle->currentParticle.flightTime+=calcStartTime(src,desorbed_b);
 
-			if(sHandle->currentParticle.flightTime < std::numeric_limits<double>::infinity()){
-				flightTime=sHandle->currentParticle.flightTime;
-			}
+	if(sHandle->currentParticle.flightTime>simHistory->stepSize && src->sh.opacity!=0){
+		//This case normally should not happen. Only if there is some error in the calculation
+		//of the start time. That should be smaller than the step size per definition.
+		//----desorb----
+		if (src->sh.isMoving && sHandle->wp.motionType) RecordHit(HIT_MOVING);
+		else RecordHit(HIT_DES); //create blue hit point for created particle
+
+		src->hitted = true;
+		sHandle->totalDesorbed++;
+		if(desorbed_b){
+			sHandle->tmpGlobalResult.globalHits.nbDesorbed++;
+		}
+		else{
+			sHandle->tmpGlobalResult.globalHits.nbOutgassed++;
 		}
 
-		if(sHandle->currentParticle.flightTime>simHistory->stepSize && src->sh.opacity!=0){
-			//This case normally should not happen. Only if there is some error in the calculation
-			//of the start time. That should be smaller than the step size per definition.
-			//----desorb----
-			if (src->sh.isMoving && sHandle->wp.motionType) RecordHit(HIT_MOVING);
-			else RecordHit(HIT_DES); //create blue hit point for created particle
+		//----absorb----
+		sHandle->tmpGlobalResult.globalHits.nbMCHit++; //global
+		sHandle->tmpGlobalResult.globalHits.nbHitEquiv += sHandle->currentParticle.oriRatio;
+		sHandle->tmpGlobalResult.globalHits.nbAbsEquiv += sHandle->currentParticle.oriRatio;
+		simHistory->flightTime+=flightTime;
+		simHistory->nParticles+=1;
+		RecordHistograms(src);
 
-			src->hitted = true;
-			sHandle->totalDesorbed++;
-			if(desorbed_b){
-				sHandle->tmpGlobalResult.globalHits.nbDesorbed++;
-			}
-			else{
-				sHandle->tmpGlobalResult.globalHits.nbOutgassed++;
-			}
-			//we could! Then we would have to adapt also the "K_realvirt" in other words the "GetMoleculesPerTP" function"!
+		RecordHit(HIT_ABS);
 
+		IncreaseFacetCounter(src, sHandle->currentParticle.flightTime, 0, 1, 1, 0, 0, desorbed_b);
+		ProfileFacet(src, sHandle->currentParticle.flightTime, true, 1.0, 0.0); //was 2.0, 1.0
+		if (src->sh.countAbs) RecordHitOnTexture(src, sHandle->currentParticle.flightTime, true, 1.0, 0.0); //was 2.0, 1.0
+		if (src->sh.anglemapParams.record) RecordAngleMap(src);
 
-			//----absorb----
-			//sHandle->tmpGlobalResult.globalHits.nbMCHit++; //global
-			//sHandle->tmpGlobalResult.globalHits.nbHitEquiv += sHandle->currentParticle.oriRatio;
-			sHandle->tmpGlobalResult.globalHits.nbAbsEquiv += sHandle->currentParticle.oriRatio;
-			simHistory->flightTime+=flightTime;
-			simHistory->nParticles+=1;
-			RecordHistograms(src);
+		//NEW: to detect whether new particle has to be created
+		sHandle->currentParticle.lastHitFacet=NULL;
 
-			RecordHit(HIT_ABS);
+		std::ostringstream tmpstream (std::ostringstream::app);
+		tmpstream <<"Starting time of test-particle was later than the end of the iteration step. "  <<std::endl;
+		tmpstream <<"In this case there might be an error in the code!!! "  <<std::endl;
+		printStream(tmpstream.str());
+		return true;
+	}
 
-			IncreaseFacetCounter(src, sHandle->currentParticle.flightTime, 0, 1, 1, 0, 0, desorbed_b);
-			ProfileFacet(src, sHandle->currentParticle.flightTime, true, 1.0, 0.0); //was 2.0, 1.0
-			if (src->sh.countAbs) RecordHitOnTexture(src, sHandle->currentParticle.flightTime, true, 1.0, 0.0); //was 2.0, 1.0
-			if (src->sh.anglemapParams.record) RecordAngleMap(src);
-
-			//NEW: to detect whether new particle has to be created
-			sHandle->currentParticle.lastHitFacet=NULL;
-			return true;
-		}
-
-	//----------------------------------------Sojourn time end----------------------------------------------
 
 	if (src->sh.isMoving && sHandle->wp.motionType) RecordHit(HIT_MOVING);
 	else RecordHit(HIT_DES); //create blue hit point for created particle
@@ -1876,7 +1857,7 @@ void TreatMovingFacet() {
 	sHandle->currentParticle.velocity = newVelocity.Norme();
 }
 
-void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t desorb, size_t absorb, double sum_1_per_v, double sum_v_ort, bool desorbed) {
+void IncreaseFacetCounter(SubprocessFacet *f, double time, size_t hit, size_t desorb, size_t absorb, double sum_1_per_v, double sum_v_ort, bool desorbed = true) {
 	size_t nbMoments = sHandle->moments.size();
 	for (size_t m = 0; m <= nbMoments; m++) {
 		if (m == 0 || abs((double)time - (double)sHandle->moments[m - 1]) < sHandle->wp.timeWindowSize / 2.0) {
