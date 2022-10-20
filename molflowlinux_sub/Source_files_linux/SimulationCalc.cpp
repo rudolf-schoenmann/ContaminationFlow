@@ -343,7 +343,7 @@ double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b, bool printWarning
 				}
 				else{//desorption rate is constant until coverage equals two.
 					if(coverage >= 2){
-						if((coverage - boost::multiprecision::float128(2)>=time_step/tau_ads)){//There are more layers (excluding the first two layers), than desorbing while the iteration time.
+						if((coverage - boost::multiprecision::float128(2))>=time_step/tau_ads){//There are more layers (excluding the first two layers), than desorbing while the iteration time.
 										t_start = rand_t * time_step;
 						}
 						else{//(coverage - 2) < (time_step/tau_ads): There are less layers (excluding the first two layers), than desorbing while the iteration time.
@@ -394,7 +394,7 @@ double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b, bool printWarning
 							boost::multiprecision::float128 time_step_mixed =(1/b)* boost::multiprecision::log((1+a/b)/(coverage+a/b));
 							boost::multiprecision::float128 time_step_subst = time_step - time_step_mixed;
 							if(rand_t<(coverage-boost::multiprecision::float128(1))/(coverage-boost::multiprecision::exp(-time_step_subst/tau_subst))){
-								t_start= + (1/b)* boost::multiprecision::log((1/(coverage+(a/b)))*(coverage-rand_t*(coverage-((coverage+(a/b))*boost::multiprecision::exp(b*time_step_mixed)-a/b))+a/b));
+								t_start= + (1/b)* boost::multiprecision::log((1/(coverage+(a/b)))*(coverage-rand_t*(coverage-boost::multiprecision::float128(1))+a/b));
 							}
 							else{
 								t_start= time_step_mixed - tau_subst * boost::multiprecision::log(boost::multiprecision::float128(1)-rand_t*(boost::multiprecision::float128(1)-boost::multiprecision::exp(-time_step_subst/tau_subst)));
