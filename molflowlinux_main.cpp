@@ -125,8 +125,22 @@ bool loadAndCheckSHandle(int rank, Databuff* hitbuffer, Databuff* loadbuffer){
 		}
 		valid=false;
 	}
+	//Check for activation of 'Calculate constant flow':
+	/* This has to activated otherwise the 'latest moment' can somehow be earlier than the end of the iteration
+	 * time step. Then, the test-particle would be traced until the end of the iteration but to the 'latest moment'.
+	 */
+	if(!sHandle->wp.calcConstantFlow){
+		sHandle->wp.calcConstantFlow = true;
+		if(rank == 0){
+			std::ostringstream tmpstream (std::ostringstream::app);
+			tmpstream << "'calcConstantFlow' is automatically enabled." << std::endl;
+			tmpstream << "It was not checked when setting up the simulation." << std::endl;
+			printStream(tmpstream.str());
+		}
+	}
 
-	/*// Check for two sided facet with opacity
+
+	// Check for two sided facet with opacity
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
 			if(f.sh.is2sided && f.sh.opacity>0.0){
@@ -139,7 +153,7 @@ bool loadAndCheckSHandle(int rank, Databuff* hitbuffer, Databuff* loadbuffer){
 				valid=false;
 			}
 		}
-	}*/
+	}
 
 	//Read coveringFile
 	if(p->doCoveringFile){
