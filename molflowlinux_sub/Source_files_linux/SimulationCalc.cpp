@@ -458,7 +458,8 @@ double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b, bool printWarning
 				}
 			}
 			outgassing_before_step = InterpolateY(outgassing_start, sHandle->IDs[iFacet->sh.IDid], false, true);
-			return InterpolateX(outgassing_before_step + rnd() * facet_outgassing, sHandle->IDs[iFacet->sh.IDid], false, true);
+			return (InterpolateX(outgassing_before_step + rnd() * facet_outgassing, sHandle->IDs[iFacet->sh.IDid], false, true)-t_start);
+			//Zero is returned, if a test-particle is generated directly at the start of the iteration interval.
 		}
 	}
 }
