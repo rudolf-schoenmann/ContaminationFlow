@@ -218,8 +218,8 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 					boost::multiprecision::float128 time_step_ads = tau_ads*(coverage - boost::multiprecision::float128(2));
 					boost::multiprecision::float128 time_step_mixed = time_step - time_step_ads;
 
-					if((2+a/b)*boost::multiprecision::exp(b*time_step_mixed)-(a/b)>1){//case, where still more than one monolayer is left
-						desorption = coverage - boost::multiprecision::float128(2) + boost::multiprecision::float128(2) - (2+a/b)*boost::multiprecision::exp(b*time_step_mixed)+(a/b);
+					if(((2+a/b)*boost::multiprecision::exp(b*time_step_mixed)-(a/b))>1){//case, where still more than one monolayer is left
+						desorption = coverage - ((2+a/b)*boost::multiprecision::exp(b*time_step_mixed)-(a/b));
 						/*tmpstream << "coverage of Facet "<< getFacetIndex(iFacet) << " = "<< coverage <<std::endl;
 						tmpstream << "time_step_ads of Facet "<< getFacetIndex(iFacet) << " = "<< time_step_ads <<std::endl;
 						tmpstream << "time_step of Facet "<< getFacetIndex(iFacet) << " = "<< time_step <<std::endl;
@@ -235,7 +235,7 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 					else{//case, where coverage will be smaller than one.
 						time_step_mixed =(1/b)* boost::multiprecision::log((1+a/b)/(2+a/b));
 						boost::multiprecision::float128 time_step_subst = time_step - time_step_ads - time_step_mixed;
-						desorption = coverage - boost::multiprecision::float128(1) + (boost::multiprecision::float128(1) - boost::multiprecision::exp(-time_step_subst/tau_subst));
+						desorption = coverage - boost::multiprecision::exp(-time_step_subst/tau_subst);
 						//tmpstream << "Desorption of facet "<< getFacetIndex(iFacet) <<" will be so high, that less than one monolayer will be left. " <<std::endl;
 						}
 				}
@@ -243,15 +243,15 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 			else{// 1 <= coverage <= 2
 				boost::multiprecision::float128 b = (-1/tau_ads)+(1/tau_subst);
 				boost::multiprecision::float128 a = (1/tau_ads)-(2/tau_subst);
-				if((2+a/b)*boost::multiprecision::exp(b*time_step)-(a/b)>1){//case, where still more than one monolayer is left
-					desorption = coverage - boost::multiprecision::float128(2) + boost::multiprecision::float128(2) - (2+a/b)*boost::multiprecision::exp(b*time_step)+(a/b);
+				if(((coverage+a/b)*boost::multiprecision::exp(b*time_step)-(a/b))>1){//case, where still more than one monolayer is left
+					desorption = coverage - ((coverage+a/b)*boost::multiprecision::exp(b*time_step)-(a/b));
 					//tmpstream << "Desorption of facet "<< getFacetIndex(iFacet) <<" will be so low, that more than one monolayer will be left. " <<std::endl;
 					//tmpstream << "(2+a/b)*boost::multiprecision::exp(b*time_step) - (a/b) of Facet "<< getFacetIndex(iFacet) << " = "<< (2+a/b)*boost::multiprecision::exp(b*time_step)-(a/b) <<std::endl;
 					}
 				else{//case, where coverage will be smaller than one.
-					boost::multiprecision::float128 time_step_mixed =(1/b)* boost::multiprecision::log((1+a/b)/(2+a/b));
+					boost::multiprecision::float128 time_step_mixed =(1/b)* boost::multiprecision::log((1+a/b)/(coverage+a/b));
 					boost::multiprecision::float128 time_step_subst = time_step - time_step_mixed;
-					desorption = coverage - boost::multiprecision::float128(1) + (boost::multiprecision::float128(1) - boost::multiprecision::exp(-time_step_subst/tau_subst));
+					desorption = coverage - boost::multiprecision::exp(-time_step_subst/tau_subst);
 					//tmpstream << "Desorption of facet "<< getFacetIndex(iFacet) <<" will be so high, that less than one monolayer will be left. " <<std::endl;
 					}
 			}
@@ -260,7 +260,7 @@ boost::multiprecision::float128 calcDesorption(SubprocessFacet *iFacet){//This r
 	//tmpstream << "Desorption [layers] of facet "<< getFacetIndex(iFacet) <<" = " << desorption <<std::endl;
 	//tmpstream << "Desorption [particles] of facet "<< getFacetIndex(iFacet) <<" = " << desorption * boost::multiprecision::float128(calcNmono(iFacet)) <<std::endl;
 	//printStream(tmpstream.str());
-	if(desorption <0){
+	if(desorption <0){//should not happen
 		desorption = 0;
 	}
 	return desorption * boost::multiprecision::float128(calcNmono(iFacet));//This returns Delta'covering' in units of [1]. 1 means one particle.
@@ -329,57 +329,79 @@ double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b, bool printWarning
 						if(printWarning){	std::ostringstream tmpstream (std::ostringstream::app);
 											tmpstream << "!!! Warning: Facet "<<getFacetIndex(iFacet) <<" is predicted to reach monolayer this iteration. Coverage = " <<coverage  <<" !!!" << std::endl;
 											printStream(tmpstream.str());
-										}
+						}
 						boost::multiprecision::float128 time_step_ads = tau_ads*(coverage - boost::multiprecision::float128(1));
 						boost::multiprecision::float128 time_step_subst = time_step - time_step_ads;
 						if(rand_t<(coverage-boost::multiprecision::float128(1))/(coverage-boost::multiprecision::exp(-time_step_subst/tau_subst))){
-										t_start = rand_t * time_step_ads;
-										}
+							t_start = rand_t * time_step_ads;
+						}
 						else{
-										t_start=time_step_ads - tau_subst * boost::multiprecision::log(boost::multiprecision::float128(1)-rand_t*(boost::multiprecision::float128(1)-boost::multiprecision::exp(-time_step_subst/tau_subst))) ;
-										}
+							t_start=time_step_ads - tau_subst * boost::multiprecision::log(boost::multiprecision::float128(1)-rand_t*(boost::multiprecision::float128(1)-boost::multiprecision::exp(-time_step_subst/tau_subst))) ;
+						}
 					//Anyway: Here tau_ads == tau_subst! So, it is distinguished to provide a better understanding, what is happening physically
 					}
 				}
 				else{//desorption rate is constant until coverage equals two.
-					boost::multiprecision::float128 b = (-1/tau_ads)+(1/tau_subst);
-					boost::multiprecision::float128 a = (1/tau_ads)-(2/tau_subst);
-					boost::multiprecision::float128 time_step_ads = tau_ads*(coverage - boost::multiprecision::float128(2));
-					if((coverage - boost::multiprecision::float128(2)>=time_step/tau_ads)){//There are more layers (excluding the first two layers), than desorbing while the iteration time.
-						t_start = rand_t * time_step;
+					if(coverage >= 2){
+						if((coverage - boost::multiprecision::float128(2)>=time_step/tau_ads)){//There are more layers (excluding the first two layers), than desorbing while the iteration time.
+										t_start = rand_t * time_step;
 						}
-					else{//(coverage - 2) < (time_step/tau_ads): There are less layers (excluding the first two layers), than desorbing while the iteration time.
-						boost::multiprecision::float128 time_step_mixed = time_step - time_step_ads;
-						if((2+a/b)*boost::multiprecision::exp(b*time_step_mixed)-a/b>1){//case, where still more than one monolayer is left
-						//desorption = coverage - boost::multiprecision::float128(2) + boost::multiprecision::float128(2) - (2+a/b)*boost::multiprecision::exp(b*time_step_mixed);
-							if(rand_t<(coverage-boost::multiprecision::float128(2))/(coverage-(2+a/b)*boost::multiprecision::exp(b*time_step_mixed)+a/b)){
-								t_start = rand_t * time_step_ads;
-								}
-							else{
-								t_start=time_step_ads + (1/b)* boost::multiprecision::log((1/(2+(a/b)))*(boost::multiprecision::float128(2)-rand_t*(boost::multiprecision::float128(2)-(2+(a/b))*boost::multiprecision::exp(b*time_step_mixed)+a/b)+a/b));
-								}
-							}
-						else{//case, where coverage will be smaller than one.
-							if(printWarning){	std::ostringstream tmpstream (std::ostringstream::app);
-											tmpstream << "!!! Warning: Facet "<<getFacetIndex(iFacet) <<" is predicted to reach monolayer this iteration. Coverage = " <<coverage  <<" !!!" << std::endl;
-											printStream(tmpstream.str());
-											}
-							time_step_mixed =(1/b)* boost::multiprecision::log((1+a/b)/(2+a/b));
-							boost::multiprecision::float128 time_step_subst = time_step - time_step_ads - time_step_mixed;
-							if(rand_t<(coverage-boost::multiprecision::float128(1))/(coverage-boost::multiprecision::exp(-time_step_subst/tau_subst))){
-								if(rand_t<(coverage-boost::multiprecision::float128(2))/(coverage-boost::multiprecision::float128(1))){
+						else{//(coverage - 2) < (time_step/tau_ads): There are less layers (excluding the first two layers), than desorbing while the iteration time.
+							boost::multiprecision::float128 b = (-1/tau_ads)+(1/tau_subst);
+							boost::multiprecision::float128 a = (1/tau_ads)-(2/tau_subst);
+							boost::multiprecision::float128 time_step_ads = tau_ads*(coverage - boost::multiprecision::float128(2));
+							boost::multiprecision::float128 time_step_mixed = time_step - time_step_ads;
+							if(((2+a/b)*boost::multiprecision::exp(b*time_step_mixed)-a/b)>1){//case, where still more than one monolayer is left
+								if(rand_t<(coverage-boost::multiprecision::float128(2))/(coverage-((2+a/b)*boost::multiprecision::exp(b*time_step_mixed)-a/b))){
 									t_start = rand_t * time_step_ads;
 								}
 								else{
-									t_start=time_step_ads + (1/b)* boost::multiprecision::log((1/(2+(a/b)))*(boost::multiprecision::float128(2)-rand_t*(boost::multiprecision::float128(2)-(2+(a/b))*boost::multiprecision::exp(b*time_step_mixed)+a/b)+a/b));
+									t_start=time_step_ads + (1/b)* boost::multiprecision::log((1/(2+(a/b)))*(boost::multiprecision::float128(2)-rand_t*(boost::multiprecision::float128(2)-((2+(a/b))*boost::multiprecision::exp(b*time_step_mixed)-a/b))+a/b));
+								}
+							}
+							else{//case, where coverage will be smaller than one.
+								if(printWarning){std::ostringstream tmpstream (std::ostringstream::app);
+									tmpstream << "!!! Warning: Facet "<<getFacetIndex(iFacet) <<" is predicted to reach monolayer this iteration. Coverage = " <<coverage  <<" !!!" << std::endl;
+									printStream(tmpstream.str());
+								}
+								time_step_mixed =(1/b)* boost::multiprecision::log((1+a/b)/(2+a/b));
+								boost::multiprecision::float128 time_step_subst = time_step - time_step_ads - time_step_mixed;
+								if(rand_t<(coverage-boost::multiprecision::float128(1))/(coverage-boost::multiprecision::exp(-time_step_subst/tau_subst))){
+									if(rand_t<(coverage-boost::multiprecision::float128(2))/(coverage-boost::multiprecision::float128(1))){
+										t_start = rand_t * time_step_ads;
+									}
+									else{
+										t_start=time_step_ads + (1/b)* boost::multiprecision::log((1/(2+(a/b)))*(boost::multiprecision::float128(2)-rand_t*(boost::multiprecision::float128(2)-boost::multiprecision::float128(1))+a/b));
 									}
 								}
-							else{
-							t_start=time_step_ads + time_step_mixed - tau_subst * boost::multiprecision::log(boost::multiprecision::float128(1)-rand_t*(boost::multiprecision::float128(1)-boost::multiprecision::exp(-time_step_subst/tau_subst)));
+								else{
+									t_start=time_step_ads + time_step_mixed - tau_subst * boost::multiprecision::log(boost::multiprecision::float128(1)-rand_t*(boost::multiprecision::float128(1)-boost::multiprecision::exp(-time_step_subst/tau_subst)));
 								}
 							}
 						}
 					}
+					else{//1 < coverage < 2
+						boost::multiprecision::float128 b = (-1/tau_ads)+(1/tau_subst);
+						boost::multiprecision::float128 a = (1/tau_ads)-(2/tau_subst);
+						if(((coverage+a/b)*boost::multiprecision::exp(b*time_step)-a/b)>1){//case, where still more than one monolayer is left
+							t_start= (1/b)* boost::multiprecision::log((1/(coverage+(a/b)))*(coverage-rand_t*(coverage-((coverage+(a/b))*boost::multiprecision::exp(b*time_step)-a/b))+a/b));
+						}
+						else{//case, where coverage will be smaller than one.
+							if(printWarning){std::ostringstream tmpstream (std::ostringstream::app);
+								tmpstream << "!!! Warning: Facet "<<getFacetIndex(iFacet) <<" is predicted to reach monolayer this iteration. Coverage = " <<coverage  <<" !!!" << std::endl;
+								printStream(tmpstream.str());
+							}
+							boost::multiprecision::float128 time_step_mixed =(1/b)* boost::multiprecision::log((1+a/b)/(coverage+a/b));
+							boost::multiprecision::float128 time_step_subst = time_step - time_step_mixed;
+							if(rand_t<(coverage-boost::multiprecision::float128(1))/(coverage-boost::multiprecision::exp(-time_step_subst/tau_subst))){
+								t_start= + (1/b)* boost::multiprecision::log((1/(coverage+(a/b)))*(coverage-rand_t*(coverage-((coverage+(a/b))*boost::multiprecision::exp(b*time_step_mixed)-a/b))+a/b));
+							}
+							else{
+								t_start= time_step_mixed - tau_subst * boost::multiprecision::log(boost::multiprecision::float128(1)-rand_t*(boost::multiprecision::float128(1)-boost::multiprecision::exp(-time_step_subst/tau_subst)));
+							}
+						}
+					}
+				}
 			}
 		return t_start.convert_to<double>();
 	}
