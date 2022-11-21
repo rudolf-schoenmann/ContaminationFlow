@@ -57,7 +57,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 	double i;			// Time elapsed between checking of targets (i.e., if each iteration step)
 	double totalTime=0.0;	//Total simulation time
 	bool eos=false;		// End of simulation flag
-	double totalError=1.;//Total error
+	double totalError=1.0;//Total error
 
 	int j_old=0;
 	bool j_print=false;
@@ -112,6 +112,9 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 
 		// Calculate error for this iteration step
 		totalError=CalcErrorSub(p->errorMode);
+		if(isnan(totalError)){
+			totalError=1;
+		}
 
 		// Update covering values in currentList
 		for (size_t k = 0; k < sHandle->sh.nbSuper; k++) {
