@@ -526,7 +526,7 @@ int main(int argc, char *argv[]) {
 			MPI_Bcast(&simHistory->lastTime, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
 			MPI_Bcast(&currentRatio, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
 			//if((int)(simHistory->lastTime+0.5) >= p->maxTimeS){ // Maximum simulated time reached
-			if(simHistory->lastTime >= 0.99*p->maxTimeS){ // Maximum simulated time reached (at least 99% of it)
+			if(simHistory->lastTime >= 1.000001*p->maxTimeS){ // Maximum simulated time reached (at least 99% of it)
 				if(rank==0) {
 					std::ostringstream tmpstream (std::ostringstream::app);
 					tmpstream <<"Maximum simulated time reached: " <<simHistory->lastTime  <<" >= " <<p->maxTimeS <<std::endl;
