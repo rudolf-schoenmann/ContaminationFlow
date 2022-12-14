@@ -77,13 +77,13 @@
 General structure for ContaminationFlow simulation
 \begin{itemize}[noitemsep,topsep=2pt]
 \item Code adapted from Molflow
-\item ContaminationFlow Windows primary used to create Geometry and to view simulation results through the GUI
-\item ContaminationFlow Linux primary used for simulation and calculation of counters, profiles, etc.
-\item Loadbuffer contains information of geometry
+\item The Windows executable of ContaminationFlow is used to create Geometry, define the initial value problem and export it via two files (Loadbuffer \& Hitbuffer). It cannot simulate the contamination transfer.
+\item The Linux version of ContaminationFlow is used for simulation.
+\item Loadbuffer contains information of geometry.
 \item Hitbuffer contains information such as hit counters, profiles, etc.
-\item Import and export of buffer files for communication between ContaminationFlow Windows and ContaminationFlow Linux
+\item Import and export of buffer files are used for communication between ContaminationFlow on Windows and ContaminationFlow on Linux. The import function of the loadbuffer does not work properly yet.
 \item Optional: export/import of covering text file that replaces covering in hitbuffer
-\item Import input file to define simulation parameters
-\item Some input file parameters can be exported/copied from ContaminationFlow Windows
-\item Export of SimulationHistory for ContaminationFlow Linux
+%\item Import input file to define simulation parameters
+%\item Some input file parameters can be exported/copied from ContaminationFlow Windows
+%\item Export of SimulationHistory for ContaminationFlow Linux
 \end{itemize}

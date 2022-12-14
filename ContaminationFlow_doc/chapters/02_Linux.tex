@@ -4,10 +4,10 @@
 \chapter{ContaminationFlow Linux}\label{chapter:Linux}
 %\AddToShipoutPicture*{\ShowFramePicture}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Parallel simulation on several sub processes
-\item Processing and control of data in main process
-\item Update and accumulation of hit counters and other information such as profiles
-\item \codew{SimulationHistory}, simulation parameters, console output exported to results folder
+\item Parallel simulation on several subprocesses
+\item Control and of data processing in main process
+%\item Update and accumulation of counters and other information such as profiles
+%\item \codew{SimulationHistory}, simulation parameters, console output exported to results folder
 \end{itemize}
 \smallskip
 \begin{figure}[hb]
@@ -96,7 +96,7 @@
 	\node (p0upd)[textboxmed, rectangle split, rectangle split parts=2] at (0,-4.7)
 	{
 		\textbf{Main Process 0}
-		\nodepart{second} \begin{itemize}[noitemsep,topsep=0pt,leftmargin=*]\item Update real covering in hitbuffer\item Update SimulationHistory\end{itemize}
+		\nodepart{second} \begin{itemize}[noitemsep,topsep=0pt,leftmargin=*]\item Update contamination amount in hitbuffer\item Update SimulationHistory\end{itemize}
 	};
 
 	\draw let \p1=(p0buffer.second west) in [->, line width=0.04cm] (\x1-1.5cm,\y1) -- (\p1);
@@ -213,21 +213,21 @@ and the input file defining the following parameters:
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item \codew{$loadbufferPath$}: Path to loadbuffer file, contains geometry, e.g.\ \codew{\textasciitilde/loadbuffer}
 \item \codew{$hitbufferPath$}: Path to hitbuffer file, contains counters, etc., e.g.\ \codew{\textasciitilde/hitbuffer}
-\item \codew{$coveringPath$}: Path to covering file, contains either covering or coverage per facet, file can be exported from ContaminationFlow Windows, e.g.\ \codew{\textasciitilde/covering.txt}; default: \codew{""}
+\item \codew{$coveringPath$}: Path to covering file, contains either covering or coverage per facet, file can be exported from the Windows version of ContaminationFlow, e.g.\ \codew{\textasciitilde/covering.txt}; default: \codew{""}
 %\item resultbufferPath: path to resultbuffer file, where the final hitbuffer is exported to,\\ e.g.\ \codew{\textasciitilde/resultbuffer}
 \item \codew{$simulationTime$}: Simulation time resolution. After each $simulationTime$ the error and particle number will be checked; default: \codew{10.0}
 \item \codew{$unit$}: Simulation time unit; default: \codew{s}
-\item \codew{$maxTime$}: Max.\ simulated time; default: \codew{10.0}
-\item \codew{$maxUnit$}: Max.\ simulated time unit; default: \codew{y}
-\item \codew{$iterationNumber$}: Number of iterations; default: \codew{43200}
-\item \codew{$usePCMethod$}: Use predictor-corrector method "1", "2" or simulate without predictor-corrector mehtod; default: \codew{0}
+\item \codew{$maxTime$}: Maximum simulated time; default: \codew{10.0}
+\item \codew{$maxUnit$}: Maximum simulated time unit; default: \codew{y}
+\item \codew{$iterationNumber$}: Number of iterations; default: \codew{100}
+\item \codew{$usePCMethod$}: Use predictor-corrector method "1", "2" or simulate without predictor-corrector method "0"; default: \codew{0}
 %\item \codew{$particleDia$}: Diameter of particles; default:\codew{2.76\text{E}-10}
 \item \codew{$E_{de}$}: Binding energy of a particle on pure substrate; default:\codew{1.6\text{E}-19}
 \item \codew{$H_{vap}$}: Vaporization enthalpy of a particle if multilayer contamination; default:\codew{0.8\text{E}-19}
 %\item \codew{$sticking$}: Constant sticking coefficient for all facets; default:\codew{0}
 \item \codew{$errorMode$}: Type of error monitored, "covering" or "event"; default: \codew{covering}
-\item \codew{$targetParticles$}: Min.\ number of desorbed particles per iteration; default: \codew{1000}
-\item \codew{$targetError$}: Avg.\ statistical uncertainty (error) to be achieved for each iteration, calculated as the avg.\ (weighted with the facets area) of the normalized standard deviation of events per facet; default: \codew{0.001}
+\item \codew{$targetParticles$}: Minimum number of desorbed test-particles per iteration; default: \codew{1000}
+\item \codew{$targetError$}: Avg.\ statistical uncertainty (error) to be achieved for each iteration, calculated as the (by the facets area weighted) average of the normalized standard deviation of events per facet; default: \codew{0.001}
 \item \codew{$noupdateError$}: Error value above which the covering will not be updated; default:\codew{0.1}
 \item \codew{$hitRatioLimit$}: Ratio (facet/all), e.g., number events or covering change, at which facet is ignored for error calculation; default: \codew{0}
 \item \codew {$t\_min$}: Min.\ time for step size; default:\codew{1\text{E}-4}
@@ -237,16 +237,16 @@ and the input file defining the following parameters:
 \item \codew{$histSize$}: Size of history lists; default:\codew{max}
 \item \codew{$vipFacets$}: Very important facets: facets with own target error. Alternating sequence of facet numbers and respective target errors separated via blanks; default:\codew{[]}
 \item \codew{$outgassingTimeWindow$}: Duration [s] of outgassing impulse; default: \codew{0.0}
-\item \codew{$counterWindowPercent$}: Percentage of step size (posterior) at which velocity counters are increased; default: \codew{0.1}
-\item \codew{$rollingWindowSize$}: Number of iterations for avg.\ statistics; default: \codew{10}
-\item \codew{$convergenceTarget$}: Target for avg.\ statistics to indicate convergence; default: \codew{1}
-\item \codew{$stopConverged$}: Stop simulation if avg.\ statistics indicate convergence; default: \codew{1}
-\item \codew{$convergenceTime$}: Min.\ simulated time to stop simulation if converged; default: \codew{0}
+\item \codew{$counterWindowPercent$}: Percentage of step size (posterior fraction of the step size) at which pressure and density is sampled; default: \codew{0.1}
+\item \codew{$rollingWindowSize$}: Number of iterations for average statistics; default: \codew{10}
+\item \codew{$convergenceTarget$}: Target for average statistics to indicate convergence; default: \codew{1}
+\item \codew{$stopConverged$}: Stop simulation if average statistics indicate convergence; default: \codew{1}
+\item \codew{$convergenceTime$}: Minimum simulated time to stop simulation if converged; default: \codew{0}
 \item \codew{$facetGroups$}:  Indices of facets belonging to a group, groups divided by -; default:\codew{[]}
 \item \codew{$focusGroup$}: Indices of facet groups to be monitored; default:\codew{[]}
 \item \codew{$doFocusGroupOnly$}: Determines if only focusGroup facets are monitored facets; default:\codew{1}
 \item \codew{$saveResults$}: Determines if results are saved; default:\codew{1}
-\item \codew{$saveConsole$}: Determines if console output is additionally saved; default:\codew{1}
+\item \codew{$saveConsole$}: Determines if console output is additionally saved; default:\codew{0}
 \end{itemize}
 \bigskip
 Optional covering file to replace covering values form hitbuffer. Hitbuffer's covering values will not be imported if covering file is given. There are two options (that can both be exported from ContaminationFlow Windows):
@@ -279,7 +279,7 @@ Optional covering file to replace covering values form hitbuffer. Hitbuffer's co
 \section{Communication}
 \subsubsection{Import and export of buffer files}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item New Databuff struct that replaces Dataport struct from MolFlow Windows
+\item New Databuff struct that replaces Dataport struct from MolFlow+ Windows
 \end{itemize}
 \code{typedef unsigned char BYTE;\\typedef struct \{\\
 	\hphantom{\quad}signed int size;\\
@@ -294,7 +294,7 @@ Optional covering file to replace covering values form hitbuffer. Hitbuffer's co
 \subsubsection{Communication between worker processes via MPI}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Main process 0 sends Databuff structs containing loadbuffer/hitbuffer and required SimulationHistory values to sub processes using \codew{MPI\_Bcast($\cdot$)}
-\item Sub processes send updated Databuff struct containing hitbuffer and required SimulationHistory values to main process 0 using \codew{MPI\_Send($\cdot$)} and \codew{MPI\_Recv($\cdot$)}
+\item Subprocesses send updated Databuff struct containing hitbuffer and required SimulationHistory values to main process 0 using \codew{MPI\_Send($\cdot$)} and \codew{MPI\_Recv($\cdot$)}
 \end{itemize}
 
 \section{Usage of $boost$ Library}
@@ -308,27 +308,21 @@ Optional covering file to replace covering values form hitbuffer. Hitbuffer's co
 \label{sub:quant}
 \subsubsection{New counter \codew{covering}}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Number of carbon equivalent particles on facet
+\item Number of particles on facet
 \item Increases with adsorption, decreases with desorption
 \item Extracted from new FacetHitBuffer counter in \codew{getCovering($\cdot$)} (\codew{SimulationCalc.cpp})
 \end{itemize}
 
 \subsubsection{Coverage}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Number of monolayers of adsorbed particles
-\item Calculated from covering, particle diameter (previously gas mass) and facet area
+\item Number of layers of adsorbed particles
+\item Calculated from covering, particle diameter and facet area
 \item Coverage computed in \codew{calcCoverage($\cdot$)} (\codew{SimulationCalc.cpp})
-\end{itemize}
-
-\subsubsection{Sticking factor}
-\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Ratio adsorbed particles to impinging particles
-\item Set to value specified in input file in \codew{calcSticking($\cdot$)} (\codew{SimulationCalc.cpp})
 \end{itemize}
 
 \subsubsection{Binding energy}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Either \codew{$E_{de}$} or \codew{$H_{vap}$}, depending on the how many layers of particles are adsorbed.
+\item Either \codew{$E_{de}$} or \codew{$H_{vap}$}, depending on the coverage
 \item If coverage is smaller than a monolayer, it will be decided at random.
 \item Used in \codew{StartFromSource($\cdot$)} \& \codew{PerformBounce($\cdot$)} (\codew{SimulationMC.cpp}) and\\ \codew{calcDesorption($\cdot$)} \& \codew{calcStartTime($\cdot$)} (\codew{SimulationCalc.cpp})
 %\item Calculated from \codew{$E_{de}$}, \codew{$H_{vap}$} and \codew{$W_{tr}$}
@@ -337,56 +331,55 @@ Optional covering file to replace covering values form hitbuffer. Hitbuffer's co
 
 \subsubsection{Desorption}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Number of particles desorbing
-\item Calculated from binding energy, covering, temperature and step size
+\item Number of desorbing particles
+\item Calculated from binding energy, coverage, facet area, temperature and step size
 \item Desorption computed in \codew{calcDesorption($\cdot$)} (\codew{SimulationCalc.cpp})
 \end{itemize}
 
 \subsubsection{Outgassing}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Number of particles from outgassing
-\item Calculated from facet outgassing, temperature, and outgassing time
+\item Number of particles outgassing from the bulk of the material, whose surface is represented by a facet
+\item Calculated from facet's (time-dependent) outgassing
 \item Outgassing computed in \codew{CalcTotalOutgassingWorker()} (\codew{Worker.cpp})
 \end{itemize}
 
 \subsubsection{$K_{\text{real}/\text{virtual}}$}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Number of real particles represented by test particles
-\item Calculated from desorption \& outgassing and number of desorbed molecules
+\item Number of real, physical particles represented by Monte-Carlo test-particles
+\item Calculated from desorption \& outgassing as well as the number of desorbed \& outgassed test-particles
 \item $K_{\text{real}/\text{virtual}}$ computed in \codew{GetMoleculesPerTP($\cdot$)} (\codew{SimulationCalc.cpp})
 \end{itemize}
 
-\subsubsection{Statistical error}
+\subsubsection{Statistical uncertainty ("error")}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Event error: calculated from hits and desorbed particles (of facet and total)
-\item Covering error: calculated from adsorbed and desorbed particles (of facet and total)
+\item Statistical uncertainty based on all particle-wall interaction events ('event'): calculated from the number of 'hits', desorbed and outgassed test-particles (of every facet and the entire surface)
+\item Statistical uncertainty based on all particle-wall interaction events, which change the 'covering' value ('covering'): calculated from adsorbed and desorbed test-particles (of every facet and the entire surface)
 \item Used to determine significance of simulation results of iteration
-\item Error calculated in \codew{UpdateErrorList($\cdot$)} for facet error \& \codew{UpdateErrorAll($\cdot$)} for average error weighted with area (\codew{UpdateSubProcess.cpp})
+\item Error calculated in \codew{UpdateErrorList($\cdot$)} for facet error \& in \codew{UpdateErrorAll($\cdot$)} for the average error weighted by the facets' areas (\codew{UpdateSubProcess.cpp})
 \end{itemize}
 
 \subsubsection{Step size}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Minimum time between adsorption and desorption
 \item Step size computed in \codew{getStepSize()} (\codew{UpdateMainProcess.cpp})
 \end{itemize}
 
 \subsubsection{Particle density}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Calculated from sum over reciprocal of orthogonal velocity, facet area and $K_{\text{real}/\text{virtual}}$
+\item Calculated from sum of the reciprocal, orthogonal velocity portions, facet area and $K_{\text{real}/\text{virtual}}$
 \item Particle density computed in \codew{calcParticleDensity($\cdot$)} (\codew{SimulationCalc.cpp})
 \end{itemize}
 
 \subsubsection{Pressure}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Calculated from sum over orthogonal velocity, facet area, gas mass and $K_{\text{real}/\text{virtual}}$
+\item Calculated from sum of orthogonal velocity portions, facet area, gas mass and $K_{\text{real}/\text{virtual}}$
 \item Pressure computed in \codew{calcPressure($\cdot$)} (\codew{SimulationCalc.cpp})
 \end{itemize}
 
 \subsubsection{Start time}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Determines time of desorption/outgassing for particle based on the distribution
-\item Desorption rate: exponential distribution for whole iteration
-\item Outgassing: uniform distribution of limited time for whole simulation
+%\item Desorption rate: exponential distribution for whole iteration
+%\item Outgassing: uniform distribution of limited time for whole simulation
 \item Start time computed in \codew{calcStartTime($\cdot$)} (\codew{SimulationCalc.cpp})
 \end{itemize}
 
@@ -460,7 +453,7 @@ Optional covering file to replace covering values form hitbuffer. Hitbuffer's co
 \};}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Updated at the end of each iteration in \codew{UpdateParticleDensityAndPressure($\cdot$)},\linebreak[4] \codew{UpdateCovering($\cdot$)}, \codew{UpdateErrorMain($\cdot$)} (\codew{UpdateMainProcess.cpp})
-\item Recorded quantities: covering, error (event and covering), particle density and pressure for each facet and  iteration, total hits and desorbed particles for each facet
+\item Recorded quantities: covering, error (event and covering), particle density and pressure for each facet and  iteration, total hits, desorbed and outgassed test-particles for each facet
 \item lastTime: simulated time (accumulated time steps) instead of computation time 
 \end{itemize}
 
@@ -474,7 +467,7 @@ Optional covering file to replace covering values form hitbuffer. Hitbuffer's co
 	\tikzstyle{dot}=[circle, fill = black, ,inner sep=1.1pt]]
 
 
-	\node[module](start)  at (1,-0.2) {Start simulation\\sub process};
+	\node[module](start)  at (1,-0.2) {Start simulation\\subprocess};
 	\node[neuron](preprocess) at (6,-0.2) {Calculate desorption,\\outgassing,\\cov.\ thresh.\ \& step size;\\multiply cov.\ if small};
 	\draw let \p1=(start.east), \p2=(preprocess.west) in [->, line width=0.04cm] (\p1) -- (\p2);
 
@@ -542,7 +535,7 @@ Optional covering file to replace covering values form hitbuffer. Hitbuffer's co
 	\draw let \p1=(hitbuffer.north), \p2=(end.south) in [->, line width=0.04cm] (\x2,\y1) -- (\p2);
 
 \end{tikzpicture}
-\caption{Overview: simulation on sub processes}
+\caption{Overview: simulation on subprocesses}
 \end{figure}
 
 \subsubsection{Calculate step size}
@@ -559,14 +552,14 @@ Optional covering file to replace covering values form hitbuffer. Hitbuffer's co
 
 \subsubsection{Multiply small covering}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Multiply covering so that smallest covering $\geq$ \codew{ProblemDef::coveringThreshMin}
+\item Multiply covering counter so that smallest covering $\geq$ \codew{ProblemDef::coveringThreshMin}
 \item Multiply covering threshold with same factor
 \item Calculation in \codew{checkSmallCovering($\cdot$)} (\codew{SimulationLinux.cpp})
 \end{itemize}
 
 \subsubsection{Calculate desorption and outgassing}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Desorption from covering in \codew{UpdateDesorption($\cdot$)}  (\codew{UpdateSubProcess.cpp})
+\item Desorption in \codew{UpdateDesorption($\cdot$)}  (\codew{UpdateSubProcess.cpp})
 \item Outgassing in \codew{CalcTotalOutgassingWorker()} (\codew{Worker.cpp})
 \end{itemize}
 
@@ -574,7 +567,7 @@ Optional covering file to replace covering values form hitbuffer. Hitbuffer's co
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Facet randomly selected based on total desorption and outgassing
 \item Desorption or outgassing randomly selected based on ratio on facet
-\item Start time randomly generated based on distribution of desorption or outgassing
+\item Start time randomly generated based on temporal distribution of desorption or outgassing
 \item Calculation in \codew{StartFromSource($\cdot$)}  (\codew{SimulationMC.cpp})
 \end{itemize}
 
@@ -584,31 +577,30 @@ Optional covering file to replace covering values form hitbuffer. Hitbuffer's co
 %\item Binding energy calculated using binding energy on pure substrate, vaporization enthalpy and coverage
 %\item Thermal oscillation frequency calculated using temperature, Boltzmann constant and Planck's constant
 %\item Calculation in \codew{UpdateSojourn($\cdot$)}  from \codew{UpdateSubProcess.cpp} file
-\item Sojourn time randomly calculated from binding energy, facet temperature and sojourn frequency in \codew{PerformBounce($\cdot$)}  (\codew{SimulationMC.cpp})
+\item Residence time randomly calculated from binding energy, facet temperature and oscialltion frequency in \codew{PerformBounce($\cdot$)}  (\codew{SimulationMC.cpp})
 \end{itemize}
 
 \subsubsection{Increase facet counters in case of desorb, absorb or hit}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Increase hit, desorb or absorb counter according to event
+\item Increase hit, desorb, outgassed or absorb counter according to event
 \item Increase velocity counters only if event within \codew{p$\rightarrow$counterWindowPercent}
 \item Facet counters increased in \codew{IncreaseFacetCounter($\cdot$)}  (\codew{SimulationMC.cpp})
 \end{itemize}
 
 \subsubsection{Target error reached?}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Calculate statistical error in \codew{UpdateError()} from \codew{UpdateSubProcess.cpp} file
-\item Avg.\ error calculated from summing facet error weighted with facet area
-\item Error to check can be either covering or event error (currently covering)
+\item Calculate statistical uncertainty 'error' in \codew{UpdateError()} from \codew{UpdateSubProcess.cpp} file
+\item Average error calculated from summing facet error weighted with facet area
+\item Error to check can be either covering or event error
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Check if vip facets reached their own target error
-\item Check if avg.\ error reached target error
+\item Additional check if vip facets reached their own target error
+\item Check if average error reached target error
 \end{itemize}
 \item Facets with error=$inf$ are not considered
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Facets that reached \codew{ProblemDef::hitRatioLimit}
-\item Facets with no events or covering change
-\item If vip facet: own target error automatically reached
-\item If normal facet: facet error and area not used for calculation
+\item Facets that did not reach the \codew{ProblemDef::hitRatioLimit} are excluded of the error calculation
+\item Facets with no events or no change of covering (no desorb and no absorb)
+\item Facet error=$inf$ and area not used for calculation
 \end{itemize}
 \item Check in \codew{checkErrorSub($\cdot$)} (\codew{UpdateSubProcess.cpp})
 \end{itemize}
