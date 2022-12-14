@@ -50,16 +50,16 @@ void UpdateErrorList(Databuff *hitbuffer_sum){ // hitbuffer_sum==NULL: subproces
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) { //save current num total hits in currentList, add difference current-old to num_hit_it
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			std::tie(nbhits,nbdes,nbout,nbads)=getErrorVariables(&f, hitbuffer_sum);
-			num_hit_it+=f.sh.opacity * (nbhits + nbdes + nbout);
-			num_des_ad_it+=f.sh.opacity * (nbads + nbdes);
+			num_hit_it+=(nbhits + nbdes + nbout);
+			num_des_ad_it+=(nbads + nbdes);
 		}
 	}
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			std::tie(nbhits,nbdes,nbout,nbads)=getErrorVariables(&f, hitbuffer_sum);
-			double num_hit_f=f.sh.opacity * (nbhits + nbdes + nbout);
-			double num_des_ad_f=f.sh.opacity * (nbads + nbdes);
+			double num_hit_f=(nbhits + nbdes + nbout);
+			double num_des_ad_f=(nbads + nbdes);
 
 			//neglect events/covering change if very small compared to total hits
 			if(num_hit_f/num_hit_it<(p->hitRatioLimit)/factor){

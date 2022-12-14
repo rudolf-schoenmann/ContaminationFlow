@@ -943,7 +943,7 @@ bool StartFromSource() {
 	}
 
 
-	if(sHandle->currentParticle.flightTime>simHistory->stepSize && src->sh.opacity!=0){
+	if(sHandle->currentParticle.flightTime>simHistory->stepSize){
 		//This case normally should not happen. Only if there is some error in the calculation
 		//of the start time. That should be smaller than the step size per definition.
 		//----desorb----
@@ -1426,7 +1426,7 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 	iFacet->sh.tmpCounter.sum_1_per_ort_velocity += 1.0 / ortVelocity;
 	iFacet->sh.tmpCounter.sum_v_ort += (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity;*/
 
-	if((sHandle->currentParticle.flightTime>simHistory->stepSize&&iFacet->sh.opacity!=0) || iFacet->sh.temperature==0){ //no bounce if 0K
+	if((sHandle->currentParticle.flightTime>simHistory->stepSize) || iFacet->sh.temperature==0){ //no bounce if 0K
 		sHandle->tmpGlobalResult.globalHits.nbAbsEquiv += sHandle->currentParticle.oriRatio;
 		simHistory->flightTime+=sHandle->currentParticle.flightTime;
 		simHistory->nParticles+=1;
@@ -1510,7 +1510,7 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 			flightTime=sHandle->currentParticle.flightTime;
 		}
 	}
-	if((isinf(sHandle->currentParticle.flightTime)||sHandle->currentParticle.flightTime>simHistory->stepSize) && iFacet->sh.opacity!=0){ //TODO maybe other parts from recordAbsorb()?
+	if(isinf(sHandle->currentParticle.flightTime)||sHandle->currentParticle.flightTime>simHistory->stepSize){ //TODO maybe other parts from recordAbsorb()?
 		sHandle->tmpGlobalResult.globalHits.nbAbsEquiv += sHandle->currentParticle.oriRatio;
 		simHistory->flightTime+=flightTime;
 		simHistory->nParticles+=1;
