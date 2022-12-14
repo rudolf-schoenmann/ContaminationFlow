@@ -71,10 +71,12 @@ void UpdateErrorList(Databuff *hitbuffer_sum){ // hitbuffer_sum==NULL: subproces
 				num_des_ad_f=0;
 			}
 
+			/* error will be inf when f.sh.opacity==0;
+			 * However, it will then be excluded when averaging over all facets.
 			if(f.sh.opacity==0){
 				simHistory->errorList_event.setCurrent(&f, 0.0);
 				simHistory->errorList_covering.setCurrent(&f, 0.0);
-			}
+			}*/
 			else{
 				double error_event=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
 				double error_covering=pow((1/num_des_ad_f)*(1-num_des_ad_f/num_des_ad_it),0.5);

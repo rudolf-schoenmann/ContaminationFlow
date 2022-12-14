@@ -152,6 +152,7 @@ public:
 			}
 		}
 	}
+
 	// Statistics: sum over ratio std/mean weighted with area
 	boost::multiprecision::float128 getAverageStatistics(Simulation *sHandle,bool opacityCheck, bool doFocusOnly=false, std::vector<int> focusFacets=std::vector<int>()){
 		double totalArea=0.0;
