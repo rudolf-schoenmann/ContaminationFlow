@@ -134,7 +134,8 @@ bool checkError(double targetError, double currentError, double factor, std::str
 		}
 
 		for(unsigned int i = 0; i < p->vipFacets.size(); i++){
-			vipCheck = vipCheck && (listptr->getCurrent(p->vipFacets[i].first)== std::numeric_limits<double>::infinity() || listptr->getCurrent(p->vipFacets[i].first) <= p->vipFacets[i].second * factor);
+			//vipCheck = vipCheck && (listptr->getCurrent(p->vipFacets[i].first)== std::numeric_limits<double>::infinity() || listptr->getCurrent(p->vipFacets[i].first) <= p->vipFacets[i].second * factor);
+			vipCheck = vipCheck && (listptr->getCurrent(p->vipFacets[i].first) <= p->vipFacets[i].second * factor);
 		}
 	}
 	return vipCheck;

@@ -354,7 +354,7 @@ ProblemDef::ProblemDef(){
 	loadbufferPath=tilde_to_home(loadbufferPath);
 	hitbufferPath=tilde_to_home(hitbufferPath);
 
-	iterationNumber = 43200;
+	iterationNumber = 100;
 	usePCMethod = 0;
 	particleDia=diameterH2O;
 	E_de=1.6E-19;
