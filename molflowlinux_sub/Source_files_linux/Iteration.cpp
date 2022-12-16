@@ -47,40 +47,25 @@ void UpdateErrorList(Databuff *hitbuffer_sum){ // hitbuffer_sum==NULL: subproces
 
 	double factor=hitbuffer_sum==NULL?pow(simHistory->numSubProcess,0.5):1.0; // To be consistent with the ignored facets for calculating the error after summation over all subprocesses, here the hitRationLimit must be reduced with the correction factor due to multiple subprocesses.
 
-	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) { //save current num total hits in currentList, add difference current-old to num_hit_it
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) { // add difference current-old to num_hit_it
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			std::tie(nbhits,nbdes,nbout,nbads)=getErrorVariables(&f, hitbuffer_sum);
-			num_hit_it+=f.sh.opacity * (nbhits + nbdes + nbout);
-			num_des_ad_it+=f.sh.opacity * (nbads + nbdes);
+			num_hit_it+=(nbhits + nbdes + nbout);
+			num_des_ad_it+=(nbads + nbdes);
 		}
 	}
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			std::tie(nbhits,nbdes,nbout,nbads)=getErrorVariables(&f, hitbuffer_sum);
-			double num_hit_f=f.sh.opacity * (nbhits + nbdes + nbout);
-			double num_des_ad_f=f.sh.opacity * (nbads + nbdes);
+			double num_hit_f=(nbhits + nbdes + nbout);
+			double num_des_ad_f=(nbads + nbdes);
+			double error_event=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
+			double error_covering=pow((1/num_des_ad_f)*(1-num_des_ad_f/num_des_ad_it),0.5);
+			simHistory->errorList_event.setCurrent(&f, error_event);
+			simHistory->errorList_covering.setCurrent(&f, error_covering);
 
-			//neglect events/covering change if very small compared to total hits
-			if(num_hit_f/num_hit_it<(p->hitRatioLimit)/factor){
-				num_hit_it-=num_hit_f;
-				num_hit_f=0;
-			}
-			if(num_des_ad_f/num_des_ad_it<(p->hitRatioLimit)/factor){
-				num_des_ad_it-=num_des_ad_f;
-				num_des_ad_f=0;
-			}
-
-			if(f.sh.opacity==0){
-				simHistory->errorList_event.setCurrent(&f, 0.0);
-				simHistory->errorList_covering.setCurrent(&f, 0.0);
-			}
-			else{
-				double error_event=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
-				double error_covering=pow((1/num_des_ad_f)*(1-num_des_ad_f/num_des_ad_it),0.5);
-				simHistory->errorList_event.setCurrent(&f, error_event);
-				simHistory->errorList_covering.setCurrent(&f, error_covering);
-			}
+			//save current hits in currentList,
 			if(hitbuffer_sum==NULL){ // Sub process: set currentList values
 				simHistory->hitList.setCurrent(&f,nbhits);
 				simHistory->desorbedList.setCurrent(&f,nbdes);
