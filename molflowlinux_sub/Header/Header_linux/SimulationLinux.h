@@ -401,7 +401,7 @@ public:
 
 	double outgassingTimeWindow; //[s] uniform distribution of outgassing over outgassingTimeWindow
 	double counterWindowPercent; // [%]
-	double desWindowPercent; // [%]
+//	double desWindowPercent; // [%]
 
 	int rollingWindowSize;
 	double convergenceTarget;
