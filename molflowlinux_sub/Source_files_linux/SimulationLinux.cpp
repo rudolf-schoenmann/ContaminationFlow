@@ -386,7 +386,7 @@ ProblemDef::ProblemDef(){
 
 	outgassingTimeWindow=0.0;
 	counterWindowPercent=0.1;
-	desWindowPercent=1.0;
+//	desWindowPercent=1.0;
 
 	rollingWindowSize=10;
 	convergenceTarget=0.1;
@@ -491,7 +491,7 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn =="maxTimePerIt"){is >> intIn; maxTimePerIt=intIn>1?intIn:1;}
 		else if(stringIn =="histSize"){is >> intIn; histSize=intIn>1?intIn:1;}
 		else if(stringIn =="counterWindowPercent"){is >>doubleIn; doubleIn=doubleIn<1.0?doubleIn:1.0; counterWindowPercent=doubleIn>0.0?doubleIn:0.0;}
-		else if(stringIn =="desWindowPercent"){is >>doubleIn; doubleIn=doubleIn<1.0?doubleIn:1.0; desWindowPercent=doubleIn>0.0?doubleIn:0.0; }
+//		else if(stringIn =="desWindowPercent"){is >>doubleIn; doubleIn=doubleIn<1.0?doubleIn:1.0; desWindowPercent=doubleIn>0.0?doubleIn:0.0; }
 		else if(stringIn == "outgassingTimeWindow"){is >>doubleIn; outgassingTimeWindow=doubleIn>0.0?doubleIn:0.0; }
 		else if(stringIn == "convergenceTarget"){is >>doubleIn; convergenceTarget=doubleIn>0.0?doubleIn:0.0; }
 		else if(stringIn == "convergenceTime"){is >>doubleIn; convergenceTime=doubleIn>0.0?doubleIn:0.0; }
@@ -694,7 +694,7 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 
 	out <<"histSize" <<"\t" <<histSize<<std::endl;
 	out <<"counterWindowPercent" <<"\t" <<counterWindowPercent<<std::endl;
-	out <<"desWindowPercent" <<"\t" <<desWindowPercent<<std::endl;
+//	out <<"desWindowPercent" <<"\t" <<desWindowPercent<<std::endl;
 	out <<"outgassingTimeWindow" <<"\t" <<outgassingTimeWindow <<std::endl;
 
 	out <<"rollingWindowSize" <<"\t" <<rollingWindowSize <<std::endl;
