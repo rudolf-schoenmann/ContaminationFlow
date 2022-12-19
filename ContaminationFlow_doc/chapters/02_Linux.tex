@@ -667,8 +667,9 @@ Optional covering file to replace covering values form hitbuffer. Hitbuffer's co
 
 \subsubsection{Before summation of subprocesses}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Calculate step size in \codew{getStepSize()} (\codew{UpdateMainProcess.cpp})
-\item Multiply covering in \codew{hitbuffer} of main process  analogous to sub processes in \codew{checkSmallCovering($\cdot$)} (\codew{SimulationLinux.cpp})
+\item \textit{Placeholder}
+%\item Calculate step size in \codew{getStepSize()} (\codew{UpdateMainProcess.cpp}) Was ist der Sinn dahinter?
+%\item Multiply covering in \codew{hitbuffer} of main process  analogous to subprocesses in \codew{checkSmallCovering($\cdot$)} (\codew{SimulationLinux.cpp}) Verwirrt erstmal nur!
 \end{itemize}
 
 %\subsubsection{Divide small covering after  summation of subprocesses}
@@ -711,18 +712,18 @@ Optional covering file to replace covering values form hitbuffer. Hitbuffer's co
 \subsubsection{Calculate \& update covering}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item $K_{\text{real}/\text{virtual}}$ computed in \codew{GetMoleculesPerTP($\cdot$)} (\codew{Simulationcalc.cpp})
-\item Divide covering in \codew{hitbuffer}  if previously multiplied
+\item Divide covering in \codew{hitbuffer}  if previously multiplied (in case of 'smallcovering')
 \item Use $K_{\text{real}/\text{virtual}}$ to calculate new covering
 \item Save new covering in \codew{currentList} in \codew{simHistory$\rightarrow$coveringList} and \codew{hitbuffer}
 \item Calculation in \codew{UpdateCovering($\cdot$)} from \codew{UpdateMainProcess.cpp} file
 \item Update buffers in \codew{UpdateCoveringPhys($\cdot$)} (\codew{UpdateMainProcess.cpp})
 \end{itemize}
 
-\subsubsection{Calculate \& update statistics}
+\subsubsection{Calculate \& update statistics (with respect to the points in time) of coverage values}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Calculate mean and std of covering over last \codew{p$\rightarrow$rollingWindowSize} iterations
+\item Calculate mean and standard deviation of covering over the last \codew{p$\rightarrow$rollingWindowSize} iterations
 \item Update statistics in \codew{HistoryList::updateStatistics($\cdot$)} (\codew{SimulationLinux.h})
-\item End simulation if \codew{p$\rightarrow$convergenceTarget} is reached by avg.\ statistics weighted with area which is calculated in \codew{HistoryList::getAverageStatistics($\cdot$)} (\codew{SimulationLinux.h})
+\item End simulation if \codew{p$\rightarrow$convergenceTarget} is reached by average statistics weighted with area. This is evaluated in \codew{HistoryList::getAverageStatistics($\cdot$)} (\codew{SimulationLinux.h})
 \end{itemize}
 
 \newpage
@@ -730,38 +731,38 @@ Optional covering file to replace covering values form hitbuffer. Hitbuffer's co
 \subsubsection{General Pipeline}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Initialize MPI, \codew{ProblemDef p} and \codew{SimulationHistory simHistory}
-\item Check if all simulation parameters are valid
+\item Check, if all simulation parameters are valid
 \item Load geometry into \codew{Simulation sHandle} and check if values are valid using \codew{loadAndCheckSHandle()}
 	\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 		\item[$\bullet$] Load geometry using \codew{LoadSimulation}
 		\item[$\bullet$] Hitbuffer: import using  \codew{importBuff($\cdot$)} or initialize size using  \codew{initBuffSize($\cdot$)}
 		\item[$\bullet$] Check for correct hitbuffer size
 		\item[$\bullet$] Check for zero moments
-		\item[$\bullet$] Check for no two-sided facets with opacity
+		\item[$\bullet$] Check for no two-sided facets with finite opacity
 		\item[$\bullet$] Check for valid covering file and import covering values
 	\end{itemize}
-\item{Iteration until \codew{p$\rightarrow$maxTimeS} or\\ \codew{p$\rightarrow$convergenceTarget} (\codew{p$\rightarrow$convergenceTime},\codew{p$\rightarrow$stopConverged}) is reached. If \codew{p$\rightarrow$usePCMethod} is not set to \codew{0}, repeat same iteration twice: \smallskip}
+\item{Iteration of simulation steps until \codew{p$\rightarrow$maxTimeS} or\\ \codew{p$\rightarrow$convergenceTarget} (\codew{p$\rightarrow$convergenceTime},\codew{p$\rightarrow$stopConverged}) is reached. If \codew{p$\rightarrow$usePCMethod} is not set to \codew{0}, repeat same iteration twice: \smallskip}
 	\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 	\item[$\bullet$] Reset hitbuffer counters using \codew{initbufftozero($\cdot$)}
 	\item[$\bullet$] Broadcast \codew{simHistory$\rightarrow$coveringList} using \codew{MPI\_Bcast($\cdot$)}
 	\item[$\bullet$] Set covering threshold \codew{covthresh} using \codew{setCoveringThreshold($\cdot$)}
-	\item[$\bullet$] Update relevant simulation values using \codew{simHistory$\rightarrow$updateStepSize($\cdot$)},\linebreak[4] \codew{UpdateSticking($\cdot$)}, \codew{CalcTotalOutgassingWorker($\cdot$)}, \codew{UpdateDesorption($\cdot$)}. If using p.c. method: only in prediction step.
-	\item[$\bullet$] Multiply covering and \codew{covthresh} with \codew{simHistory$\rightarrow$smallCoveringFactor} if covering is small
-	\item[$\bullet$] Simulation in sub processes:
+	\item[$\bullet$] Update relevant simulation values using \codew{simHistory$\rightarrow$updateStepSize($\cdot$)},\linebreak[4] \codew{UpdateSticking($\cdot$)}, \codew{CalcTotalOutgassingWorker($\cdot$)}, \codew{UpdateDesorption($\cdot$)}. If using p.c. method: done only for the prediction step. The remain set in the correction step.
+	\item[$\bullet$] Multiply covering and \codew{covthresh} with \codew{simHistory$\rightarrow$smallCoveringFactor}, if covering is small
+	\item[$\bullet$] Simulation in subprocesses:
 	\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 	\item[--] Simulate until \codew{targetParticles} and \codew{targetError} or \codew{covthresh} reached
-	\item[--] Update hitbuffers of sub processes from \codew{sHandle} using \codew{UpdateMCSubHits($\cdot$)}\\(\codew{UpdateSubProcess.cpp})
+	\item[--] Update hitbuffers of subprocesses from \codew{sHandle} using \codew{UpdateMCSubHits($\cdot$)}\\(\codew{UpdateSubProcess.cpp})
 	\end{itemize}
 	\item[$\bullet$] Update main process:
 		\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 		\item[--] Send hitbuffer to main process using \codew{MPI\_Send($\cdot$)} and \codew{MPI\_Recv($\cdot$)}
 		\item[--] Update of hitbuffer in \codew{UpdateMCMainHits($\cdot$)} (\codew{UpdateMainProcess.cpp})
 		\end{itemize}
-	\item[$\bullet$]{If using p.c. method and in prediction step:}
+	\item[$\bullet$]{If using p.c. method and while in prediction step:}
 	\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-	\item[--] Calculate real covering in main process using $K_{\text{real}/\text{virtual}}$ in \codew{UpdateCovering($\cdot$)}\\(\codew{UpdateMainProcess.cpp}), save in \codew{simHistory}: \codew{predictList}
+	\item[--] Calculate real, physical covering in main process using $K_{\text{real}/\text{virtual}}$ in \codew{UpdateCovering($\cdot$)}\\(\codew{UpdateMainProcess.cpp}), save in \codew{simHistory}: \codew{predictList}
 	\end{itemize}
-	\item[$\bullet$]{If not using p.c. method or otherwise in correction step:}
+	\item[$\bullet$]{If not using p.c. method or otherwise while in correction step:}
 	\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 	\item [--] Update pressure and particle density using \codew{UpdateParticleDensityAndPressure($\cdot$)}\\\codew{(UpdateMainProcess.cpp)}, save in \codew{simHistory}
 	\item[--] Update error of iteration using \codew{UpdateErrorMain($\cdot$)} (\codew{UpdateMainProcess.cpp}), save in \codew{simHistory}
