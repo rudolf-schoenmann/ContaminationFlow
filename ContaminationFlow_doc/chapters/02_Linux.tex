@@ -220,7 +220,7 @@ and the input file defining the following parameters:
 \item \codew{$maxTime$}: Maximum simulated time; default: \codew{10.0}
 \item \codew{$maxUnit$}: Maximum simulated time unit; default: \codew{y}
 \item \codew{$iterationNumber$}: Number of iterations; default: \codew{100}
-\item \codew{$usePCMethod$}: Use predictor-corrector method "1", "2" or simulate without predictor-corrector method "0"; default: \codew{0}
+\item \codew{$usePCMethod$}: Use predictor-corrector method "1" or simulate without predictor-corrector method "0"; default: \codew{0}
 %\item \codew{$particleDia$}: Diameter of particles; default:\codew{2.76\text{E}-10}
 \item \codew{$E_{de}$}: Binding energy of a particle on pure substrate; default:\codew{1.6\text{E}-19}
 \item \codew{$H_{vap}$}: Vaporization enthalpy of a particle if multilayer contamination; default:\codew{0.8\text{E}-19}
@@ -229,7 +229,6 @@ and the input file defining the following parameters:
 \item \codew{$targetParticles$}: Minimum number of desorbed test-particles per iteration; default: \codew{1000}
 \item \codew{$targetError$}: Avg.\ statistical uncertainty (error) to be achieved for each iteration, calculated as the (by the facets area weighted) average of the normalized standard deviation of events per facet; default: \codew{0.001}
 \item \codew{$noupdateError$}: Error value above which the covering will not be updated; default:\codew{0.1}
-\item \codew{$hitRatioLimit$}: Ratio (facet/all), e.g., number events or covering change, at which facet is ignored for error calculation; default: \codew{0}
 \item \codew {$t\_min$}: Min.\ time for step size; default:\codew{1\text{E}-4}
 \item \codew{$t\_max$}: Max.\ time for step size; default:\codew{max}
 \item \codew{$maxTimePerIt$}: Max.\ simulation time [s] per iteration; default:\codew{max}
@@ -598,7 +597,6 @@ Optional covering file to replace covering values form hitbuffer. Hitbuffer's co
 \end{itemize}
 \item Facets with error=$inf$ are not considered
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Facets that did not reach the \codew{ProblemDef::hitRatioLimit} are excluded of the error calculation
 \item Facets with no events or no change of covering (no desorb and no absorb)
 \item Facet error=$inf$ and area not used for calculation
 \end{itemize}
@@ -664,14 +662,14 @@ Optional covering file to replace covering values form hitbuffer. Hitbuffer's co
 \end{tikzpicture}
 \caption{Overview: update of covering in hitbuffer and simHistory}
 \end{figure}
-
+\begin{comment}
 \subsubsection{Before summation of subprocesses}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item \textit{Placeholder}
 %\item Calculate step size in \codew{getStepSize()} (\codew{UpdateMainProcess.cpp}) Was ist der Sinn dahinter?
 %\item Multiply covering in \codew{hitbuffer} of main process  analogous to subprocesses in \codew{checkSmallCovering($\cdot$)} (\codew{SimulationLinux.cpp}) Verwirrt erstmal nur!
 \end{itemize}
-
+\end{comment}
 %\subsubsection{Divide small covering after  summation of subprocesses}
 %\begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 %\item Division by the small covering factor will be done when converting virtual test particles into real, physical particles
@@ -682,11 +680,10 @@ Optional covering file to replace covering values form hitbuffer. Hitbuffer's co
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item{Analogous to Heun's method for solving ordinary differential equations numerically}
 \item{In the prediction step, the iteration for the current time step is executed and the resulting covering values are saved in \codew{simHistory$\rightarrow$coveringList.predictList}}
-\item{In the correction step, the iteration for the current time step is repeated. In \codew{PerformBounce($\cdot$)} (\codew{SimulationMC.cpp}), the covering values from \codew{currentList} if\\\codew{sHandle$\rightarrow$currentParticle.flightTime <= 1/2*simHistory$\rightarrow$stepSize} will be read, otherwise covering values from \codew{predictList} will be read.}
+\item{In the correction step, the iteration for the current time step is repeated. In \codew{PerformBounce($\cdot$)} (\codew{SimulationMC.cpp}), the covering values from \codew{currentList} will be read, if\\\codew{sHandle$\rightarrow$currentParticle.flightTime <= 1/2*simHistory$\rightarrow$stepSize}. Otherwise covering values from \codew{predictList} will be read.}
 \item{At the end of the correction step, the main process is updated as usual and continuing with the next iteration}
-\item{Used only, if \codew{p->usePCMethod} is set to anything other than \codew{0} explicitly via the input file}
-\item{If \codew{usePCMethod} is set to \codew{0}:  not using the p.c. method; \codew{1}:  using the first approach for the p.c. method; \codew{2}:  using the second approach for the p.c. method}
-\item{The second approach for the implementation of the p.c. method works better than the first one}
+\item{Used only, if \codew{p->usePCMethod} is set to \codew{1} (as opposed to \codew{0}) explicitly via the input file}
+\item{If \codew{usePCMethod} is set to \codew{0}:  not using the p.c. method; \codew{1}:  using the p.c. method;}
 \end{itemize}
 
 \subsubsection{Calculate pressure and particle density}
