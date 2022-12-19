@@ -300,7 +300,6 @@ double calcPressure(Databuff *hitbuffer_sum , SubprocessFacet *f){//calculates P
 double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b, bool printWarning){
 
 	if(desorbed_b){// if desorption
-		if(p->desWindowPercent==0.0) return 0.0;
 
 		boost::multiprecision::float128 t_start(0.0);
 		boost::multiprecision::float128 rand0_t=boost::multiprecision::float128(rnd());
@@ -308,7 +307,7 @@ double calcStartTime(SubprocessFacet *iFacet, bool desorbed_b, bool printWarning
 		boost::multiprecision::float128 rand2_t=boost::multiprecision::float128(rnd());
 		//if(rand_t>boost::multiprecision::float128(0.99999)){rand_t=boost::multiprecision::float128(1.0);}
 
-		boost::multiprecision::float128 time_step = boost::multiprecision::float128(p->desWindowPercent*simHistory->stepSize);
+		boost::multiprecision::float128 time_step = boost::multiprecision::float128(simHistory->stepSize);
 
 		boost::multiprecision::float128 coverage = calcCoverage(iFacet);
 		double temperature=iFacet->sh.temperature;
