@@ -1,15 +1,15 @@
 % !TeX root = ../main.tex
 % Add the above to each chapter to make compiling the PDF easier in some editors.
 
-\chapter{Formulas for new Quantities}\label{chapter:Formulas}
+\chapter{Formulas for (new) Quantities}\label{chapter:Formulas}
 
 \subsubsection*{Constants}
 \begin{equation}
 	\begin{split}
 	%carbondiameter&=2 \cdot76\,pm\\
-	k_b&=1.381\times10^{-23}\,JK^{-1}\\
-	h&=6.626\times10^{-34}\,Js\\
-	N_A&=6.022\times10^{23}\,mol^{-1}\\
+	k_B&=1.381\times10^{-23}\,\si{\J \per \K}\\
+	h&=6.626\times10^{-34}\,\si{\J \s}\\
+	N_A&=6.022\times10^{23}\,\si{\per \mole}\\
 	\end{split}
 \end{equation}
 
@@ -25,7 +25,7 @@
 \subsubsection*{Number of particles of one layer}
 \begin{equation}
 	\label{eq:nmono}
-	N_{mono}=\frac{\text{Area of Facet [m$^2$]}}{\text{ProblemDef::particleDia$^2$ [m$^2$]}}
+	N_{mono}=\frac{\text{Area of Facet}}{\text{ProblemDef::particleDia$^2$}}
 \end{equation}
 
 %\subsubsection*{Carbon equivalent relative mass factor}
@@ -105,12 +105,12 @@
 \end{equation}
 
 
-\subsubsection*{Residence time $\tau$}
+\subsubsection*{Residence time $\tau$, average residence time $<\tau>$}
 \begin{equation}
 	\label{eq:sojourntime}
 	\begin{split}
-		A&=\exp\big( - E/(k_b T)\big),\ \tau_0 = \frac{h}{k_b \, T}\\
-		\tau &= \frac{-\text{ln}(rnd) \cdot \tau_0}{A}
+		<\tau>&=\tau_0 \exp\big(E/(k_B T)\big)\\
+		 \tau_0 &= \frac{h}{k_B \, T}\\
 	\end{split}
 \end{equation}
 \begin{comment}
@@ -124,10 +124,10 @@
 	\end{split}
 \end{equation}
 \end{comment}
-\subsubsection*{Desorption $des$}
+%\subsubsection*{Desorption $des$}
 \begin{equation}
 	\label{eq:des}
-	\tau_0=\frac{h}{k_b T},\ \tau_{subst} =\tau_0 \cdot \exp\Big(\frac{E_{de}}{k_b T}\Big),\ \tau_{ads}=\tau_0 \cdot \exp\Big(\frac{H_{vap}}{k_b T}\Big)
+	<\tau_{subst}> =\tau_0 \cdot \exp\Big(\frac{E_{de}}{k_B T}\Big),\ <\tau_{ads}>=\tau_0 \cdot \exp\Big(\frac{H_{vap}}{k_B T}\Big)
 	%\begin{split}
 	%\tau_0&=\frac{h}{k_b T},\ \tau_{subst} =\tau_0 \cdot \exp\Big(\frac{E_{de}}{k_b T}\Big),\ \tau_{ads}=\tau_0 \cdot \exp\Big(\frac{H_{vap}}{k_b T}\Big)%,\ t_{ads}=\tau_{ads} \cdot (\theta -1)
 	\\
@@ -145,13 +145,14 @@
 	\end{comment}	
 	%\end{split}
 	\end{equation}
-
+\begin{comment}
 \subsubsection*{Outgassing $out$}
 \begin{equation}
 	\label{eq:out}
 	out=\frac{\text{Facet outgassing}}{k_b T}
 \end{equation}
-
+\end{comment}
+\begin{comment}
 \subsubsection*{Particle density}
 \begin{equation}
 	\label{eq:density}
@@ -163,7 +164,7 @@
 	\label{eq:pressure}
 	density=\frac{\text{sum over orthogonal velocity}}{\text{Area of Facet [m$^2$]} \cdot t_{step}} \cdot \frac{\text{gas mass}}{1000/N_A} \cdot 0.01 \cdot K_{\text{real}/\text{virtual}}
 \end{equation}
-
+\end{comment}
 \subsubsection*{Small covering factor}
 \begin{equation}
 	\label{eq:smallcov}
@@ -178,13 +179,13 @@
 	\end{cases}
 	\end{split}
 \end{equation}
-
+\begin{comment}
 \subsubsection*{$K_{\text{real}/\text{virtual}}$}
 \begin{equation}
 	\label{eq:krealvirt}
 	K_{\text{real}/\text{virtual}}=\frac{\sum\limits_{\text{facets}}\Big(out + des\Big)}{\text{number of total desorbed molecules/small covering factor}}
 \end{equation}
-
+\end{comment}
 \subsubsection*{Statistical error}
 \begin{equation}
 	\label{eq:error}
