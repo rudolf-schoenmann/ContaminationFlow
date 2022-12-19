@@ -389,7 +389,7 @@ public:
 	double targetError;
 	double noupdateError;
 
-	double hitRatioLimit;
+//	double hitRatioLimit;
 	double t_min; // [s]
 
 	double t_max; // [s]

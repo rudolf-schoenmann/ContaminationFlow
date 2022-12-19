@@ -377,7 +377,7 @@ ProblemDef::ProblemDef(){
 	targetParticles=1000;
 	targetError=0.001;
 	noupdateError=0.1;
-	hitRatioLimit=0;
+//	hitRatioLimit=0;
 
 	t_min=1E-4;
 	t_max=std::numeric_limits<double>::max();
@@ -482,7 +482,7 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn =="targetParticles"){is >> intIn; targetParticles=intIn>0?intIn:0;}
 		else if(stringIn == "targetError") {is >>doubleIn; targetError = doubleIn>0.0?doubleIn:0.0;}
 		else if(stringIn == "noupdateError"){is >>doubleIn; noupdateError = doubleIn>0.0?doubleIn:0.0;}
-		else if(stringIn == "hitRatioLimit") {is >>doubleIn; hitRatioLimit = doubleIn>0.0?doubleIn:0.0;}
+//		else if(stringIn == "hitRatioLimit") {is >>doubleIn; hitRatioLimit = doubleIn>0.0?doubleIn:0.0;}
 		else if(stringIn == "t_min") {is >>doubleIn; t_min = doubleIn>0.0?doubleIn:0.0;}
 		else if(stringIn =="maxStepSize" || stringIn =="t_max"){is >>doubleIn; t_max=doubleIn>0.0?doubleIn:0.0;}
 
@@ -684,7 +684,7 @@ void ProblemDef::printInputfile(std::ostream& out, bool printConversion){ //std:
 	out <<"targetError" <<'\t' <<targetError <<std::endl;
 	out <<"noupdateError" <<'\t' <<noupdateError <<std::endl;
 	out <<"targetParticles" <<'\t' <<targetParticles <<std::endl;
-	out <<"hitRatioLimit" <<'\t' <<hitRatioLimit <<std::endl;
+//	out <<"hitRatioLimit" <<'\t' <<hitRatioLimit <<std::endl;
 
 	out <<"t_min" <<'\t' <<t_min <<std::endl;
 	out <<"t_max" <<"\t" <<t_max<<std::endl;
