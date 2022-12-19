@@ -358,18 +358,30 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \rule{0pt}{3ex}  rollingWindowSize&  Number of iterations over which statistics are calculated\\
 \rule{0pt}{3ex}  convergenceTarget&  Target for average ratio (std/mean) for convergence\\
 \rule{0pt}{3ex}  stopConverged&  1: stop simulation at convergence, 0: continue simulation\\
-\rule{0pt}{3ex}  facetGroups&  Indices of facets belonging to a group, groups divided by - \\
-\rule{0pt}{3ex}  focusGroup& Indices of facet groups to be monitored\\
+\rule{0pt}{3ex}  facetGroups&  Indices of facets belonging to a group, groups divided by '-' ;\\ & acting as a basis for a focus group\\
+\rule{0pt}{3ex}  focusGroup& Indices of facet groups to be monitored;\\
+& if focusGroup is defined, the average error is calculated involving\\
+& only facets in the focusGroups;\\
+& convergence of the coverage also only checked for all facets in\\& the focusGroups;\\
 \rule{0pt}{3ex} doFocusGroupOnly& 1: only monitor focus group, 0: monitor all facets\\
-\hline
-\rule{0pt}{3ex} createOutput()& Create output directory and file\\
-\rule{0pt}{3ex} readInputfile()& Initialization from input file, checks if parameters are valid\\
-\rule{0pt}{3ex} printInputfile()& Print to terminal\\
-\rule{0pt}{3ex} writeInputfile()& Write to text file\\
-\rule{0pt}{3ex} SetFocusGroup()& Converts focusGroup indices to facet indices\\
 \hline
 \end{tabular}
 \end{center}
+\begin{center}
+	\begin{tabular}{|l|l|}
+		\hline
+		\multicolumn{2}{|c|}{\rule{0pt}{3ex}ProblemDef}\\
+		\hline
+		\rule{0pt}{3ex} createOutput()& Create output directory and file\\
+		\rule{0pt}{3ex} readInputfile()& Initialization from input file, checks if parameters are valid\\
+		\rule{0pt}{3ex} printInputfile()& Print to terminal\\
+		\rule{0pt}{3ex} writeInputfile()& Write to text file\\
+		\rule{0pt}{3ex} SetFocusGroup()& Converts focusGroup indices to facet indices\\
+		\hline
+	\end{tabular}
+\end{center}
+
+
 %\newpage
 \section{New Functions}
 \subsection{molflowlinux\_main.cpp}
