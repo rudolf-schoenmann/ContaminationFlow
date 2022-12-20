@@ -41,27 +41,30 @@ std::tuple<double,double,double,double> getErrorVariables(SubprocessFacet* f, Da
 }
 
 void UpdateErrorList(Databuff *hitbuffer_sum){ // hitbuffer_sum==NULL: subprocess error, else: main error
-	double num_hit_it=0;
-	double num_des_ad_it=0;
+	double nbhits_all=0; double nbdes_all=0;
+	double nbout_all=0; double nbads_all=0;
+
 	double nbhits=0.0; double nbdes=0.0; double nbout=0.0;double nbads=0.0;
 
 	double factor=hitbuffer_sum==NULL?pow(simHistory->numSubProcess,0.5):1.0; // To be consistent with the ignored facets for calculating the error after summation over all subprocesses, here the hitRationLimit must be reduced with the correction factor due to multiple subprocesses.
 
-	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) { // add difference current-old to num_hit_it
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			std::tie(nbhits,nbdes,nbout,nbads)=getErrorVariables(&f, hitbuffer_sum);
-			num_hit_it+=(nbhits + nbdes + nbout);
-			num_des_ad_it+=(nbads + nbdes);
+			nbhits_all+=nbhits;
+			nbdes_all += nbdes;
+			nbout_all += nbout;
+			nbads_all +=nbads;
 		}
 	}
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			std::tie(nbhits,nbdes,nbout,nbads)=getErrorVariables(&f, hitbuffer_sum);
-			double num_hit_f=(nbhits + nbdes + nbout);
-			double num_des_ad_f=(nbads + nbdes);
-			double error_event=pow((1/num_hit_f)*(1-num_hit_f/num_hit_it),0.5);
-			double error_covering=pow((1/num_des_ad_f)*(1-num_des_ad_f/num_des_ad_it),0.5);
+			double error_event=(pow(((nbdes*(1-nbdes/nbdes_all))+(nbout*(1-nbout/nbout_all))+(nbhits*(1-nbhits/nbhits_all))),0.5)/(nbdes+nbout));
+			double error_covering=(pow(((nbdes*(1-nbdes/nbdes_all))+(nbads*(1-nbads/nbads_all))),0.5)/(nbdes+nbout));
+			//scale the error with the number of MC test-particles => error goes to zero with
+			//MC test-particles -> inf
 			simHistory->errorList_event.setCurrent(&f, error_event);
 			simHistory->errorList_covering.setCurrent(&f, error_covering);
 
@@ -85,7 +88,7 @@ void UpdateErrorList(Databuff *hitbuffer_sum){ // hitbuffer_sum==NULL: subproces
 // Calculate total error
 std::tuple<double,double> CalcErrorAll(int it){//calculates the averaged total error weighted with the facets area to decide, if the desired uncertainty level is reached
 	double error_event=0.0; double error_covering=0.0;
-	double area_event=0.0; double area_covering=0.0;
+	//double area_event=0.0; double area_covering=0.0;
 
 	for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 		for (SubprocessFacet& f : sHandle->structures[s].facets) {
@@ -95,18 +98,21 @@ std::tuple<double,double> CalcErrorAll(int it){//calculates the averaged total e
 			//if no focus group is given, than all facets are the focus group
 			double error_event_facet=(it==-1)?simHistory->errorList_event.getCurrent(idx):simHistory->errorList_event.historyList.second[idx][it];
 			if(!std::isinf(error_event_facet)){//ignore facet if no hits (=inf error)
-				error_event+=error_event_facet*pow(f.sh.area,3/2);
-				area_event+=f.sh.area;
+				//error_event+=error_event_facet*pow(f.sh.area,1/2);
+				//area_event+=f.sh.area;
+				error_event+=error_event_facet;
 			}
 
 			double error_covering_facet=(it==-1)?simHistory->errorList_covering.getCurrent(idx):simHistory->errorList_covering.historyList.second[idx][it];
 			if(!std::isinf(error_covering_facet)){//ignore facet if no hits (=inf error)
-				error_covering+=error_covering_facet*pow(f.sh.area,3/2);
-				area_covering+=f.sh.area;
+				//error_covering+=error_covering_facet*pow(f.sh.area,1/2);
+				//area_covering+=f.sh.area;
+				error_covering+=error_covering_facet;
 			}
 		}
 	}
-	return std::make_tuple(error_event/(pow(area_event,3/2)), error_covering/(pow(area_covering,3/2)));
+	//return std::make_tuple(error_event/(pow(area_event,1/2)), error_covering/(pow(area_covering,1/2)));
+	return std::make_tuple(error_event/(pow(simHistory->numFacet,1/2)), error_covering/(pow(simHistory->numFacet,1/2)));
 }
 
 // Check if error reached targets

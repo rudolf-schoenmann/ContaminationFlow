@@ -372,7 +372,7 @@ public:
 
 	// These can be given through input file only
 	int iterationNumber; //number of iterations
-	int usePCMethod; // 0: Do not use PC-Method, 1: Use PC-Method v1, 2: Use PC-Method v2
+	int usePCMethod; // 0: Do not use PC-Method, 1: Use PC-Method
 	double maxTime;
 	std::string maxUnit;
 
