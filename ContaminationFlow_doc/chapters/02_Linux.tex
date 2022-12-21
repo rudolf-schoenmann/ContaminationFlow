@@ -589,16 +589,16 @@ Optional covering file to replace covering values form hitbuffer. Hitbuffer's co
 \subsubsection{Target error reached?}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Calculate statistical uncertainty 'error' in \codew{UpdateError()} from \codew{UpdateSubProcess.cpp} file
-\item Average error calculated from summing facet error weighted with facet area
+\item Average error calculated from summing up the facets' errors %weighted with facet area
+corrected by the number of facets
 \item Error to check can be either covering or event error
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Additional check if vip facets reached their own target error
-\item Check if average error reached target error
+\item Additional check, if VIP facets reached their own target error
+\item Check, if average error reached target error
 \end{itemize}
 \item Facets with error=$inf$ are not considered
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
 \item Facets with no events or no change of covering (no desorb and no absorb)
-\item Facet error=$inf$ and area not used for calculation
 \end{itemize}
 \item Check in \codew{checkErrorSub($\cdot$)} (\codew{UpdateSubProcess.cpp})
 \end{itemize}

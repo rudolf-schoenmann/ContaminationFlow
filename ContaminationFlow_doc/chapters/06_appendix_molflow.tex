@@ -191,18 +191,28 @@
 	\label{eq:error}
 	\begin{split}
 	\text{error}(counter)&=
-	\begin{cases}
-	\begin{split}
-		inf\quad,\text{ if ($counter$) on facet =0}\\
-		\\
-		 \sqrt{\frac{1}{\text{($counter$) on facet}} \cdot \left(1 - \frac{\text{($counter$) on facet}}{\text{total ($counter$)}}\right)}\quad,\text{else}
-	\end{split}
-	\end{cases}\\\\
-	error\_covering&=\text{error}(\text{adsorbed particles + desorbed particles})\\
-	error\_event&=\text{error}(\text{hits + desorbed particles})\\
+	 \frac{1}{N_\textrm{test-particles}}\sqrt{\text{($counter$) on facet} \cdot \left(1 - \frac{\text{($counter$) on facet}}{\text{total ($counter$)}}\right)}
 	\end{split}
 \end{equation}
-
+$counter$ can be the number of hits, outgassed test-particles, desorbed test-particles or adsorbed test-particles (TP). error($counter$) is the sample mean of the (sampled) Bernoulli distribution. The overall error i.e. the sum of the contributions
+\begin{equation}
+\begin{split}
+\label{eq:summation_of_error_event}
+	\text{error}_\textrm{event}=&
+	\frac{1}{N_\textrm{test-particles}}\sqrt{\text{($hits$) on facet} \cdot \left(1 - \frac{\text{($hits$) on facet}}{\text{total ($hits$)}}\right)+}\\
+	&\overline{\text{($desorbed\,\,TP$) on facet} \cdot \left(1 - \frac{\text{($desorbed\,\,TP$) on facet}}{\text{total ($desorbed\,\,TP$)}}\right)+}\\
+	&\overline{\text{($outgassed\,\,TP$) on facet} \cdot \left(1 - \frac{\text{($outgassed\,\,TP$) on facet}}{\text{total ($outgassed\,\,TP$)}}\right)}
+\end{split}
+\end{equation}
+\begin{equation}
+\begin{split}
+\label{eq:summation_of_error_covering}
+\text{error}_\textrm{covering}=&
+\frac{1}{N_\textrm{test-particles}}\sqrt{\text{($adsorbed\,\,TP$) on facet} \cdot \left(1 - \frac{\text{($adsorbed\,\,TP$) on facet}}{\text{total ($adsorbed\,\,TP$)}}\right)+}\\
+&\overline{\text{($desorbed\,\,TP$) on facet} \cdot \left(1 - \frac{\text{($desorbed\,\,TP$) on facet}}{\text{total ($desorbed\,\,TP$)}}\right)}
+\end{split}
+\end{equation}
+is smaller than 1. It has to be multiplied with the number of physical particles to yield a statistical uncertainty of the particle number.
 \chapter{Datatypes}
 \section{Boost}
 \begin{center}
