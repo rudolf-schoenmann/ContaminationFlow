@@ -987,7 +987,7 @@ void SimulationHistory::updateHistory(){
 }
 
 void SimulationHistory::updateStepSize(){
-	stepSize = getStepSize();
+	//stepSize = getStepSize();
 
 	if(lastTime+stepSize<=p->outgassingTimeWindow){
 		stepSize_outgassing = stepSize;

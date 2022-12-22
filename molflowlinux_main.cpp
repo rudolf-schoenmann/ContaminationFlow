@@ -367,17 +367,17 @@ int main(int argc, char *argv[]) {
 				initbufftozero(&hitbuffer);
 				if(rank==0){
 					initbufftozero(&hitbuffer_sum);
+					simHistory->stepSize=getStepSize();
 				}
 				// Send coveringList to subprocesses
 				MPI_Bcast(&(simHistory->coveringList.currentList.front()), simHistory->coveringList.currentList.size()*16, MPI::BYTE,0,MPI_COMM_WORLD);
-				// Send predictList to subprocess
+				// Send predictList to subprocesses
 				MPI_Bcast(&(simHistory->coveringList.predictList.front()), simHistory->coveringList.predictList.size()*16, MPI::BYTE,0,MPI_COMM_WORLD);
-				// Send currentStep -> used to calculate stepSize
-				MPI_Bcast(&simHistory->currentStep, 1, MPI::INT, 0, MPI_COMM_WORLD);
+				// Send stepsize to to subprocesses
+				MPI_Bcast(&simHistory->stepSize, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);//is count of 1 correct for a double? Do I need '2'?
 				MPI_Barrier(MPI_COMM_WORLD);
 				// Set covering threshold (covering -covering/(size-1)). Iteration in subprocess is ended if this threshold is reached
 				setCoveringThreshold(world_size, rank);
-
 				if(rank!=0){
 					simHistory->updateHistory();// Write the current covering values from the simHistory to the sHandle and calculate stepSize (normal and outgassing).
 				}
