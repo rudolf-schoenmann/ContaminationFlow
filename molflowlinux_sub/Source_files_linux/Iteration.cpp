@@ -61,8 +61,20 @@ void UpdateErrorList(Databuff *hitbuffer_sum){ // hitbuffer_sum==NULL: subproces
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			std::tie(nbhits,nbdes,nbout,nbads)=getErrorVariables(&f, hitbuffer_sum);
-			double error_event=(pow(((nbdes*(1-nbdes/nbdes_all))+(nbout*(1-nbout/nbout_all))+(nbhits*(1-nbhits/nbhits_all))),0.5)/(nbdes+nbout));
-			double error_covering=(pow(((nbdes*(1-nbdes/nbdes_all))+(nbads*(1-nbads/nbads_all))),0.5)/(nbdes+nbout));
+			if(nbdes_all==0){
+				nbdes_all = 1;// prevent error being 'nan'
+			}
+			if(nbads_all==0){
+				nbads_all = 1;// prevent error being 'nan'
+			}
+			if(nbout_all==0){
+				nbout_all = 1;// prevent error being 'nan'
+			}
+			if(nbhits_all==0){
+				nbhits_all = 1;// prevent error being 'nan'
+			}
+			double error_event=(pow(((nbdes*(1-nbdes/nbdes_all))+(nbout*(1-nbout/nbout_all))+(nbhits*(1-nbhits/nbhits_all))),0.5)/(nbdes_all+nbout_all));
+			double error_covering=(pow(((nbdes*(1-nbdes/nbdes_all))+(nbads*(1-nbads/nbads_all))),0.5)/(nbdes_all+nbout_all));
 			//if counters are zero, the error formula yields zero. This has to be excluded.
 			if(error_event == 0){
 				error_event=1;
