@@ -12,7 +12,7 @@ module load mpi
 #  endif
 #endif
 
-mpirun -n $1 Debug/MolflowLinux $2
+mpirun -n $1 Debug/ContaminationFlow $2
 
 exit 0
 

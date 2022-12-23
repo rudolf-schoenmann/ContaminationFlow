@@ -16,7 +16,7 @@ endif
 @ var1 = 16 * $1
 echo "Launching ContaminationFlow on " $1 " compute nodes with (in total) " $var1 "processes." 
 # call application.
-srun -n $var1 Debug/MolflowLinux $2
+srun -n $var1 Debug/ContaminationFlow $2
 #deallocate compute nodes.
 exit
 

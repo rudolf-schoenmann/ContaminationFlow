@@ -44,19 +44,19 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: MolflowLinux
+all: ContaminationFlow
 
 # Tool invocations
-MolflowLinux: $(OBJS) $(USER_OBJS)
+ContaminationFlow	: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	mpic++ -L"../include/lib" -o "MolflowLinux" $(OBJS) $(USER_OBJS) $(LIBS)
+	mpic++ -L"../include/lib" -o "ContaminationFlow" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(CC_DEPS)$(C++_DEPS)$(EXECUTABLES)$(C_UPPER_DEPS)$(CXX_DEPS)$(OBJS)$(CPP_DEPS)$(C_DEPS) MolflowLinux
+	-$(RM) $(CC_DEPS)$(C++_DEPS)$(EXECUTABLES)$(C_UPPER_DEPS)$(CXX_DEPS)$(OBJS)$(CPP_DEPS)$(C_DEPS) ContaminationFlow
 	-@echo ' '
 
 .PHONY: all clean dependents
