@@ -24,11 +24,11 @@ C_DEPS :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 . \
-molflowlinux_sub/GLApp \
-molflowlinux_sub/Source_files_linux \
-molflowlinux_sub/Source_files_molflow \
-molflowlinux_sub/Source_files_shared_sources \
-molflowlinux_sub/TruncatedGaussian \
-molflowlinux_sub/boost/asio/impl \
-molflowlinux_sub/boost/spirit/home/support/char_encoding/unicode \
+ContaminationFlow_sub/GLApp \
+ContaminationFlow_sub/Source_files_linux \
+ContaminationFlow_sub/Source_files_molflow \
+ContaminationFlow_sub/Source_files_shared_sources \
+ContaminationFlow_sub/TruncatedGaussian \
+ContaminationFlow_sub/boost/asio/impl \
+ContaminationFlow_sub/boost/spirit/home/support/char_encoding/unicode \
 

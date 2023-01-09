@@ -8,13 +8,13 @@ RM := rm
 
 # All of the sources participating in the build are defined here
 -include sources.mk
--include molflowlinux_sub/boost/spirit/home/support/char_encoding/unicode/subdir.mk
--include molflowlinux_sub/boost/asio/impl/subdir.mk
--include molflowlinux_sub/TruncatedGaussian/subdir.mk
--include molflowlinux_sub/Source_files_shared_sources/subdir.mk
--include molflowlinux_sub/Source_files_molflow/subdir.mk
--include molflowlinux_sub/Source_files_linux/subdir.mk
--include molflowlinux_sub/GLApp/subdir.mk
+-include ContaminationFlow_sub/boost/spirit/home/support/char_encoding/unicode/subdir.mk
+-include ContaminationFlow_sub/boost/asio/impl/subdir.mk
+-include ContaminationFlow_sub/TruncatedGaussian/subdir.mk
+-include ContaminationFlow_sub/Source_files_shared_sources/subdir.mk
+-include ContaminationFlow_sub/Source_files_molflow/subdir.mk
+-include ContaminationFlow_sub/Source_files_ContaminationFlow/subdir.mk
+-include ContaminationFlow_sub/GLApp/subdir.mk
 -include subdir.mk
 -include objects.mk
 
