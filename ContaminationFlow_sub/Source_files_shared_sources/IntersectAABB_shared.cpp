@@ -27,7 +27,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include <algorithm> //std::min
 #include "Simulation.h"
 #include <tuple>
-#include "MolflowLinuxTypes.h" //added by Rudi
+#include "ContaminationFlowTypes.h" //added by Rudi
 
 // AABB tree stuff
 

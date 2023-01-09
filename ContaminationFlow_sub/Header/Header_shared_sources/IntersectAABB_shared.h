@@ -24,7 +24,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 // Temporary transparent hit
 #include "Vector.h" //AABB
 #include "Simulation.h" //SubprocessFacet
-#include "MolflowLinuxTypes.h" //added by Rudi
+#include "ContaminationFlowTypes.h" //added by Rudi
 
 // AABBTree node
 

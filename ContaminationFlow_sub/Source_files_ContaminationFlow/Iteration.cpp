@@ -22,7 +22,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
  * This file contains calculations for the iterative algorithm
  */
 
-#include "SimulationLinux.h"
+#include "SimulationContaminationFlow.h"
 #include <math.h>
 //#include "levmar.h"
 extern SimulationHistory* simHistory;

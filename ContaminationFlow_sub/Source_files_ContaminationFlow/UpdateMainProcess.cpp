@@ -22,7 +22,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
  * This file contains the functions that adds up Databuff structs
  */
 
-#include "SimulationLinux.h"
+#include "SimulationContaminationFlow.h"
 #include "GLApp/MathTools.h"
 #include <cmath>
 

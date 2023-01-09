@@ -25,7 +25,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 #include "GLApp/GLTypes.h"
 //#include "Types.h" // Rudi: Check, if it is needed on linux. If so => comment in again.
 //#include "Buffer_shared.h"
-#include "MolflowLinuxTypes.h"
+#include "ContaminationFlowTypes.h"
 
 // Desorption type
 #define DES_NONE    0   // No desorption

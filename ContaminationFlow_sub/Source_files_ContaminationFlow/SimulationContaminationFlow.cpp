@@ -22,7 +22,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
  * This file contains the serialization of the simulation in the sub processes
  */
 
-#include "SimulationLinux.h"
+#include "SimulationContaminationFlow.h"
 #include <array>
 #include <unistd.h>
 #include <libgen.h>

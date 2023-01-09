@@ -25,7 +25,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 //#include <stdio.h>
 //#include <stdlib.h>
 #include <sstream>
-#include "SimulationLinux.h"
+#include "SimulationContaminationFlow.h"
 #include "IntersectAABB_shared.h"
 #include "Random.h"
 #include "GLApp/MathTools.h"

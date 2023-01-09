@@ -24,7 +24,7 @@ Full license text: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
 #include "worker.h"
 #include "Simulation.h"
-#include "SimulationLinux.h"
+#include "SimulationContaminationFlow.h"
 #include <vector>
 #include "MathTools.h"
 #include "Random.h"
