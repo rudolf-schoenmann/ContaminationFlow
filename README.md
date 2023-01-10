@@ -16,7 +16,7 @@ Install dependencies
 # Running the ContaminationFlow:
 $ dnf install openmpi
 
-#Building ContaminationFlow
+# Building ContaminationFlow
 $ dnf install gsl
 $ dnf install gcc
 $ dnf install gcc-c++
@@ -40,15 +40,15 @@ Open Eclipse via terminal:
 
 ```
 # Load MPI -- to find mpic++
-module load mpi
+$ module load mpi
 
 
 # Optional: check if loaded correctly
-which mpic++ #e.g., /usr/lib64/openmpi/bin/mpic++
+$ which mpic++ #e.g., /usr/lib64/openmpi/bin/mpic++
 
 # Open eclipse
-cd /path-to-eclipse-executable/
-./eclipse
+$ cd /path-to-eclipse-executable/
+$ ./eclipse
 ```
 ### Create ContaminationFlow project
 * Create new workspace (**File->Switch Workspace->Other...**).
@@ -60,12 +60,12 @@ The ContaminationFlow executable can be build via terminal.
 
 ```
 # Load MPI
-module load mpi
+$ module load mpi
 
 
 # Build ContaminationFlow executable
-cd /path-to-ContaminationFlow/Debug/
-make all
+$ cd /path-to-ContaminationFlow/Debug/
+$ make all
 ```
 
 The ContaminationFlow executable can be build via Ecplise specifying the 'Build directory' as '${workspace_loc:/ContaminationFlow}/Debug' in the Eclipse project properties in the 'C/C++ Build' settings.
@@ -76,10 +76,10 @@ The ContaminationFlow executable can be build via Ecplise specifying the 'Build 
 ```
 # Load mpi
 $ module load mpi
-source /path-to-ContaminationFlow/StartContaminationFlow.tcsh
+$ source /path-to-ContaminationFlow/StartContaminationFlow.tcsh
 
 # Or run ContaminationFlow executable directly
-mpirun -n N /path-to-ContaminationFlow/Debug/ContaminationFlow /path-to-an-Inputfile/InputFile.txt
+$ mpirun -n N /path-to-ContaminationFlow/Debug/ContaminationFlow /path-to-an-Inputfile/InputFile.txt
 
 ```
 
