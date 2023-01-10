@@ -1,19 +1,35 @@
 # Quick start ContaminationFlow
 
-## Copy github reposity
+## Copy git reposity
 
 ```
-git clone https://gitlab.lrz.de/rudolf_schoenmann/MolflowLinux.git
+$ git clone https://gitlab.lrz.de/rudolf_schoenmann/ContaminationFlow.git
 
 ```
 
 ## Dependencies
-Install dependencies (_gsl-devel_, _openmpi-devel_)
+Install dependencies
 
 ```
-# Fedora & dnf package manager
-dnf install gsl-devel
-dnf install openmpi-devel
+# Examples are given for RockyLinux and the dnf package manager:
+
+# Running the ContaminationFlow:
+$ dnf install openmpi
+
+#Building ContaminationFlow
+$ dnf install gsl
+$ dnf install gcc
+$ dnf install gcc-c++
+$ dnf install make
+
+#Version control with git and SSH
+$ dnf install git
+$ dnf install openssh
+
+#Integrated Development Environment - Eclipse
+$ dnf install java-17-openjdk
+
+
 
 ```
 
@@ -23,12 +39,9 @@ We use [Eclipse IDE for C/C++ Developers](https://www.eclipse.org/downloads/pack
 Open Eclipse via terminal:
 
 ```
-# Optional: Check possible modules
-module avail #list should include mpi/openmpi-x86_64
+# Load MPI -- to find mpic++
+module load mpi
 
-# Load mpi -- to find mpic++
-# module load mpi/openmpi-x86_64
-source /path-to-MolflowLinux/Molflow10.tcsh
 
 # Optional: check if loaded correctly
 which mpic++ #e.g., /usr/lib64/openmpi/bin/mpic++
@@ -37,36 +50,36 @@ which mpic++ #e.g., /usr/lib64/openmpi/bin/mpic++
 cd /path-to-eclipse-executable/
 ./eclipse
 ```
-### Create Molflow project
-* Create new workspace (**File->Switch Workspace->Other...** and insert the parent directory of MolflowLinux).
-* Add project (**File->Open Projects from File System...** and select MolflowLinux).
-* Build
+### Create ContaminationFlow project
+* Create new workspace (**File->Switch Workspace->Other...**).
+* Add project (**File->Open Projects from File System...** and select ContaminationFlow).
 
 
 ### Build Execulatbe
-The Molflow executable can be build via Ecplise (Note: always follow the steps above to open Eclipse).
-Alternatively, after the first build, it can be build via terminal:
+The ContaminationFlow executable can be build via terminal.
 
 ```
-# Load mpi
-# module load mpi/openmpi-x86_64
-source /path-to-MolflowLinux/Molflow10.tcsh
+# Load MPI
+module load mpi
 
-# Build MolflowLinux executable
-cd /path-to-MolflowLinux/Debug/
-make MolflowLinux
+
+# Build ContaminationFlow executable
+cd /path-to-ContaminationFlow/Debug/
+make all
 ```
+
+The ContaminationFlow executable can be build via Ecplise specifying the 'Build directory' as '${workspace_loc:/ContaminationFlow}/Debug' in the Eclipse project properties in the 'C/C++ Build' settings.
 
 
 ## Run
 
 ```
 # Load mpi
-# module load mpi/openmpi-x86_64
-source /path-to-MolflowLinux/Molflow10.tcsh
+$ module load mpi
+source /path-to-ContaminationFlow/StartContaminationFlow.tcsh
 
-# Run MolflowLinux executable
-mpirun -n N /path-to-MolflowLinux/Debug/MolflowLinux /path-to-an-Inputfile/InputFile.txt save
+# Or run ContaminationFlow executable directly
+mpirun -n N /path-to-ContaminationFlow/Debug/ContaminationFlow /path-to-an-Inputfile/InputFile.txt
 
 ```
 
@@ -75,7 +88,7 @@ with
 |Parameter| Valid Input | Description|
 |------------ | -------------| -------------|
 |N| int value, N > 1|Number of processes. 1 main process, N-1 simulation processes|
-|path-to-MolflowLinux| Directory | path to github repository|
+|path-to-ContaminationFlow| Directory | path to github repository|
 |/path-to-an-Inputfile/InputFile.txt| Readable text file | path to an input file that defines simulation parameters|
 |save| int value | 1 (default) simulation results saved, 0 not saved|
 

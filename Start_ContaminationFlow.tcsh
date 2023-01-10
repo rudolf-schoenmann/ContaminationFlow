@@ -20,7 +20,7 @@ exit 0
 #start simulation with the following command: 
 # source Start_ContaminationFlow.tcsh parameter parameter
 # e.g. 
-# source Start_ContaminationFlow.tcsh 6 /scratch/schoenmann/MolflowLinuxInput/InputFileCF3.txt
+# source Start_ContaminationFlow.tcsh 6 /scratch/schoenmann/ContaminationFlowInput/InputFileCF3.txt
 #
 # 1st parameter ($1): number of processes
 # 2nd parameter ($2): path of input file
