@@ -8,13 +8,13 @@ RM := rm
 
 # All of the sources participating in the build are defined here
 -include sources.mk
--include molflowlinux_sub/boost/spirit/home/support/char_encoding/unicode/subdir.mk
--include molflowlinux_sub/boost/asio/impl/subdir.mk
--include molflowlinux_sub/TruncatedGaussian/subdir.mk
--include molflowlinux_sub/Source_files_shared_sources/subdir.mk
--include molflowlinux_sub/Source_files_molflow/subdir.mk
--include molflowlinux_sub/Source_files_linux/subdir.mk
--include molflowlinux_sub/GLApp/subdir.mk
+-include ContaminationFlow_sub/boost/spirit/home/support/char_encoding/unicode/subdir.mk
+-include ContaminationFlow_sub/boost/asio/impl/subdir.mk
+-include ContaminationFlow_sub/TruncatedGaussian/subdir.mk
+-include ContaminationFlow_sub/Source_files_shared_sources/subdir.mk
+-include ContaminationFlow_sub/Source_files_molflow/subdir.mk
+-include ContaminationFlow_sub/Source_files_ContaminationFlow/subdir.mk
+-include ContaminationFlow_sub/GLApp/subdir.mk
 -include subdir.mk
 -include objects.mk
 
@@ -44,19 +44,19 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: MolflowLinux
+all: ContaminationFlow
 
 # Tool invocations
-MolflowLinux: $(OBJS) $(USER_OBJS)
+ContaminationFlow	: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	mpic++ -L"../include/lib" -o "MolflowLinux" $(OBJS) $(USER_OBJS) $(LIBS)
+	mpic++ -L"../include/lib" -o "ContaminationFlow" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(CC_DEPS)$(C++_DEPS)$(EXECUTABLES)$(C_UPPER_DEPS)$(CXX_DEPS)$(OBJS)$(CPP_DEPS)$(C_DEPS) MolflowLinux
+	-$(RM) $(CC_DEPS)$(C++_DEPS)$(EXECUTABLES)$(C_UPPER_DEPS)$(CXX_DEPS)$(OBJS)$(CPP_DEPS)$(C_DEPS) ContaminationFlow
 	-@echo ' '
 
 .PHONY: all clean dependents
