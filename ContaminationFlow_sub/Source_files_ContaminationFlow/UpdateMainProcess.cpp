@@ -34,21 +34,10 @@ extern SimulationHistory* simHistory;
 double getStepSize(){
 	double t_min = p->t_min;
 	double t_max = p->maxTimeS;
-	//Dynamical calculation of min_time is not straight forward, since 'manageTimeStep()' can change it.
-	//Dynamical calculation can be done later, if it is regarded as useful.
 	double last_step_size=0;
 	double test_step_size=0;
 	double iterationNumber = (double)p->iterationNumber - 1;// steps: 0, 1, 2, ..., 'p->iterationNumber - 1' => these are 'p->iterationNumber' steps
 		if(simHistory->currentStep == 0 && simHistory->stepSize==0.0){
-			/*
-			// Reduce p->iterationNumber until test_time_step reaches t_min
-			double test_time_step;
-			test_time_step = t_min*(exp((log(p->maxTimeS/(t_min))/(double)p->iterationNumber)) - 1);
-			while(test_time_step < t_min){
-				p->iterationNumber -=1;
-				test_time_step = t_min*(exp((log(p->maxTimeS/(t_min))/(double)p->iterationNumber)) - 1);
-			}
-			*/
 			return t_min;
 		}
 		else{
@@ -70,16 +59,7 @@ double getStepSize(){
 			}
 			return t_stop-t_start<p->t_max?t_stop-t_start:p->t_max;
 		}
-		/*if(simHistory->currentStep==0){
-			double t_min = estimateAverageFlightTime();
-			return t_min*exp((double)simHistory->currentStep*(log(p->maxTimeS/t_min)/(double)p->iterationNumber));
-		}
-		else{
-			return exp((double)simHistory->currentStep*(log(p->maxTimeS/simHistory->coveringList.historyList[1].first)/(double)p->iterationNumber));
-		}*/
-
-
-}
+	}
 
 //-----------------------------------------------------------
 //Update Covering

@@ -1455,7 +1455,7 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 		double residence_energy;
 		boost::multiprecision::float128 coverage;
 
-		if (simHistory->pcStep == 0) {
+		if (!(p->usePCMethod==1&&simHistory->pcStep == 1)) {
 			coverage = calcCoverage(iFacet);
 		}
 		else if (simHistory->pcStep == 1) {
@@ -1465,30 +1465,12 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 
 			t = simHistory->stepSize/2;
 			
-			/*if (currCoverage < 1 && predCoverage < 1) {
-				boost::multiprecision::float128 tau_0(static_cast<boost::multiprecision::float128>(h/(kb*iFacet->sh.temperature)));
-				boost::multiprecision::float128 tau_subst(static_cast<boost::multiprecision::float128>(tau_0*exp(p->E_de/(kb*iFacet->sh.temperature))));
-				t = -tau_subst*log(static_cast<boost::multiprecision::float128>(0.5)*(currCoverage + predCoverage));
-			}
-			else if (currCoverage >= 1 && predCoverage >= 1) {
-				t = 1*simHistory->stepSize;
-			}
-			else if (currCoverage < 1 && predCoverage >= 1) {
-				t = ((1 - currCoverage)/(predCoverage - currCoverage))*simHistory->stepSize;
-			}
-			else if (currCoverage >= 1 && predCoverage < 1) {
-				t = ((currCoverage - 1)/(currCoverage - predCoverage))*simHistory->stepSize;
-			}*/
-
 			if (flightTime <= t) {
 				coverage = currCoverage;
 			}
 			else if (flightTime > t) {
 				coverage = predCoverage;
 			}
-		}
-		else{//simHistory->pcStep == 2 <=> time step control mode
-			coverage = calcCoverage(iFacet);// time step control mode does not affect the calculation of coverage/residence time
 		}
 
 		if(coverage >= 1)

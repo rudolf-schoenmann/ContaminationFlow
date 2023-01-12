@@ -370,7 +370,18 @@ int main(int argc, char *argv[]) {
 				initbufftozero(&hitbuffer);
 				if(rank==0){
 					initbufftozero(&hitbuffer_sum);
-					simHistory->stepSize=getStepSize();//Here, there has to be another stepSize in case of control algorithm!
+					if(p->usePCMethod <= 1){
+						simHistory->stepSize=getStepSize();
+					}
+					else{//Time step control algorithm if(usePCMethod==2)
+						std::tuple<bool, double> control= TimestepControl();
+						if(std::get<0>(control)){
+							simHistory->stepSize = std::get<1>(control);
+						}
+						else{
+							simHistory->stepSize=getStepSize();
+						}
+					}
 				}
 				// Send coveringList to subprocesses
 				if (simHistory->pcStep==0){
