@@ -462,7 +462,7 @@ public:
 	//std::tuple<bool, llong > updateHistory(Databuff *hitbuffer);
 	void updateHistory();
 
-	void updateStepSize();
+	void updateStepSize_outgassing();
 
 };
 
@@ -549,6 +549,8 @@ HistoryList<double>* getErrorList(std::string mode);
 //void setCoveringThreshold(Databuff *hitbuffer, int size, int rank);
 void setCoveringThreshold(int size, int rank);
 void initCoveringThresh();
+
+std::tuple<bool, double> TimestepControl();
 
 //double estimateTmin(Databuff *hitbuffer);
 //double estimateAverageFlightTime();

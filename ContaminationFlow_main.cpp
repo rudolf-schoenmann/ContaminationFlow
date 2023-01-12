@@ -352,14 +352,17 @@ int main(int argc, char *argv[]) {
 				MPI_Barrier(MPI_COMM_WORLD);
 				if(rank == 0){
 					std::ostringstream tmpstream (std::ostringstream::app);
-					if (!p->usePCMethod)
+					if (!p->usePCMethod){
 						tmpstream <<std::endl <<"----------------Starting iteration " <<it <<"----------------"<<std::endl;
-					else if (simHistory->pcStep == 0)
+					}
+					else if (simHistory->pcStep == 0){
 						tmpstream <<std::endl <<"----------------Starting predictor step of iteration " <<it <<"----------------"<<std::endl;
-					else
+					}
+					else{//simHistory->pcStep == 1
 						tmpstream <<std::endl <<"----------------Starting corrector step of iteration " <<it <<"----------------"<<std::endl;
-					simHistory->coveringList.printCurrent(tmpstream, "coveringList.currentList: "); // (Berke): Will be removed later on
-					simHistory->coveringList.printPredict(tmpstream, "coveringList.predictList: "); // (Berke): Will be removed later on
+					}
+					//simHistory->coveringList.printCurrent(tmpstream, "coveringList.currentList: "); // (Berke): Will be removed later on
+					//simHistory->coveringList.printPredict(tmpstream, "coveringList.predictList: "); // (Berke): Will be removed later on
 					printStream(tmpstream.str());
 				}
 				//---- Reset buffers and send coveringList content to all subprocesses
@@ -367,26 +370,37 @@ int main(int argc, char *argv[]) {
 				initbufftozero(&hitbuffer);
 				if(rank==0){
 					initbufftozero(&hitbuffer_sum);
-					simHistory->stepSize=getStepSize();
+					simHistory->stepSize=getStepSize();//Here, there has to be another stepSize in case of control algorithm!
 				}
 				// Send coveringList to subprocesses
+				if (simHistory->pcStep==0){
 				MPI_Bcast(&(simHistory->coveringList.currentList.front()), simHistory->coveringList.currentList.size()*16, MPI::BYTE,0,MPI_COMM_WORLD);
+				}
 				// Send predictList to subprocesses
-				MPI_Bcast(&(simHistory->coveringList.predictList.front()), simHistory->coveringList.predictList.size()*16, MPI::BYTE,0,MPI_COMM_WORLD);
+				if(p->usePCMethod==1){
+					if(simHistory->pcStep == 1){
+						MPI_Bcast(&(simHistory->coveringList.predictList.front()), simHistory->coveringList.predictList.size()*16, MPI::BYTE,0,MPI_COMM_WORLD);
+					}
+				}
 				// Send stepsize to to subprocesses
-				MPI_Bcast(&simHistory->stepSize, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);//is count of 1 correct for a double? Do I need '2'?
+				if(!(p->usePCMethod==1&&simHistory->pcStep == 1)){
+					MPI_Bcast(&simHistory->stepSize, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
+				}
 				MPI_Barrier(MPI_COMM_WORLD);
-				// Set covering threshold (covering -covering/(size-1)). Iteration in subprocess is ended if this threshold is reached
-				setCoveringThreshold(world_size, rank);
+				// Set covering threshold (covering - covering/(number of subprocesses)). Iteration in subprocess is ended if this threshold is reached
+				if (simHistory->pcStep == 0) {
+					setCoveringThreshold(world_size, rank);
+				}
 				if(rank!=0){
-					simHistory->updateHistory();// Write the current covering values from the simHistory to the sHandle and calculate stepSize (normal and outgassing).
+					simHistory->updateHistory();// Write the current covering values from the simHistory to the sHandle and calculate stepSize_outgassing).
 				}
 				else{
-					if (simHistory->pcStep == 0)
-						simHistory->updateStepSize(); // Calculate stepSize (normal and outgassing) for this iteration
+					if (!(p->usePCMethod==1&&simHistory->pcStep == 1)){
+						simHistory->updateStepSize_outgassing(); // Calculate stepSize_outgassing for this iteration
+					}
 				}
 
-				if (simHistory->pcStep == 0) {
+				if (!(p->usePCMethod==1&&simHistory->pcStep == 1)) {
 					// Not calculating these values again in corrector step
 					UpdateSticking(); // Write sticking factor into sHandle for all subprocesses
 					CalcTotalOutgassingWorker();// Calculate outgassing values for this iteration

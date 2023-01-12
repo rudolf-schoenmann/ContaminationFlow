@@ -195,6 +195,30 @@ void setCoveringThreshold(int size, int rank){
 
 //-----------------------------------------------------------
 
+std::tuple<bool, double> TimestepControl(){//Return value => bool: is a change of the time step necessary; double: new time step
+	bool stepSize_change = 0;
+	double stepSize_recom = simHistory->stepSize;//recom (recommendation of step size)
+	std::vector<bool> cases = {0, 0, 0, 0, 0};
+
+	//Check possibilities of different error cases
+
+	//------------------------ CASE I --------------------
+
+	//------------------------ CASE II --------------------
+
+	//------------------------ CASE III --------------------
+
+	//------------------------ CASE VI --------------------
+
+	//------------------------ CASE V --------------------
+
+
+
+	return std::make_tuple(stepSize_change,stepSize_recom);
+}
+
+
+
 //Estimation of Tmin
 double estimateTmin(Databuff *hitbuffer){ //not ready yet => finish //TODO
 //Ich muss der Funktion noch einen Hitbuffer übergeben. Ich brauche ja 'covering'.

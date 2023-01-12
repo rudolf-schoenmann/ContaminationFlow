@@ -1487,6 +1487,9 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 				coverage = predCoverage;
 			}
 		}
+		else{//simHistory->pcStep == 2 <=> time step control mode
+			coverage = calcCoverage(iFacet);// time step control mode does not affect the calculation of coverage/residence time
+		}
 
 		if(coverage >= 1)
 			residence_energy = p->H_vap;

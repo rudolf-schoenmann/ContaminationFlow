@@ -981,12 +981,12 @@ void SimulationHistory::updateHistory(){
 	pressureList.initCurrent(numFacet);
 	pressureList.appendCurrent(0.0);
 
-	if (simHistory->pcStep == 0)
-		updateStepSize();
+	if (!(p->usePCMethod==1&&simHistory->pcStep == 1))
+		updateStepSize_outgassing();
 	//lastTime=0.0;
 }
 
-void SimulationHistory::updateStepSize(){
+void SimulationHistory::updateStepSize_outgassing(){
 	//stepSize = getStepSize();
 
 	if(lastTime+stepSize<=p->outgassingTimeWindow){
