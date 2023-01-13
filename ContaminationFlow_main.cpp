@@ -348,8 +348,16 @@ int main(int argc, char *argv[]) {
 		// Start of Simulation
 		MPI_Barrier(MPI_COMM_WORLD);
 		if (p->simulationTimeMS != 0) {
-			for (;simHistory->pcStep <= (p->usePCMethod?1:0); simHistory->pcStep += 1) { // Predictor-corrector loop
+			bool one_more_corrector_sim = true;
+			std::tuple<bool, double> control = std::make_tuple(0,0);// is used for the time step control algorithm (if(simHistory->pcStep==2))
+			while (one_more_corrector_sim) { // Predictor-corrector loop
 				MPI_Barrier(MPI_COMM_WORLD);
+				if(p->usePCMethod <=1){// normal mode or Predictor-corrector mehtod 1
+					if(simHistory->pcStep == p->usePCMethod){
+						//This is the (last Corrector) simulation!
+						one_more_corrector_sim = false;
+					}
+				}
 				if(rank == 0){
 					std::ostringstream tmpstream (std::ostringstream::app);
 					if (!p->usePCMethod){
@@ -358,7 +366,7 @@ int main(int argc, char *argv[]) {
 					else if (simHistory->pcStep == 0){
 						tmpstream <<std::endl <<"----------------Starting predictor step of iteration " <<it <<"----------------"<<std::endl;
 					}
-					else{//simHistory->pcStep == 1
+					else{//simHistory->pcStep <= 1
 						tmpstream <<std::endl <<"----------------Starting corrector step of iteration " <<it <<"----------------"<<std::endl;
 					}
 					//simHistory->coveringList.printCurrent(tmpstream, "coveringList.currentList: "); // (Berke): Will be removed later on
@@ -374,9 +382,8 @@ int main(int argc, char *argv[]) {
 						simHistory->stepSize=getStepSize();
 					}
 					else{//Time step control algorithm if(usePCMethod==2)
-						std::tuple<bool, double> control= TimestepControl();
 						if(std::get<0>(control)){
-							simHistory->stepSize = std::get<1>(control);
+								simHistory->stepSize = std::get<1>(control);
 						}
 						else{
 							simHistory->stepSize=getStepSize();
@@ -516,7 +523,21 @@ int main(int argc, char *argv[]) {
 						UpdateErrorMain(&hitbuffer_sum); // !! If order changes, adapt "time" entry in errorLists !!
 					}
 					UpdateCovering(&hitbuffer_sum); // Calculate real covering after iteration
-					UpdateCoveringphys(&hitbuffer_sum, &hitbuffer); // Update real covering in buffers
+					//UpdateCoveringphys(&hitbuffer_sum, &hitbuffer); // Update real covering in buffers
+					/*
+					 * simHistory->flightTime=0.0;
+					 * simHistory->nParticles=0;
+					 *
+					 * was done in UpdateCoveringphys(&hitbuffer_sum, &hitbuffer)
+					 * */
+
+
+					//Check time step
+									control= TimestepControl();
+									if(!std::get<0>(control)){
+										one_more_corrector_sim = false;
+									}
+
 					if (simHistory->pcStep == (p->usePCMethod?1:0)) {
 						// Adapt size of history lists if p->histSize is exceeded
 						if(p->histSize != std::numeric_limits<int>::infinity() && simHistory->coveringList.historyList.first.size() > uint(p->histSize+1)){
@@ -537,6 +558,7 @@ int main(int argc, char *argv[]) {
 				}
 				if (rank == 0 && simHistory->pcStep == 0 && p->usePCMethod) {std::cout << "ending prediction step " <<std::endl;}
 				else if (rank == 0 && simHistory->pcStep == 1 && p->usePCMethod) {std::cout << "ending correction step " <<std::endl;} 
+				simHistory->pcStep += 1;
 			} //End of predictor-corrector loop
 
 			if (rank == 0) {
@@ -550,8 +572,7 @@ int main(int argc, char *argv[]) {
 			MPI_Barrier(MPI_COMM_WORLD);
 			MPI_Bcast(&simHistory->lastTime, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
 			MPI_Bcast(&currentRatio, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
-			//if((int)(simHistory->lastTime+0.5) >= p->maxTimeS){ // Maximum simulated time reached
-			if(simHistory->lastTime >= 1.000001*p->maxTimeS){ // Maximum simulated time reached (at least 99% of it)
+			if(simHistory->lastTime >= 1.000001*p->maxTimeS){ // Maximum simulated time reached
 				if(rank==0) {
 					std::ostringstream tmpstream (std::ostringstream::app);
 					tmpstream <<"Maximum simulated time reached: " <<simHistory->lastTime  <<" >= " <<p->maxTimeS <<std::endl;

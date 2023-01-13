@@ -73,7 +73,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 	boost::multiprecision::uint128_t covering_sum;//covering as it is summed up of all subprocesses. In case, it is multiplied by smallCoveringFactor
 	std::ostringstream tmpstream (std::ostringstream::app);
 
-	if (simHistory->pcStep == (p->usePCMethod?1:0)) {
+	if (!(p->usePCMethod==1&&simHistory->pcStep == 1)) {
 		// Calculate total error of this iteration
 		double total_error_event=0.0;
 		double total_error_covering=0.0;
