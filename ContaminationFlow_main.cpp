@@ -366,7 +366,7 @@ int main(int argc, char *argv[]) {
 					else if (simHistory->pcStep == 0){
 						tmpstream <<std::endl <<"----------------Starting predictor step of iteration " <<it <<"----------------"<<std::endl;
 					}
-					else{//simHistory->pcStep <= 1
+					else{//simHistory->pcStep >= 1
 						tmpstream <<std::endl <<"----------------Starting corrector step of iteration " <<it <<"----------------"<<std::endl;
 					}
 					//simHistory->coveringList.printCurrent(tmpstream, "coveringList.currentList: "); // (Berke): Will be removed later on
@@ -523,14 +523,7 @@ int main(int argc, char *argv[]) {
 						UpdateErrorMain(&hitbuffer_sum); // !! If order changes, adapt "time" entry in errorLists !!
 					}
 					UpdateCovering(&hitbuffer_sum); // Calculate real covering after iteration
-					//UpdateCoveringphys(&hitbuffer_sum, &hitbuffer); // Update real covering in buffers
-					/*
-					 * simHistory->flightTime=0.0;
-					 * simHistory->nParticles=0;
-					 *
-					 * was done in UpdateCoveringphys(&hitbuffer_sum, &hitbuffer)
-					 * */
-
+					UpdateCoveringphys(&hitbuffer_sum, &hitbuffer); // Update real covering in buffers
 
 					//Check time step
 									control= TimestepControl();
