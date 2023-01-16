@@ -518,7 +518,7 @@ int main(int argc, char *argv[]) {
 
 				//----Update History: particle density, pressure, error, covering
 				if (rank == 0) {
-					if (simHistory->pcStep == (p->usePCMethod?1:0)) {
+					if (!(p->usePCMethod==1&&simHistory->pcStep == 0)){
 						UpdateParticleDensityAndPressure(&hitbuffer_sum); // !! If order changes, adapt "time" entry in pressure/density lists !!
 						UpdateErrorMain(&hitbuffer_sum); // !! If order changes, adapt "time" entry in errorLists !!
 					}
@@ -526,12 +526,12 @@ int main(int argc, char *argv[]) {
 					UpdateCoveringphys(&hitbuffer_sum, &hitbuffer); // Update real covering in buffers
 
 					//Check time step
-									control= TimestepControl();
-									if(!std::get<0>(control)){
-										one_more_corrector_sim = false;
-									}
+					control= TimestepControl();
+					if(!std::get<0>(control)){
+						one_more_corrector_sim = false;
+					}
 
-					if (simHistory->pcStep == (p->usePCMethod?1:0)) {
+					if (simHistory->pcStep == (p->usePCMethod?1:0)) {//not ready yet for time control
 						// Adapt size of history lists if p->histSize is exceeded
 						if(p->histSize != std::numeric_limits<int>::infinity() && simHistory->coveringList.historyList.first.size() > uint(p->histSize+1)){
 								simHistory->erase(1);

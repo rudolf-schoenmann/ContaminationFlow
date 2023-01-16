@@ -156,25 +156,22 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 			tmpstream << "covering_phys_after = " << covering_phys << " = " << boost::multiprecision::float128(covering_phys) << std::endl;
 			tmpstream << "coveringThreshold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << " = " << boost::multiprecision::float128(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
 
-			if (p->usePCMethod == 0) {
+			if (!(p->usePCMethod==1&&simHistory->pcStep == 0)){
 				simHistory->coveringList.setCurrent(&f, covering_phys);
 			}
-			else{  //(p->usePCMethod == 1)
-				//Predictor-Corrector-Method
-				if (simHistory->pcStep == 0) {
-					simHistory->coveringList.setPredict(&f, covering_phys);
-				} 
-				else if (simHistory->pcStep == 1) {
-					simHistory->coveringList.setCurrent(&f, covering_phys);
-				}
+			else{
+				simHistory->coveringList.setPredict(&f, covering_phys);
 			} 
 
 			printStream(tmpstream.str());
 		}
 	}
 	// Save covering to simHistory
-	if (simHistory->pcStep == (p->usePCMethod?1:0)) {
+	if (!(p->usePCMethod==1&&simHistory->pcStep == 0)){
 		double time_step = simHistory->stepSize;
+		if(simHistory->pcStep >= 0){// in this case we overwrite (erase, then append) the last point in time
+				simHistory->coveringList.erase(simHistory->coveringList.getlastindex());
+			}
 		simHistory->coveringList.appendCurrent(simHistory->lastTime+time_step);
 		simHistory->lastTime+=time_step;
 		// Update other history lists with correct time entry
@@ -206,6 +203,10 @@ void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
 
 void UpdateErrorMain(Databuff *hitbuffer_sum){
 	UpdateErrorList(hitbuffer_sum);
+	if(simHistory->pcStep >= 0){// in this case we overwrite (erase, then append) the last point in time
+			simHistory->errorList_event.erase(simHistory->errorList_event.getlastindex());
+			simHistory->errorList_covering.erase(simHistory->errorList_covering.getlastindex());
+		}
 	simHistory->errorList_event.appendCurrent(simHistory->lastTime);
 	simHistory->errorList_covering.appendCurrent(simHistory->lastTime);
 	//simHistory->hitList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
@@ -242,9 +243,12 @@ void UpdateParticleDensityAndPressure(Databuff *hitbuffer_sum){
 	//printStream(tmpstream.str());
 
 	// Update history lists for particle density and pressure
+	if(simHistory->pcStep >= 0){// in this case we overwrite (erase, then append) the last point in time
+		simHistory->particleDensityList.erase(simHistory->particleDensityList.getlastindex());
+		simHistory->pressureList.erase(simHistory->pressureList.getlastindex());
+	}
 	simHistory->particleDensityList.appendCurrent(simHistory->lastTime);
 	simHistory->pressureList.appendCurrent(simHistory->lastTime);
-
 }
 
 std::tuple<std::vector<double>,std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  CalcPerIteration(){

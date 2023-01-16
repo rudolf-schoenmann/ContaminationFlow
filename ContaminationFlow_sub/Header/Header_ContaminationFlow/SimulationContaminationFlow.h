@@ -65,6 +65,7 @@ public:
 	std::vector<std::pair<boost::multiprecision::float128,boost::multiprecision::float128>> statisticsList; // list of mean-std pair
 	unsigned int currIt;
 
+
 	HistoryList(){
 		historyList.first = std::vector<double>();
 		historyList.second = std::vector<std::vector<T>>();
@@ -72,6 +73,7 @@ public:
 		predictList=std::vector<T>(); // list containing facet values at the end of the predictor step
 		statisticsList=std::vector<std::pair<boost::multiprecision::float128,boost::multiprecision::float128>> ();
 		currIt=0;
+
 	}
 
 	void reset(){
@@ -118,7 +120,6 @@ public:
 			historyList.second[j].push_back(currentList[j]);
 		}
 		currIt+=1;
-
 	}
 
 	// Statistics: Calculate mean/std per facet
@@ -327,6 +328,7 @@ public:
 	T getPredict(int idx){return predictList[idx];}
 	T getPredict(SubprocessFacet *iFacet){int idx = getFacetIndex(iFacet);return predictList[idx];}
 	void setLast(SubprocessFacet *iFacet, T newValue){int covidx = getFacetIndex(iFacet);	historyList.second[covidx].back()=newValue;}
+	int getlastindex(){return historyList.first.size() - 1;}//returns the last index of the vector saving the points in time
 
 	//---------------------------------------------------
 	// Not used anymore
