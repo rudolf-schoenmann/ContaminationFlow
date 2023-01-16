@@ -550,7 +550,7 @@ int main(int argc, char *argv[]) {
 					}
 				}
 				if (rank == 0 && simHistory->pcStep == 0 && p->usePCMethod) {std::cout << "ending prediction step " <<std::endl;}
-				else if (rank == 0 && simHistory->pcStep == 1 && p->usePCMethod) {std::cout << "ending correction step " <<std::endl;} 
+				else if (rank == 0 && simHistory->pcStep != 0 && p->usePCMethod) {std::cout << "ending correction step " <<std::endl;}
 				simHistory->pcStep += 1;
 			} //End of predictor-corrector loop
 
