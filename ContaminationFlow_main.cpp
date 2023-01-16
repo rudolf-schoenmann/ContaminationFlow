@@ -531,7 +531,9 @@ int main(int argc, char *argv[]) {
 						one_more_corrector_sim = false;
 					}
 
-					if (simHistory->pcStep == (p->usePCMethod?1:0)) {//not ready yet for time control
+					if (!(p->usePCMethod==1&&simHistory->pcStep == 0)&&!one_more_corrector_sim) {//rolling time windo statistics
+						//only, there is no more corrector step necessary (in case of time step control)
+
 						// Adapt size of history lists if p->histSize is exceeded
 						if(p->histSize != std::numeric_limits<int>::infinity() && simHistory->coveringList.historyList.first.size() > uint(p->histSize+1)){
 								simHistory->erase(1);

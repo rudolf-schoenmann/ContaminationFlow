@@ -198,22 +198,21 @@ void setCoveringThreshold(int size, int rank){
 std::tuple<bool, double> TimestepControl(){//Return value => bool: is a change of the time step necessary; double: new time step
 	bool stepSize_change = 0;
 	double stepSize_recom = simHistory->stepSize;//recom (recommendation of step size)
-	std::vector<bool> cases = {0, 0, 0, 0, 0};
+	if(p->usePCMethod==2){
+		std::vector<bool> cases = {0, 0, 0, 0, 0};
 
-	//Check possibilities of different error cases
+		//Check possibilities of different error cases
 
-	//------------------------ CASE I --------------------
+		//------------------------ CASE I --------------------
 
-	//------------------------ CASE II --------------------
+		//------------------------ CASE II --------------------
 
-	//------------------------ CASE III --------------------
+		//------------------------ CASE III --------------------
 
-	//------------------------ CASE VI --------------------
+		//------------------------ CASE VI --------------------
 
-	//------------------------ CASE V --------------------
-
-
-
+		//------------------------ CASE V --------------------
+	}
 	return std::make_tuple(stepSize_change,stepSize_recom);
 }
 
