@@ -384,6 +384,10 @@ int main(int argc, char *argv[]) {
 					else{//Time step control algorithm if(usePCMethod==2)
 						if(std::get<0>(control)){
 								simHistory->stepSize = std::get<1>(control);
+								while(simHistory->currentStep > 1 && simHistory->stepSize>=p->t_min && simHistory->stepSize < getStepSize()){
+									simHistory->currentStep -=1;
+									//one could also reduce p->iterationNumber for a faster growth rate of the time step.
+								}
 						}
 						else{
 							simHistory->stepSize=getStepSize();
