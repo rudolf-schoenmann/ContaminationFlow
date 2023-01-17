@@ -197,7 +197,7 @@ void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
 		}
 	}
 
-	simHistory->flightTime=0.0;
+	//simHistory->flightTime=0.0;
 	simHistory->nParticles=0;
 }
 

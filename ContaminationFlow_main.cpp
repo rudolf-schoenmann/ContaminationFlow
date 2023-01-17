@@ -361,13 +361,13 @@ int main(int argc, char *argv[]) {
 				if(rank == 0){
 					std::ostringstream tmpstream (std::ostringstream::app);
 					if (!p->usePCMethod){
-						tmpstream <<std::endl <<"----------------Starting iteration " <<it <<"----------------"<<std::endl;
+						tmpstream <<std::endl <<"----------------Starting iteration " <<it <<"----------------"<<std::endl<< std::endl;
 					}
 					else if (simHistory->pcStep == 0){
-						tmpstream <<std::endl <<"----------------Starting predictor step of iteration " <<it <<"----------------"<<std::endl;
+						tmpstream <<std::endl <<"----------------Starting predictor step of iteration " <<it <<"----------------"<<std::endl<< std::endl;
 					}
 					else{//simHistory->pcStep >= 1
-						tmpstream <<std::endl <<"----------------Starting corrector step of iteration " <<it <<"----------------"<<std::endl;
+						tmpstream <<std::endl <<"----------------Starting corrector step "<<simHistory->pcStep  <<" of iteration " <<it <<"----------------"<<std::endl<< std::endl;
 					}
 					//simHistory->coveringList.printCurrent(tmpstream, "coveringList.currentList: "); // (Berke): Will be removed later on
 					//simHistory->coveringList.printPredict(tmpstream, "coveringList.predictList: "); // (Berke): Will be removed later on
@@ -460,11 +460,11 @@ int main(int argc, char *argv[]) {
 						}
 					} else {
 						if (!p->usePCMethod)
-							tmpstream << "Simulation for process " << rank << " for iteration " << it << " finished."<< std::endl;
+							tmpstream << "Simulation for process " << rank << " for iteration " << it << " finished."<< std::endl<< std::endl;
 						else if (simHistory->pcStep == 0)
-							tmpstream << "Simulation for process " << rank << " for predictor step of iteration " << it << " finished."<< std::endl;
+							tmpstream << "Simulation for process " << rank << " for predictor step of iteration " << it << " finished."<< std::endl<< std::endl;
 						else
-							tmpstream << "Simulation for process " << rank << " for corrector step " << simHistory->pcStep << " of iteration " << it << " finished."<< std::endl;
+							tmpstream << "Simulation for process " << rank << " for corrector step " << simHistory->pcStep << " of iteration " << it << " finished."<< std::endl<< std::endl;
 					}
 					tmpstream <<std::endl;
 					printStream(tmpstream.str());

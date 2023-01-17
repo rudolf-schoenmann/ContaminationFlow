@@ -196,6 +196,9 @@ void setCoveringThreshold(int size, int rank){
 //-----------------------------------------------------------
 
 std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value => bool: is a change of the time step necessary; double: new time step
+	std::cout << std::endl;
+	std::cout << "--------------------------------------"<< std::endl;
+	std::cout << "TimestepControl function is executed!: " << std::endl;
 	bool stepSize_change = 0;
 	double stepSize_recom = simHistory->stepSize;//recom (recommendation of step size)
 	if(p->usePCMethod==2){
@@ -209,11 +212,13 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 
 		//------------------------ CASE III --------------------
 		double avg_flighttime = estimateAverageFlightTime(hitbuffer_sum);
+		std::cout << "avg_flighttime = " << avg_flighttime << std::endl;
 		if (avg_flighttime > p->t_min){
 			p->t_min = 10*avg_flighttime;// factor 10 (randomly chosen) to have more of the flight time distribution covered
 			stepSize_change = true;
-			stepSize_recom = p->t_min;
+			//stepSize_recom = p->t_min;
 		}
+		simHistory->flightTime=0.0;
 		//------------------------ CASE VI --------------------
 
 		//------------------------ CASE V --------------------
