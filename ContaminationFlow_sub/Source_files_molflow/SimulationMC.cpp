@@ -519,6 +519,7 @@ bool SimulationMCStep(size_t nbStep) {
 
 				double lastFLightTime = sHandle->currentParticle.flightTime; //memorize for partial hits
 				sHandle->currentParticle.flightTime += d / 100.0 / sHandle->currentParticle.velocity; //conversion from cm to m
+				simHistory->flightTime += d / 100.0 / sHandle->currentParticle.velocity;// only increment flighTime after flight events.
 
 				if ((!sHandle->wp.calcConstantFlow && (sHandle->currentParticle.flightTime > sHandle->wp.latestMoment))
 					|| (sHandle->wp.enableDecay && (sHandle->currentParticle.expectedDecayMoment < sHandle->currentParticle.flightTime))) {
@@ -963,7 +964,7 @@ bool StartFromSource() {
 		sHandle->tmpGlobalResult.globalHits.nbMCHit++; //global
 		sHandle->tmpGlobalResult.globalHits.nbHitEquiv += sHandle->currentParticle.oriRatio;
 		sHandle->tmpGlobalResult.globalHits.nbAbsEquiv += sHandle->currentParticle.oriRatio;
-		simHistory->flightTime+=flightTime;
+		//simHistory->flightTime+=flightTime;
 		simHistory->nParticles+=1;
 		RecordHistograms(src);
 
@@ -1428,7 +1429,7 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 
 	if((sHandle->currentParticle.flightTime>simHistory->stepSize) || iFacet->sh.temperature==0){ //no bounce if 0K
 		sHandle->tmpGlobalResult.globalHits.nbAbsEquiv += sHandle->currentParticle.oriRatio;
-		simHistory->flightTime+=sHandle->currentParticle.flightTime;
+		//simHistory->flightTime+=sHandle->currentParticle.flightTime;
 		simHistory->nParticles+=1;
 
 		RecordHistograms(iFacet);
@@ -1497,7 +1498,7 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 	}
 	if(isinf(sHandle->currentParticle.flightTime)||sHandle->currentParticle.flightTime>simHistory->stepSize){ //TODO maybe other parts from recordAbsorb()?
 		sHandle->tmpGlobalResult.globalHits.nbAbsEquiv += sHandle->currentParticle.oriRatio;
-		simHistory->flightTime+=flightTime;
+		//simHistory->flightTime+=flightTime;
 		simHistory->nParticles+=1;
 
 		RecordHistograms(iFacet);
@@ -1611,7 +1612,7 @@ void RecordAbsorb(SubprocessFacet *iFacet) {
 	//double ortVelocity = sHandle->currentParticle.velocity*abs(Dot(sHandle->currentParticle.direction, iFacet->sh.N));
 
 	//save values after absorb
-	simHistory->flightTime+=sHandle->currentParticle.flightTime;
+	//simHistory->flightTime+=sHandle->currentParticle.flightTime;
 	simHistory->nParticles+=1;
 
 	IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 1, 0, 1, 2.0 / ortVelocity, (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity);
