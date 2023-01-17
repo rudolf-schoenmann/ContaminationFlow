@@ -1428,8 +1428,9 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 	iFacet->sh.tmpCounter.sum_v_ort += (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity;*/
 
 	if((sHandle->currentParticle.flightTime>simHistory->stepSize) || iFacet->sh.temperature==0){ //no bounce if 0K
+		sHandle->tmpGlobalResult.globalHits.nbMCHit++; //global
+		sHandle->tmpGlobalResult.globalHits.nbHitEquiv += sHandle->currentParticle.oriRatio;
 		sHandle->tmpGlobalResult.globalHits.nbAbsEquiv += sHandle->currentParticle.oriRatio;
-		//simHistory->flightTime+=sHandle->currentParticle.flightTime;
 		simHistory->nParticles+=1;
 
 		RecordHistograms(iFacet);
@@ -1496,9 +1497,10 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 			flightTime=sHandle->currentParticle.flightTime;
 		}
 	}
-	if(isinf(sHandle->currentParticle.flightTime)||sHandle->currentParticle.flightTime>simHistory->stepSize){ //TODO maybe other parts from recordAbsorb()?
+	if(isinf(sHandle->currentParticle.flightTime)||sHandle->currentParticle.flightTime>simHistory->stepSize){
+		sHandle->tmpGlobalResult.globalHits.nbMCHit++; //global
+		sHandle->tmpGlobalResult.globalHits.nbHitEquiv += sHandle->currentParticle.oriRatio;
 		sHandle->tmpGlobalResult.globalHits.nbAbsEquiv += sHandle->currentParticle.oriRatio;
-		//simHistory->flightTime+=flightTime;
 		simHistory->nParticles+=1;
 
 		RecordHistograms(iFacet);
