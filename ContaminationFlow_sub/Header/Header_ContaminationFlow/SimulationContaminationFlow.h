@@ -512,10 +512,12 @@ FacetHitBuffer* getFacetHitBuffer(SubprocessFacet *iFacet, Databuff *hitbuffer);
 double calcNmono(SubprocessFacet *iFacet);
 
 llong getnbDesorbed(Databuff *hitbuffer_sum);
+llong getnbOutgassed(Databuff *hitbuffer_sum);
 llong getnbDesorbed(SubprocessFacet *iFacet, Databuff *hitbuffer);
 llong getnbOutgassed(SubprocessFacet *iFacet, Databuff *hitbuffer);
 llong getnbAdsorbed(SubprocessFacet *iFacet, Databuff *hitbuffer);//In the original Molflow, particles were absorbed not adsorbed. In ContaminationFlow we regard all old code parts
 // which are called 'Absorb' actually as an 'Adsorb'. But we did not rename them.
+llong getnbHits(Databuff *hitbuffer_sum);
 
 boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet, Databuff *hitbuffer);
 boost::multiprecision::uint128_t getCovering(SubprocessFacet *iFacet);
@@ -552,10 +554,10 @@ HistoryList<double>* getErrorList(std::string mode);
 void setCoveringThreshold(int size, int rank);
 void initCoveringThresh();
 
-std::tuple<bool, double> TimestepControl();
+std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum);
 
 //double estimateTmin(Databuff *hitbuffer);
-//double estimateAverageFlightTime();
+double estimateAverageFlightTime(Databuff *hitbuffer_sum);
 
 
 //-----------------------------------------------------------

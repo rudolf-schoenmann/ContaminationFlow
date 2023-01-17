@@ -95,6 +95,13 @@ llong getnbOutgassed(Databuff *hitbuffer_sum){
 
 	return gHits->globalHits.nbOutgassed;
 }
+
+llong getnbHits(Databuff *hitbuffer_sum){
+	GlobalHitBuffer *gHits;
+	gHits = (GlobalHitBuffer *)hitbuffer_sum->buff;
+
+	return gHits->globalHits.nbHitEquiv;
+}
 /*
 std::tuple<double, double, double> getVelocities(SubprocessFacet *iFacet, Databuff *hitbuffer_sum){
 	BYTE *buffer;

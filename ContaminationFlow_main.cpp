@@ -530,7 +530,7 @@ int main(int argc, char *argv[]) {
 					UpdateCoveringphys(&hitbuffer_sum, &hitbuffer); // Update real covering in buffers
 
 					//Check time step
-					control= TimestepControl();
+					control= TimestepControl(&hitbuffer_sum);
 					if(!std::get<0>(control)){
 						one_more_corrector_sim = false;
 					}

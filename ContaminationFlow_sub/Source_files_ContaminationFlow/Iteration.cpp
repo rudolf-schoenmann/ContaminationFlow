@@ -195,7 +195,7 @@ void setCoveringThreshold(int size, int rank){
 
 //-----------------------------------------------------------
 
-std::tuple<bool, double> TimestepControl(){//Return value => bool: is a change of the time step necessary; double: new time step
+std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value => bool: is a change of the time step necessary; double: new time step
 	bool stepSize_change = 0;
 	double stepSize_recom = simHistory->stepSize;//recom (recommendation of step size)
 	if(p->usePCMethod==2){
@@ -208,7 +208,12 @@ std::tuple<bool, double> TimestepControl(){//Return value => bool: is a change o
 		//------------------------ CASE II --------------------
 
 		//------------------------ CASE III --------------------
-
+		double avg_flighttime = estimateAverageFlightTime(hitbuffer_sum);
+		if (avg_flighttime > p->t_min){
+			p->t_min = 10*avg_flighttime;// factor 10 (randomly chosen) to have more of the flight time distribution covered
+			stepSize_change = true;
+			stepSize_recom = p->t_min;
+		}
 		//------------------------ CASE VI --------------------
 
 		//------------------------ CASE V --------------------
@@ -217,7 +222,7 @@ std::tuple<bool, double> TimestepControl(){//Return value => bool: is a change o
 }
 
 
-
+/*not needed anymore
 //Estimation of Tmin
 double estimateTmin(Databuff *hitbuffer){ //not ready yet => finish //TODO
 //Ich muss der Funktion noch einen Hitbuffer übergeben. Ich brauche ja 'covering'.
@@ -257,22 +262,14 @@ double estimateTmin(Databuff *hitbuffer){ //not ready yet => finish //TODO
 	std::cout << "Time step information for developing" << std::endl;
 	std::cout << "estimateTmin: tmin = " <<tmin<< "ms"<< std::endl;
 	std::cout << "estimateTmin: tmin_particles_out = " <<tmin_particles_out<< "ms"<< std::endl;
-	/*We don't need that anymore because we solved the problem of too much desorbed particles via a threshold value.
-	if (tmin < tmin_particles_out){
-		std::cout << "estimateTmin: tmin = " <<tmin<< "ms is chosen."<< std::endl;
-	 	return tmin;
-		}
-	else{
-		std::cout << "estimateTmin: tmin_particles_out = " <<tmin_particles_out<< "ms is chosen."<< std::endl;
-		return tmin_particles_out;
-		}
-	*/
 	return tmin;
 }
+*/
 
-
-double estimateAverageFlightTime(){
-	return simHistory->flightTime/simHistory->nParticles;
+double estimateAverageFlightTime(Databuff *hitbuffer_sum){
+	//return simHistory->flightTime/simHistory->nParticles;
+	llong nbtotalHits = getnbHits(hitbuffer_sum);
+	return simHistory->flightTime/nbtotalHits;
 }
 
 
