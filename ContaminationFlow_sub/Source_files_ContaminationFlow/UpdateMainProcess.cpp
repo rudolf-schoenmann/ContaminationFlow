@@ -169,7 +169,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 	// Save covering to simHistory
 	if (!(p->usePCMethod==1&&simHistory->pcStep == 0)){
 		double time_step = simHistory->stepSize;
-		if(simHistory->pcStep >= 0){// in this case we overwrite (erase, then append) the last point in time
+		if(simHistory->pcStep > 0){// in this case we overwrite (erase, then append) the last point in time
 				simHistory->coveringList.erase(simHistory->coveringList.getlastindex());
 			}
 		simHistory->coveringList.appendCurrent(simHistory->lastTime+time_step);
@@ -203,7 +203,7 @@ void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
 
 void UpdateErrorMain(Databuff *hitbuffer_sum){
 	UpdateErrorList(hitbuffer_sum);
-	if(simHistory->pcStep >= 0){// in this case we overwrite (erase, then append) the last point in time
+	if(simHistory->pcStep > 0){// in this case we overwrite (erase, then append) the last point in time
 			simHistory->errorList_event.erase(simHistory->errorList_event.getlastindex());
 			simHistory->errorList_covering.erase(simHistory->errorList_covering.getlastindex());
 		}
@@ -243,7 +243,7 @@ void UpdateParticleDensityAndPressure(Databuff *hitbuffer_sum){
 	//printStream(tmpstream.str());
 
 	// Update history lists for particle density and pressure
-	if(simHistory->pcStep >= 0){// in this case we overwrite (erase, then append) the last point in time
+	if(simHistory->pcStep > 0){// in this case we overwrite (erase, then append) the last point in time
 		simHistory->particleDensityList.erase(simHistory->particleDensityList.getlastindex());
 		simHistory->pressureList.erase(simHistory->pressureList.getlastindex());
 	}
