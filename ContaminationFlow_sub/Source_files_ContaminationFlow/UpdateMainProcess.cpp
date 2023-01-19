@@ -169,7 +169,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 	// Save covering to simHistory
 	if (!(p->usePCMethod==1&&simHistory->pcStep == 0)){
 		double time_step = simHistory->stepSize;
-		if(simHistory->pcStep > 0){// in this case we overwrite (erase, then append) the last point in time
+		if(p->usePCMethod!=1&&simHistory->pcStep > 0){// in this case we overwrite (erase, then append) the last point in time
 				simHistory->coveringList.erase(simHistory->coveringList.getlastindex());
 			}
 		simHistory->coveringList.appendCurrent(simHistory->lastTime+time_step);
