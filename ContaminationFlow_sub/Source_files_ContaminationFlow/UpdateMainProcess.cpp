@@ -37,7 +37,7 @@ double getStepSize(){
 	double last_step_size=0;
 	double test_step_size=0;
 	double iterationNumber = (double)p->iterationNumber - 1;// steps: 0, 1, 2, ..., 'p->iterationNumber - 1' => these are 'p->iterationNumber' steps
-		if(simHistory->currentStep == 0 && simHistory->stepSize==0.0){
+		if(simHistory->currentStep == 0){
 			return t_min;
 		}
 		else{
