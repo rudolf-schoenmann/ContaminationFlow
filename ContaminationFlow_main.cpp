@@ -471,14 +471,14 @@ int main(int argc, char *argv[]) {
 					MPI_Barrier(MPI_COMM_WORLD);
 				}
 				else{
-					t0 = GetTick();
 					checkSmallCovering(rank, &hitbuffer_sum); // Calculate smallCoveringFactor for this iteration
+					MPI_Barrier(MPI_COMM_WORLD);
+					t0 = GetTick();
 					for (int s = 0; s < (int)sHandle->sh.nbSuper; s++) {
 						for (SubprocessFacet& f : sHandle->structures[s].facets) {
 							calcStartTime(&f,true,true);
 						}
 					}
-					MPI_Barrier(MPI_COMM_WORLD);
 					MPI_Barrier(MPI_COMM_WORLD);
 					t1 = GetTick();
 					computationTime+=t1-t0; // Add calculation time of current iteration
@@ -530,9 +530,12 @@ int main(int argc, char *argv[]) {
 					UpdateCoveringphys(&hitbuffer_sum, &hitbuffer); // Update real covering in buffers
 
 					//Check time step
-					control= TimestepControl(&hitbuffer_sum);
-					if(!std::get<0>(control)){
-						one_more_corrector_sim = false;
+					if(p->usePCMethod==2){
+						control= TimestepControl(&hitbuffer_sum);
+						if(!std::get<0>(control)){
+							one_more_corrector_sim = false;
+						}
+
 					}
 
 					if (!(p->usePCMethod==1&&simHistory->pcStep == 0)&&!one_more_corrector_sim) {//rolling time windo statistics
@@ -558,6 +561,7 @@ int main(int argc, char *argv[]) {
 				if (rank == 0 && simHistory->pcStep == 0 && p->usePCMethod) {std::cout << "ending prediction step " <<std::endl;}
 				else if (rank == 0 && simHistory->pcStep != 0 && p->usePCMethod) {std::cout << "ending correction step " <<std::endl;}
 				simHistory->pcStep += 1;
+				MPI_Barrier(MPI_COMM_WORLD);
 			} //End of predictor-corrector loop
 
 			if (rank == 0) {
