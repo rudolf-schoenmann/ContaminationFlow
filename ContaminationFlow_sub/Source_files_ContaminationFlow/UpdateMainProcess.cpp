@@ -99,8 +99,8 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 		}
 
 		//if targetError not reached: do not update currentstep
-		if(checkError(p->targetError, (p->errorMode=="covering")?total_error_covering:total_error_event, 1.0, p->errorMode)){simHistory->currentStep += 1;}//deactivated for testing reaons
-		//simHistory->currentStep += 1;// for testing reasons
+		if(checkError(p->targetError, (p->errorMode=="covering")?total_error_covering:total_error_event, 1.0, p->errorMode)){simHistory->currentStep += 1;}
+
 	}
 	tmpstream <<"Krealvirt = " << Krealvirt << std::endl;
 	tmpstream << "Covering difference will be multiplied by Krealvirt: " << Krealvirt << std::endl;
@@ -111,11 +111,16 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
 			std::ostringstream tmpstream (std::ostringstream::app);
 
-			covering_phys = simHistory->coveringList.getLast(&f);
+			if (!(p->usePCMethod==2&&simHistory->pcStep > 0)) {
+				covering_phys = simHistory->coveringList.getLast(&f);
+			}
+			else{//p->usePCMethod==2&&simHistory->pcStep > 0
+				covering_phys = simHistory->coveringList.getForelast(&f);
+			}
 			covering_sum = getCovering(&f, hitbuffer_sum);
 
 			tmpstream <<std::endl << "Facet " << getFacetIndex(&f)<< std::endl;
-			tmpstream << "covering_sum  = " << (static_cast < boost::multiprecision::float128 >(covering_sum))/(static_cast < boost::multiprecision::float128 >(simHistory->smallCoveringFactor)) << std::endl;
+			tmpstream << "covering_sum  = " <<covering_sum << " / "<< simHistory->smallCoveringFactor<< " = " << (static_cast < boost::multiprecision::float128 >(covering_sum))/(static_cast < boost::multiprecision::float128 >(simHistory->smallCoveringFactor)) << std::endl;
 			tmpstream << "covering_phys_before = " << covering_phys << " = "<< boost::multiprecision::float128(covering_phys) << std::endl;
 
 			covering_phys = static_cast < boost::multiprecision::uint128_t >(covering_phys*simHistory->smallCoveringFactor);//scale up covering_phys; covering_sum (in all buffers) is already scaled up before the iteration!
@@ -187,15 +192,27 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 }
 
 // Copy covering to hitbuffers
-void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer){
+void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer, bool step_size_change){
 	boost::multiprecision::uint128_t covering_phys;
-	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
-		for (SubprocessFacet& f : sHandle->structures[j].facets) {
-			covering_phys = simHistory->coveringList.getLast(&f);
-			getFacetHitBuffer(&f,hitbuffer)->covering=covering_phys;
-			getFacetHitBuffer(&f,hitbuffer_sum)->covering=covering_phys;
-		}
+	if (!step_size_change){
+		for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+				for (SubprocessFacet& f : sHandle->structures[j].facets) {
+					covering_phys = simHistory->coveringList.getLast(&f);
+					getFacetHitBuffer(&f,hitbuffer)->covering=covering_phys;
+					getFacetHitBuffer(&f,hitbuffer_sum)->covering=covering_phys;
+				}
+			}
 	}
+	else{
+		for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+				for (SubprocessFacet& f : sHandle->structures[j].facets) {
+					covering_phys = simHistory->coveringList.getForelast(&f);
+					getFacetHitBuffer(&f,hitbuffer)->covering=covering_phys;
+					getFacetHitBuffer(&f,hitbuffer_sum)->covering=covering_phys;
+				}
+			}
+	}
+
 
 	//simHistory->flightTime=0.0;
 	simHistory->nParticles=0;

@@ -526,8 +526,6 @@ int main(int argc, char *argv[]) {
 						UpdateErrorMain(&hitbuffer_sum); // !! If order changes, adapt "time" entry in errorLists !!
 					}
 					UpdateCovering(&hitbuffer_sum); // Calculate real covering after iteration
-					UpdateCoveringphys(&hitbuffer_sum, &hitbuffer); // Update real covering in buffers
-
 					//Check time step
 					if(p->usePCMethod==2){
 						control= TimestepControl(&hitbuffer_sum);
@@ -536,8 +534,10 @@ int main(int argc, char *argv[]) {
 						}
 
 					}
+					UpdateCoveringphys(&hitbuffer_sum, &hitbuffer,std::get<0>(control)); // Update real covering in buffers
 
-					if (!(p->usePCMethod==1&&simHistory->pcStep == 0)&&!one_more_corrector_sim) {//rolling time windo statistics
+
+					if (!(p->usePCMethod==1&&simHistory->pcStep == 0)&&!one_more_corrector_sim) {//rolling time window statistics
 						//only, there is no more corrector step necessary (in case of time step control)
 
 						// Adapt size of history lists if p->histSize is exceeded

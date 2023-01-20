@@ -323,6 +323,12 @@ public:
 	void setPredict(SubprocessFacet *iFacet, T newValue){int idx = getFacetIndex(iFacet);	predictList[idx]=newValue;}
 	//T getLast(int idx){return historyList.second[idx].back();}
 	T getLast(SubprocessFacet *iFacet){int covidx = getFacetIndex(iFacet);return historyList.second[covidx].back();}
+	T getForelast(SubprocessFacet *iFacet){
+		int covidx = getFacetIndex(iFacet);
+		int index_fl = historyList.second[covidx].size() - 2;//index of the fore_last_vector_element
+		//last element's = size -1, since first element's index = 0
+		return historyList.second[covidx].at(index_fl);
+	}
 	T getCurrent(int idx){return currentList[idx];}
 	T getCurrent(SubprocessFacet *iFacet){int covidx = getFacetIndex(iFacet);return currentList[covidx];}
 	T getPredict(int idx){return predictList[idx];}
@@ -498,7 +504,7 @@ void initbufftozero(Databuff *databuffer);
 double getStepSize();
 
 void UpdateCovering(Databuff *hitbuffer_sum);
-void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer);
+void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer, bool step_size_change);
 void UpdateErrorMain(Databuff *hitbuffer_sum);
 void UpdateParticleDensityAndPressure(Databuff *hitbuffer_sum);
 
