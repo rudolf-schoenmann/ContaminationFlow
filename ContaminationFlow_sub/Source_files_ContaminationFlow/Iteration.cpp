@@ -76,10 +76,10 @@ void UpdateErrorList(Databuff *hitbuffer_sum){ // hitbuffer_sum==NULL: subproces
 			double error_event=(pow(((nbdes*(1-nbdes/nbdes_all))+(nbout*(1-nbout/nbout_all))+(nbhits*(1-nbhits/nbhits_all))),0.5)/(nbdes_all+nbout_all));
 			double error_covering=(pow(((nbdes*(1-nbdes/nbdes_all))+(nbads*(1-nbads/nbads_all))),0.5)/(nbdes_all+nbout_all));
 			//if counters are zero, the error formula yields zero. This has to be excluded.
-			if(error_event == 0){
+			if(error_event == 0||std::isnan(error_event)){
 				error_event=1;
 			}
-			if(error_covering == 0){
+			if(error_covering == 0||std::isnan(error_covering)){
 				error_covering=1;
 			}
 			//scale the error with the number of MC test-particles => error goes to zero with
@@ -116,14 +116,14 @@ std::tuple<double,double> CalcErrorAll(int it){//calculates the averaged total e
 			//ignore facet if no opacity or if facet is not in focus group
 			//if no focus group is given, than all facets are the focus group
 			double error_event_facet=(it==-1)?simHistory->errorList_event.getCurrent(idx):simHistory->errorList_event.historyList.second[idx][it];
-			if(!std::isinf(error_event_facet)){//ignore facet if no hits (=inf error)
+			if(!std::isinf(error_event_facet)&&!std::isnan(error_event_facet)){//ignore facet if no hits (=inf error)
 				//error_event+=error_event_facet*pow(f.sh.area,1/2);
 				//area_event+=f.sh.area;
 				error_event+=error_event_facet;
 			}
 
 			double error_covering_facet=(it==-1)?simHistory->errorList_covering.getCurrent(idx):simHistory->errorList_covering.historyList.second[idx][it];
-			if(!std::isinf(error_covering_facet)){//ignore facet if no hits (=inf error)
+			if(!std::isinf(error_covering_facet)&&!std::isnan(error_covering_facet)){//ignore facet if no hits (=inf error)
 				//error_covering+=error_covering_facet*pow(f.sh.area,1/2);
 				//area_covering+=f.sh.area;
 				error_covering+=error_covering_facet;
