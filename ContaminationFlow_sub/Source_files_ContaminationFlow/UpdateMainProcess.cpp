@@ -178,16 +178,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 			}
 		simHistory->lastTime+=simHistory->stepSize;
 		simHistory->coveringList.appendCurrent(simHistory->lastTime);
-		// Update other history lists with correct time entry
-		//simHistory->hitList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-		//simHistory->errorList_event.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-		//simHistory->errorList_covering.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-		//simHistory->desorbedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-		//simHistory->outgassedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-		//simHistory->adsorbedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-		//simHistory->particleDensityList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-		//simHistory->pressureList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-	}
+		}
 }
 
 // Copy covering to hitbuffers
@@ -211,22 +202,16 @@ void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer, bool step_
 				}
 			}
 	}
-
-
-	//simHistory->flightTime=0.0;
 	simHistory->nParticles=0;
 }
 
-void UpdateErrorMain(Databuff *hitbuffer_sum){
-	UpdateErrorList(hitbuffer_sum);
+void UpdateErrorMain(){
 	if(simHistory->pcStep > 0){// in this case we overwrite (erase, then append) the last point in time
-			simHistory->errorList_event.erase(simHistory->errorList_event.getlastindex());
-			simHistory->errorList_covering.erase(simHistory->errorList_covering.getlastindex());
+		simHistory->errorList_event.erase(simHistory->errorList_event.getlastindex());
+		simHistory->errorList_covering.erase(simHistory->errorList_covering.getlastindex());
 		}
 	simHistory->errorList_event.appendCurrent(simHistory->lastTime);
 	simHistory->errorList_covering.appendCurrent(simHistory->lastTime);
-	//simHistory->hitList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
-	//simHistory->desorbedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateCovering before UpdateErrorMain
 }
 
 void UpdateParticleDensityAndPressure(Databuff *hitbuffer_sum){
@@ -238,21 +223,6 @@ void UpdateParticleDensityAndPressure(Databuff *hitbuffer_sum){
 			// Calculate particle density and pressure of facet
 			simHistory->particleDensityList.setCurrent(&f, calcParticleDensity(hitbuffer_sum , &f));
 			simHistory->pressureList.setCurrent(&f, calcPressure(hitbuffer_sum , &f));
-
-			// Calculate predicted pressure for comparison to real pressure
-			/*
-			double energy=calcCoverage(&f)<1?p->E_de:p->H_vap;
-
-			double tau=h/(kb*f.sh.temperature) * exp(energy/(kb*f.sh.temperature));
-			double targetPressure = 3/(tau*pow(p->particleDia,2)) * sqrt(3.14 * (sHandle->wp.gasMass/ 1000 / 6E23) *kb*f.sh.temperature/8);
-
-			double sum_1_per_ort_velocity, sum_v_ort, sum_1_per_velocity=0.0;
-			std::tie(sum_1_per_ort_velocity, sum_v_ort, sum_1_per_velocity)=getVelocities(&f, hitbuffer_sum);
-			tmpstream << "Facet " <<getFacetIndex(&f) <<" Predicted Pressure: " <<std::setw(11)<<std::right <<targetPressure <<"  ,  Real pressure: " <<std::setw(11)<<std::right <<simHistory->pressureList.getCurrent(&f);
-			tmpstream <<"\tfor gass mass "<<sHandle->wp.gasMass <<" [g/mol]  ,  and 1_ort_v: "<<std::setw(11)<<std::right <<sum_1_per_ort_velocity <<"  ,  ort_v: "<<std::setw(11)<<std::right <<sum_v_ort <<"  ,  1_v: "<<std::setw(11)<<std::right <<sum_1_per_velocity<<std::endl;
-			*/
-			//tmpstream << "Facet " <<getFacetIndex(&f) <<" pressure: " <<std::setw(11)<<std::right <<simHistory->pressureList.getCurrent(&f)<<std::endl;
-
 		}
 	}
 	//tmpstream<<std::endl;

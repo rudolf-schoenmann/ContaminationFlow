@@ -505,7 +505,7 @@ double getStepSize();
 
 void UpdateCovering(Databuff *hitbuffer_sum);
 void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer, bool step_size_change);
-void UpdateErrorMain(Databuff *hitbuffer_sum);
+void UpdateErrorMain();
 void UpdateParticleDensityAndPressure(Databuff *hitbuffer_sum);
 
 std::tuple<std::vector<double>,std::vector<double>,std::vector<boost::multiprecision::uint128_t>>  CalcPerIteration();

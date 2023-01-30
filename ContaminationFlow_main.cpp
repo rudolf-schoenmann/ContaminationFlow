@@ -522,6 +522,7 @@ int main(int argc, char *argv[]) {
 				//----Update History: particle density, pressure, error, covering
 				if (rank == 0) {
 					UpdateCovering(&hitbuffer_sum); // Calculate real covering after iteration
+					UpdateErrorList(&hitbuffer_sum);
 					//Check time step
 					if(p->usePCMethod==2){
 						control= TimestepControl(&hitbuffer_sum);
@@ -531,8 +532,8 @@ int main(int argc, char *argv[]) {
 					}
 					UpdateCoveringphys(&hitbuffer_sum, &hitbuffer,std::get<0>(control)); // Update real covering in buffers
 					if (!(p->usePCMethod==1&&simHistory->pcStep == 0)){
-						UpdateParticleDensityAndPressure(&hitbuffer_sum); // !! If order changes, adapt "time" entry in pressure/density lists !!
-						UpdateErrorMain(&hitbuffer_sum); // !! If order changes, adapt "time" entry in errorLists !!
+						UpdateParticleDensityAndPressure(&hitbuffer_sum);
+						UpdateErrorMain();
 						}
 
 					if (!(p->usePCMethod==1&&simHistory->pcStep == 0)&&!one_more_corrector_sim) {//rolling time window statistics
