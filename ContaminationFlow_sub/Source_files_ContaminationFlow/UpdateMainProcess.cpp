@@ -173,21 +173,20 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 	}
 	// Save covering to simHistory
 	if (!(p->usePCMethod==1&&simHistory->pcStep == 0)){
-		double time_step = simHistory->stepSize;
 		if(p->usePCMethod!=1&&simHistory->pcStep > 0){// in this case we overwrite (erase, then append) the last point in time
 				simHistory->coveringList.erase(simHistory->coveringList.getlastindex());
 			}
-		simHistory->coveringList.appendCurrent(simHistory->lastTime+time_step);
-		simHistory->lastTime+=time_step;
+		simHistory->lastTime+=simHistory->stepSize;
+		simHistory->coveringList.appendCurrent(simHistory->lastTime);
 		// Update other history lists with correct time entry
-		simHistory->hitList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-		simHistory->errorList_event.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-		simHistory->errorList_covering.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-		simHistory->desorbedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-		simHistory->outgassedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-		simHistory->adsorbedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-		simHistory->particleDensityList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
-		simHistory->pressureList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+		//simHistory->hitList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+		//simHistory->errorList_event.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+		//simHistory->errorList_covering.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+		//simHistory->desorbedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+		//simHistory->outgassedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+		//simHistory->adsorbedList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+		//simHistory->particleDensityList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
+		//simHistory->pressureList.historyList.first.back()=simHistory->lastTime; // Uncomment if UpdateErrorMain before UpdateCovering
 	}
 }
 

@@ -521,10 +521,6 @@ int main(int argc, char *argv[]) {
 
 				//----Update History: particle density, pressure, error, covering
 				if (rank == 0) {
-					if (!(p->usePCMethod==1&&simHistory->pcStep == 0)){
-						UpdateParticleDensityAndPressure(&hitbuffer_sum); // !! If order changes, adapt "time" entry in pressure/density lists !!
-						UpdateErrorMain(&hitbuffer_sum); // !! If order changes, adapt "time" entry in errorLists !!
-					}
 					UpdateCovering(&hitbuffer_sum); // Calculate real covering after iteration
 					//Check time step
 					if(p->usePCMethod==2){
@@ -532,10 +528,12 @@ int main(int argc, char *argv[]) {
 						if(!std::get<0>(control)){
 							one_more_corrector_sim = false;
 						}
-
 					}
 					UpdateCoveringphys(&hitbuffer_sum, &hitbuffer,std::get<0>(control)); // Update real covering in buffers
-
+					if (!(p->usePCMethod==1&&simHistory->pcStep == 0)){
+						UpdateParticleDensityAndPressure(&hitbuffer_sum); // !! If order changes, adapt "time" entry in pressure/density lists !!
+						UpdateErrorMain(&hitbuffer_sum); // !! If order changes, adapt "time" entry in errorLists !!
+						}
 
 					if (!(p->usePCMethod==1&&simHistory->pcStep == 0)&&!one_more_corrector_sim) {//rolling time window statistics
 						//only, there is no more corrector step necessary (in case of time step control)
