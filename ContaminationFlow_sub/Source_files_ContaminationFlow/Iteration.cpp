@@ -226,7 +226,11 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 
 	//------------------------ CASE V --------------------
 
-	return std::make_tuple(stepSize_change,stepSize_recom);
+	if(stepSize_change){//revert the value of lastTime in case of repetition
+		simHistory->lastTime-=simHistory->stepSize;
+	}
+	return std::make_tuple(false,stepSize_recom);
+//	return std::make_tuple(stepSize_change,stepSize_recom);
 }
 
 

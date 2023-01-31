@@ -516,16 +516,14 @@ int main(int argc, char *argv[]) {
 						printStream(tmpstream.str());
 					}
 				}
-
 				MPI_Barrier(MPI_COMM_WORLD);
-
 				//----Update History: particle density, pressure, error, covering
 				if (rank == 0) {
 					UpdateErrorList(&hitbuffer_sum);
 					UpdateCovering(&hitbuffer_sum); // Calculate real covering after iteration
 					//Check time step
 					if(p->usePCMethod==2){
-						control= TimestepControl(&hitbuffer_sum);
+					control= TimestepControl(&hitbuffer_sum);
 						if(!std::get<0>(control)){
 							one_more_corrector_sim = false;
 							//copy values from predictList into the currentList:
@@ -534,6 +532,11 @@ int main(int argc, char *argv[]) {
 							}
 						}
 					}
+				}
+				//snychronize one_more_corrector_sim with subprocesses
+				MPI_Barrier(MPI_COMM_WORLD);
+				MPI_Bcast(&one_more_corrector_sim, 1, MPI::BOOL, 0, MPI_COMM_WORLD);
+				if (rank == 0) {
 					UpdateCoveringphys(&hitbuffer_sum, &hitbuffer,std::get<0>(control)); // Update real covering in buffers
 					if (!(p->usePCMethod==1&&simHistory->pcStep == 0)){
 						UpdateParticleDensityAndPressure(&hitbuffer_sum);
@@ -560,6 +563,7 @@ int main(int argc, char *argv[]) {
 						printStream(tmpstream.str());
 					}
 				}
+				MPI_Barrier(MPI_COMM_WORLD);
 				if (rank == 0 && simHistory->pcStep == 0 && p->usePCMethod) {std::cout << "ending prediction step " <<std::endl;}
 				else if (rank == 0 && simHistory->pcStep != 0 && p->usePCMethod) {std::cout << "ending correction step " <<std::endl;}
 				simHistory->pcStep += 1;
@@ -585,7 +589,8 @@ int main(int argc, char *argv[]) {
 					printStream(tmpstream.str());
 				}
 				break;
-			} else if (currentRatio<=p->convergenceTarget){ // Simulation has converged
+			}
+			else if (currentRatio<=p->convergenceTarget){ // Simulation has converged
 				if(rank==0) {
 					std::ostringstream tmpstream (std::ostringstream::app);
 					tmpstream <<"Simulation converged. Average ratio std/mean target reached: " <<currentRatio <<" <= "<<p->convergenceTarget <<std::endl;
@@ -601,11 +606,13 @@ int main(int argc, char *argv[]) {
 					break;
 			}
 			MPI_Barrier(MPI_COMM_WORLD); // 
-		} else {
+		}
+		else {
 			std::cout << "Simulation time = 0.0 seconds. Nothing to do." << std::endl;
 			break;
 		}
-	}
+	}	//----End of iteration loop ----
+
 	MPI_Barrier(MPI_COMM_WORLD);
 	if(rank==0){
 		//----Write simulation results to new buffer file. This has to be read in by Windows-Molflow.
