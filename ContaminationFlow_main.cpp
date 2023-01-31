@@ -521,8 +521,8 @@ int main(int argc, char *argv[]) {
 
 				//----Update History: particle density, pressure, error, covering
 				if (rank == 0) {
-					UpdateCovering(&hitbuffer_sum); // Calculate real covering after iteration
 					UpdateErrorList(&hitbuffer_sum);
+					UpdateCovering(&hitbuffer_sum); // Calculate real covering after iteration
 					//Check time step
 					if(p->usePCMethod==2){
 						control= TimestepControl(&hitbuffer_sum);
