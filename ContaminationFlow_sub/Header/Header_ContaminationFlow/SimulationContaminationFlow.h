@@ -122,6 +122,16 @@ public:
 		currIt+=1;
 	}
 
+	void appendPredict(double time=-1){ //append predictList to historyList
+			if(time==-1.0) //one step
+					time=historyList.first.back()+1.0;
+			historyList.first.push_back(time);
+			for(unsigned int j=0; j < predictList.size(); j++){
+				historyList.second[j].push_back(predictList[j]);
+			}
+			currIt+=1;
+		}
+
 	// Statistics: Calculate mean/std per facet
 	void updateStatistics(int rollingWindowSize, unsigned int offset=0){
 		//std::cout<< historyList.second.back().size() <<std::endl;

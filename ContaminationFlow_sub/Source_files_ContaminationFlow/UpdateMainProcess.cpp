@@ -161,7 +161,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 			tmpstream << "covering_phys_after = " << covering_phys << " = " << boost::multiprecision::float128(covering_phys) << std::endl;
 			tmpstream << "coveringThreshold = " << sHandle->coveringThreshold[getFacetIndex(&f)] << " = " << boost::multiprecision::float128(sHandle->coveringThreshold[getFacetIndex(&f)]) << std::endl;
 
-			if (!(p->usePCMethod==1&&simHistory->pcStep == 0)){
+			if (p->usePCMethod== 0||(p->usePCMethod==1&&simHistory->pcStep == 1)){
 				simHistory->coveringList.setCurrent(&f, covering_phys);
 			}
 			else{
@@ -172,13 +172,23 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 		}
 	}
 	// Save covering to simHistory
-	if (!(p->usePCMethod==1&&simHistory->pcStep == 0)){
-		if(p->usePCMethod!=1&&simHistory->pcStep > 0){// in this case we overwrite (erase, then append) the last point in time
-				simHistory->coveringList.erase(simHistory->coveringList.getlastindex());
-			}
-		simHistory->lastTime+=simHistory->stepSize;
-		simHistory->coveringList.appendCurrent(simHistory->lastTime);
+	simHistory->lastTime+= simHistory->stepSize;//update the value of lastTime
+	if (p->usePCMethod != 2){//normal mode or normal Predictor-Corrector mode
+		if (simHistory->pcStep == (p->usePCMethod?1:0)) {//update simHistory with current values and time value
+			simHistory->coveringList.appendCurrent(simHistory->lastTime);
 		}
+	}
+	else{//TimeStepControl Mode
+		if(simHistory->pcStep > 0){// in this case we overwrite (erase, then append) the last point in time,
+			//which we set at pcStep zero.
+			simHistory->coveringList.erase(simHistory->coveringList.getlastindex());//erase last covering values as well as last time value
+			simHistory->coveringList.appendPredict(simHistory->lastTime);
+		}
+		else{//simHistory->pcStep == 0
+			simHistory->coveringList.appendPredict(simHistory->lastTime);
+		}
+
+	}
 }
 
 // Copy covering to hitbuffers

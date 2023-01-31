@@ -1460,7 +1460,7 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 		if (!(p->usePCMethod==1&&simHistory->pcStep == 1)) {
 			coverage = calcCoverage(iFacet);
 		}
-		else if (simHistory->pcStep == 1) {
+		else{// if(p->usePCMethod==1&&simHistory->pcStep == 1)
 			boost::multiprecision::float128 currCoverage(calcCoverage(iFacet));
 			boost::multiprecision::float128 predCoverage(calcPredictedCoverage(iFacet));
 			boost::multiprecision::float128 t(0.0);
