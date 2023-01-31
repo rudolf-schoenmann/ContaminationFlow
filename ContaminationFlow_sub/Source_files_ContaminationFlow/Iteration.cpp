@@ -214,7 +214,10 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 	double avg_flighttime = estimateAverageFlightTime(hitbuffer_sum);
 	std::cout << "avg_flighttime = " << avg_flighttime << std::endl;
 	if (avg_flighttime > p->t_min){
-		p->t_min = 10*avg_flighttime;// factor 10 (randomly chosen) to have more of the flight time distribution covered
+		//p->t_min = 10*avg_flighttime;// factor 10 (randomly chosen) to have more of the flight time distribution covered
+		//Macht irgendwie große Probleme => But why?, weil es nur im rank == 0 gemacht wird???
+		//Sollte eigentlich keinen Unterschied machen...
+
 		stepSize_change = true;
 		//stepSize_recom = p->t_min;
 	}

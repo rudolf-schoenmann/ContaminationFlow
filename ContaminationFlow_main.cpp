@@ -356,6 +356,8 @@ int main(int argc, char *argv[]) {
 					if(simHistory->pcStep == p->usePCMethod){
 						//This is the (last Corrector) simulation!
 						one_more_corrector_sim = false;
+						//has to be changed after debugging
+						//This way if(p->usePCMethod==2) there is only 1 corrector step possible
 					}
 				}
 				if(rank == 0){
