@@ -356,8 +356,6 @@ int main(int argc, char *argv[]) {
 					if(simHistory->pcStep == p->usePCMethod){
 						//This is the (last Corrector) simulation!
 						one_more_corrector_sim = false;
-						//has to be changed after debugging
-						//This way if(p->usePCMethod==2) there is only 1 corrector step possible
 					}
 				}
 				if(rank == 0){
@@ -398,7 +396,7 @@ int main(int argc, char *argv[]) {
 				}
 				// Send coveringList to subprocesses
 				if (simHistory->pcStep==0){
-				MPI_Bcast(&(simHistory->coveringList.currentList.front()), simHistory->coveringList.currentList.size()*16, MPI::BYTE,0,MPI_COMM_WORLD);
+					MPI_Bcast(&(simHistory->coveringList.currentList.front()), simHistory->coveringList.currentList.size()*16, MPI::BYTE,0,MPI_COMM_WORLD);
 				}
 				// Send predictList to subprocesses
 				if(p->usePCMethod==1){

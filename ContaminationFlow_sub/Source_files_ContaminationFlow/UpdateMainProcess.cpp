@@ -386,7 +386,7 @@ void UpdateMCMainHits(Databuff *mainbuffer, Databuff *subbuffer, SimulationHisto
 				for (unsigned int m = 0; m < (1 + nbMoments); m++) { // Add hits
 					FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
 					FacetHitBuffer *facetHitSub = (FacetHitBuffer *)(subbuff + f.sh.hitOffset + m * sizeof(FacetHitBuffer));
-					boost::multiprecision::uint128_t covering_phys= simHistory->smallCoveringFactor * history->coveringList.getLast(&f);
+					boost::multiprecision::uint128_t covering_phys= simHistory->smallCoveringFactor * history->coveringList.getCurrent(getFacetIndex(&f));
 					boost::multiprecision::uint128_t covering_sum = facetHitSub->covering;
 					f.tmpCounter[m].nbAbsEquiv = facetHitBuffer->nbAbsEquiv += facetHitSub->nbAbsEquiv;
 					f.tmpCounter[m].nbDesorbed = facetHitBuffer->nbDesorbed += facetHitSub->nbDesorbed;
