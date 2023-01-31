@@ -214,12 +214,9 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 	double avg_flighttime = estimateAverageFlightTime(hitbuffer_sum);
 	std::cout << "avg_flighttime = " << avg_flighttime << std::endl;
 	if (avg_flighttime > p->t_min){
-		//p->t_min = 10*avg_flighttime;// factor 10 (randomly chosen) to have more of the flight time distribution covered
-		//Macht irgendwie große Probleme => But why?, weil es nur im rank == 0 gemacht wird???
-		//Sollte eigentlich keinen Unterschied machen...
-
+		p->t_min = 10*avg_flighttime;// factor 10 (randomly chosen) to have more of the flight time distribution covered
 		stepSize_change = true;
-		//stepSize_recom = p->t_min;
+		stepSize_recom = p->t_min;
 	}
 	simHistory->flightTime=0.0;
 	//------------------------ CASE VI --------------------
@@ -229,8 +226,7 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 	if(stepSize_change){//revert the value of lastTime in case of repetition
 		simHistory->lastTime-=simHistory->stepSize;
 	}
-	return std::make_tuple(false,stepSize_recom);
-//	return std::make_tuple(stepSize_change,stepSize_recom);
+	return std::make_tuple(stepSize_change,stepSize_recom);
 }
 
 

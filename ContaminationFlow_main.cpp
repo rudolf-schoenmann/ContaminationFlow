@@ -523,7 +523,7 @@ int main(int argc, char *argv[]) {
 					UpdateCovering(&hitbuffer_sum); // Calculate real covering after iteration
 					//Check time step
 					if(p->usePCMethod==2){
-					control= TimestepControl(&hitbuffer_sum);
+						control= TimestepControl(&hitbuffer_sum);
 						if(!std::get<0>(control)){
 							one_more_corrector_sim = false;
 							//copy values from predictList into the currentList:
