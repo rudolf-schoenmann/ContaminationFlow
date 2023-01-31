@@ -330,6 +330,7 @@ public:
 	bool empty(){return historyList.first.empty();}
 
 	void setCurrent(SubprocessFacet *iFacet, T newValue){int covidx = getFacetIndex(iFacet);	currentList[covidx]=newValue;}
+	void setCurrent(int idx, T newValue){currentList[idx]=newValue;}
 	void setPredict(SubprocessFacet *iFacet, T newValue){int idx = getFacetIndex(iFacet);	predictList[idx]=newValue;}
 	//T getLast(int idx){return historyList.second[idx].back();}
 	T getLast(SubprocessFacet *iFacet){int covidx = getFacetIndex(iFacet);return historyList.second[covidx].back();}

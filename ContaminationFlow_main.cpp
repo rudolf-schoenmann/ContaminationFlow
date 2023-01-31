@@ -528,6 +528,10 @@ int main(int argc, char *argv[]) {
 						control= TimestepControl(&hitbuffer_sum);
 						if(!std::get<0>(control)){
 							one_more_corrector_sim = false;
+							//copy values from predictList into the currentList:
+							for(unsigned int j=0; j<simHistory->coveringList.currentList.size();j++){
+								simHistory->coveringList.setCurrent(j,simHistory->coveringList.getPredict(j));
+							}
 						}
 					}
 					UpdateCoveringphys(&hitbuffer_sum, &hitbuffer,std::get<0>(control)); // Update real covering in buffers
