@@ -405,9 +405,9 @@ int main(int argc, char *argv[]) {
 					}
 				}
 				// Send stepsize to to subprocesses
+				MPI_Barrier(MPI_COMM_WORLD);
 				MPI_Bcast(&simHistory->stepSize, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
 
-				MPI_Barrier(MPI_COMM_WORLD);
 				// Set covering threshold (covering - covering/(number of subprocesses)). Iteration in subprocess is ended if this threshold is reached
 				if (simHistory->pcStep == 0) {
 					setCoveringThreshold(world_size, rank);
