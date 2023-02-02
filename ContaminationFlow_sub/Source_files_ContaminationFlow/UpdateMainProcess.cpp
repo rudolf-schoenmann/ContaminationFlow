@@ -121,6 +121,7 @@ void UpdateCovering(Databuff *hitbuffer_sum){//Updates Covering after an Iterati
 
 			tmpstream <<std::endl << "Facet " << getFacetIndex(&f)<< std::endl;
 			tmpstream << "covering_sum  = " <<covering_sum << " / "<< simHistory->smallCoveringFactor<< " = " << (static_cast < boost::multiprecision::float128 >(covering_sum))/(static_cast < boost::multiprecision::float128 >(simHistory->smallCoveringFactor)) << std::endl;
+			tmpstream << "simHistory->smallCoveringFactor = " << simHistory->smallCoveringFactor << std::endl;
 			tmpstream << "covering_phys_before = " << covering_phys << " = "<< boost::multiprecision::float128(covering_phys) << std::endl;
 
 			covering_phys = static_cast < boost::multiprecision::uint128_t >(covering_phys*simHistory->smallCoveringFactor);//scale up covering_phys; covering_sum (in all buffers) is already scaled up before the iteration!
@@ -212,6 +213,7 @@ void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer, bool step_
 				}
 			}
 	}
+
 	simHistory->nParticles=0;
 }
 

@@ -394,10 +394,10 @@ int main(int argc, char *argv[]) {
 						}
 					}
 				}
+
 				// Send coveringList to subprocesses
-				if (simHistory->pcStep==0){
-					MPI_Bcast(&(simHistory->coveringList.currentList.front()), simHistory->coveringList.currentList.size()*16, MPI::BYTE,0,MPI_COMM_WORLD);
-				}
+				MPI_Bcast(&(simHistory->coveringList.currentList.front()), simHistory->coveringList.currentList.size()*16, MPI::BYTE,0,MPI_COMM_WORLD);
+
 				// Send predictList to subprocesses
 				if(p->usePCMethod==1){
 					if(simHistory->pcStep == 1){
@@ -568,6 +568,8 @@ int main(int argc, char *argv[]) {
 				else if (rank == 0 && simHistory->pcStep != 0 && p->usePCMethod) {std::cout << "ending correction step " <<std::endl;}
 				simHistory->pcStep += 1;
 				MPI_Barrier(MPI_COMM_WORLD);
+
+				//usleep(1000000);// sleep for 1 (million micro)seconds=> debugging: console output then is chronological!
 			} //End of predictor-corrector loop
 
 			if (rank == 0) {
