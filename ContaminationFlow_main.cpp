@@ -494,6 +494,7 @@ int main(int argc, char *argv[]) {
 						//Process i send flightTIme and number of particles to main process 0
 						MPI_Send(&simHistory->flightTime, 1, MPI::DOUBLE, 0, 0,MPI_COMM_WORLD);
 						MPI_Send(&simHistory->nParticles, 1, MPI::INT, 0, 0,MPI_COMM_WORLD);
+						MPI_Send(&simHistory->nLeaks, 1, MPI::INT, 0, 0,MPI_COMM_WORLD);
 
 					} else if (rank == 0) {
 						//Main process 0 receives hitbuffer from Process i
@@ -505,10 +506,13 @@ int main(int argc, char *argv[]) {
 						// Calculate flightTime and nParticles over all subprocesses -> These values are currently not used
 						double old_flightTime=simHistory->flightTime;
 						int old_nParticles = simHistory->nParticles; //These values are reset in UpdateCoveringPhys()
+						int old_nLeaks = simHistory->nParticles; //These values are reset in UpdateCoveringPhys()
 						MPI_Recv(&simHistory->flightTime, 1, MPI::DOUBLE, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 						MPI_Recv(&simHistory->nParticles, 1, MPI::INT, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+						MPI_Recv(&simHistory->nLeaks, 1, MPI::INT, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 						simHistory->flightTime += old_flightTime;
 						simHistory->nParticles+=old_nParticles;
+						simHistory->nLeaks+=old_nLeaks;
 						/*if(i==world_size-1){
 							tmpstream <<std::endl << "flightTime " << simHistory->flightTime << std::endl;
 							tmpstream << "nParticles " << simHistory->nParticles << std::endl <<std::endl;

@@ -215,6 +215,7 @@ void UpdateCoveringphys(Databuff *hitbuffer_sum, Databuff *hitbuffer, bool step_
 	}
 
 	simHistory->nParticles=0;
+	simHistory->nLeaks=0;
 }
 
 void UpdateErrorMain(){

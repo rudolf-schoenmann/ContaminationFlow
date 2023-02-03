@@ -605,6 +605,7 @@ bool SimulationMCStep(size_t nbStep) {
 				// No intersection found: Leak
 				sHandle->tmpGlobalResult.nbLeakTotal++;
 				simHistory->nParticles+=1;
+				simHistory->nLeaks+=1;
 				RecordLeakPos();
 				if (!StartFromSource())
 					// desorptionLimit reached

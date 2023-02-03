@@ -199,7 +199,7 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 	std::cout << std::endl;
 	std::cout << "--------------------------------------"<< std::endl;
 	std::cout << "TimestepControl function is executed!: " << std::endl;
-	bool stepSize_change = 0;
+	bool repetition = 0;
 	double stepSize_recom = simHistory->stepSize;//recom (recommendation of step size)
 
 	std::vector<bool> cases = {0, 0, 0, 0, 0};
@@ -208,14 +208,35 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 
 	//------------------------ CASE I --------------------
 
+
+
 	//------------------------ CASE II --------------------
+	double growththreshold = 0.05; //if total amount of particles is not conserved within the growth threshold,
+	//the iteration step has to be repeated with better statistics.
+	//total number of particles of last simulation:
+	boost::multiprecision::uint128_t total_covering_before = 0;
+	for(unsigned int j=0; j<simHistory->coveringList.currentList.size();j++){
+		total_covering_before +=simHistory->coveringList.getCurrent(j);
+	}
+	double tot_cov_b4 = double(total_covering_before);
+	//total number of particles of last simulation:
+	boost::multiprecision::uint128_t total_covering_after = 0;
+	for(unsigned int j=0; j<simHistory->coveringList.predictList.size();j++){
+		total_covering_after += simHistory->coveringList.getPredict(j);
+	}
+	double tot_cov_aft = double(total_covering_after);
+	if((tot_cov_b4+getnbOutgassed(hitbuffer_sum))*(1+growththreshold)>tot_cov_aft+simHistory->nLeaks){
+		p->targetError *= 0.5;
+		//step size does not change. => stepSize_recom = simHistory->stepSize;
+	}
+
 
 	//------------------------ CASE III --------------------
 	double avg_flighttime = estimateAverageFlightTime(hitbuffer_sum);
 	std::cout << "avg_flighttime = " << avg_flighttime << std::endl;
 	if (avg_flighttime > p->t_min){
 		p->t_min = 10*avg_flighttime;// factor 10 (randomly chosen) to have more of the flight time distribution covered
-		stepSize_change = true;
+		repetition = true;
 		stepSize_recom = p->t_min;
 	}
 	simHistory->flightTime=0.0;
@@ -223,10 +244,10 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 
 	//------------------------ CASE V --------------------
 
-	if(stepSize_change){//revert the value of lastTime in case of repetition
+	if(repetition){//revert the value of lastTime in case of repetition
 		simHistory->lastTime-=simHistory->stepSize;
 	}
-	return std::make_tuple(stepSize_change,stepSize_recom);
+	return std::make_tuple(repetition,stepSize_recom);
 }
 
 

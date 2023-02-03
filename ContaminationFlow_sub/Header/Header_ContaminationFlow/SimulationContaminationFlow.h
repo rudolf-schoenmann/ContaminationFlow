@@ -465,6 +465,7 @@ public:
 
 	double flightTime; // [s]
 	int nParticles;
+	int nLeaks;
 
 	double lastTime; // [s]
 	int currentStep;

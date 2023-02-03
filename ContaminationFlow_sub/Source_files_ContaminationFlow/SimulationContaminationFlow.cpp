@@ -762,6 +762,7 @@ void ProblemDef::SetFocusGroup(int facets){
 SimulationHistory::SimulationHistory(int world_size){
 	numFacet=0;
 	nParticles=0;
+	nLeaks=0;
 	flightTime=0.0;
 	lastTime=0.0;
 	currentStep=0;
@@ -823,6 +824,7 @@ SimulationHistory::SimulationHistory(int world_size){
 SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 	numFacet=0;
 	nParticles=0;
+	nLeaks=0;
 	flightTime=0.0;
 	lastTime=0.0;
 
@@ -928,6 +930,7 @@ SimulationHistory::SimulationHistory(Databuff *hitbuffer, int world_size){
 void SimulationHistory::updateHistory(){
 
 	nParticles=0;
+	nLeaks=0;
 	flightTime=0.0;
 
 	boost::multiprecision::uint128_t covering;
