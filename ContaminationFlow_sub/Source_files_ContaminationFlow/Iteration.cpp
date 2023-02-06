@@ -207,38 +207,74 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 	//Check possibilities of different error cases
 
 	//------------------------ CASE I --------------------
-
-
-
-	//------------------------ CASE II --------------------
-	double growththreshold = 0.05; //if total amount of particles is not conserved within the growth threshold,
+	double decreasethreshold = 0.05; //if particles of a facet decrease stronger than implemented by the model,
 	//the iteration step has to be repeated with better statistics.
-	//total number of particles of last simulation:
-	boost::multiprecision::uint128_t total_covering_before = 0;
-	for(unsigned int j=0; j<simHistory->coveringList.currentList.size();j++){
-		total_covering_before +=simHistory->coveringList.getCurrent(j);
+	//decreasethreshold describes the uncertainty.
+	double desorption_f = 0;
+	double cov_f_b4 = 0;
+	double cov_f_aft = 0;
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			desorption_f = double(f.sh.desorption);
+			cov_f_b4 = double(simHistory->coveringList.getCurrent(getFacetIndex(&f)));
+			cov_f_aft = double(simHistory->coveringList.getPredict(getFacetIndex(&f)));
+			//std::cout << "Facet " <<getFacetIndex(&f) << std::endl;
+			//std::cout << "cov_f_b4 = " << cov_f_b4<< std::endl;
+			//std::cout << "desorption_f = " <<desorption_f << std::endl;
+			//std::cout << "cov_f_aft = " <<cov_f_aft << std::endl;
+			//std::cout << "(cov_f_b4 - desorption_f)*(1-decreasethreshold) = " << (cov_f_b4 - desorption_f)*(1-decreasethreshold)<< std::endl;
+			if(cov_f_aft<(cov_f_b4 - desorption_f)*(1-decreasethreshold)){
+				std::cout << "CASE I detected for facet " <<getFacetIndex(&f) <<std::endl;
+				repetition = true;
+			}
+		}
 	}
-	double tot_cov_b4 = double(total_covering_before);
-	//total number of particles of last simulation:
-	boost::multiprecision::uint128_t total_covering_after = 0;
-	for(unsigned int j=0; j<simHistory->coveringList.predictList.size();j++){
-		total_covering_after += simHistory->coveringList.getPredict(j);
-	}
-	double tot_cov_aft = double(total_covering_after);
-	if((tot_cov_b4+getnbOutgassed(hitbuffer_sum))*(1+growththreshold)<tot_cov_aft+simHistory->nLeaks*GetMoleculesPerTP(hitbuffer_sum)){
+	if(repetition){
 		p->targetError *= 0.5;
 		p->targetParticles *= 4;
-		repetition = true;
-		//std::cout << "CASE II detected:" <<std::endl;
-		//std::cout << "tot_cov_b4+getnbOutgassed(hitbuffer_sum) = " << tot_cov_b4+getnbOutgassed(hitbuffer_sum) << std::endl;
-		//std::cout << "tot_cov_b4+getnbOutgassed(hitbuffer_sum)*(1+growththreshold) = " << tot_cov_b4+getnbOutgassed(hitbuffer_sum)*(1+growththreshold) << std::endl;
-		//std::cout << "tot_cov_aft+simHistory->nLeaks= " << tot_cov_aft+simHistory->nLeaks << std::endl;
+	}
+	else{//if(!repetition){
+		//------------------------ CASE II -------------------
+			double growththreshold = 0.05; //if total amount of particles is not conserved within the growth threshold,
+			//the iteration step has to be repeated with better statistics.
+			//total number of particles of last simulation:
+			boost::multiprecision::uint128_t total_covering_before = 0;
+			for(unsigned int j=0; j<simHistory->coveringList.currentList.size();j++){
+				total_covering_before +=simHistory->coveringList.getCurrent(j);
+			}
+			double tot_cov_b4 = double(total_covering_before);
+			//total number of particles of last simulation:
+			boost::multiprecision::uint128_t total_covering_after = 0;
+			for(unsigned int j=0; j<simHistory->coveringList.predictList.size();j++){
+				total_covering_after += simHistory->coveringList.getPredict(j);
+			}
+			double tot_cov_aft = double(total_covering_after);
+			if((tot_cov_b4+getnbOutgassed(hitbuffer_sum))*(1+growththreshold)<tot_cov_aft+simHistory->nLeaks*GetMoleculesPerTP(hitbuffer_sum)){
+				p->targetError *= 0.5;
+				p->targetParticles *= 4;
+				repetition = true;
+				//std::cout << "CASE II detected:" <<std::endl;
+				//std::cout << "simHistory->nParticles = " << simHistory->nParticles << std::endl;
+				//std::cout << "simHistory->nLeaks = " << simHistory->nLeaks << std::endl;
+				//std::cout << "tot_cov_b4+getnbOutgassed(hitbuffer_sum) = " << tot_cov_b4+getnbOutgassed(hitbuffer_sum) << std::endl;
+				//std::cout << "tot_cov_b4+getnbOutgassed(hitbuffer_sum)*(1+growththreshold) = " << (tot_cov_b4+getnbOutgassed(hitbuffer_sum))*(1+growththreshold) << std::endl;
+				//std::cout << "tot_cov_aft+simHistory->nLeaks*GetMoleculesPerTP(hitbuffer_sum)= " << tot_cov_aft+simHistory->nLeaks*GetMoleculesPerTP(hitbuffer_sum) << std::endl;
 
-		//step size does not change. => stepSize_recom = simHistory->stepSize;
+				//step size does not change. => stepSize_recom = simHistory->stepSize;
+			}
+
 	}
 
 
-	//------------------------ CASE III --------------------
+
+
+
+	//------------------------ CASE VI -------------------
+
+	//------------------------ CASE V --------------------
+
+	//------------------------ CASE III ------------------
+	//has to be at the end, since it overwrites stepSize_recom with p->t_min
 	double avg_flighttime = estimateAverageFlightTime(hitbuffer_sum);
 	std::cout << "avg_flighttime = " << avg_flighttime << std::endl;
 	if (avg_flighttime > p->t_min){
@@ -247,9 +283,7 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 		stepSize_recom = p->t_min;
 	}
 	simHistory->flightTime=0.0;
-	//------------------------ CASE VI --------------------
-
-	//------------------------ CASE V --------------------
+	//------------------------ End of CASES I to V -------
 
 	if(repetition){//revert the value of lastTime in case of repetition
 		simHistory->lastTime-=simHistory->stepSize;

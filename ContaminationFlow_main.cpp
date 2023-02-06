@@ -508,7 +508,7 @@ int main(int argc, char *argv[]) {
 						// Calculate flightTime and nParticles over all subprocesses -> These values are currently not used
 						double old_flightTime=simHistory->flightTime;
 						int old_nParticles = simHistory->nParticles; //These values are reset in UpdateCoveringPhys()
-						int old_nLeaks = simHistory->nParticles; //These values are reset in UpdateCoveringPhys()
+						int old_nLeaks = simHistory->nLeaks; //These values are reset in UpdateCoveringPhys()
 						MPI_Recv(&simHistory->flightTime, 1, MPI::DOUBLE, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 						MPI_Recv(&simHistory->nParticles, 1, MPI::INT, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 						MPI_Recv(&simHistory->nLeaks, 1, MPI::INT, i, 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
