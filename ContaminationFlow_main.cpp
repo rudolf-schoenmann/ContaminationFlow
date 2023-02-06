@@ -397,6 +397,8 @@ int main(int argc, char *argv[]) {
 
 				// Send coveringList to subprocesses
 				MPI_Bcast(&(simHistory->coveringList.currentList.front()), simHistory->coveringList.currentList.size()*16, MPI::BYTE,0,MPI_COMM_WORLD);
+				MPI_Bcast(&p->targetError, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD);
+				MPI_Bcast(&p->targetParticles, 1, MPI::INT, 0, MPI_COMM_WORLD);
 
 				// Send predictList to subprocesses
 				if(p->usePCMethod==1){

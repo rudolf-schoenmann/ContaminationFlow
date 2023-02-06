@@ -225,9 +225,15 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 		total_covering_after += simHistory->coveringList.getPredict(j);
 	}
 	double tot_cov_aft = double(total_covering_after);
-	if((tot_cov_b4+getnbOutgassed(hitbuffer_sum))*(1+growththreshold)>tot_cov_aft+simHistory->nLeaks){
+	if((tot_cov_b4+getnbOutgassed(hitbuffer_sum))*(1+growththreshold)<tot_cov_aft+simHistory->nLeaks*GetMoleculesPerTP(hitbuffer_sum)){
 		p->targetError *= 0.5;
+		p->targetParticles *= 4;
 		repetition = true;
+		//std::cout << "CASE II detected:" <<std::endl;
+		//std::cout << "tot_cov_b4+getnbOutgassed(hitbuffer_sum) = " << tot_cov_b4+getnbOutgassed(hitbuffer_sum) << std::endl;
+		//std::cout << "tot_cov_b4+getnbOutgassed(hitbuffer_sum)*(1+growththreshold) = " << tot_cov_b4+getnbOutgassed(hitbuffer_sum)*(1+growththreshold) << std::endl;
+		//std::cout << "tot_cov_aft+simHistory->nLeaks= " << tot_cov_aft+simHistory->nLeaks << std::endl;
+
 		//step size does not change. => stepSize_recom = simHistory->stepSize;
 	}
 
