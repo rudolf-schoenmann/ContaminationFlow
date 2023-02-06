@@ -264,22 +264,22 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 			}
 
 	}
-	//------------------------ CASE VI -------------------
+	//------------------------ CASE IV -------------------
 	double transitionthreshold = 0.05;//If change of coverage is larger than transitionthreshold in case of a
 	// transition [=> if(coverage_f_b4 > 0.01 && coverage_f_b4 < 1.1)], reduce the time step
 	double coverage_f_b4 = 0;
 	double coverage_f_aft = 0;
-	double tau_0= 0;
+	/*double tau_0= 0;
 	double residence_energy = 0;
 	double tau = 0;
-
+	*/
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				coverage_f_b4 = double(calcCoverage(&f));
 				coverage_f_aft = double(calcPredictedCoverage(&f));
 				if(coverage_f_b4 > 0.01 && coverage_f_b4 < 1.1){
 					if(std::abs(cov_f_aft-cov_f_b4)>transitionthreshold){
-						if(coverage_f_b4 >= 1){
+						/*if(coverage_f_b4 >= 1){
 							residence_energy = p->H_vap;
 						}
 						else {
@@ -287,11 +287,14 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 						}
 						tau_0 = double(h/(kb*f.sh.temperature));
 						tau = tau_0 *exp(residence_energy / (kb*f.sh.temperature));
-						if (tau < simHistory->stepSize){
+						if (tau < stepSize_recom){
 							repetition = true;
 							stepSize_recom = std::max(tau,p->t_min);
 						}
-
+						*/
+						repetition = true;
+						stepSize_recom *= 0.1;
+						break;
 					}
 				}
 			}
