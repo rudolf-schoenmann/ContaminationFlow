@@ -1489,7 +1489,8 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 		//double A = exp(-iFacet->sh.sojournE / (kb*iFacet->sh.temperature)); // //Don't need that. We decide in each case of residence at random, if the particle will adsorb at substrate or adsorbate.
 
 		double A = exp(-residence_energy / (kb*iFacet->sh.temperature));
-		sHandle->currentParticle.flightTime += -log(rnd()) / (A*iFacet->sh.sojournFreq);
+		double tau_0=double(h/(kb*iFacet->sh.temperature));
+		sHandle->currentParticle.flightTime += -log(rnd()) / (A/tau_0);
 		/*if (simHistory->pcStep == 1) {
 			std::cout << "Residence energy: " << ((residence_energy==p->H_vap) ? "H_vap" : "E_de") << std::endl;
 			std::cout << "Residence time: " << -log(rnd()) / (A*iFacet->sh.sojournFreq) <<  std::endl << std::endl;
