@@ -227,6 +227,7 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 	double tot_cov_aft = double(total_covering_after);
 	if((tot_cov_b4+getnbOutgassed(hitbuffer_sum))*(1+growththreshold)>tot_cov_aft+simHistory->nLeaks){
 		p->targetError *= 0.5;
+		repetition = true;
 		//step size does not change. => stepSize_recom = simHistory->stepSize;
 	}
 
