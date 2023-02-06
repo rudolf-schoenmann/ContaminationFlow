@@ -283,7 +283,7 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 							residence_energy = p->H_vap;
 						}
 						else {
-							residence_energy = 	p->E_de;
+							residence_energy = p->E_de;
 						}
 						tau_0 = double(h/(kb*f.sh.temperature));
 						tau = tau_0 *exp(residence_energy / (kb*f.sh.temperature));
@@ -292,9 +292,15 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 							stepSize_recom = std::max(tau,p->t_min);
 						}
 						*/
-						repetition = true;
-						stepSize_recom *= 0.1;
-						break;
+						if(stepSize_recom>p->t_min){
+							repetition = true;
+							stepSize_recom *= 0.1;
+							if(stepSize_recom<p->t_min){
+								stepSize_recom = p->t_min;
+							}
+							break;
+						}
+
 					}
 				}
 			}
