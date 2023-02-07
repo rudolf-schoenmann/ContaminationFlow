@@ -312,6 +312,47 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 
 	//------------------------ CASE V --------------------
 
+	double f_HitEquiv = 0;
+	llong f_Des = 0;
+	double f_AbsEquiv = 0;
+	bool too_large_reemission = false;
+	bool too_large_desorption = false;
+	double tau_0= 0;
+	double residence_energy = 0;
+	double tau = 0;
+	coverage_f_b4 = 0;
+	double Krealvirt = GetMoleculesPerTP(hitbuffer_sum).convert_to<double>();
+
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			f_HitEquiv = getFacetHitBuffer(&f,hitbuffer_sum)->nbHitEquiv;
+			f_Des = getFacetHitBuffer(&f,hitbuffer_sum)->nbDesorbed;
+			f_AbsEquiv = getFacetHitBuffer(&f,hitbuffer_sum)->nbMCHit;
+			coverage_f_b4 = double(calcCoverage(&f));
+			tau_0 = double(h/(kb*f.sh.temperature));
+			if(coverage_f_b4 >= 1){
+				residence_energy = p->H_vap;
+				tau = tau_0 *exp(residence_energy / (kb*f.sh.temperature));
+			}
+			else {
+				tau = tau_0 *(coverage_f_b4*exp(p->H_vap / (kb*f.sh.temperature))+(1-coverage_f_b4)*exp(p->E_de / (kb*f.sh.temperature)));
+			}
+			too_large_reemission = (((f_HitEquiv-f_AbsEquiv)*(Krealvirt/calcNmono(&f))*(tau/simHistory->stepSize))>1);
+			too_large_desorption = (((f_Des/calcNmono(&f))>1)&&(f_HitEquiv*(Krealvirt/calcNmono(&f))*(tau/simHistory->stepSize)>1));
+			if (too_large_reemission || too_large_desorption){
+				if(stepSize_recom>p->t_min){
+					repetition = true;
+					stepSize_recom *= 0.1;
+					if(stepSize_recom<p->t_min){
+						stepSize_recom = p->t_min;
+					}
+					break;
+				}
+
+			}
+		}
+	}
+
 	//------------------------ CASE III ------------------
 	//has to be at the end, since it overwrites stepSize_recom with p->t_min
 	double avg_flighttime = estimateAverageFlightTime(hitbuffer_sum);
