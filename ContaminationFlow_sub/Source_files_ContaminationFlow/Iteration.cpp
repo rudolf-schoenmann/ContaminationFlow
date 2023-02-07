@@ -277,8 +277,12 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				coverage_f_b4 = double(calcCoverage(&f));
 				coverage_f_aft = double(calcPredictedCoverage(&f));
+				std::cout << "Facet " << getFacetIndex(&f) << std::endl;
+				std::cout << "coverage_f_b4 = " << coverage_f_b4 << std::endl;
+				std::cout << "coverage_f_aft = " << coverage_f_aft << std::endl;
+				std::cout << "std::abs(cov_f_aft-cov_f_b4) = " << std::abs(coverage_f_aft-coverage_f_b4) << std::endl;
 				if(coverage_f_b4 > 0.01 && coverage_f_b4 < 1.1){
-					if(std::abs(cov_f_aft-cov_f_b4)>transitionthreshold){
+					if(std::abs(coverage_f_aft-coverage_f_b4)>transitionthreshold){
 						/*if(coverage_f_b4 >= 1){
 							residence_energy = p->H_vap;
 						}
