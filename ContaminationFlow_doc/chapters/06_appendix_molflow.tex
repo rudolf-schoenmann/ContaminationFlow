@@ -311,6 +311,7 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \rule{0pt}{3ex} errorList\_covering& of class HistoryList, stores error history for covering\\
 \rule{0pt}{3ex} hitList& of class HistoryList, stores hits for each facet\\
 \rule{0pt}{3ex} desorbedList& of class HistoryList, stores desorbed particles for each facet\\
+\rule{0pt}{3ex} outgassedList& of class HistoryList, stores outgassed particles for each facet\\
 \rule{0pt}{3ex} adsorbedList& of class HistoryList, stores adsorbed particles for each facet\\
 \rule{0pt}{3ex} particleDensityList& of class HistoryList, stores particle density for each facet\\
 \rule{0pt}{3ex} pressureList& of class HistoryList, stores pressure for each facet\\
@@ -506,7 +507,7 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \multicolumn{2}{|c|}{\rule{0pt}{3ex}Error calculations}\\
 \hline
 \rule{0pt}{3ex} getErrorList()& get pointer to list corresponding to \codew{simHistory$\rightarrow$errorMode}\\
-\rule{0pt}{3ex} getErrorVariables()& get number hits, adsorbed, desorbed particles\\
+\rule{0pt}{3ex} getErrorVariables()& get number hits, adsorbed, desorbed and outgassed particles\\
 \rule{0pt}{3ex} UpdateErrorList()& Calculate error per facet, see eq.\ \ref{eq:error}. Save to \codew{simHistory}\\
 \rule{0pt}{3ex} CalcErrorAll()& Sum up facet errors \& weight by area for all error modes\\
 \rule{0pt}{3ex} CheckError()& Check if total error and vip facet error reached target\\
@@ -540,6 +541,7 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 \rule{0pt}{3ex} getCovering()& Get covering from hitbuffer or \codew{simHistory}\\
 \rule{0pt}{3ex} getHits()& Get number of hits from hitbuffer\\
 \rule{0pt}{3ex} getnbDesorbed()& Get number of total desorbed molecules from hitbuffer\\
+\rule{0pt}{3ex} getnbOutgassed()& Get number of total outgassed molecules from hitbuffer\\
 \rule{0pt}{3ex} getnbAdsorbed()& Get number of total adsorbed molecules from hitbuffer\\
 \rule{0pt}{3ex} calcNmono()& see eq.\ \ref{eq:nmono} \\
 %\rule{0pt}{3ex} calcdNsurf()& see eq.\ \ref{eq:nsurf} \\
@@ -548,7 +550,7 @@ GetMoleculesPerTP()&float128&FacetProperties::desorption\\
 %\rule{0pt}{3ex} calcEnergy()& see eq.\ \ref{eq:energy} \\
 %\rule{0pt}{3ex} calcSticking()& see eq.\ \ref{eq:sticking} \\
 \rule{0pt}{3ex} calcDesorption()& see eq.\ \ref{eq:des} \\
-\rule{0pt}{3ex} GetMoleculesPerTP()& see eq.\ \ref{eq:krealvirt} \\
+\rule{0pt}{3ex} GetMoleculesPerTP()& see eq.\\%\ \ref{eq:krealvirt} \\
 \rule{0pt}{3ex} calctotalDesorption& Calculate desorption for \codew{startFromSource()} \\
 \rule{0pt}{3ex} calcOutgassingFactor()& Calculate factor to determine outgassing particles\\
 \rule{0pt}{3ex} calcPressure()& see eq.\ \ref{eq:pressure} \\

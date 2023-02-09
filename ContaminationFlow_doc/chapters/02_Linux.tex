@@ -226,7 +226,7 @@ and the input file defining the following parameters:
 \item \codew{$H_{vap}$}: Vaporization enthalpy of a particle if multilayer contamination; default:\codew{0.8\text{E}-19}
 %\item \codew{$sticking$}: Constant sticking coefficient for all facets; default:\codew{0}
 \item \codew{$errorMode$}: Type of error monitored, "covering" or "event"; default: \codew{covering}
-\item \codew{$targetParticles$}: Minimum number of desorbed test-particles per iteration; default: \codew{1000}
+\item \codew{$targetParticles$}: Minimum number of desorbed + outgassed test-particles per iteration; default: \codew{1000}
 \item \codew{$targetError$}: Avg.\ statistical uncertainty (error) to be achieved for each iteration, calculated as the (by the facets area weighted) average of the normalized standard deviation of events per facet; default: \codew{0.001}
 \item \codew{$noupdateError$}: Error value above which the covering will not be updated; default:\codew{0.1}
 \item \codew {$t\_min$}: Min.\ time for step size; default:\codew{1\text{E}-4}
@@ -440,9 +440,10 @@ Optional covering file to replace covering values form hitbuffer. Hitbuffer's co
 	\hphantom{\enskip}HistoryList<uint\_128t> coveringList;{\color{gray}//covering}\\
 	\hphantom{\enskip}HistoryList<double> hitList;{\color{gray}//MC hits}\\
 	\hphantom{\enskip}HistoryList<llong> desorbedList;{\color{gray}//Number of desorbed particles}\\
+	\hphantom{\enskip}HistoryList<llong> outgassdedList;{\color{gray}//Number of outgassed particles}\\
 	\hphantom{\enskip}HistoryList<llong> adsorbedList;{\color{gray}//Number of adsorbed particles}\\
-	\hphantom{\enskip}HistoryList<double> errorList\_event;{\color{gray}//error event: hits \& desorbed particles}\\
-	\hphantom{\enskip}HistoryList<double> errorList\_covering;{\color{gray}//error covering: desorbed \& adsorbed}\\
+	\hphantom{\enskip}HistoryList<double> errorList\_event;{\color{gray}//error event: hits, desorbed \& outgassed test-particles}\\
+	\hphantom{\enskip}HistoryList<double> errorList\_covering;{\color{gray}//error covering: desorbed \& adsorbed test-particles}\\
 	\hphantom{\enskip}HistoryList<double> particleDensityList;\\
 	\hphantom{\enskip}HistoryList<double> pressureList;\\
 	[0.5\baselineskip]
@@ -581,7 +582,7 @@ Optional covering file to replace covering values form hitbuffer. Hitbuffer's co
 
 \subsubsection{Increase facet counters in case of desorb, absorb or hit}
 \begin{itemize}[noitemsep,topsep=0pt, partopsep=0pt]
-\item Increase hit, desorb, outgassed or absorb counter according to event
+\item Increase hit, desorbed, outgassed or absorbed counter according to event
 \item Increase velocity counters only if event within \codew{p$\rightarrow$counterWindowPercent}
 \item Facet counters increased in \codew{IncreaseFacetCounter($\cdot$)}  (\codew{SimulationMC.cpp})
 \end{itemize}
