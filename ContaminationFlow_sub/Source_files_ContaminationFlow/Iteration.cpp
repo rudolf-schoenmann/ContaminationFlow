@@ -196,12 +196,11 @@ void setCoveringThreshold(int size, int rank){
 //-----------------------------------------------------------
 
 std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value => bool: is a change of the time step necessary; double: new time step
-	std::cout << std::endl;
-	std::cout << "--------------------------------------"<< std::endl;
-	std::cout << "TimestepControl function is executed!: " << std::endl;
+	std::ostringstream tmpstream (std::ostringstream::app);
+	tmpstream << "--------------------------------------" << std::endl;
+	tmpstream << "TimestepControl function is executed!: " << std::endl << std::endl;
 	bool repetition = 0;
 	double stepSize_recom = simHistory->stepSize;//recom (recommendation of step size)
-
 	std::vector<bool> cases = {0, 0, 0, 0, 0};
 
 	//Check possibilities of different error cases
@@ -218,20 +217,17 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 			desorption_f = double(f.sh.desorption);
 			cov_f_b4 = double(simHistory->coveringList.getCurrent(getFacetIndex(&f)));
 			cov_f_aft = double(simHistory->coveringList.getPredict(getFacetIndex(&f)));
-			//std::cout << "Facet " <<getFacetIndex(&f) << std::endl;
-			//std::cout << "cov_f_b4 = " << cov_f_b4<< std::endl;
-			//std::cout << "desorption_f = " <<desorption_f << std::endl;
-			//std::cout << "cov_f_aft = " <<cov_f_aft << std::endl;
-			//std::cout << "(cov_f_b4 - desorption_f)*(1-decreasethreshold) = " << (cov_f_b4 - desorption_f)*(1-decreasethreshold)<< std::endl;
 			if(cov_f_aft<(cov_f_b4 - desorption_f)*(1-decreasethreshold)){
-				std::cout << "CASE I detected for facet " <<getFacetIndex(&f) <<std::endl;
-				repetition = true;
+			tmpstream << "CASE I is detected for facet " <<getFacetIndex(&f) <<"."<<std::endl;
+			cases.at(0) = 1;
+			repetition = true;
 			}
 		}
 	}
 	if(repetition){
 		p->targetError *= 0.5;
 		p->targetParticles *= 4;
+		tmpstream << "CASE II will not be checked." <<std::endl;
 	}
 	else{//if(!repetition){
 		//------------------------ CASE II -------------------
@@ -253,14 +249,8 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 				p->targetError *= 0.5;
 				p->targetParticles *= 4;
 				repetition = true;
-				//std::cout << "CASE II detected:" <<std::endl;
-				//std::cout << "simHistory->nParticles = " << simHistory->nParticles << std::endl;
-				//std::cout << "simHistory->nLeaks = " << simHistory->nLeaks << std::endl;
-				//std::cout << "tot_cov_b4+getnbOutgassed(hitbuffer_sum) = " << tot_cov_b4+getnbOutgassed(hitbuffer_sum) << std::endl;
-				//std::cout << "tot_cov_b4+getnbOutgassed(hitbuffer_sum)*(1+growththreshold) = " << (tot_cov_b4+getnbOutgassed(hitbuffer_sum))*(1+growththreshold) << std::endl;
-				//std::cout << "tot_cov_aft+simHistory->nLeaks*GetMoleculesPerTP(hitbuffer_sum)= " << tot_cov_aft+simHistory->nLeaks*GetMoleculesPerTP(hitbuffer_sum) << std::endl;
-
-				//step size does not change. => stepSize_recom = simHistory->stepSize;
+				tmpstream << "CASE II detected." <<std::endl;
+				cases.at(1) = 1;
 			}
 
 	}
@@ -277,10 +267,10 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				coverage_f_b4 = double(calcCoverage(&f));
 				coverage_f_aft = double(calcPredictedCoverage(&f));
-				std::cout << "Facet " << getFacetIndex(&f) << std::endl;
-				std::cout << "coverage_f_b4 = " << coverage_f_b4 << std::endl;
-				std::cout << "coverage_f_aft = " << coverage_f_aft << std::endl;
-				std::cout << "std::abs(cov_f_aft-cov_f_b4) = " << std::abs(coverage_f_aft-coverage_f_b4) << std::endl;
+				//std::cout << "Facet " << getFacetIndex(&f) << std::endl;
+				//std::cout << "coverage_f_b4 = " << coverage_f_b4 << std::endl;
+				//std::cout << "coverage_f_aft = " << coverage_f_aft << std::endl;
+				//std::cout << "std::abs(cov_f_aft-cov_f_b4) = " << std::abs(coverage_f_aft-coverage_f_b4) << std::endl;
 				if(coverage_f_b4 > 0.01 && coverage_f_b4 < 1.1){
 					if(std::abs(coverage_f_aft-coverage_f_b4)>transitionthreshold){
 						/*if(coverage_f_b4 >= 1){
@@ -298,9 +288,13 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 						*/
 						if(stepSize_recom>p->t_min){
 							repetition = true;
+							tmpstream << "CASE IV is detected for facet " <<getFacetIndex(&f) <<"."<<std::endl;
+							tmpstream << "Other facets will not be checked!"<<std::endl;
+							cases.at(3) = 1;
 							stepSize_recom *= 0.1;
 							if(stepSize_recom<p->t_min){
 								stepSize_recom = p->t_min;
+								tmpstream << "Step size is limited by t_min."<<std::endl;
 							}
 							break;
 						}
@@ -342,9 +336,13 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 			if (too_large_reemission || too_large_desorption){
 				if(stepSize_recom>p->t_min){
 					repetition = true;
+					tmpstream << "CASE V is detected for facet " <<getFacetIndex(&f) <<"."<<std::endl;
+					tmpstream << "Other facets will not be checked!"<<std::endl;
+					cases.at(4) = 1;
 					stepSize_recom *= 0.1;
 					if(stepSize_recom<p->t_min){
 						stepSize_recom = p->t_min;
+						tmpstream << "Step size is limited by t_min."<<std::endl;
 					}
 					break;
 				}
@@ -360,7 +358,9 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 	if (avg_flighttime > p->t_min){
 		p->t_min = 10*avg_flighttime;// factor 10 (randomly chosen) to have more of the flight time distribution covered
 		repetition = true;
+		tmpstream << "CASE III detected." <<std::endl;
 		stepSize_recom = p->t_min;
+		cases.at(2) = 1;
 	}
 	simHistory->flightTime=0.0;
 	//------------------------ End of CASES I to V -------
@@ -368,6 +368,12 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 	if(repetition){//revert the value of lastTime in case of repetition
 		simHistory->lastTime-=simHistory->stepSize;
 	}
+	tmpstream << "Cases: ";
+	for (int elem : cases){
+		tmpstream << " " << elem;
+	}
+		tmpstream << std::endl;
+	printStream(tmpstream.str());
 	return std::make_tuple(repetition,stepSize_recom);
 }
 
