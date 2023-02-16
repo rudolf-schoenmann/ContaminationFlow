@@ -46,7 +46,7 @@ void UpdateErrorList(Databuff *hitbuffer_sum){ // hitbuffer_sum==NULL: subproces
 
 	double nbhits=0.0; double nbdes=0.0; double nbout=0.0;double nbads=0.0;
 
-	double factor=hitbuffer_sum==NULL?pow(simHistory->numSubProcess,0.5):1.0; // To be consistent with the ignored facets for calculating the error after summation over all subprocesses, here the hitRationLimit must be reduced with the correction factor due to multiple subprocesses.
+	//double factor=hitbuffer_sum==NULL?pow(simHistory->numSubProcess,0.5):1.0; // To be consistent with the ignored facets for calculating the error after summation over all subprocesses, here the hitRationLimit must be reduced with the correction factor due to multiple subprocesses.
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
@@ -73,8 +73,8 @@ void UpdateErrorList(Databuff *hitbuffer_sum){ // hitbuffer_sum==NULL: subproces
 			if(nbhits_all==0){
 				nbhits_all = 1;// prevent error being 'nan'
 			}
-			double error_event=(pow(((nbdes*(1-nbdes/nbdes_all))+(nbout*(1-nbout/nbout_all))+(nbhits*(1-nbhits/nbhits_all))),0.5)/(nbdes_all+nbout_all));
-			double error_covering=(pow(((nbdes*(1-nbdes/nbdes_all))+(nbads*(1-nbads/nbads_all))),0.5)/(nbdes_all+nbout_all));
+			double error_event=(pow(((nbdes*(1-nbdes/nbdes_all))+(nbout*(1-nbout/nbout_all))+(nbhits*(1-nbhits/nbhits_all))),0.5)/(nbdes_all+nbout_all+nbhits_all));
+			double error_covering=(pow(((nbdes*(1-nbdes/nbdes_all))+(nbads*(1-nbads/nbads_all))),0.5)/(nbdes_all+nbads_all));
 			//if counters are zero, the error formula yields zero. This has to be excluded.
 			if(error_event == 0||std::isnan(error_event)){
 				error_event=1;
