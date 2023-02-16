@@ -76,11 +76,21 @@ void UpdateErrorList(Databuff *hitbuffer_sum){ // hitbuffer_sum==NULL: subproces
 			double error_event=(pow(((nbdes*(1-nbdes/nbdes_all))+(nbout*(1-nbout/nbout_all))+(nbhits*(1-nbhits/nbhits_all))),0.5)/(nbdes_all+nbout_all+nbhits_all));
 			double error_covering=(pow(((nbdes*(1-nbdes/nbdes_all))+(nbads*(1-nbads/nbads_all))),0.5)/(nbdes_all+nbads_all));
 			//if counters are zero, the error formula yields zero. This has to be excluded.
-			if(error_event == 0||std::isnan(error_event)){
-				error_event=1;
+			if(error_event == 0){
+				if((nbdes == nbdes_all && nbdes_all != 0) || (nbout == nbout_all && nbout_all != 0) || (nbhits == nbhits_all&& nbhits_all != 0)){
+					error_event=0; //error would be zero due to formula. => will not be set to 1, since there is some kind of statistics
+				}
+				else{
+					error_event=1;
+				}
 			}
-			if(error_covering == 0||std::isnan(error_covering)){
-				error_covering=1;
+			if(error_covering == 0){
+				if((nbdes == nbdes_all && nbdes_all != 0) || (nbads == nbads_all && nbads_all != 0)){
+					error_covering=0; //error would be zero due to formula. => will not be set to 1, since there is some kind of statistics
+				}
+				else{
+					error_covering=1;
+				}
 			}
 			//scale the error with the number of MC test-particles => error goes to zero with
 			//MC test-particles -> inf
