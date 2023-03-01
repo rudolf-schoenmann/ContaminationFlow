@@ -262,6 +262,13 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 				tmpstream << "CASE II detected." <<std::endl;
 				cases.at(1) = 1;
 			}
+			else if((tot_cov_b4+getnbOutgassed(hitbuffer_sum))*(1-growththreshold)>tot_cov_aft+simHistory->nLeaks*GetMoleculesPerTP(hitbuffer_sum)){
+				p->targetError *= 0.5;
+				p->targetParticles *= 4;
+				repetition = true;
+				tmpstream << "CASE II detected." <<std::endl;
+				cases.at(1) = 1;
+						}
 
 	}
 	//------------------------ CASE IV -------------------
