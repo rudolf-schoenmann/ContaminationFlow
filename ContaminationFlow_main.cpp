@@ -167,6 +167,8 @@ bool loadAndCheckSHandle(int rank, Databuff* hitbuffer, Databuff* loadbuffer){
 			valid=false;
 		}
 	}
+	//Reset TmpCounters => initialize them with zero: Important for the global counters in sHandle.
+	ResetTmpCounters();
 	return valid;
 }
 
