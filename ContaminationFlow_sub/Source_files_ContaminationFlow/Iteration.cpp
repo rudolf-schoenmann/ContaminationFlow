@@ -352,7 +352,7 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 				tau = tau_0 *(coverage_f_b4*exp(p->H_vap / (kb*f.sh.temperature))+(1-coverage_f_b4)*exp(p->E_de / (kb*f.sh.temperature)));
 			}
 			too_large_reemission = (((f_HitEquiv-f_AbsEquiv)*(Krealvirt/calcNmono(&f))*(tau/simHistory->stepSize))>1);
-			too_large_desorption = (((f_Des/calcNmono(&f))>1)&&(f_HitEquiv*(Krealvirt/calcNmono(&f))*(tau/simHistory->stepSize)>1));
+			too_large_desorption = (((f_Des*Krealvirt/calcNmono(&f))>1)&&(f_HitEquiv*(Krealvirt/calcNmono(&f))*(tau/simHistory->stepSize)>1));
 			if (too_large_reemission || too_large_desorption){
 				if(stepSize_recom>p->t_min){
 					repetition = true;
