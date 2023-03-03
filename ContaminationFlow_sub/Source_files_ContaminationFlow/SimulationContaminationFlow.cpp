@@ -39,7 +39,7 @@ extern ProblemDef* p;
 std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, int simutime){
 
 	//Calculate target values for error and number of desorbed particles
-	int targetParticles=p->targetParticles/simHistory->numSubProcess;
+	llong targetParticles=p->targetParticles/simHistory->numSubProcess;
 	double targetError=p->targetError*pow(simHistory->numSubProcess,0.5);
 
 	if(rank==1){

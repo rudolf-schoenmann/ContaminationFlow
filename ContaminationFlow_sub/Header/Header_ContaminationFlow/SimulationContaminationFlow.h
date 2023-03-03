@@ -404,7 +404,7 @@ public:
 	//double W_tr;
 
 	std::string errorMode;
-	int targetParticles;
+	llong targetParticles;
 	double targetError;
 	double noupdateError;
 
