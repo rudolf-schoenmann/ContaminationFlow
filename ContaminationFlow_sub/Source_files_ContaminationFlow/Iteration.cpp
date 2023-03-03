@@ -231,7 +231,15 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 			desorption_f = double(f.sh.desorption);
 			//cov_f_b4 = double(simHistory->coveringList.getCurrent(getFacetIndex(&f)));
 			//cov_f_aft = double(simHistory->coveringList.getPredict(getFacetIndex(&f)));
-			if((facetHitBuffer->nbDesorbed*Krealvirt)<(desorption_f*(1-decreasethreshold))){
+			if((facetHitBuffer->nbDesorbed == 0)&&(desorption_f > 0)){
+				tmpstream << "Facet "<< getFacetIndex(&f) << " did not desorb test-particles!" <<std::endl;
+				tmpstream << "Calculated desorption (physical particles/Krealvirt) of Facet "<< getFacetIndex(&f) << " would be" << (desorption_f/Krealvirt)<<std::endl;
+				tmpstream << "CASE I is not triggered!" <<std::endl;
+			}
+			else if((facetHitBuffer->nbDesorbed == 0)&&(desorption_f == 0)){
+				continue;
+				}
+			else if((facetHitBuffer->nbDesorbed*Krealvirt)<(desorption_f*(1-decreasethreshold))){
 			tmpstream << "CASE I is detected for facet " <<getFacetIndex(&f) <<"."<<std::endl;
 			cases.at(0) = 1;
 			repetition = true;
