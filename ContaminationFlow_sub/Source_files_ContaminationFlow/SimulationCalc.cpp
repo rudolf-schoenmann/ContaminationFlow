@@ -290,6 +290,9 @@ double calcParticleDensity(Databuff *hitbuffer_sum , SubprocessFacet *f){
 				densityCorrection-= (f->tmpCounter[0].nbAbsEquiv + (double)f->tmpCounter[0].nbDesorbed  + (double)f->tmpCounter[0].nbOutgassed) / (f->tmpCounter[0].nbHitEquiv + (double)f->tmpCounter[0].nbDesorbed+ (double)f->tmpCounter[0].nbOutgassed) / 2.0;
 			}
 		}
+		//Rudi: In my opinion, the density correction is just necessary, since in case of an (ab- => ad-) adsorption or desorption
+		//the density counter is incremented with the double value. I inherited this implementation, but I am not sure, what is
+		//the advantage of this procedure.
 
 
 		double scaleY = 1.0 / (f->getArea() * 1E-4); //1E4 is conversion from m2 to cm2

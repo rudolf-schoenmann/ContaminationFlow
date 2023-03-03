@@ -1451,7 +1451,7 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 		return false;
 	}
 	//--------------------------------------Sojourn time begin----------------------------------------------
-	IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 0, 0, 0, 2.0 / ortVelocity, (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity);
+	IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 0, 0, 0, 1.0 / ortVelocity, (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity);
 	double flightTime=sHandle->currentParticle.flightTime;
 
 	if (iFacet->sh.enableSojournTime) {
@@ -1509,7 +1509,7 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 
 		RecordHit(HIT_ABS);
 
-		IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 1, 0, 1, 0, 0);
+		IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 1, 0, 1, 1.0 / ortVelocity, 0);
 		LogHit(iFacet);
 		ProfileFacet(iFacet, sHandle->currentParticle.flightTime, true, 1.0, 0.0); //was 2.0, 1.0
 		if (/*iFacet->texture &&*/ iFacet->sh.countAbs) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, true, 1.0, 0.0); //was 2.0, 1.0
@@ -1522,8 +1522,6 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 		return false;
 	}
 	//----------------------------------------Sojourn time end----------------------------------------------
-	//changes order for correct registration hit vs absorb
-	IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 1, 0, 0, 0, 0);
 	sHandle->currentParticle.nbBounces++;
 	if (/*iFacet->texture &&*/ iFacet->sh.countRefl) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, true, 1.0, 1.0);
 	if (/*iFacet->direction &&*/ iFacet->sh.countDirection) RecordDirectionVector(iFacet, sHandle->currentParticle.flightTime);
@@ -1573,7 +1571,7 @@ bool PerformBounce(SubprocessFacet *iFacet) {
 
 	/*iFacet->sh.tmpCounter.sum_1_per_ort_velocity += 1.0 / ortVelocity;
 	iFacet->sh.tmpCounter.sum_v_ort += (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity;*/
-	IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 0, 0, 0, 1.0 / ortVelocity, (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity);
+	IncreaseFacetCounter(iFacet, sHandle->currentParticle.flightTime, 1, 0, 0, 1.0 / ortVelocity, (sHandle->wp.useMaxwellDistribution ? 1.0 : 1.1781)*ortVelocity);
 	if (/*iFacet->texture &&*/ iFacet->sh.countRefl) RecordHitOnTexture(iFacet, sHandle->currentParticle.flightTime, false, 1.0, 1.0); //count again for outward velocity
 	ProfileFacet(iFacet, sHandle->currentParticle.flightTime, false, 1.0, 1.0);
 	//no direction count on outgoing, neither angle map
