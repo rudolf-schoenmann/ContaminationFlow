@@ -375,7 +375,9 @@ ProblemDef::ProblemDef(){
 
 	errorMode="covering";
 	targetParticles=1000;
-	targetError=0.001;
+	targetError_input=0.001;
+	targetParticles=1000;
+	targetError_input=0.001;
 	noupdateError=0.1;
 //	hitRatioLimit=0;
 
@@ -479,8 +481,8 @@ bool ProblemDef::readInputfile(std::string filename, int rank, int save){
 		else if(stringIn =="sticking"){is >> doubleIn; sticking=doubleIn>0.0?doubleIn:0.0;}
 
 		else if(stringIn == "errorMode") {is >> stringIn; errorMode=stringIn;}
-		else if(stringIn =="targetParticles"){is >> intIn; targetParticles=intIn>0?intIn:0;}
-		else if(stringIn == "targetError") {is >>doubleIn; targetError = doubleIn>0.0?doubleIn:0.0;}
+		else if(stringIn =="targetParticles"){is >> intIn; targetParticles=targetParticles_input=intIn>0?intIn:0;}
+		else if(stringIn == "targetError") {is >>doubleIn; targetError=targetError_input= doubleIn>0.0?doubleIn:0.0;}
 		else if(stringIn == "noupdateError"){is >>doubleIn; noupdateError = doubleIn>0.0?doubleIn:0.0;}
 //		else if(stringIn == "hitRatioLimit") {is >>doubleIn; hitRatioLimit = doubleIn>0.0?doubleIn:0.0;}
 		else if(stringIn == "t_min") {is >>doubleIn; t_min = doubleIn>0.0?doubleIn:0.0;}

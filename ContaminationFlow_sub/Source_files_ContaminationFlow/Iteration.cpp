@@ -281,6 +281,14 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 				tmpstream << "CASE II detected." <<std::endl;
 				cases.at(1) = 1;
 						}
+			else{//Cases I and II are not triggered
+				if(p->targetError<p->targetError_input){
+					p->targetError *=2;
+				}
+				if(p->targetParticles>p->targetParticles_input){
+					p->targetParticles *=0.25;
+				}
+			}
 
 	}
 	//------------------------ CASE IV -------------------

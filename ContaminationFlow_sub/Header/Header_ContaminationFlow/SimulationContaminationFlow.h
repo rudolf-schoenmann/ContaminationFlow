@@ -406,6 +406,8 @@ public:
 	std::string errorMode;
 	llong targetParticles;
 	double targetError;
+	llong targetParticles_input;
+	double targetError_input;
 	double noupdateError;
 
 //	double hitRatioLimit;
