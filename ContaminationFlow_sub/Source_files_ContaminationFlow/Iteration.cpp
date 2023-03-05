@@ -216,7 +216,7 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 	//Check possibilities of different error cases
 
 	//------------------------ CASE I --------------------
-	double decreasethreshold = 0.05; //if particles of a facet decrease stronger than implemented by the model,
+	double decreasethreshold = 0.10; //if particles of a facet decrease stronger than implemented by the model,
 	//the iteration step has to be repeated with better statistics.
 	//decreasethreshold describes the uncertainty.
 	double desorption_f = 0;
@@ -233,7 +233,7 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 			//cov_f_aft = double(simHistory->coveringList.getPredict(getFacetIndex(&f)));
 			if((facetHitBuffer->nbDesorbed == 0)&&(desorption_f > 0)){
 				tmpstream << "Facet "<< getFacetIndex(&f) << " did not desorb test-particles!" <<std::endl;
-				tmpstream << "Calculated desorption (physical particles/Krealvirt) of Facet "<< getFacetIndex(&f) << " would be" << (desorption_f/Krealvirt)<<std::endl;
+				tmpstream << "Calculated desorption (physical particles/Krealvirt) of Facet "<< getFacetIndex(&f) << " would be " << (desorption_f/Krealvirt) << " particles."<<std::endl;
 				tmpstream << "CASE I is not triggered!" <<std::endl;
 			}
 			else if((facetHitBuffer->nbDesorbed == 0)&&(desorption_f == 0)){
