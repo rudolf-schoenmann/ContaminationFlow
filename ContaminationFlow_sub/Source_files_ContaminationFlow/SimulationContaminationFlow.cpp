@@ -375,7 +375,7 @@ ProblemDef::ProblemDef(){
 
 	errorMode="covering";
 	targetParticles=1000;
-	targetError_input=0.001;
+	targetError=0.001;
 	targetParticles=1000;
 	targetError_input=0.001;
 	noupdateError=0.1;
