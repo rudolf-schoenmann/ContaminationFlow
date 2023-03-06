@@ -223,7 +223,7 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 	//double cov_f_b4 = 0;
 	//double cov_f_aft = 0;
 	BYTE *buffer = hitbuffer_sum->buff;
-
+	boost::multiprecision::float128 des=calctotalDesorption();
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
@@ -231,6 +231,9 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 			desorption_f = double(f.sh.desorption);
 			//cov_f_b4 = double(simHistory->coveringList.getCurrent(getFacetIndex(&f)));
 			//cov_f_aft = double(simHistory->coveringList.getPredict(getFacetIndex(&f)));
+			if(desorption_f < (0.01*des/sHandle->sh.nbFacet)){
+				continue;
+			}
 			if((facetHitBuffer->nbDesorbed == 0)&&(desorption_f > 0)){
 				tmpstream << "Facet "<< getFacetIndex(&f) << " did not desorb test-particles!" <<std::endl;
 				tmpstream << "Calculated desorption (physical particles/Krealvirt) of Facet "<< getFacetIndex(&f) << " would be " << (desorption_f/Krealvirt) << " particles."<<std::endl;
