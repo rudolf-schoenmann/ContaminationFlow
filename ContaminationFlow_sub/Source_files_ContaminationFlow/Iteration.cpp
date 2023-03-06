@@ -303,7 +303,8 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 	double residence_energy = 0;
 	double tau = 0;
 	*/
-	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+	if (p->E_de != p->H_vap){
+		for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 			for (SubprocessFacet& f : sHandle->structures[j].facets) {
 				coverage_f_b4 = double(calcCoverage(&f));
 				coverage_f_aft = double(calcPredictedCoverage(&f));
@@ -342,6 +343,7 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 					}
 				}
 			}
+		}
 	}
 
 	//------------------------ CASE V --------------------
