@@ -270,14 +270,14 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 				total_covering_after += simHistory->coveringList.getPredict(j);
 			}
 			double tot_cov_aft = double(total_covering_after);
-			if((tot_cov_b4+getnbOutgassed(hitbuffer_sum))*(1+growththreshold)<tot_cov_aft+simHistory->nLeaks*Krealvirt){
+			if((tot_cov_b4+getnbOutgassed(hitbuffer_sum)*Krealvirt)*(1+growththreshold)<tot_cov_aft+simHistory->nLeaks*Krealvirt){
 				p->targetError *= 0.5;
 				p->targetParticles *= 4;
 				repetition = true;
 				tmpstream << "CASE II detected." <<std::endl;
 				cases.at(1) = 1;
 			}
-			else if((tot_cov_b4+getnbOutgassed(hitbuffer_sum))*(1-growththreshold)>tot_cov_aft+simHistory->nLeaks*Krealvirt){
+			else if((tot_cov_b4+getnbOutgassed(hitbuffer_sum)*Krealvirt)*(1-growththreshold)>tot_cov_aft+simHistory->nLeaks*Krealvirt){
 				p->targetError *= 0.5;
 				p->targetParticles *= 4;
 				repetition = true;
