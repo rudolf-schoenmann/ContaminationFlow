@@ -220,10 +220,12 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 	//the iteration step has to be repeated with better statistics.
 	//decreasethreshold describes the uncertainty.
 	double desorption_f = 0;
+	double outgassing_f = 0;
 	//double cov_f_b4 = 0;
 	//double cov_f_aft = 0;
 	BYTE *buffer = hitbuffer_sum->buff;
 	boost::multiprecision::float128 des=calctotalDesorption();
+	double out = sHandle->wp.totalOutgassingParticles;
 
 	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
 		for (SubprocessFacet& f : sHandle->structures[j].facets) {
@@ -231,7 +233,7 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 			desorption_f = double(f.sh.desorption);
 			//cov_f_b4 = double(simHistory->coveringList.getCurrent(getFacetIndex(&f)));
 			//cov_f_aft = double(simHistory->coveringList.getPredict(getFacetIndex(&f)));
-			if(desorption_f < (0.01*des/sHandle->sh.nbFacet)){
+			if(desorption_f < (0.1*des/sHandle->sh.nbFacet)){
 				continue;
 			}
 			if((facetHitBuffer->nbDesorbed == 0)&&(desorption_f > 0)){
@@ -243,6 +245,30 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 				continue;
 				}
 			else if((facetHitBuffer->nbDesorbed*Krealvirt)<(desorption_f*(1-decreasethreshold))){
+			tmpstream << "CASE I is detected for facet " <<getFacetIndex(&f) <<"."<<std::endl;
+			cases.at(0) = 1;
+			repetition = true;
+			}
+		}
+	}
+	for (size_t j = 0; j < sHandle->sh.nbSuper; j++) {
+		for (SubprocessFacet& f : sHandle->structures[j].facets) {
+			FacetHitBuffer *facetHitBuffer = (FacetHitBuffer *)(buffer + f.sh.hitOffset);
+			outgassing_f = double(f.sh.outgassing);
+			//cov_f_b4 = double(simHistory->coveringList.getCurrent(getFacetIndex(&f)));
+			//cov_f_aft = double(simHistory->coveringList.getPredict(getFacetIndex(&f)));
+			if(outgassing_f < (0.1*out/sHandle->sh.nbFacet)){
+				continue;
+			}
+			if((facetHitBuffer->nbOutgassed == 0)&&(outgassing_f > 0)){
+				tmpstream << "Facet "<< getFacetIndex(&f) << " did not outgas test-particles!" <<std::endl;
+				tmpstream << "Calculated outgassing (physical particles/Krealvirt) of Facet "<< getFacetIndex(&f) << " would be " << (outgassing_f/Krealvirt) << " particles."<<std::endl;
+				tmpstream << "CASE I is not triggered!" <<std::endl;
+			}
+			else if((facetHitBuffer->nbOutgassed == 0)&&(outgassing_f == 0)){
+				continue;
+				}
+			else if((facetHitBuffer->nbOutgassed*Krealvirt)<(outgassing_f*(1-decreasethreshold))){
 			tmpstream << "CASE I is detected for facet " <<getFacetIndex(&f) <<"."<<std::endl;
 			cases.at(0) = 1;
 			repetition = true;
