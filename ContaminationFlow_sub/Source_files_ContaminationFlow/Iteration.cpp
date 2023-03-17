@@ -233,7 +233,7 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 			desorption_f = double(f.sh.desorption);
 			//cov_f_b4 = double(simHistory->coveringList.getCurrent(getFacetIndex(&f)));
 			//cov_f_aft = double(simHistory->coveringList.getPredict(getFacetIndex(&f)));
-			if(desorption_f < (0.1*des/sHandle->sh.nbFacet)){
+			if(desorption_f < (0.1*(des+out)/sHandle->sh.nbFacet)){
 				continue;
 			}
 			if((facetHitBuffer->nbDesorbed == 0)&&(desorption_f > 0)){
@@ -257,7 +257,7 @@ std::tuple<bool, double> TimestepControl(Databuff *hitbuffer_sum){//Return value
 			outgassing_f = double(f.sh.outgassing);
 			//cov_f_b4 = double(simHistory->coveringList.getCurrent(getFacetIndex(&f)));
 			//cov_f_aft = double(simHistory->coveringList.getPredict(getFacetIndex(&f)));
-			if(outgassing_f < (0.1*out/sHandle->sh.nbFacet)){
+			if(outgassing_f < (0.1*(des+out)/sHandle->sh.nbFacet)){
 				continue;
 			}
 			if((facetHitBuffer->nbOutgassed == 0)&&(outgassing_f > 0)){
