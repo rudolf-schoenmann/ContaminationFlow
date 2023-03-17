@@ -700,7 +700,7 @@ std::pair<bool,double> SimulationRun(double time) {
 	if (sHandle->stepPerSec == 0.0) {
 		switch (sHandle->wp.sMode) {
 		case MC_MODE:
-			nbStep = 500*time;
+			nbStep = time;
 			break;
 		case AC_MODE:
 			//nbStep = 1; (my) no AC_MODE
