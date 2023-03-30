@@ -141,7 +141,15 @@ std::tuple<double,double> CalcErrorAll(int it){//calculates the averaged total e
 		}
 	}
 	//return std::make_tuple(error_event/(pow(area_event,0.5)), error_covering/(pow(area_covering,0.5)));
-	return std::make_tuple(error_event/(pow(simHistory->numFacet,0.5)), error_covering/(pow(simHistory->numFacet,0.5)));
+	double power_event = 0.5;
+	double power_covering = 0.5;
+	if(error_event/(pow(simHistory->numFacet,0.5))>1){
+		power_event = 1.0;
+	}
+	if(error_covering/(pow(simHistory->numFacet,0.5))>1){
+			power_covering = 1.0;
+	}
+	return std::make_tuple(error_event/(pow(simHistory->numFacet,power_event)), error_covering/(pow(simHistory->numFacet,power_covering)));
 }
 
 // Check if error reached targets
