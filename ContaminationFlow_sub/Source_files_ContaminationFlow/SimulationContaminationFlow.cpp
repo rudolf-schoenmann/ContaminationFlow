@@ -127,7 +127,7 @@ std::tuple<bool, std::vector<int>> simulateSub2(Databuff *hitbuffer,int rank, in
 		if(j_print || (simHistory->nParticles>targetParticles && checkError(targetError, totalError, pow(simHistory->numSubProcess,0.5), p->errorMode))|| eos || totalTime >= p->maxTimePerIt*1000.0){
 			std::ostringstream tmpstream (std::ostringstream::app);
 			// Summary
-			tmpstream <<" Subprocess "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Adsorbed particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
+			tmpstream <<" Subprocess "<<rank<<": Step "<<std::setw(4)<<std::right <<j <<"    &    Total time " <<std::setw(10)<<std::right <<totalTime <<"ms    &    Monte-Carlo test-particles "<<std::setw(10)<<std::right<<simHistory->nParticles <<"    &    Total error "  <<std::setw(10)<<std::left<<totalError<<std::endl;
 			tmpstream << " Facet" << std::setw(18)<<std::right<< "";
 			int num;
 			// "Table header"
